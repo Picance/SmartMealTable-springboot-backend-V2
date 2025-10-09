@@ -11,13 +11,14 @@
 
 ```
 JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
-회원 관리 API:          [████████████░░░░░░░░] 60% (3/5 API)
+회원 관리 API:          [████████████████████] 100% (5/5 API)
+소셜 로그인 API:        [████████████████████] 100% (2/2 API) 🔥 NEW
 온보딩 API:             [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 
-총 진행률:              [██████░░░░░░░░░░░░░░] 30% (7/23 API)
+총 진행률:              [███████████░░░░░░░░░] 52% (13/25 API)
 ```
 
 ### ✅ 완료된 작업
@@ -202,6 +203,69 @@ JWT 인증 시스템:        [████████████████�
   - 비밀번호 검증 (401)
   - 탈퇴 사유 로깅
 
+### ✅ 소셜 로그인 API 100% 완료 (2025-10-09 추가) 🔥 NEW
+**목적**: 카카오 및 구글 OAuth 2.0 기반 소셜 로그인 구현
+
+**구현 사항**:
+1. **Client 모듈 - OAuth 인증 클라이언트**
+   - `KakaoAuthClient`: 카카오 OAuth 토큰 및 사용자 정보 조회
+   - `GoogleAuthClient`: Google OAuth 토큰 및 ID Token 기반 사용자 정보 추출
+   - `OAuthTokenResponse`, `OAuthUserInfo`: 공통 OAuth DTO
+   - RestClient 기반 HTTP 통신 (Spring 6+ Native Client)
+
+2. **Storage 모듈 - 소셜 계정 영속성**
+   - `SocialAccountJpaEntity`: 소셜 계정 JPA 엔티티
+   - `SocialAccountJpaRepository`: Spring Data JPA Repository
+   - `SocialAccountRepositoryImpl`: Domain Repository 구현체
+
+3. **Domain 모듈 - 소셜 인증 비즈니스 로직**
+   - `SocialAccount`: 소셜 계정 도메인 엔티티
+   - `SocialProvider`: KAKAO, GOOGLE Enum
+   - `SocialAuthDomainService`: 소셜 로그인 핵심 비즈니스 로직
+     - 신규 회원: Member + SocialAccount 생성
+     - 기존 회원: SocialAccount 업데이트 및 연결
+
+4. **API 모듈 - Application Service & Controller**
+   - `KakaoLoginService`: 카카오 로그인 유즈케이스
+   - `GoogleLoginService`: 구글 로그인 유즈케이스
+   - `SocialLoginController`: 소셜 로그인 REST 엔드포인트
+     - `POST /api/v1/auth/login/kakao`: 카카오 로그인
+     - `POST /api/v1/auth/login/google`: 구글 로그인
+   - `KakaoLoginServiceRequest/Response`: 카카오 로그인 DTO
+   - `GoogleLoginServiceRequest/Response`: 구글 로그인 DTO
+
+5. **환경 설정**
+   - `.env`: OAuth Client ID, Secret, Redirect URI 관리 (gitignored)
+   - `.env.example`: 환경 변수 템플릿 (개발자 가이드)
+   - `application.yml`: OAuth 설정을 환경 변수로 주입
+
+**OAuth 흐름**:
+- 카카오: Authorization Code → Access Token → User Info API
+- 구글: Authorization Code → Access Token + ID Token → ID Token Parsing
+
+**TDD 개발 완료**:
+- `KakaoLoginServiceTest`: 신규/기존 회원 로그인 시나리오 테스트
+- `GoogleLoginServiceTest`: 신규/기존 회원 로그인 시나리오 테스트
+- 모든 테스트 통과 (BUILD SUCCESSFUL)
+
+**기술 스택**:
+- OAuth 클라이언트: Spring RestClient (Spring 6+)
+- ID Token 파싱: Base64 디코딩 + JSON 파싱
+- 환경 변수: `.env` + `application.yml` 통합
+- 테스트: Mockito + JUnit 5
+
+**보안 고려사항**:
+- OAuth 시크릿 정보는 `.env`에서 관리 (Git 제외)
+- ID Token 기반 사용자 정보 추출 (Google)
+- Provider별 고유 ID 저장 및 매칭
+
+**위치**: 
+- Client: `smartmealtable-client/auth/src/main/java/com/stdev/smartmealtable/client/auth/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/social/`
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/social/`
+- API: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/auth/`
+- 환경 설정: `.env`, `.env.example`, `application.yml`
+
 ### ✅ Domain Service 분리 리팩토링 완료 (2025-10-09) 🔥 NEW
 **목적**: Application Service와 Domain Service의 책임 분리
 
@@ -256,13 +320,15 @@ JWT 인증 시스템:        [████████████████�
 - ✅ 이메일 로그인 API (JWT 토큰 발급 완료)  
 - ✅ JWT 토큰 재발급 API (Refresh Token 완료)
 - ✅ 로그아웃 API (토큰 검증 완료)
-- ✅ 이메일 중복 검증 API ⭐ NEW
-- ✅ 비밀번호 변경 API ⭐ NEW
-- ✅ 회원 탈퇴 API ⭐ NEW
+- ✅ 이메일 중복 검증 API ⭐
+- ✅ 비밀번호 변경 API ⭐
+- ✅ 회원 탈퇴 API ⭐
+- ✅ 카카오 소셜 로그인 API 🔥 NEW
+- ✅ 구글 소셜 로그인 API 🔥 NEW
 
-### 우선순위 1: 인증 확장 API (일부 완료)
+### 우선순위 1: 인증 확장 API (100% 완료) ⭐ COMPLETE
 - [x] 이메일 중복 검증 API ✅
-- [ ] 소셜 로그인 API (카카오, 구글 OAuth)
+- [x] 소셜 로그인 API (카카오, 구글 OAuth) ✅ **NEW**
 - [ ] 비밀번호 찾기 API
 
 ### 우선순위 2: 프로필 관리 API (일부 완료)

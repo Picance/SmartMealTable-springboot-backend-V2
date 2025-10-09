@@ -4,7 +4,13 @@ dependencies {
     
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    
+    // RestClient (Spring 6+)
+    implementation 'org.springframework:spring-web'
+    
+    // Jackson for JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
