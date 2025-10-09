@@ -26,3 +26,16 @@ logging:
     com.stdev.smartmealtable: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# OAuth 설정 (테스트용 더미 값)
+oauth:
+  kakao:
+    client-id: test-kakao-client-id
+    redirect-uri: http://localhost:3000/auth/kakao/callback
+    token-url: https://kauth.kakao.com/oauth/token
+    user-info-url: https://kapi.kakao.com/v2/user/me
+  google:
+    client-id: test-google-client-id
+    client-secret: test-google-client-secret
+    redirect-uri: http://localhost:3000/auth/google/callback
+    token-url: https://oauth2.googleapis.com/token

@@ -99,8 +99,9 @@ public class GoogleLoginService {
 
         return GoogleLoginServiceResponse.ofExistingMember(
                 member.getMemberId(),
-                memberAuth.getEmail(),
-                memberAuth.getName()
+                userInfo.getEmail(),
+                userInfo.getName(),
+                userInfo.getProfileImage()
         );
     }
 
@@ -128,7 +129,8 @@ public class GoogleLoginService {
         return GoogleLoginServiceResponse.ofNewMember(
                 member.getMemberId(),
                 userInfo.getEmail(),
-                userInfo.getName()
+                userInfo.getName(),
+                userInfo.getProfileImage()
         );
     }
 }

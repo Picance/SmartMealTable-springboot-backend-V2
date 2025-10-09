@@ -6,12 +6,14 @@ package com.stdev.smartmealtable.api.auth.dto.response;
  * @param memberId 회원 ID
  * @param email 이메일
  * @param name 이름
+ * @param profileImageUrl 프로필 이미지 URL
  * @param isNewMember 신규 회원 여부
  */
 public record KakaoLoginServiceResponse(
         Long memberId,
         String email,
         String name,
+        String profileImageUrl,
         boolean isNewMember
 ) {
     /**
@@ -20,9 +22,10 @@ public record KakaoLoginServiceResponse(
     public static KakaoLoginServiceResponse ofNewMember(
             Long memberId,
             String email,
-            String name
+            String name,
+            String profileImageUrl
     ) {
-        return new KakaoLoginServiceResponse(memberId, email, name, true);
+        return new KakaoLoginServiceResponse(memberId, email, name, profileImageUrl, true);
     }
 
     /**
@@ -31,8 +34,9 @@ public record KakaoLoginServiceResponse(
     public static KakaoLoginServiceResponse ofExistingMember(
             Long memberId,
             String email,
-            String name
+            String name,
+            String profileImageUrl
     ) {
-        return new KakaoLoginServiceResponse(memberId, email, name, false);
+        return new KakaoLoginServiceResponse(memberId, email, name, profileImageUrl, false);
     }
 }

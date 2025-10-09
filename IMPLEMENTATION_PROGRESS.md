@@ -12,7 +12,7 @@
 ```
 JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
 회원 관리 API:          [████████████████████] 100% (5/5 API)
-소셜 로그인 API:        [████████████████████] 100% (2/2 API) 🔥 NEW
+소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
 온보딩 API:             [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
@@ -203,7 +203,7 @@ JWT 인증 시스템:        [████████████████�
   - 비밀번호 검증 (401)
   - 탈퇴 사유 로깅
 
-### ✅ 소셜 로그인 API 100% 완료 (2025-10-09 추가) 🔥 NEW
+### ✅ 소셜 로그인 API 100% 완료 (2025-10-09 추가) ✅ 통합 테스트 완료
 **목적**: 카카오 및 구글 OAuth 2.0 기반 소셜 로그인 구현
 
 **구현 사항**:
@@ -247,6 +247,48 @@ JWT 인증 시스템:        [████████████████�
 - `KakaoLoginServiceTest`: 신규/기존 회원 로그인 시나리오 테스트
 - `GoogleLoginServiceTest`: 신규/기존 회원 로그인 시나리오 테스트
 - 모든 테스트 통과 (BUILD SUCCESSFUL)
+
+**통합 테스트 완료 (2025-10-10)** 🎉:
+- `KakaoLoginControllerTest`: 5개 테스트 모두 통과 ✅
+  - 카카오 로그인 성공 - 신규 회원 (200 OK)
+  - 카카오 로그인 성공 - 기존 회원 (200 OK)
+  - 카카오 로그인 실패 - authorizationCode 누락 (422)
+  - 카카오 로그인 실패 - redirectUri 누락 (422)
+  - 카카오 로그인 실패 - 빈 문자열 authorizationCode (422)
+
+- `GoogleLoginControllerTest`: 5개 테스트 모두 통과 ✅
+  - 구글 로그인 성공 - 신규 회원 (200 OK)
+  - 구글 로그인 성공 - 기존 회원 (200 OK)
+  - 구글 로그인 실패 - authorizationCode 누락 (422)
+  - 구글 로그인 실패 - redirectUri 누락 (422)
+  - 구글 로그인 실패 - 빈 문자열 authorizationCode (422)
+
+**TestContainers 통합 테스트 환경**:
+- MySQL 8.0 컨테이너 (공유 컨테이너 패턴)
+- OAuth 클라이언트 Mock (`@MockBean`)
+- `AbstractContainerTest`: 공통 TestContainer 설정
+- `application-test.yml`: 테스트 환경 OAuth 더미 설정
+
+**통합 테스트 실행 결과**:
+```
+✅ 카카오 소셜 로그인 API: 5 tests completed, 0 failed
+✅ 구글 소셜 로그인 API: 5 tests completed, 0 failed
+✅ 전체 소셜 로그인 테스트: 10/10 통과
+```
+
+**Response DTO 구조 확정**:
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "memberId": 1,
+    "email": "user@example.com",
+    "name": "사용자이름",
+    "profileImageUrl": "https://...",
+    "isNewMember": true
+  }
+}
+```
 
 **기술 스택**:
 - OAuth 클라이언트: Spring RestClient (Spring 6+)
