@@ -1,5 +1,8 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
+import com.stdev.smartmealtable.api.onboarding.controller.dto.GetFoodsResponse;
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SaveFoodPreferencesRequest;
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SaveFoodPreferencesResponse;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetRequest;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetResponse;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetPreferencesRequest;
@@ -8,14 +11,19 @@ import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequ
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileResponse;
+import com.stdev.smartmealtable.api.onboarding.service.GetFoodsService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
+import com.stdev.smartmealtable.api.onboarding.service.SaveFoodPreferencesService;
 import com.stdev.smartmealtable.api.onboarding.service.SetBudgetService;
 import com.stdev.smartmealtable.api.onboarding.service.SetPreferencesService;
+import com.stdev.smartmealtable.api.onboarding.service.dto.GetFoodsServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceResponse;
+import com.stdev.smartmealtable.api.onboarding.service.dto.SaveFoodPreferencesServiceRequest;
+import com.stdev.smartmealtable.api.onboarding.service.dto.SaveFoodPreferencesServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.SetBudgetServiceResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
@@ -41,6 +49,8 @@ public class OnboardingController {
     private final OnboardingAddressService onboardingAddressService;
     private final SetBudgetService setBudgetService;
     private final SetPreferencesService setPreferencesService;
+    private final GetFoodsService getFoodsService;
+    private final SaveFoodPreferencesService saveFoodPreferencesService;
 
     /**
      * 온보딩 - 프로필 설정 (닉네임 및 소속 그룹)
@@ -164,6 +174,50 @@ public class OnboardingController {
         var serviceResponse = setPreferencesService.setPreferences(authenticatedUser.memberId(), serviceRequest);
 
         SetPreferencesResponse response = SetPreferencesResponse.from(serviceResponse);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 온보딩 - 음식 목록 조회 (이미지 그리드용)
+     * GET /api/v1/onboarding/foods
+     */
+    @GetMapping("/foods")
+    public ResponseEntity<ApiResponse<GetFoodsResponse>> getFoods(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        log.info("온보딩 음식 목록 조회 API 호출 - categoryId: {}, page: {}, size: {}", categoryId, page, size);
+
+        GetFoodsServiceResponse serviceResponse = getFoodsService.getFoods(categoryId, page, size);
+        GetFoodsResponse response = GetFoodsResponse.from(serviceResponse);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 온보딩 - 개별 음식 선호도 저장
+     * POST /api/v1/onboarding/food-preferences
+     */
+    @PostMapping("/food-preferences")
+    public ResponseEntity<ApiResponse<SaveFoodPreferencesResponse>> saveFoodPreferences(
+            @Valid @RequestBody SaveFoodPreferencesRequest request,
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("개별 음식 선호도 저장 API 호출 - memberId: {}, foodCount: {}",
+                authenticatedUser.memberId(), request.preferredFoodIds().size());
+
+        SaveFoodPreferencesServiceRequest serviceRequest = new SaveFoodPreferencesServiceRequest(
+                request.preferredFoodIds()
+        );
+
+        SaveFoodPreferencesServiceResponse serviceResponse = saveFoodPreferencesService.saveFoodPreferences(
+                authenticatedUser.memberId(),
+                serviceRequest
+        );
+
+        SaveFoodPreferencesResponse response = SaveFoodPreferencesResponse.from(serviceResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }

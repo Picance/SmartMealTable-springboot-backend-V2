@@ -668,6 +668,90 @@ public MonthlyBudget toDomain() {
 - Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/service/`
 - Controller DTO: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/controller/dto/`
 
+**5. 온보딩 - 개별 음식 선호도 API 완료** ⭐ COMPLETE (2025-10-10)
+- ✅ **Endpoint 1**: `GET /api/v1/onboarding/foods` - 음식 목록 조회 (이미지 그리드용)
+- ✅ **Endpoint 2**: `POST /api/v1/onboarding/food-preferences` - 개별 음식 선호도 저장
+- ✅ **Domain & Storage 계층 구현**: Food, FoodPreference 엔티티 및 Repository
+- ✅ **Service 계층 구현**: GetFoodsService, SaveFoodPreferencesService
+- ✅ **Controller 계층 구현**: Request/Response DTO, OnboardingController 엔드포인트 추가
+- ✅ **통합 테스트 완료**: 6개 테스트 모두 통과 (성공/실패 시나리오)
+- ✅ **빌드 성공**: 전체 프로젝트 빌드 성공
+
+**구현 사항**:
+
+1. **Domain 계층**
+   - `Food` 도메인 엔티티: 음식 정보 (이름, 카테고리, 설명, 이미지, 가격)
+   - `FoodPreference` 도메인 엔티티: 개별 음식 선호도 정보
+   - `FoodRepository`: 음식 CRUD 및 페이징 조회 인터페이스
+   - `FoodPreferenceRepository`: 음식 선호도 CRUD 인터페이스
+   - reconstitute 패턴 적용
+
+2. **Storage 계층**
+   - `FoodJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `FoodPreferenceJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `FoodRepositoryImpl`: Spring Data JPA 기반 구현체
+   - `FoodPreferenceRepositoryImpl`: Spring Data JPA 기반 구현체
+   - 페이징 지원 (PageRequest)
+
+3. **Service 계층**
+   - `GetFoodsService`: 음식 목록 조회 유즈케이스 (페이징 + 카테고리 필터링)
+   - `SaveFoodPreferencesService`: 개별 음식 선호도 저장 유즈케이스
+   - 기존 선호도 삭제 후 새로운 선호도 저장
+   - 음식 존재 여부 검증
+   - 카테고리 정보 포함 응답
+   - @Transactional 처리로 원자성 보장
+
+4. **Request/Response DTO**
+   - `GetFoodsResponse`: 음식 목록 + 페이징 정보 (Spring Data Page 구조)
+   - `SaveFoodPreferencesRequest`: 선호 음식 ID 목록 (Validation: 최대 50개)
+   - `SaveFoodPreferencesResponse`: 저장 결과 + 선호 음식 정보 (최대 10개 반환)
+
+**비즈니스 로직**:
+- 음식 목록 조회: 전체 또는 카테고리별 필터링 지원
+- 페이징: page, size 파라미터로 제어
+- 개별 음식 선호도 최대 50개 제한 (Validation)
+- 응답 시 최대 10개의 선호 음식만 반환 (성능 최적화)
+- 카테고리 정보 Map 기반 조회로 N+1 문제 방지
+
+**테스트 완료** (6 Integration Tests):
+- ✅ 음식 목록 조회 성공 - 전체 조회 (200 OK)
+- ✅ 음식 목록 조회 성공 - 카테고리 필터링 (200 OK)
+- ✅ 개별 음식 선호도 저장 성공 (201 Created)
+- ✅ 개별 음식 선호도 저장 - 빈 배열 (201 Created, savedCount: 0)
+- ✅ 개별 음식 선호도 저장 실패 - null (422 Unprocessable Entity)
+- ✅ 개별 음식 선호도 저장 실패 - JWT 토큰 없음 (401 Unauthorized)
+
+**Spring Rest Docs 문서화** (별도 작성 예정):
+- 음식 목록 조회 API 문서화
+- 개별 음식 선호도 저장 API 문서화
+
+**빌드 검증**:
+```bash
+./gradlew clean build -x test
+# BUILD SUCCESSFUL in 19s
+
+./gradlew :smartmealtable-api:test --tests FoodPreferenceControllerTest
+# 6 tests completed, 6 passed ✅
+```
+
+**CategoryRepository 확장**:
+- ✅ `save(Category)` 메서드 추가 (테스트 데이터 생성용)
+- ✅ `CategoryJpaEntity.fromDomain()` 메서드 추가
+
+**위치**: 
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/food/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/food/`
+- API: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/service/`
+- Controller DTO: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/controller/dto/`
+- Test: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/FoodPreferenceControllerTest.java`
+
+**기술 스택**:
+- Validation: Jakarta Bean Validation (`@NotNull`, `@Size`)
+- 페이징: Spring Data PageRequest
+- 테스트: TestContainers MySQL + MockMvc + JwtTokenProvider
+- 문서화: Spring Rest Docs (별도 작성 예정)
+
 ---
 
 ## 📋 다음 단계 (향후 API 구현)

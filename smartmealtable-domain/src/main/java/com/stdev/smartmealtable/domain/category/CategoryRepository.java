@@ -9,6 +9,11 @@ import java.util.Optional;
 public interface CategoryRepository {
 
     /**
+     * 카테고리 저장 (테스트용)
+     */
+    Category save(Category category);
+
+    /**
      * 카테고리 ID로 조회
      */
     Optional<Category> findById(Long categoryId);

@@ -19,6 +19,13 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     private final CategoryJpaRepository categoryJpaRepository;
 
     @Override
+    public Category save(Category category) {
+        CategoryJpaEntity entity = CategoryJpaEntity.fromDomain(category);
+        CategoryJpaEntity savedEntity = categoryJpaRepository.save(entity);
+        return savedEntity.toDomain();
+    }
+
+    @Override
     public Optional<Category> findById(Long categoryId) {
         return categoryJpaRepository.findById(categoryId)
             .map(CategoryJpaEntity::toDomain);

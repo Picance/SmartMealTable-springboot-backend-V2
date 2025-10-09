@@ -38,4 +38,14 @@ public class CategoryJpaEntity {
     public Category toDomain() {
         return Category.reconstitute(this.categoryId, this.name);
     }
+
+    /**
+     * Domain → JPA Entity 변환 (for save)
+     */
+    public static CategoryJpaEntity fromDomain(Category category) {
+        CategoryJpaEntity entity = new CategoryJpaEntity();
+        entity.categoryId = category.getCategoryId();
+        entity.name = category.getName();
+        return entity;
+    }
 }
