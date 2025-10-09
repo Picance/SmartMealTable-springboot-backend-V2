@@ -13,12 +13,12 @@
 JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
 회원 관리 API:          [████████████████████] 100% (5/5 API)
 소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
-온보딩 API:             [████████████████████] 100% (2/2 API) ⭐ REST Docs 완료
+온보딩 API:             [████████████████████] 100% (3/3 API) ⭐ REST Docs 완료
 예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 
-총 진행률:              [████████████████░░░░] 76% (15/25 API)
+총 진행률:              [████████████████░░░░] 80% (16/27 API)
 ```
 
 ### ✅ 완료된 작업
@@ -448,6 +448,119 @@ JWT 인증 시스템:        [████████████████�
 - ✅ 에러 응답 형식 문서화
 
 **API 문서화 완성**:
+```bash
+./gradlew :smartmealtable-api:asciidoctor
+# HTML 문서 생성: build/docs/asciidoc/index.html
+# 온보딩 - 주소 등록 API 스펙 문서화 완료
+```
+
+**위치**: 
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/address/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/address/`
+- API: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
+- Tests: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/`
+
+**3. 온보딩 - 예산 설정 API 완료** ⭐ COMPLETE (2025-10-10)
+- ✅ **Endpoint**: `POST /api/v1/onboarding/budget`
+- ✅ **기능**: 회원의 월별/일일/식사별 예산 설정
+- ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+- ✅ **Spring Rest Docs 문서화**: 3개 시나리오 완료
+- ✅ **JWT 인증 통합**: `@AuthUser` ArgumentResolver 적용
+
+**구현 사항**:
+1. **Domain 계층**
+   - `MealType` enum: BREAKFAST, LUNCH, DINNER (식사 유형)
+   - `MonthlyBudget` 도메인 엔티티: 월별 예산 관리
+   - `DailyBudget` 도메인 엔티티: 일일 예산 관리
+   - `MealBudget` 도메인 엔티티: 식사별 예산 관리
+   - reconstitute 패턴: JPA → Domain 변환 시 ID 보존
+   - 비즈니스 로직: `changeMonthlyFoodBudget()`, `addUsedAmount()` 등
+   
+2. **Storage 계층**
+   - `MonthlyBudgetJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `DailyBudgetJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `MealBudgetJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `MonthlyBudgetRepository`, `DailyBudgetRepository`, `MealBudgetRepository`
+   - Spring Data JPA 기반 Repository 구현체
+   - QueryDSL 활용: 최신 예산 조회 쿼리
+
+3. **Service 계층**
+   - `SetBudgetService`: 예산 설정 유즈케이스
+   - 현재 월(YearMonth.now()) 기준 월별 예산 생성
+   - 현재 일(LocalDate.now()) 기준 일별 예산 생성
+   - 3개 식사 유형별 예산 생성 (BREAKFAST, LUNCH, DINNER)
+   - @Transactional 처리로 원자성 보장
+
+4. **Request/Response DTO**
+   - `SetBudgetRequest`: 월별/일별 예산 + 식사별 예산 Map
+   - `SetBudgetResponse`: 설정된 예산 정보 + 식사별 예산 리스트
+   - `MealBudgetInfo`: 식사 유형별 예산 정보 (nested DTO)
+
+**비즈니스 로직**:
+- 월별 예산 최소 0원 이상 (`@Min(0)`)
+- 일별 예산 최소 0원 이상
+- 식사별 예산 최소 0원 이상
+- 모든 예산 필드 필수 입력 (`@NotNull`)
+
+**테스트 완료** (6 Integration Tests):
+- ✅ 예산 설정 성공 (201 Created)
+- ✅ 월별 예산 null (422 Unprocessable Entity)
+- ✅ 일별 예산 null (422 Unprocessable Entity)
+- ✅ 식사별 예산 null (422 Unprocessable Entity)
+- ✅ 음수 예산 (422 Unprocessable Entity)
+- ✅ JWT 토큰 누락 (400 Bad Request)
+
+**Spring Rest Docs 문서화 완료** (3 Documentation Tests):
+- ✅ `SetBudgetControllerRestDocsTest` 작성
+- ✅ 예산 설정 성공 시나리오 (201 Created)
+- ✅ Validation 실패 시나리오 (422 Unprocessable Entity)
+- ✅ JWT 인증 실패 시나리오 (400 Bad Request)
+- ✅ Request/Response 필드 상세 설명 (.optional() 적용)
+- ✅ 에러 응답 형식 문서화 (@JsonInclude(NON_NULL) 대응)
+
+**reconstitute 패턴 적용**:
+```java
+// Domain Entity에 reconstitute 팩토리 메서드 추가
+public static MonthlyBudget reconstitute(
+    Long monthlyBudgetId, Long memberId, Integer monthlyFoodBudget, 
+    Integer monthlyUsedAmount, YearMonth budgetMonth) {
+    // JPA Entity → Domain Entity 변환 시 ID 보존
+    MonthlyBudget budget = new MonthlyBudget();
+    budget.monthlyBudgetId = monthlyBudgetId; // ID 복원
+    budget.memberId = memberId;
+    // ...
+    return budget;
+}
+
+// JpaEntity의 toDomain()에서 reconstitute 사용
+public MonthlyBudget toDomain() {
+    return MonthlyBudget.reconstitute(
+        this.monthlyBudgetId,
+        this.memberId,
+        this.monthlyFoodBudget,
+        this.monthlyUsedAmount,
+        this.budgetMonth
+    );
+}
+```
+
+**API 문서화 완성**:
+```bash
+./gradlew :smartmealtable-api:test --tests SetBudgetControllerRestDocsTest
+# 3 tests completed, 3 passed ✅
+
+./gradlew :smartmealtable-api:asciidoctor
+# HTML 문서 생성: build/docs/asciidoc/index.html
+# 온보딩 - 예산 설정 API 스펙 문서화 완료
+```
+
+**위치**: 
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/budget/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/budget/`
+- API: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
+- Tests: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/SetBudgetControllerTest.java`
+- RestDocs: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/SetBudgetControllerRestDocsTest.java`
+
 - ✅ `index.adoc` - 온보딩 섹션 추가 (~330 lines)
   - 인증 요구사항 (JWT Bearer Token)
   - 프로필 설정 API 문서

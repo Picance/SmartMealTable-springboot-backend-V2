@@ -326,3 +326,63 @@ curl -X POST https://api.smartmealtable.com/api/v1/onboarding/address \
     "isPrimary": false
   }'
 ----
+
+[[onboarding-budget]]
+== 예산 설정
+
+온보딩 과정에서 사용자의 월별/일일/식사별 예산을 설정합니다.
+
+=== 요청
+
+include::{snippets}/onboarding-budget-set-success/http-request.adoc[]
+
+==== 요청 헤더
+
+include::{snippets}/onboarding-budget-set-success/request-headers.adoc[]
+
+==== 요청 필드
+
+include::{snippets}/onboarding-budget-set-success/request-fields.adoc[]
+
+=== 성공 응답 (201 Created)
+
+include::{snippets}/onboarding-budget-set-success/http-response.adoc[]
+
+==== 응답 필드
+
+include::{snippets}/onboarding-budget-set-success/response-fields.adoc[]
+
+=== 에러 응답
+
+==== 필수 필드 누락 (422 Unprocessable Entity)
+
+include::{snippets}/onboarding-budget-set-validation-error/http-response.adoc[]
+
+include::{snippets}/onboarding-budget-set-validation-error/response-fields.adoc[]
+
+==== JWT 토큰 누락 (400 Bad Request)
+
+include::{snippets}/onboarding-budget-set-auth-error/http-response.adoc[]
+
+include::{snippets}/onboarding-budget-set-auth-error/response-fields.adoc[]
+
+=== 예제
+
+==== cURL
+
+[source,bash]
+----
+curl -X POST https://api.smartmealtable.com/api/v1/onboarding/budget \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "monthlyBudget": 300000,
+    "dailyBudget": 10000,
+    "mealBudgets": {
+      "BREAKFAST": 3000,
+      "LUNCH": 5000,
+      "DINNER": 7000
+    }
+  }'
+----
+
