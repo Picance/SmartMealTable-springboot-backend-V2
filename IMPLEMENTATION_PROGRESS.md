@@ -202,6 +202,37 @@ JWT 인증 시스템:        [████████████████�
   - 비밀번호 검증 (401)
   - 탈퇴 사유 로깅
 
+### ✅ Domain Service 분리 리팩토링 완료 (2025-10-09) 🔥 NEW
+**목적**: Application Service와 Domain Service의 책임 분리
+
+**변경 사항**:
+1. **Domain Service 계층 신규 생성**
+   - `MemberDomainService`: 회원 생성, 검증, 탈퇴 등 핵심 비즈니스 로직
+   - `AuthenticationDomainService`: 인증, 비밀번호 검증 등 인증 관련 로직
+
+2. **Application Service 리팩토링**
+   - `SignupService`: 유즈케이스 orchestration에만 집중
+   - `LoginService`: JWT 토큰 발급 및 응답 처리
+   - `ChangePasswordService`: 비밀번호 변경 흐름 관리
+   - `WithdrawMemberService`: 회원 탈퇴 흐름 관리
+
+3. **아키텍처 개선**
+   - ✅ 비즈니스 로직이 Domain Service로 이동
+   - ✅ Application Service는 트랜잭션 관리 및 DTO 변환만 담당
+   - ✅ 도메인 모델 패턴 강화 (엔티티의 `verifyPassword()` 메서드 활용)
+   - ✅ 계층 간 의존성 명확화 (Domain → Storage, API → Domain)
+
+**테스트 검증**:
+```bash
+./gradlew :smartmealtable-api:test --rerun-tasks
+# 모든 테스트 통과 (회원가입, 로그인, 비밀번호 변경, 회원 탈퇴)
+# BUILD SUCCESSFUL in 58s
+
+./gradlew clean build -x test
+# 전체 프로젝트 빌드 성공
+# BUILD SUCCESSFUL in 4s
+```
+
 ### ✅ 전체 테스트 실행 결과
 ```bash
 ./gradlew :smartmealtable-api:test
@@ -266,7 +297,14 @@ JWT 인증 시스템:        [████████████████�
 ```
 smartmealtable/
 ├── core/              # 공통 응답, 예외 처리
-├── domain/            # 순수 도메인 로직 (JPA 비의존)
+├── domain/            # 순수 도메인 로직 + Domain Service (JPA 비의존)
+│   └── service/      # Domain Service (비즈니스 로직)
+├── storage/
+│   └── db/           # JPA 엔티티, Repository 구현
+├── api/              # Controller, Application Service, GlobalExceptionHandler
+│   └── service/      # Application Service (유즈케이스 orchestration)
+└── client/           # 외부 API 연동
+```
 ├── storage/
 │   └── db/           # JPA 엔티티, Repository 구현
 ├── api/              # Controller, GlobalExceptionHandler
@@ -280,6 +318,7 @@ smartmealtable/
 - 비즈니스 규칙 검증
 - 도메인 로직 (팩토리 메서드, 상태 변경)
 - Repository 인터페이스 정의
+- **Domain Service**: 핵심 비즈니스 로직 (회원 생성, 인증 검증, 비밀번호 변경 등)
 
 #### Storage Layer
 - JPA 엔티티 (Domain → JPA 매핑)
@@ -287,14 +326,16 @@ smartmealtable/
 - 영속성 관리
 
 #### Application Layer (Service)
-- 유즈케이스 처리
-- 트랜잭션 관리
-- DTO 변환
+- **유즈케이스 orchestration**: 여러 Domain Service 및 Repository 호출 조합
+- 트랜잭션 관리 (`@Transactional`)
+- DTO 변환 (Request → Domain, Domain → Response)
+- JWT 토큰 발급 등 인프라 관련 작업
 
 #### Presentation Layer (Controller)
 - HTTP 요청/응답 처리
-- Validation
+- Validation (`@Valid`, Bean Validation)
 - DTO → Service 요청 변환
+- HTTP 상태 코드 매핑
 
 ---
 
