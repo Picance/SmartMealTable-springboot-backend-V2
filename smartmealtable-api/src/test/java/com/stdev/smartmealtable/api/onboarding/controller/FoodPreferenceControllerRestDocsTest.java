@@ -50,12 +50,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
@@ -79,7 +73,7 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
     private List<Long> foodIds;
 
     @BeforeEach
-    void setUp() {
+    void setUpTestData() {
         Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
         Group savedGroup = groupRepository.save(testGroup);
 
@@ -153,8 +147,7 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.number").type(JsonFieldType.NUMBER).description("현재 페이지 번호"),
                                 fieldWithPath("data.first").type(JsonFieldType.BOOLEAN).description("첫 페이지 여부"),
                                 fieldWithPath("data.numberOfElements").type(JsonFieldType.NUMBER).description("현재 페이지 요소 개수"),
-                                fieldWithPath("data.empty").type(JsonFieldType.BOOLEAN).description("빈 페이지 여부"),
-                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (null)")
+                                fieldWithPath("data.empty").type(JsonFieldType.BOOLEAN).description("빈 페이지 여부")
                         )
                 ));
     }
@@ -183,8 +176,7 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.preferredFoods[].foodName").type(JsonFieldType.STRING).description("음식 이름"),
                                 fieldWithPath("data.preferredFoods[].categoryName").type(JsonFieldType.STRING).description("카테고리 이름"),
                                 fieldWithPath("data.preferredFoods[].imageUrl").type(JsonFieldType.STRING).description("이미지 URL"),
-                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지"),
-                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (null)")
+                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지")
                         )
                 ));
     }
