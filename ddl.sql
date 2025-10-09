@@ -3,7 +3,7 @@
 -- ================================================================================= --
 
 -- 그룹 테이블
-CREATE TABLE `groups` (
+CREATE TABLE member_group (
                           group_id      BIGINT        NOT NULL AUTO_INCREMENT COMMENT '그룹의 고유 식별자',
                           address       VARCHAR(255)  NULL     COMMENT '그룹의 주소 (예: 학교, 회사 주소)',
                           name          VARCHAR(50)   NOT NULL COMMENT '그룹의 명칭 (예: OO대학교, XX회사)',

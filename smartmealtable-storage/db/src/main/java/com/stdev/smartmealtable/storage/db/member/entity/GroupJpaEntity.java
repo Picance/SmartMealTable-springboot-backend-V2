@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
  * Group JPA 엔티티
  */
 @Entity
-@Table(name = "groups")
+@Table(name = "member_group")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GroupJpaEntity {
