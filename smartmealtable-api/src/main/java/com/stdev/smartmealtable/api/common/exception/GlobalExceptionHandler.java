@@ -8,6 +8,8 @@ import com.stdev.smartmealtable.core.exception.AuthenticationException;
 import com.stdev.smartmealtable.core.exception.AuthorizationException;
 import com.stdev.smartmealtable.core.exception.BaseException;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +49,7 @@ public class GlobalExceptionHandler {
     }
     
     /**
-     * Validation 예외 처리 (422)
+     * Validation 예외 처리 (422) - Request Body
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException ex) {
@@ -69,6 +71,30 @@ public class GlobalExceptionHandler {
                 ErrorCode.E422,
                 message,
                 errorData
+        );
+        
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(errorMessage));
+    }
+    
+    /**
+     * Constraint Violation 예외 처리 (422) - Query Parameters
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException ex) {
+        log.warn("Constraint Violation: {}", ex.getMessage());
+        
+        String message = "요청 파라미터가 유효하지 않습니다.";
+        
+        ConstraintViolation<?> violation = ex.getConstraintViolations().iterator().next();
+        if (violation != null) {
+            message = violation.getMessage();
+        }
+        
+        ErrorMessage errorMessage = ErrorMessage.of(
+                ErrorCode.E422,
+                message
         );
         
         return ResponseEntity

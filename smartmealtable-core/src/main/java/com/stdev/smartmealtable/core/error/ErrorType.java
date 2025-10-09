@@ -123,6 +123,20 @@ public enum ErrorType {
             "존재하지 않는 지출 내역입니다.",
             LogLevel.WARN
     ),
+    
+    MONTHLY_BUDGET_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "해당 월의 예산 정보를 찾을 수 없습니다.",
+            LogLevel.WARN
+    ),
+    
+    DAILY_BUDGET_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "해당 날짜의 예산 정보를 찾을 수 없습니다.",
+            LogLevel.WARN
+    ),
 
     // ==================== 충돌 (409) ====================
     DUPLICATE_EMAIL(

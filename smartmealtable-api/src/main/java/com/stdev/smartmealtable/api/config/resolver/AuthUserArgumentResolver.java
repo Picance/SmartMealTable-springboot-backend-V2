@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.api.config.resolver;
 
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
+import com.stdev.smartmealtable.core.error.ErrorType;
+import com.stdev.smartmealtable.core.exception.AuthenticationException;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,14 +51,14 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
         
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             log.warn("Authorization 헤더가 없습니다. URI: {}", request.getRequestURI());
-            throw new IllegalArgumentException("인증 토큰이 필요합니다.");
+            throw new AuthenticationException(ErrorType.INVALID_TOKEN);
         }
 
         String token = jwtTokenProvider.extractTokenFromHeader(authorizationHeader);
         
         if (token == null) {
             log.warn("Bearer 토큰 형식이 아닙니다. Authorization: {}", authorizationHeader);
-            throw new IllegalArgumentException("올바른 인증 토큰 형식이 아닙니다. (Bearer token 필요)");
+            throw new AuthenticationException(ErrorType.INVALID_TOKEN);
         }
 
         try {
@@ -65,7 +67,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
             return AuthenticatedUser.of(memberId);
         } catch (JwtException e) {
             log.warn("JWT 토큰 파싱 실패: {}", e.getMessage());
-            throw new IllegalArgumentException("유효하지 않은 인증 토큰입니다.", e);
+            throw new AuthenticationException(ErrorType.INVALID_TOKEN);
         }
     }
 }
