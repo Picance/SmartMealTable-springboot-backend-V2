@@ -143,6 +143,37 @@
 - `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/common/`
 - `smartmealtable-api/src/docs/asciidoc/`
 
+#### 9. JWT 인증 시스템 구현 (100%) ⭐ NEW
+- ✅ `JwtConfig` - JWT 토큰 생성 및 검증 인프라
+  - `JwtTokenProvider` 구현 (Access/Refresh 토큰 생성)
+  - `PasswordEncoder` BCrypt 통합
+  - JWT 라이브러리: `io.jsonwebtoken:jjwt-api:0.12.6`
+  - 토큰 만료시간: Access(1h), Refresh(7d)
+- ✅ 로그인 DTO 구현
+  - `LoginRequest` - 이메일/비밀번호 입력
+  - `LoginResponse` - JWT 토큰 + 회원 정보 응답
+  - `LoginServiceRequest/Response` - 서비스 계층 DTO
+- ✅ `LoginService` 구현
+  - 이메일 인증 및 BCrypt 패스워드 검증
+  - JWT Access/Refresh 토큰 생성
+  - 비즈니스 예외 처리 (이메일 미존재, 패스워드 불일치)
+- ✅ `AuthController` 로그인 엔드포인트 추가
+  - `POST /api/v1/auth/login/email` 구현
+  - 200 OK 응답 (JWT 토큰 포함)
+  - 401 Unauthorized 에러 처리
+- ✅ `LoginControllerTest` - TDD 통합 테스트
+  - 로그인 성공 시나리오 (200)
+  - 잘못된 인증정보 실패 시나리오 (401)
+  - TestContainer MySQL 환경에서 완전한 테스트
+  - JWT 토큰 응답 검증
+
+**위치**: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/auth/`
+
+**기술 스택**:
+- JWT 라이브러리: `io.jsonwebtoken:jjwt-api:0.12.6`
+- 패스워드 검증: BCrypt integration
+- 테스트 환경: TestContainers MySQL
+
 ---
 
 ## 🔄 최종 상태
@@ -169,7 +200,7 @@
 ## 📋 다음 단계 (향후 API 구현)
 
 ### 우선순위 1: 인증 API
-- [ ] 이메일 로그인 API
+- ✅ 이메일 로그인 API (JWT 토큰 기반 완료)
 - [ ] 소셜 로그인 API (카카오, 구글)
 - [ ] 토큰 재발급 API
 - [ ] 로그아웃 API
@@ -238,14 +269,16 @@ smartmealtable/
 
 ---
 
-## 🎯 회원가입 API 스펙 (구현 완료)
+## 🎯 인증 API 스펙 (구현 완료)
 
-### Endpoint
+### 1. 회원가입 API
+
+#### Endpoint
 ```
 POST /api/v1/auth/signup/email
 ```
 
-### Request
+#### Request
 ```json
 {
   "name": "홍길동",
@@ -254,7 +287,7 @@ POST /api/v1/auth/signup/email
 }
 ```
 
-### Response (201 Created)
+#### Response (201 Created)
 ```json
 {
   "result": "SUCCESS",
@@ -268,40 +301,69 @@ POST /api/v1/auth/signup/email
 }
 ```
 
-### Error Cases
+#### Error Cases
 - **409 Conflict**: 이메일 중복
+- **422 Unprocessable Entity**: 유효성 검증 실패
+
+#### Validation Rules
+- `name`: 2-50자
+- `email`: 이메일 형식 (RFC 5322)
+- `password`: 8-20자, 영문+숫자+특수문자 조합
+
+### 2. 이메일 로그인 API ⭐ NEW
+
+#### Endpoint
+```
+POST /api/v1/auth/login/email
+```
+
+#### Request
+```json
+{
+  "email": "hong@example.com",
+  "password": "SecureP@ss123!"
+}
+```
+
+#### Response (200 OK)
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
+    "member": {
+      "memberId": 1,
+      "email": "hong@example.com",
+      "name": "홍길동",
+      "recommendationType": "BALANCED",
+      "onboardingComplete": false,
+      "createdAt": "2025-10-08T22:00:00"
+    }
+  },
+  "error": null
+}
+```
+
+#### Error Cases
+- **401 Unauthorized**: 인증 실패 (이메일 미존재 또는 비밀번호 불일치)
   ```json
   {
     "result": "ERROR",
     "data": null,
     "error": {
-      "code": "E409",
-      "message": "이미 사용 중인 이메일입니다.",
+      "code": "E401",
+      "message": "이메일 또는 비밀번호가 올바르지 않습니다.",
       "data": null
     }
   }
   ```
 
-- **422 Unprocessable Entity**: 유효성 검증 실패
-  ```json
-  {
-    "result": "ERROR",
-    "data": null,
-    "error": {
-      "code": "E422",
-      "message": "입력값 검증에 실패했습니다.",
-      "data": {
-        "field": "email",
-        "reason": "이메일 형식이 올바르지 않습니다."
-      }
-    }
-  }
-  ```
-
-### Validation Rules
-- `name`: 2-50자
-- `email`: 이메일 형식 (RFC 5322)
-- `password`: 8-20자, 영문+숫자+특수문자 조합
+#### JWT 토큰 정보
+- **Access Token**: 1시간 만료, 인증에 사용
+- **Refresh Token**: 7일 만료, 토큰 재발급에 사용
+- **Subject**: 사용자 이메일
+- **Algorithm**: HS256
 
 ---
 
@@ -454,4 +516,4 @@ POST /api/v1/auth/signup/email
 
 ---
 
-**마지막 업데이트**: 2025-10-08 (회원가입 API 구현 완료 - 100%)
+**마지막 업데이트**: 2025-10-09 (JWT 이메일 로그인 API 구현 완료)

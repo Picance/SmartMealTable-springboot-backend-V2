@@ -54,6 +54,13 @@ public class Member {
         }
         this.recommendationType = type;
     }
+    
+    // 도메인 로직: 온보딩 완료 여부 확인
+    public boolean isOnboardingComplete() {
+        // 그룹이 설정되어 있으면 온보딩 완료로 간주
+        // 추후 온보딩 단계가 늘어나면 더 복잡한 조건으로 변경 가능
+        return this.groupId != null;
+    }
 
     // 비즈니스 규칙 검증
     private void validateNickname(String nickname) {

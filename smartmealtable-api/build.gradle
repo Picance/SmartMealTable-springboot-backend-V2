@@ -18,6 +18,11 @@ dependencies {
     
     // BCrypt 암호화 (Spring Security 없이 사용)
     implementation 'at.favre.lib:bcrypt:0.10.2'
+    
+    // JWT 토큰 처리 (Spring Security 없이 사용)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
         
     // Spring Boot DevTools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

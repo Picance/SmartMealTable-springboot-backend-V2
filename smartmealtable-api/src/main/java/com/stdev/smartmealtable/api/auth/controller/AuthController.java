@@ -1,9 +1,18 @@
 package com.stdev.smartmealtable.api.auth.controller;
 
+import com.stdev.smartmealtable.api.auth.dto.request.LoginRequest;
+import com.stdev.smartmealtable.api.auth.dto.request.RefreshTokenRequest;
 import com.stdev.smartmealtable.api.auth.dto.request.SignupRequest;
+import com.stdev.smartmealtable.api.auth.dto.response.LoginResponse;
+import com.stdev.smartmealtable.api.auth.dto.response.RefreshTokenResponse;
 import com.stdev.smartmealtable.api.auth.dto.response.SignupResponse;
+import com.stdev.smartmealtable.api.auth.service.LoginService;
+import com.stdev.smartmealtable.api.auth.service.RefreshTokenService;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
+import com.stdev.smartmealtable.api.auth.service.dto.LoginServiceResponse;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceResponse;
+import com.stdev.smartmealtable.api.auth.service.request.RefreshTokenServiceRequest;
+import com.stdev.smartmealtable.api.auth.service.response.RefreshTokenServiceResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     
     private final SignupService signupService;
+    private final LoginService loginService;
+    private final RefreshTokenService refreshTokenService;
     
     /**
      * 이메일 회원가입
@@ -28,6 +39,31 @@ public class AuthController {
     public ApiResponse<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
         SignupServiceResponse serviceResponse = signupService.signup(request.toServiceRequest());
         SignupResponse response = SignupResponse.from(serviceResponse);
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * 이메일 로그인
+     */
+    @PostMapping("/login/email")
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginServiceResponse serviceResponse = loginService.login(request.toServiceRequest());
+        LoginResponse response = LoginResponse.from(serviceResponse);
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * 토큰 재발급
+     */
+    @PostMapping("/refresh")
+    public ApiResponse<RefreshTokenResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        RefreshTokenServiceResponse serviceResponse = refreshTokenService.refreshToken(
+                RefreshTokenServiceRequest.from(request.refreshToken())
+        );
+        RefreshTokenResponse response = new RefreshTokenResponse(
+                serviceResponse.accessToken(),
+                serviceResponse.refreshToken()
+        );
         return ApiResponse.success(response);
     }
 }

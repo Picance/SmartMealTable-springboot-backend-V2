@@ -127,4 +127,14 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
 - 지출내역 파싱 구현 코드는 legacy/src/main/java/com/stcom/smartmealtable/component/creditmessage 를 참고할 것 (재활용)
 
 ## 주의사항
-IMPLEMENTATION_PROGRESS는 100% 신뢰할 수 있는 문서가 아님. 항상 사실 여부를 확인하고 진행할 것. 문서에는 구현되어있지 않다고 나와있어도, 실제로 일부 구현되어있을 수 있다.
+- IMPLEMENTATION_PROGRESS는 100% 신뢰할 수 있는 문서가 아님. 항상 사실 여부를 확인하고 진행할 것. 문서에는 구현되어있지 않다고 나와있어도, 실제로 일부 구현되어있을 수 있다.
+- Implementation 시 IMPLEMENTATION_PROGRESS 문서를 항상 최신화할 것
+- IDE에서 발생하는 오류는 무시해도 돼.
+
+## 구현 방식
+- 핵심 기능 하나를 완전히 구현
+회원가입 API (POST /auth/signup/email) 하나를 완전히 구현합니다:
+
+Domain Entity → Storage JPA Entity → Repository → Service → Controller → Test → Rest Docs
+
+이렇게 하면 전체 아키텍처의 템플릿이 완성되어, 나머지 기능들을 쉽게 추가할 수 있습니다.

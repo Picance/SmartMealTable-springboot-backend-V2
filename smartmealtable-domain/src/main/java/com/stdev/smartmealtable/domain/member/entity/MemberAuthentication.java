@@ -137,4 +137,9 @@ public class MemberAuthentication {
     public boolean hasPassword() {
         return this.hashedPassword != null;
     }
+    
+    // 비밀번호 getter (인증 시에만 사용)
+    public String getPassword() {
+        return this.hashedPassword;
+    }
 }
