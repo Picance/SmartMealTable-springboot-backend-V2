@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Transactional
 @DisplayName("회원가입 API 테스트")
-class SignupControllerTest {
+class SignupControllerTest extends AbstractContainerTest {
 
     @Autowired
     private MockMvc mockMvc;

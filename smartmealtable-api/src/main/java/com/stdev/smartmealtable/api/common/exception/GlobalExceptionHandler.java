@@ -55,15 +55,19 @@ public class GlobalExceptionHandler {
         
         FieldError fieldError = ex.getBindingResult().getFieldError();
         
+        String message = "입력값 검증에 실패했습니다.";
         Map<String, String> errorData = new HashMap<>();
+        
         if (fieldError != null) {
             errorData.put("field", fieldError.getField());
             errorData.put("reason", fieldError.getDefaultMessage());
+            // 필드 에러 메시지를 메인 메시지로 사용
+            message = fieldError.getDefaultMessage();
         }
         
         ErrorMessage errorMessage = new ErrorMessage(
                 ErrorCode.E422,
-                "입력값 검증에 실패했습니다.",
+                message,
                 errorData
         );
         

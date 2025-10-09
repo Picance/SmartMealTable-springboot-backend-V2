@@ -29,7 +29,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 @ActiveProfiles("test")
 @Transactional
 @ExtendWith(RestDocumentationExtension.class)
-public abstract class AbstractRestDocsTest {
+public abstract class AbstractRestDocsTest extends AbstractContainerTest {
     
     @Autowired
     protected MockMvc mockMvc;

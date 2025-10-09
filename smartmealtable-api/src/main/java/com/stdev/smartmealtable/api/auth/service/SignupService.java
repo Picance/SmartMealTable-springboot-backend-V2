@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.auth.service;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.stdev.smartmealtable.api.auth.service.dto.CheckEmailServiceResponse;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
@@ -61,5 +62,13 @@ public class SignupService {
         
         // 7. 응답 DTO 생성
         return SignupServiceResponse.of(savedMember, savedAuthentication);
+    }
+
+    /**
+     * 이메일 중복 검증
+     */
+    public CheckEmailServiceResponse checkEmail(String email) {
+        boolean exists = memberAuthenticationRepository.existsByEmail(email);
+        return exists ? CheckEmailServiceResponse.ofDuplicate() : CheckEmailServiceResponse.ofAvailable();
     }
 }

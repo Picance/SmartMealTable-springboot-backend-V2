@@ -39,6 +39,7 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
 **테스트 전략:**
 - 각 테스트 독립성 보장
 - Test Container 사용
+    - 병렬이 아닌 순차 실행 (메모리 제한 및 커넥션 고갈 방지)
 - 해피 패스와 에러 시나리오 모두 테스트
 - 모든 HTTP 상태코드별 에러 시나리오 테스트 (404, 400, 422)
 - 구체적인 에러 메시지 검증
@@ -80,18 +81,23 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
 
 ### Application Service는 유즈케이스에 집중한다.
 
+### Domain Service는 비즈니스 로직에 집중한다.
+
 ## 모듈
 ### **api**
 - 독립적으로 실행 가능하며, storage 모듈을 제외한 다른 모듈과 협력하여 기능을 처리하는 모듈
-
+- application service는 비즈니스 로직보단, 큼직한 application 동작 단위로 구성된다.
+    - 비즈니스 로직은 domain 모듈의 service에서 처리한다.
 - 예) controller, Application Service, Controller Advice, Interceptor, ArgumentResolver ...
 
 ### **domain**
 - domain 모듈에는 애플리케이션 로직은 배제하고 entity CRUD 등 domain 자체의 로직인 도메인 로직, 핵심 비즈니스 로직만 포함되어야 합니다.
 - Repository 인터페이스 또한 이 곳에 존재합니다.
+- domain service 클래스또한 이 곳에 존재합니다.
 
 - Spring Bean Container 라이브러리 의존성, 트랜잭션 관련 의존성을 허용합니다.
 - JPA 관련 기술은 이 모듈에 노출되지 않습니다.
+- 가급적 POJO를 지키는 것이 좋다. 
 
 ### **recommendation**
 - 음식 추천 시스템을 위한 모듈입니다.

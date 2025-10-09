@@ -115,6 +115,16 @@ public class MemberAuthentication {
         return LocalDateTime.now().isAfter(passwordExpiresAt);
     }
 
+    // 도메인 로직: 비밀번호 검증
+    public boolean verifyPassword(String rawPassword) {
+        if (this.hashedPassword == null) {
+            return false;  // 소셜 로그인 계정
+        }
+        return at.favre.lib.crypto.bcrypt.BCrypt.verifyer()
+                .verify(rawPassword.toCharArray(), this.hashedPassword)
+                .verified;
+    }
+
     // 도메인 로직: 비밀번호 만료 임박 여부 (7일 전)
     public boolean isPasswordExpiringSoon() {
         if (passwordExpiresAt == null) {

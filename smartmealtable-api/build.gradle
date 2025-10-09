@@ -42,6 +42,10 @@ ext {
 tasks.named('test') {
     outputs.dir snippetsDir
     useJUnitPlatform()
+    
+    // TestContainers 병렬 실행 방지: 순차 실행
+    maxParallelForks = 1
+    forkEvery = 1  // 각 테스트 클래스마다 새로운 JVM
 }
 
 tasks.named('asciidoctor') {

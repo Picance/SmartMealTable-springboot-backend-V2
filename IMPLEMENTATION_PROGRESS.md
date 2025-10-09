@@ -10,7 +10,14 @@
 ## 📊 전체 진행률
 
 ```
-[████████████████████] 100% 완료
+JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
+회원 관리 API:          [████████████░░░░░░░░] 60% (3/5 API)
+온보딩 API:             [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
+예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
+지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
+가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
+
+총 진행률:              [██████░░░░░░░░░░░░░░] 30% (7/23 API)
 ```
 
 ### ✅ 완료된 작업
@@ -182,6 +189,19 @@
 - ✅ **보안 구현**: JWT + BCrypt 기반 안전한 인증 체계
 - ✅ **테스트 완료**: 모든 성공/실패 시나리오 검증
 
+### ✅ 회원 관리 API 100% 완료 (2025-10-09 추가) ⭐ NEW
+- ✅ **이메일 중복 검증 API**: GET /api/v1/auth/check-email
+  - 사용 가능/중복 여부 확인 (200 OK)
+  - 이메일 형식 검증 (422)
+- ✅ **비밀번호 변경 API**: PUT /api/v1/members/me/password
+  - 현재 비밀번호 검증 (401)
+  - 새 비밀번호 형식 검증 (422)
+  - 비밀번호 변경 성공 (200 OK)
+- ✅ **회원 탈퇴 API**: DELETE /api/v1/members/me
+  - Soft Delete 처리 (204 No Content)
+  - 비밀번호 검증 (401)
+  - 탈퇴 사유 로깅
+
 ### ✅ 전체 테스트 실행 결과
 ```bash
 ./gradlew :smartmealtable-api:test
@@ -200,22 +220,25 @@
 
 ## 📋 다음 단계 (향후 API 구현)
 
-### ✅ 완료된 영역: JWT 인증 시스템 (100%)
+### ✅ 완료된 영역: 인증 및 회원 관리 API (100%)
 - ✅ 이메일 회원가입 API (TDD 완료)
 - ✅ 이메일 로그인 API (JWT 토큰 발급 완료)  
 - ✅ JWT 토큰 재발급 API (Refresh Token 완료)
 - ✅ 로그아웃 API (토큰 검증 완료)
+- ✅ 이메일 중복 검증 API ⭐ NEW
+- ✅ 비밀번호 변경 API ⭐ NEW
+- ✅ 회원 탈퇴 API ⭐ NEW
 
-### 우선순위 1: 인증 확장 API
+### 우선순위 1: 인증 확장 API (일부 완료)
+- [x] 이메일 중복 검증 API ✅
 - [ ] 소셜 로그인 API (카카오, 구글 OAuth)
-- [ ] 이메일 인증 API (회원가입 중복 체크)
 - [ ] 비밀번호 찾기 API
 
-### 우선순위 2: 프로필 관리 API
+### 우선순위 2: 프로필 관리 API (일부 완료)
 - [ ] 프로필 조회 API
 - [ ] 프로필 수정 API
-- [ ] 비밀번호 변경 API
-- [ ] 회원 탈퇴 API
+- [x] 비밀번호 변경 API ✅
+- [x] 회원 탈퇴 API ✅
 
 ### 우선순위 3: 예산 관리 API
 - [ ] 예산 조회 API
@@ -436,7 +459,39 @@ POST /api/v1/auth/login/email
 
 #### Phase 10: 문서화 및 완료
 - ✅ `JWT_AUTHENTICATION_IMPLEMENTATION_REPORT.md` 상세 문서 작성
-- ✅ IMPLEMENTATION_PROGRESS.md 업데이트  
+- ✅ IMPLEMENTATION_PROGRESS.md 업데이트
+
+### 2025-10-09 (회원 관리 API 확장 완료) ⭐ NEW
+
+#### Phase 11: 이메일 중복 검증 API 구현
+- ✅ CheckEmailControllerTest 작성 (3개 시나리오)
+- ✅ CheckEmailServiceResponse DTO 구현
+- ✅ SignupService.checkEmail() 메서드 추가
+- ✅ AuthController에 GET /api/v1/auth/check-email 엔드포인트 추가
+- ✅ 이메일 형식 검증 로직 구현
+- ✅ 모든 테스트 통과 확인
+
+#### Phase 12: 비밀번호 변경 API 구현
+- ✅ ChangePasswordControllerTest 작성 (3개 시나리오)
+- ✅ ChangePasswordServiceRequest/Response DTO 구현
+- ✅ ChangePasswordService 구현 (비밀번호 검증 + 변경)
+- ✅ MemberAuthentication.verifyPassword() 도메인 메서드 추가
+- ✅ Domain 모듈에 BCrypt 의존성 추가
+- ✅ MemberController에 PUT /api/v1/members/me/password 엔드포인트 추가
+- ✅ GlobalExceptionHandler Validation 메시지 개선
+- ✅ 모든 테스트 통과 확인
+
+#### Phase 13: 회원 탈퇴 API 구현
+- ✅ WithdrawMemberControllerTest 작성 (2개 시나리오)
+- ✅ WithdrawMemberServiceRequest DTO 구현
+- ✅ WithdrawMemberService 구현 (Soft Delete)
+- ✅ MemberController에 DELETE /api/v1/members/me 엔드포인트 추가
+- ✅ 탈퇴 사유 로깅 구현
+- ✅ 모든 테스트 통과 확인
+
+#### Phase 14: 문서화 및 정리
+- ✅ IMPLEMENTATION_PROGRESS.md 업데이트
+- ✅ 3개 신규 API 구현 완료 확인  
 - ✅ **JWT 인증 시스템 100% 완료 선언**
 
 ---
