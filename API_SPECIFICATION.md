@@ -1272,6 +1272,12 @@ Authorization: Bearer {access_token}
         "budget": 3000,
         "spent": 2000,
         "remaining": 1000
+      },
+      {
+        "mealType": "ETC",
+        "budget": 3000,
+        "spent": 2000,
+        "remaining": 1000
       }
     ]
   },
@@ -1293,7 +1299,8 @@ Authorization: Bearer {access_token}
   "mealBudgets": {
     "BREAKFAST": 3500,
     "LUNCH": 5000,
-    "DINNER": 3500
+    "DINNER": 3500,
+    "ETC": 2000
   }
 }
 ```
@@ -1350,7 +1357,8 @@ Authorization: Bearer {access_token}
   "mealBudgets": {
     "BREAKFAST": 3500,
     "LUNCH": 5000,
-    "DINNER": 3500
+    "DINNER": 3500,
+    "ETC": 2000
   },
   "applyForward": true
 }
@@ -1384,6 +1392,10 @@ Authorization: Bearer {access_token}
       },
       {
         "mealType": "DINNER",
+        "budget": 3500
+      },
+      {
+        "mealType": "ETC",
         "budget": 3500
       }
     ],
@@ -1677,8 +1689,6 @@ Authorization: Bearer {access_token}
 **Query Parameters:**
 ```
 ?keyword=치킨
-&latitude=37.497942
-&longitude=127.027621
 &radius=0.5
 &categoryId=5
 &isOpen=true
@@ -1690,13 +1700,16 @@ Authorization: Bearer {access_token}
 
 **Parameters:**
 - `keyword` (optional): 가게명 또는 카테고리 검색어
-- `latitude`, `longitude`: 사용자 위치 (필수)
 - `radius` (optional): 반경 (0.5, 1, 2 km) - 기본값: 0.5
 - `categoryId` (optional): 카테고리 필터
 - `isOpen` (optional): true면 영업 중만 조회
 - `storeType` (optional): `CAMPUS_RESTAURANT`, `RESTAURANT`, `ALL` (기본값: ALL)
 - `sortBy` (optional): `distance`, `reviewCount`, `priceAsc`, `priceDesc`, `favoriteCount`, `viewCount`
 - `page`, `size`: 페이징
+
+**Note:**
+- 사용자의 **기본 주소(primary address)**를 기준으로 거리 계산
+- 기본 주소가 없으면 404 에러 반환
 
 **Response (200):**
 ```json
@@ -1735,6 +1748,11 @@ Authorization: Bearer {access_token}
 ### 7.2 가게 상세 조회
 
 **Endpoint:** `GET /api/v1/stores/{storeId}`
+
+**설명:**
+- 가게 상세 정보를 조회합니다.
+- 조회 시 `store_view_history` 테이블에 조회 이력이 자동으로 기록됩니다.
+- `view_count`가 1 증가합니다.
 
 **Response (200):**
 ```json
@@ -1871,7 +1889,10 @@ Authorization: Bearer {access_token}
 }
 ```
 
-**Note:** 조회 시 `store_view_history`에 기록되고 `view_count` 증가
+**Note:** 
+- 조회 시 `store_view_history` 테이블에 자동 기록
+- `view_count` 1 증가
+- 조회 이력 기록 시점: 사용자가 가게 목록에서 가게 카드를 터치하여 상세 페이지로 진입한 시점
 
 ---
 
@@ -1910,8 +1931,6 @@ Authorization: Bearer {access_token}
 **Request:**
 ```json
 {
-  "latitude": 37.497942,
-  "longitude": 127.027621,
   "radius": 0.5,
   "excludeDisliked": false,
   "isOpenOnly": false,
@@ -1921,12 +1940,15 @@ Authorization: Bearer {access_token}
 ```
 
 **Parameters:**
-- `latitude`, `longitude`: 사용자 현재 위치 (선택, 없으면 기본 주소 사용)
 - `radius`: 0.5, 1, 2 (km) - 기본값: 0.5
 - `excludeDisliked`: 불호 음식 제외 여부 - 기본값: false
 - `isOpenOnly`: 영업 중만 조회 - 기본값: false
 - `storeType`: `ALL`, `CAMPUS_RESTAURANT`, `RESTAURANT` - 기본값: ALL
 - `sortBy`: 정렬 기준 (기본값: recommendation)
+
+**Note:**
+- 사용자의 **기본 주소(primary address)**를 기준으로 추천 제공
+- 기본 주소가 없으면 404 에러 반환
 
 **Response (200):**
 ```json
@@ -2098,27 +2120,62 @@ Authorization: Bearer {access_token}
 
 **Endpoint:** `GET /api/v1/favorites`
 
+**Query Parameters:**
+```
+?sortBy=displayOrder
+&isOpenOnly=false
+&categoryId=5
+&page=0
+&size=20
+```
+
+**Parameters:**
+- `sortBy` (optional): 정렬 기준
+  - `displayOrder`: 사용자 지정 순서 (기본값)
+  - `name`: 이름 가나다순
+  - `reviewCount`: 리뷰 많은 순
+  - `distance`: 거리 순 (기본 주소 기준)
+  - `createdAt`: 최근 추가 순
+- `isOpenOnly` (optional): true면 현재 영업 중인 가게만 조회 (기본값: false)
+- `categoryId` (optional): 특정 카테고리 필터링
+- `page`, `size`: 페이징 (기본값: page=0, size=20)
+
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
-  "data": [
-    {
-      "favoriteId": 301,
-      "storeId": 101,
-      "storeName": "교촌치킨 강남점",
-      "categoryName": "치킨",
-      "address": "서울특별시 강남구 테헤란로 123",
-      "averagePrice": 18000,
-      "reviewCount": 1523,
-      "displayOrder": 1,
-      "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
-      "createdAt": "2025-09-15T10:20:30.000Z"
-    }
-  ],
+  "data": {
+    "favorites": [
+      {
+        "favoriteId": 301,
+        "storeId": 101,
+        "storeName": "교촌치킨 강남점",
+        "categoryId": 5,
+        "categoryName": "치킨",
+        "address": "서울특별시 강남구 테헤란로 123",
+        "distance": 0.8,
+        "averagePrice": 18000,
+        "reviewCount": 1523,
+        "displayOrder": 1,
+        "isOpenNow": true,
+        "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
+        "createdAt": "2025-09-15T10:20:30.000Z"
+      }
+    ],
+    "totalCount": 15,
+    "openCount": 12,
+    "page": 0,
+    "size": 20,
+    "totalPages": 1
+  },
   "error": null
 }
 ```
+
+**Note:**
+- `distance`: 사용자의 기본 주소(primary address)를 기준으로 계산
+- `isOpenNow`: 현재 시간 기준 영업 여부
+- `openCount`: 전체 즐겨찾기 중 현재 영업 중인 가게 수
 
 ---
 
@@ -2319,7 +2376,7 @@ Authorization: Bearer {access_token}
   "result": "SUCCESS",
   "data": {
     "recommendationType": "BALANCED",
-    "preferences": [
+    "categoryPreferences": [
       {
         "preferenceId": 701,
         "categoryId": 1,
@@ -2332,17 +2389,42 @@ Authorization: Bearer {access_token}
         "categoryName": "일식",
         "weight": -100
       }
-    ]
+    ],
+    "foodPreferences": {
+      "liked": [
+        {
+          "foodPreferenceId": 801,
+          "foodId": 12,
+          "foodName": "김치찌개",
+          "categoryName": "한식",
+          "createdAt": "2025-09-01T10:00:00.000Z"
+        }
+      ],
+      "disliked": [
+        {
+          "foodPreferenceId": 802,
+          "foodId": 35,
+          "foodName": "생굴",
+          "categoryName": "일식",
+          "createdAt": "2025-09-01T10:00:00.000Z"
+        }
+      ]
+    }
   },
   "error": null
 }
 ```
 
+**Note:**
+- `categoryPreferences`: 카테고리 기반 선호도 (weight: 100=좋아요, 0=보통, -100=싫어요)
+- `foodPreferences.liked`: 좋아하는 개별 음식 목록
+- `foodPreferences.disliked`: 싫어하는 개별 음식 목록
+
 ---
 
-### 10.9 선호도 수정
+### 10.9 카테고리 선호도 수정
 
-**Endpoint:** `PUT /api/v1/members/me/preferences`
+**Endpoint:** `PUT /api/v1/members/me/preferences/categories`
 
 **Request:**
 ```json
@@ -2378,14 +2460,89 @@ Authorization: Bearer {access_token}
 
 ---
 
+### 10.10 개별 음식 선호도 추가
+
+**Endpoint:** `POST /api/v1/members/me/preferences/foods`
+
+**Request:**
+```json
+{
+  "foodId": 12,
+  "isPreferred": true
+}
+```
+
+**Parameters:**
+- `foodId`: 음식 ID (필수)
+- `isPreferred`: true=좋아요, false=싫어요 (필수)
+
+**Response (201):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "foodPreferenceId": 803,
+    "foodId": 12,
+    "foodName": "김치찌개",
+    "categoryName": "한식",
+    "isPreferred": true,
+    "createdAt": "2025-10-08T12:34:56.789Z"
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `409`: 이미 해당 음식에 대한 선호도가 등록되어 있음
+
+---
+
+### 10.11 개별 음식 선호도 변경
+
+**Endpoint:** `PUT /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+
+**Request:**
+```json
+{
+  "isPreferred": false
+}
+```
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "foodPreferenceId": 803,
+    "foodId": 12,
+    "foodName": "김치찌개",
+    "categoryName": "한식",
+    "isPreferred": false,
+    "updatedAt": "2025-10-08T12:34:56.789Z"
+  },
+  "error": null
+}
+```
+
+---
+
+### 10.12 개별 음식 선호도 삭제
+
+**Endpoint:** `DELETE /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+
+**Response (204):** No Content
+
+---
+
 ## 11. 홈 화면 API
 
 ### 11.1 홈 대시보드 조회
 
-**Endpoint:** `GET /api/v1/home/dashboard?latitude={lat}&longitude={lng}`
+**Endpoint:** `GET /api/v1/home/dashboard`
 
-**Query Parameters:**
-- `latitude`, `longitude` (optional): 현재 GPS 위치. 없으면 기본 주소 사용
+**설명:** 
+- 사용자의 **기본 주소(primary address)**를 기준으로 홈 대시보드 정보를 제공합니다.
+- 기본 주소가 없는 경우 에러를 반환합니다.
 
 **Response (200):**
 ```json
@@ -2393,10 +2550,13 @@ Authorization: Bearer {access_token}
   "result": "SUCCESS",
   "data": {
     "location": {
-      "currentAddress": "서울특별시 강남구 테헤란로 123",
+      "addressHistoryId": 456,
+      "addressAlias": "우리집",
+      "fullAddress": "서울특별시 강남구 테헤란로 123 테헤란빌딩 101동 101호",
+      "roadAddress": "서울특별시 강남구 테헤란로 123",
       "latitude": 37.497942,
       "longitude": 127.027621,
-      "source": "GPS"
+      "isPrimary": true
     },
     "budget": {
       "todaySpent": 12500,
@@ -2474,6 +2634,28 @@ Authorization: Bearer {access_token}
   "error": null
 }
 ```
+
+**Error Cases:**
+
+*404 Not Found - 등록된 주소가 없음:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "ADDRESS_002",
+    "message": "등록된 주소가 없습니다. 주소를 먼저 등록해주세요.",
+    "data": {
+      "suggestion": "주소 등록 화면으로 이동"
+    }
+  }
+}
+```
+
+**Note:**
+- `location`: 사용자의 기본 주소(isPrimary=true) 정보
+- `distance`: 기본 주소를 기준으로 계산
+- `recommendedMenus`, `recommendedStores`: 기본 주소 기준 추천
 
 ---
 
@@ -2619,6 +2801,7 @@ Authorization: Bearer {access_token}
   "storeId": 101,
   "foodId": 201,
   "quantity": 2,
+  "replaceCart": false,
   "options": [
     {
       "optionName": "맵기",
@@ -2627,6 +2810,13 @@ Authorization: Bearer {access_token}
   ]
 }
 ```
+
+**Parameters:**
+- `storeId`: 가게 ID (필수)
+- `foodId`: 음식 ID (필수)
+- `quantity`: 수량 (필수, 1 이상)
+- `replaceCart`: 다른 가게의 상품이 있을 때 자동으로 기존 장바구니를 비우고 추가할지 여부 (선택, 기본값: false)
+- `options`: 음식 옵션 (선택)
 
 **Response (201):**
 ```json
@@ -2638,14 +2828,40 @@ Authorization: Bearer {access_token}
     "foodName": "김치찌개",
     "quantity": 2,
     "totalPrice": 14000,
-    "cartTotalAmount": 14000
+    "cartTotalAmount": 14000,
+    "replacedCart": false
   },
   "error": null
 }
 ```
 
+**Response Fields:**
+- `replacedCart`: 기존 장바구니를 자동으로 비웠는지 여부 (replaceCart=true일 때)
+
 **Error Cases:**
-- `409`: 다른 가게의 상품이 장바구니에 있음 (장바구니 비우고 추가 필요)
+
+*409 Conflict - 다른 가게의 상품이 장바구니에 있음 (replaceCart=false인 경우):*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "CART_001",
+    "message": "다른 가게의 상품이 장바구니에 있습니다. 기존 장바구니를 비우고 새로운 상품을 추가하시겠습니까?",
+    "data": {
+      "currentStoreId": 102,
+      "currentStoreName": "다른집",
+      "requestedStoreId": 101,
+      "requestedStoreName": "맛있는집",
+      "suggestion": "replaceCart=true로 재요청하거나 장바구니를 먼저 비워주세요."
+    }
+  }
+}
+```
+
+**Note:**
+- `replaceCart=true`로 설정하면 다른 가게의 상품이 있어도 자동으로 기존 장바구니를 비우고 새 상품을 추가합니다.
+- 클라이언트는 409 에러 수신 시 사용자에게 확인 후 `replaceCart=true`로 재요청할 수 있습니다.
 
 ---
 
@@ -2792,9 +3008,13 @@ Authorization: Bearer {access_token}
 
 **Endpoint:** `GET /api/v1/maps/reverse-geocode?lat={latitude}&lng={longitude}`
 
+**설명:** 
+- GPS 좌표를 주소 정보로 변환합니다.
+- 주소 등록 시 현재 위치로 찾기 기능에서 사용됩니다.
+
 **Query Parameters:**
-- `lat`: 위도
-- `lng`: 경도
+- `lat`: 위도 (필수)
+- `lng`: 경도 (필수)
 
 **Response (200):**
 ```json
@@ -2807,55 +3027,92 @@ Authorization: Bearer {access_token}
     "longitude": 127.027621,
     "sido": "서울특별시",
     "sigungu": "강남구",
-    "dong": "역삼동"
+    "dong": "역삼동",
+    "buildingName": "테헤란빌딩",
+    "sigunguCode": "11680",
+    "bcode": "1168010100"
   },
   "error": null
 }
 ```
 
-**Note:** 네이버 지도 API Reverse Geocoding 래핑
+**Error Cases:**
+
+*400 Bad Request - 잘못된 좌표:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E400",
+    "message": "유효하지 않은 좌표입니다.",
+    "data": {
+      "latitude": "위도는 -90 ~ 90 범위여야 합니다.",
+      "longitude": "경도는 -180 ~ 180 범위여야 합니다."
+    }
+  }
+}
+```
+
+*503 Service Unavailable - 외부 API 오류:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "EXTERNAL_001",
+    "message": "주소 변환 서비스에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+    "data": null
+  }
+}
+```
+
+**Note:** 
+- 네이버 지도 API Reverse Geocoding 래핑
+- 주소 등록 프로세스에서 사용 (REQ-ONBOARD-203b)
 
 ---
 
-### 13.3 현재 위치 기준 변경
+### 13.3 GPS 기반 주소 등록 프로세스
 
-**Endpoint:** `PUT /api/v1/members/me/current-location`
+**설명:** GPS 좌표를 이용한 주소 등록은 다음과 같은 클라이언트-서버 협력 프로세스로 진행됩니다.
 
-**Request:**
-```json
-{
-  "type": "ADDRESS",
-  "addressHistoryId": 456
-}
-```
+**프로세스 흐름:**
 
-**또는 GPS 직접 지정:**
-```json
-{
-  "type": "GPS",
-  "latitude": 37.497942,
-  "longitude": 127.027621
-}
-```
+1. **[Client]** 사용자가 '현재 위치로 찾기' 버튼 클릭
+2. **[Client]** 기기 OS로부터 GPS 좌표(latitude, longitude) 획득
+3. **[Client]** 획득한 좌표를 중심으로 지도 표시, 마커(핀) 표시
+4. **[Client]** 사용자가 마커를 드래그하여 위치 미세 조정 가능
+5. **[Client]** 위치 확정 후, `GET /api/v1/maps/reverse-geocode` API 호출
+6. **[Server]** 네이버 지도 API를 통해 좌표 → 주소 변환
+7. **[Server]** 구조화된 주소 데이터 응답
+8. **[Client]** 응답받은 주소를 입력 필드에 자동 채움
+9. **[Client]** 사용자가 상세 주소(동/호수) 직접 입력
+10. **[Client]** 완성된 주소 정보로 `POST /api/v1/onboarding/address` 또는 `POST /api/v1/members/me/addresses` API 호출
+11. **[Server]** 주소 저장 및 응답
 
-**Enum Values:**
-- `type`: `ADDRESS` (저장된 주소 사용), `GPS` (GPS 좌표 직접 사용)
+**관련 API:**
+- Step 5: `GET /api/v1/maps/reverse-geocode` (좌표 → 주소 변환)
+- Step 10: `POST /api/v1/onboarding/address` (온보딩) 또는 `POST /api/v1/members/me/addresses` (일반)
 
-**Response (200):**
-```json
-{
-  "result": "SUCCESS",
-  "data": {
-    "type": "ADDRESS",
-    "addressHistoryId": 456,
-    "address": "서울특별시 강남구 테헤란로 123",
-    "latitude": 37.497942,
-    "longitude": 127.027621,
-    "updatedAt": "2025-10-08T12:34:56.789Z"
-  },
-  "error": null
-}
-```
+**클라이언트 구현 고려사항:**
+- GPS 권한 확인 및 요청
+- 위치 정보 취득 실패 시 에러 처리
+- 네트워크 오류 시 재시도 로직
+- 지도 라이브러리 마커 드래그 이벤트 처리
+
+---
+
+### 13.4 현재 위치 기준 변경 (Deprecated)
+
+**Status:** ⚠️ DEPRECATED - 이 API는 더 이상 사용되지 않습니다.
+
+**사유:** 
+- 홈 대시보드는 항상 기본 주소(primary address)를 기준으로 동작합니다.
+- 위치 기준 변경이 필요한 경우, 기본 주소 설정(`PUT /api/v1/members/me/addresses/{addressHistoryId}/primary`)을 사용하세요.
+
+**대체 API:**
+- `PUT /api/v1/members/me/addresses/{addressHistoryId}/primary` (10.7 기본 주소 설정)
 
 ---
 
@@ -2984,6 +3241,7 @@ Authorization: Bearer {access_token}
 | `BUDGET_001` | 422 | 예산은 0 이상이어야 함 |
 | `ADDRESS_001` | 422 | 주소 검증 실패 |
 | `FAVORITE_001` | 409 | 이미 즐겨찾기에 추가됨 |
+| `ADDRESS_002` | 404 | 등록된 주소가 없음 |
 | `SERVER_001` | 500 | 내부 서버 오류 |
 | `EXTERNAL_001` | 503 | 외부 API 호출 실패 |
 
