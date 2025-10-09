@@ -9,16 +9,44 @@
 
 ## 📊 전체 진행률
 
-```
-JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
-회원 관리 API:          [████████████████████] 100% (5/5 API)
-소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
-온보딩 API:             [████████████████████] 100% (4/4 API) ⭐ 취향 설정 추가
-예산 관리 API:          [████████████████████] 100% (4/4 API) 🎉 수정 API 완료
-지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
-가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
+> **전체 API 엔드포인트**: 70개 (API_SPECIFICATION.md 기준)
 
-총 진행률:              [████████████████████] 100% (23/27 API)
+```
+3. 인증 및 회원 관리:      [█████████████░░░░░░░]  69% (9/13 API)
+4. 온보딩:                [███████░░░░░░░░░░░░░]  36% (4/11 API)
+5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
+6. 지출 내역:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/7 API)
+7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
+8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
+9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
+10. 프로필 및 설정:        [░░░░░░░░░░░░░░░░░░░░]   0% (0/12 API)
+11. 홈 화면:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
+12. 장바구니:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/6 API)
+13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
+14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
+
+총 진행률:                [█████░░░░░░░░░░░░░░░]  24% (17/70 API)
+```
+
+### 📋 섹션별 상세 현황
+
+#### ✅ 완료 (17개)
+- **인증 및 회원**: 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
+- **온보딩**: 프로필설정, 주소등록, 예산설정, 취향설정
+- **예산 관리**: 월별조회, 일별조회, 예산수정, 일괄적용
+
+#### ⚠️ 미구현 (53개)
+- **인증 및 회원** (4개): 소셜계정 연동 관리(3), 비밀번호 만료 관리(2) - 5개 → 실제 4개
+- **온보딩** (7개): 약관동의, 그룹목록, 카테고리목록, 약관조회(2), 음식목록, 음식선호도저장
+- **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
+- **가게 관리** (3개): 목록조회, 상세조회, 자동완성검색
+- **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
+- **즐겨찾기** (4개): 추가, 목록조회, 순서변경, 삭제
+- **프로필 및 설정** (12개): 프로필조회/수정, 주소CRUD(5), 선호도CRUD(5)
+- **홈 화면** (3개): 대시보드조회, 온보딩상태, 예산확인처리
+- **장바구니** (6개): 조회, 추가, 수량변경, 삭제, 전체비우기, 지출등록
+- **지도 및 위치** (4개): 주소검색, 역지오코딩, GPS등록, 위치변경
+- **알림 및 설정** (4개): 알림설정조회/변경, 앱설정조회, 추적설정변경
 ```
 
 ### ✅ 완료된 작업
@@ -1315,6 +1343,186 @@ POST /api/v1/auth/login/email
    - `BudgetController.updateDailyBudget()`: PUT /api/v1/budgets/daily/{date}
    - `UpdateDailyBudgetRequest`: 일일 예산 + applyForward 플래그
    - `UpdateDailyBudgetResponse`: 수정 결과 + 메시지
+
+---
+
+## 📝 미구현 API 상세 목록 (53개)
+
+### 🔐 3. 인증 및 회원 관리 (4개 미구현)
+
+#### 3.10 소셜 계정 연동 관리 (3개)
+- ❌ `GET /api/v1/members/me/social-accounts` - 연동된 소셜 계정 목록 조회
+- ❌ `POST /api/v1/members/me/social-accounts` - 소셜 계정 추가 연동
+- ❌ `DELETE /api/v1/members/me/social-accounts/{socialAccountId}` - 소셜 계정 연동 해제
+
+#### 3.11 비밀번호 만료 관리 (2개)
+- ❌ `GET /api/v1/members/me/password/expiry-status` - 비밀번호 만료 상태 조회
+- ❌ `POST /api/v1/members/me/password/extend-expiry` - 비밀번호 만료일 연장
+
+---
+
+### 👋 4. 온보딩 API (7개 미구현)
+
+#### 4.5 약관 관리 (3개)
+- ❌ `POST /api/v1/onboarding/policy-agreements` - 약관 동의
+- ❌ `GET /api/v1/policies` - 약관 목록 조회
+- ❌ `GET /api/v1/policies/{policyId}` - 약관 상세 조회
+
+#### 4.6~4.7 조회 API (2개)
+- ❌ `GET /api/v1/groups?type={type}&name={name}` - 그룹 목록 조회 (페이징)
+- ❌ `GET /api/v1/categories` - 카테고리 목록 조회
+
+#### 4.9~4.10 음식 선호도 (2개)
+- ❌ `GET /api/v1/onboarding/foods?categoryId={categoryId}` - 온보딩용 음식 목록 조회
+- ❌ `POST /api/v1/onboarding/food-preferences` - 개별 음식 선호도 저장
+
+---
+
+### 💰 6. 지출 내역 API (7개 미구현)
+
+#### 지출 CRUD (6개)
+- ❌ `POST /api/v1/expenditures/parse-sms` - SMS 파싱
+- ❌ `POST /api/v1/expenditures` - 지출 내역 등록
+- ❌ `GET /api/v1/expenditures?startDate=&endDate=&mealType=` - 지출 내역 목록 조회
+- ❌ `GET /api/v1/expenditures/{expenditureId}` - 지출 내역 상세 조회
+- ❌ `PUT /api/v1/expenditures/{expenditureId}` - 지출 내역 수정
+- ❌ `DELETE /api/v1/expenditures/{expenditureId}` - 지출 내역 삭제
+
+#### 통계 (1개)
+- ❌ `GET /api/v1/expenditures/statistics/daily?year=&month=` - 일별 지출 통계 조회
+
+---
+
+### 🏪 7. 가게 관리 API (3개 미구현)
+
+- ❌ `GET /api/v1/stores` - 가게 목록 조회 (필터/정렬)
+- ❌ `GET /api/v1/stores/{storeId}` - 가게 상세 조회
+- ❌ `GET /api/v1/stores/autocomplete?keyword={keyword}` - 가게 검색 (자동완성)
+
+---
+
+### 🎯 8. 추천 시스템 API (3개 미구현)
+
+- ❌ `POST /api/v1/recommendations` - 개인화 추천 (기본)
+- ❌ `GET /api/v1/recommendations/{storeId}/scores` - 추천 점수 상세 조회
+- ❌ `PUT /api/v1/members/me/recommendation-type` - 추천 유형 변경
+
+---
+
+### ⭐ 9. 즐겨찾기 API (4개 미구현)
+
+- ❌ `POST /api/v1/favorites` - 즐겨찾기 추가
+- ❌ `GET /api/v1/favorites` - 즐겨찾기 목록 조회 (필터/정렬)
+- ❌ `PUT /api/v1/favorites/order` - 즐겨찾기 순서 변경
+- ❌ `DELETE /api/v1/favorites/{favoriteId}` - 즐겨찾기 삭제
+
+---
+
+### 👤 10. 프로필 및 설정 API (12개 미구현)
+
+#### 프로필 (2개)
+- ❌ `GET /api/v1/members/me` - 내 프로필 조회
+- ❌ `PUT /api/v1/members/me` - 프로필 수정
+
+#### 주소 관리 (5개)
+- ❌ `GET /api/v1/members/me/addresses` - 주소 목록 조회
+- ❌ `POST /api/v1/members/me/addresses` - 주소 추가
+- ❌ `PUT /api/v1/members/me/addresses/{addressHistoryId}` - 주소 수정
+- ❌ `DELETE /api/v1/members/me/addresses/{addressHistoryId}` - 주소 삭제
+- ❌ `PUT /api/v1/members/me/addresses/{addressHistoryId}/primary` - 기본 주소 설정
+
+#### 선호도 관리 (5개)
+- ❌ `GET /api/v1/members/me/preferences` - 선호도 조회
+- ❌ `PUT /api/v1/members/me/preferences/categories` - 카테고리 선호도 수정
+- ❌ `POST /api/v1/members/me/preferences/foods` - 개별 음식 선호도 추가
+- ❌ `PUT /api/v1/members/me/preferences/foods/{foodPreferenceId}` - 개별 음식 선호도 변경
+- ❌ `DELETE /api/v1/members/me/preferences/foods/{foodPreferenceId}` - 개별 음식 선호도 삭제
+
+---
+
+### 🏠 11. 홈 화면 API (3개 미구현)
+
+- ❌ `GET /api/v1/home/dashboard` - 홈 대시보드 조회
+- ❌ `GET /api/v1/members/me/onboarding-status` - 온보딩 상태 조회
+- ❌ `POST /api/v1/members/me/monthly-budget-confirmed` - 월별 예산 확인 처리
+
+---
+
+### 🛒 12. 장바구니 API (6개 미구현)
+
+- ❌ `GET /api/v1/cart` - 장바구니 조회
+- ❌ `POST /api/v1/cart/items` - 장바구니에 상품 추가
+- ❌ `PUT /api/v1/cart/items/{cartItemId}` - 장바구니 상품 수량 변경
+- ❌ `DELETE /api/v1/cart/items/{cartItemId}` - 장바구니 상품 삭제
+- ❌ `DELETE /api/v1/cart` - 장바구니 전체 비우기
+- ❌ `POST /api/v1/cart/checkout` - 장바구니 → 지출 등록
+
+---
+
+### 🗺️ 13. 지도 및 위치 API (4개 미구현)
+
+- ❌ `GET /api/v1/maps/search-address?keyword={keyword}` - 주소 검색 (Geocoding)
+- ❌ `GET /api/v1/maps/reverse-geocode?lat={lat}&lng={lng}` - 좌표 → 주소 변환
+- ❌ GPS 기반 주소 등록 프로세스 (문서화 항목)
+- ❌ 현재 위치 기준 변경 (Deprecated)
+
+---
+
+### 🔔 14. 알림 및 설정 API (4개 미구현)
+
+- ❌ `GET /api/v1/members/me/notification-settings` - 알림 설정 조회
+- ❌ `PUT /api/v1/members/me/notification-settings` - 알림 설정 변경
+- ❌ `GET /api/v1/settings/app` - 앱 설정 조회
+- ❌ `PUT /api/v1/settings/app/tracking` - 사용자 추적 설정 변경
+
+---
+
+## 🎯 다음 구현 우선순위 (권장)
+
+### Phase 1: 온보딩 완성 (7개) 🔥
+온보딩 플로우를 완전히 마무리하여 신규 회원이 서비스를 시작할 수 있도록 합니다.
+- 4.5 약관 동의 API
+- 4.6 그룹 목록 조회
+- 4.7 카테고리 목록 조회
+- 4.8 약관 목록/상세 조회
+- 4.9 온보딩용 음식 목록 조회
+- 4.10 개별 음식 선호도 저장
+
+### Phase 2: 프로필 관리 (12개) ⭐
+사용자가 자신의 정보를 관리할 수 있는 핵심 기능입니다.
+- 10.1~10.2 프로필 조회/수정
+- 10.3~10.7 주소 CRUD (5개)
+- 10.8~10.12 선호도 CRUD (5개)
+
+### Phase 3: 지출 내역 (7개) 💰
+서비스의 핵심 비즈니스 로직인 지출 관리 기능입니다.
+- 6.1 SMS 파싱
+- 6.2~6.6 지출 CRUD (5개)
+- 6.7 일별 지출 통계
+
+### Phase 4: 가게/추천/즐겨찾기 (10개) 🏪
+사용자 경험을 향상시키는 편의 기능입니다.
+- 7.1~7.3 가게 관리 (3개)
+- 8.1~8.3 추천 시스템 (3개)
+- 9.1~9.4 즐겨찾기 (4개)
+
+### Phase 5: 부가 기능 (17개) 🔧
+장바구니, 홈 화면, 지도, 알림 등 서비스를 완성하는 기능들입니다.
+- 3.10~3.11 소셜 계정/비밀번호 관리 (5개)
+- 11.1~11.3 홈 화면 (3개)
+- 12.1~12.6 장바구니 (6개)
+- 13.1~13.2 지도/위치 (2개)
+- 14.1~14.4 알림/설정 (4개) - 실제 3개
+
+---
+
+## 📌 참고사항
+
+- **API 문서 기준**: `API_SPECIFICATION.md` (2025-10-08 작성)
+- **총 엔드포인트**: 70개
+- **완료**: 17개 (24%)
+- **미구현**: 53개 (76%)
+- **마지막 업데이트**: 2025-10-10
 
 **Response 메시지**:
 - applyForward=true: "{날짜}부터 이후 모든 예산이 수정되었습니다. (총 {개수}개)"
