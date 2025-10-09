@@ -31,4 +31,12 @@ public interface GroupRepository {
      * 그룹 이름으로 검색
      */
     List<Group> findByNameContaining(String name);
+
+    /**
+     * 그룹 검색 (타입과 이름 조건으로 검색)
+     * @param type 그룹 타입 (optional)
+     * @param name 그룹 이름 검색어 (optional)
+     * @return 검색된 그룹 목록
+     */
+    List<Group> searchGroups(GroupType type, String name);
 }
