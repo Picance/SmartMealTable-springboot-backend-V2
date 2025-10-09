@@ -9,6 +9,7 @@ dependencies {
     implementation project(':smartmealtable-storage:db')
     implementation project(':smartmealtable-storage:cache')
     implementation project(':smartmealtable-client:auth')
+    implementation project(':smartmealtable-support')
     
     // Spring Boot Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -34,6 +35,7 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:mysql'
+    testImplementation project(':smartmealtable-support')
 }
 
 ext {

@@ -164,3 +164,165 @@ http POST https://api.smartmealtable.com/api/v1/auth/signup/email \
   email="hong@example.com" \
   password="SecureP@ss123!"
 ----
+
+[[onboarding]]
+= 온보딩 (Onboarding)
+
+회원가입 후 초기 설정 단계입니다. 프로필 설정 및 주소 등록을 포함합니다.
+
+== 인증 요구사항
+
+모든 온보딩 API는 JWT 인증이 필요합니다.
+
+[source,http]
+----
+Authorization: Bearer {access_token}
+----
+
+[[onboarding-profile]]
+== 프로필 설정
+
+`POST /api/v1/onboarding/profile`
+
+신규 회원의 닉네임과 소속 그룹을 설정합니다.
+
+=== 요청
+
+include::{snippets}/onboarding/profile/success/http-request.adoc[]
+
+==== 요청 헤더
+
+include::{snippets}/onboarding/profile/success/request-headers.adoc[]
+
+==== 요청 필드
+
+include::{snippets}/onboarding/profile/success/request-fields.adoc[]
+
+=== 성공 응답 (200 OK)
+
+include::{snippets}/onboarding/profile/success/http-response.adoc[]
+
+==== 응답 필드
+
+include::{snippets}/onboarding/profile/success/response-fields.adoc[]
+
+=== 에러 응답
+
+==== 닉네임 중복 (409 Conflict)
+
+include::{snippets}/onboarding/profile/fail-duplicate-nickname/http-response.adoc[]
+
+include::{snippets}/onboarding/profile/fail-duplicate-nickname/response-fields.adoc[]
+
+==== 그룹 미존재 (404 Not Found)
+
+include::{snippets}/onboarding/profile/fail-group-not-found/http-response.adoc[]
+
+include::{snippets}/onboarding/profile/fail-group-not-found/response-fields.adoc[]
+
+=== 예제
+
+==== cURL
+
+[source,bash]
+----
+curl -X POST https://api.smartmealtable.com/api/v1/onboarding/profile \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nickname": "길동이",
+    "groupId": 1
+  }'
+----
+
+[[onboarding-address]]
+== 주소 등록
+
+`POST /api/v1/onboarding/address`
+
+회원의 주소를 등록합니다. 주 거주지(Primary) 또는 부 거주지(Non-Primary)로 설정할 수 있습니다.
+
+=== 요청 (주 거주지)
+
+include::{snippets}/onboarding/address/register-success-primary/http-request.adoc[]
+
+==== 요청 헤더
+
+include::{snippets}/onboarding/address/register-success-primary/request-headers.adoc[]
+
+==== 요청 필드
+
+include::{snippets}/onboarding/address/register-success-primary/request-fields.adoc[]
+
+=== 성공 응답 (201 Created)
+
+include::{snippets}/onboarding/address/register-success-primary/http-response.adoc[]
+
+==== 응답 필드
+
+include::{snippets}/onboarding/address/register-success-primary/response-fields.adoc[]
+
+=== 에러 응답
+
+==== 필수 필드 누락 (422 Unprocessable Entity)
+
+include::{snippets}/onboarding/address/fail-missing-fields/http-response.adoc[]
+
+include::{snippets}/onboarding/address/fail-missing-fields/response-fields.adoc[]
+
+==== 주소 길이 초과 (422 Unprocessable Entity)
+
+include::{snippets}/onboarding/address/fail-address-too-long/http-response.adoc[]
+
+include::{snippets}/onboarding/address/fail-address-too-long/response-fields.adoc[]
+
+==== JWT 토큰 누락 (400 Bad Request)
+
+include::{snippets}/onboarding/address/fail-missing-jwt/http-response.adoc[]
+
+include::{snippets}/onboarding/address/fail-missing-jwt/response-fields.adoc[]
+
+==== 잘못된 JWT 토큰 (400 Bad Request)
+
+include::{snippets}/onboarding/address/fail-invalid-jwt/http-response.adoc[]
+
+include::{snippets}/onboarding/address/fail-invalid-jwt/response-fields.adoc[]
+
+=== 예제
+
+==== cURL (주 거주지)
+
+[source,bash]
+----
+curl -X POST https://api.smartmealtable.com/api/v1/onboarding/address \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "alias": "집",
+    "lotNumberAddress": "서울특별시 강남구 테헤란로 123",
+    "streetNameAddress": "서울특별시 강남구 테헤란로 427",
+    "detailedAddress": "위워크 삼성역점 10층",
+    "latitude": 37.5081,
+    "longitude": 127.0630,
+    "addressType": "HOME",
+    "isPrimary": true
+  }'
+----
+
+==== cURL (부 거주지)
+
+[source,bash]
+----
+curl -X POST https://api.smartmealtable.com/api/v1/onboarding/address \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "alias": "회사",
+    "streetNameAddress": "서울특별시 송파구 올림픽로 300",
+    "detailedAddress": "롯데월드타워 35층",
+    "latitude": 37.5125,
+    "longitude": 127.1025,
+    "addressType": "WORK",
+    "isPrimary": false
+  }'
+----

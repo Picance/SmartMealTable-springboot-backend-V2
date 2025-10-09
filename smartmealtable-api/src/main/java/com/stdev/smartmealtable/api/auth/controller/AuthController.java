@@ -17,9 +17,9 @@ import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.auth.service.dto.LoginServiceResponse;
 import com.stdev.smartmealtable.api.auth.service.response.RefreshTokenServiceResponse;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceResponse;
-import com.stdev.smartmealtable.api.config.JwtConfig;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
-import com.stdev.smartmealtable.core.exception.AuthenticationException;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import org.springframework.http.HttpStatus;
@@ -38,7 +38,6 @@ public class AuthController {
     private final SignupService signupService;
     private final LoginService loginService;
     private final RefreshTokenService refreshTokenService;
-    private final JwtConfig.JwtTokenProvider jwtTokenProvider;
     
     /**
      * 이메일 회원가입
@@ -78,12 +77,11 @@ public class AuthController {
 
     /**
      * 로그아웃
+     * ArgumentResolver를 통해 JWT 토큰에서 인증 정보를 추출합니다.
      */
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@RequestHeader(value = "Authorization", required = false) String authorization) {
-        String token = extractTokenFromHeader(authorization);
-        validateToken(token);
-        
+    public ApiResponse<Void> logout(@AuthUser AuthenticatedUser authenticatedUser) {
+        // ArgumentResolver가 토큰 검증을 수행하므로 여기서는 추가 검증 불필요
         // 로그아웃 성공
         return ApiResponse.success();
     }
@@ -101,19 +99,6 @@ public class AuthController {
         CheckEmailServiceResponse serviceResponse = signupService.checkEmail(email);
         CheckEmailResponse response = CheckEmailResponse.from(serviceResponse);
         return ApiResponse.success(response);
-    }
-    
-    private String extractTokenFromHeader(String authorization) {
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new AuthenticationException(ErrorType.INVALID_TOKEN);
-        }
-        return authorization.substring(7);
-    }
-    
-    private void validateToken(String token) {
-        if (token.trim().isEmpty() || !jwtTokenProvider.isTokenValid(token)) {
-            throw new AuthenticationException(ErrorType.INVALID_TOKEN);
-        }
     }
 
     private boolean isValidEmail(String email) {

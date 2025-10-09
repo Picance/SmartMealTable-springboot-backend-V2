@@ -2,7 +2,7 @@ package com.stdev.smartmealtable.api.onboarding.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
-import com.stdev.smartmealtable.api.onboarding.dto.OnboardingProfileRequest;
+import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -11,6 +11,7 @@ import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,9 +51,11 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     private Long authenticatedMemberId;
     private Long testGroupId;
-    private String authToken;
 
     @BeforeEach
     void setUp() {
@@ -74,9 +77,6 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
                 "테스트유저"
         );
         memberAuthenticationRepository.save(auth);
-
-        // JWT 토큰 생성 (실제로는 JwtTokenProvider 사용)
-        authToken = "Bearer mock-jwt-token";
     }
 
     @Test
@@ -87,8 +87,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -113,8 +112,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -133,8 +131,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -152,8 +149,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -170,8 +166,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -188,13 +183,22 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", authToken)
-                        .header("X-Member-Id", authenticatedMemberId)
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E422"));
+    }
+
+    // === Helper Methods ===
+
+    /**
+     * JWT 토큰을 생성하여 "Bearer {token}" 형식으로 반환
+     */
+    private String createAuthorizationHeader(Long memberId) {
+        String token = jwtTokenProvider.createToken(memberId);
+        return "Bearer " + token;
     }
 }

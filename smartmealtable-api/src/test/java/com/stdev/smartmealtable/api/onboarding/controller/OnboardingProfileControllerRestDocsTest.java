@@ -1,7 +1,7 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
-import com.stdev.smartmealtable.api.onboarding.dto.OnboardingProfileRequest;
+import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -10,6 +10,7 @@ import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,9 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     private Long testMemberId;
     private Long testGroupId;
 
@@ -67,6 +71,14 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
         memberAuthenticationRepository.save(auth);
     }
 
+    /**
+     * Authorization 헤더 생성 헬퍼 메서드
+     */
+    private String createAuthorizationHeader(Long memberId) {
+        String token = jwtTokenProvider.createToken(memberId);
+        return "Bearer " + token;
+    }
+
     @Test
     @DisplayName("[Docs] 온보딩 - 프로필 설정 성공")
     void onboardingProfile_Success_Docs() throws Exception {
@@ -75,8 +87,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", "Bearer mock-jwt-token")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", createAuthorizationHeader(testMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -85,8 +96,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestHeaders(
-                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer 스킴)"),
-                                headerWithName("X-Member-Id").description("인증된 회원 ID (임시, JWT 구현 후 제거)")
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer 스킴). 인증된 사용자의 memberId를 포함")
                         ),
                         requestFields(
                                 fieldWithPath("nickname").type(JsonFieldType.STRING)
@@ -128,8 +138,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", "Bearer mock-jwt-token")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", createAuthorizationHeader(testMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -158,8 +167,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/profile")
-                        .header("Authorization", "Bearer mock-jwt-token")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", createAuthorizationHeader(testMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())

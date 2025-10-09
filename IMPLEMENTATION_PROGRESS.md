@@ -13,12 +13,12 @@
 JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
 회원 관리 API:          [████████████████████] 100% (5/5 API)
 소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
-온보딩 API:             [████░░░░░░░░░░░░░░░░]  20% (1/5 API) 🔥 NEW
+온보딩 API:             [████████████████████] 100% (2/2 API) ⭐ REST Docs 완료
 예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 
-총 진행률:              [████████████░░░░░░░░] 56% (14/25 API)
+총 진행률:              [████████████████░░░░] 76% (15/25 API)
 ```
 
 ### ✅ 완료된 작업
@@ -353,13 +353,15 @@ JWT 인증 시스템:        [████████████████�
 # JWT 인증 API 스펙 문서화 완료
 ```
 
-### ✅ 온보딩 API 구현 시작 (2025-10-10) 🔥 NEW
+### ✅ 온보딩 API 구현 완료 (2025-10-10) ⭐ COMPLETE
 **목적**: 신규 가입 회원의 초기 프로필 설정 기능 구현
 
 **1. 온보딩 - 프로필 설정 API 완료** ⭐ COMPLETE
 - ✅ **Endpoint**: `POST /api/v1/onboarding/profile`
 - ✅ **기능**: 회원의 닉네임 및 소속 그룹 설정
 - ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+- ✅ **Spring Rest Docs 문서화**: 성공/실패 시나리오 완료
+- ✅ **JWT 인증 통합**: `@AuthUser` ArgumentResolver 적용
 
 **구현 사항**:
 1. **Request/Response DTO**
@@ -377,7 +379,8 @@ JWT 인증 시스템:        [████████████████�
    
 4. **Controller**
    - `OnboardingController`: `/api/v1/onboarding/profile` 엔드포인트
-   - 임시 인증: `X-Member-Id` 헤더 (JWT 구현 후 제거 예정)
+   - JWT 인증: `@AuthUser AuthenticatedUser` 파라미터
+   - Authorization: Bearer {token} 헤더 필수
 
 **테스트 완료**:
 - ✅ 성공 시나리오 (200 OK)
@@ -392,27 +395,104 @@ JWT 인증 시스템:        [████████████████�
 - ✅ `OnboardingProfileControllerRestDocsTest` 작성
 - ✅ 성공/실패 시나리오 문서화
 - ✅ Request/Response 필드 상세 설명
+- ✅ JWT 인증 요구사항 문서화
+
+**2. 온보딩 - 주소 등록 API 완료** ⭐ COMPLETE
+- ✅ **Endpoint**: `POST /api/v1/onboarding/address`
+- ✅ **기능**: 회원의 주소 정보 등록 (집, 회사, 기타)
+- ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+- ✅ **Spring Rest Docs 문서화**: 성공/실패 시나리오 완료
+- ✅ **JWT 인증 통합**: `@AuthUser` ArgumentResolver 적용
+
+**구현 사항**:
+1. **Domain 계층**
+   - `AddressHistory` 도메인 엔티티: 주소 정보 (좌표, 주소 타입 등)
+   - `AddressType` enum: HOME, WORK, OTHER
+   - 비즈니스 로직: `changeIsPrimaryTo(false)` - 기본 주소 변경
+   
+2. **Storage 계층**
+   - `AddressHistoryJpaEntity`: JPA 엔티티 + Lombok 적용
+   - `AddressHistoryRepository`: 주소 조회/저장 인터페이스
+   - `AddressHistoryRepositoryImpl`: QueryDSL 기반 구현체
+   - `findByMemberId`, `findPrimaryAddressByMemberId` 쿼리
+
+3. **Service 계층**
+   - `RegisterAddressService`: 주소 등록 유즈케이스
+   - 기본 주소 설정 시 기존 기본 주소 해제 로직
+   - 좌표 정보 (위도/경도) 필수 입력
+
+4. **Request/Response DTO**
+   - `RegisterAddressRequest`: 8개 필드 (별칭, 도로명/지번 주소, 상세주소, 좌표, 타입, 기본주소 여부)
+   - `RegisterAddressResponse`: 주소 ID, 회원 ID, 주소 정보 전체
+
+**비즈니스 로직**:
+- 주소 별칭 최대 20자 제한
+- 주소 최대 200자 제한
+- 상세 주소 최대 100자 제한
+- 기본 주소 설정 시 기존 기본 주소 자동 해제
+
+**테스트 완료**:
+- ✅ 성공 - 기본 주소 등록 (201 Created)
+- ✅ 성공 - 일반 주소 등록 (201 Created)
+- ✅ 필수 필드 누락 (422 Unprocessable Entity)
+- ✅ 주소 길이 초과 (422 Unprocessable Entity)
+- ✅ JWT 토큰 누락 (400 Bad Request)
+- ✅ 유효하지 않은 JWT 토큰 (400 Bad Request)
+
+**Spring Rest Docs 문서화 완료**:
+- ✅ `OnboardingAddressControllerRestDocsTest` 작성 (6 테스트)
+- ✅ 성공 시나리오 2개 (기본/일반 주소)
+- ✅ 실패 시나리오 4개 (필드 누락, 길이 초과, JWT 인증 실패)
+- ✅ Request/Response 필드 상세 설명
+- ✅ JWT 인증 요구사항 문서화
+- ✅ 에러 응답 형식 문서화
+
+**API 문서화 완성**:
+- ✅ `index.adoc` - 온보딩 섹션 추가 (~330 lines)
+  - 인증 요구사항 (JWT Bearer Token)
+  - 프로필 설정 API 문서
+  - 주소 등록 API 문서
+  - cURL 예제 포함
+- ✅ HTML 문서 생성: `build/docs/asciidoc/index.html` (86KB)
 
 **테스트 실행 결과**:
 ```bash
 ./gradlew :smartmealtable-api:test --tests OnboardingProfileControllerTest
 # 6 tests completed, 6 passed ✅
-# BUILD SUCCESSFUL
+
+./gradlew :smartmealtable-api:test --tests OnboardingAddressControllerTest
+# 6 tests completed, 6 passed ✅
 
 ./gradlew :smartmealtable-api:test --tests OnboardingProfileControllerRestDocsTest
 # 3 tests completed, 3 passed ✅
-# BUILD SUCCESSFUL - 문서 조각 생성 완료
+
+./gradlew :smartmealtable-api:test --tests OnboardingAddressControllerRestDocsTest
+# 6 tests completed, 6 passed ✅
+
+./gradlew :smartmealtable-api:asciidoctor
+# BUILD SUCCESSFUL - HTML 문서 생성 완료 (86KB)
 ```
 
+**LoginControllerTest JWT 인증 패턴 리팩토링 완료** ⭐:
+- ✅ `logout_success` 테스트: JwtTokenProvider 사용하도록 수정
+- ✅ `logout_noAuthorizationHeader` 테스트: 400 Bad Request 기대값 수정
+- ✅ `logout_invalidToken` 테스트: 400 Bad Request 및 에러 메시지 수정
+- ✅ 모든 로그아웃 테스트 통과 (3/3)
+- ✅ 전체 LoginControllerTest 통과
+
 **위치**: 
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/address/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/address/`
 - Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
 - Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/service/`
 - Test: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/`
+- Docs: `smartmealtable-api/src/docs/asciidoc/index.adoc`
 
 **기술 스택**:
-- Validation: Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Size`)
-- 테스트: TestContainers MySQL + MockMvc
-- 문서화: Spring Rest Docs
+- Validation: Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Size`, `@Max`, `@Min`)
+- 쿼리: QueryDSL (기본 주소 조회 및 업데이트)
+- 테스트: TestContainers MySQL + MockMvc + JwtTokenProvider
+- 문서화: Spring Rest Docs + Asciidoctor
 
 ---
 
@@ -434,9 +514,9 @@ JWT 인증 시스템:        [████████████████�
 - [x] 소셜 로그인 API (카카오, 구글 OAuth) ✅ **NEW**
 - [ ] 비밀번호 찾기 API
 
-### 우선순위 2: 온보딩 API (20% 완료) 🔥 IN PROGRESS
-- [x] 프로필 설정 API (닉네임, 소속 그룹) ✅ **NEW**
-- [ ] 주소 등록 API
+### 우선순위 2: 온보딩 API (100% 완료) ⭐ COMPLETE
+- [x] 프로필 설정 API (닉네임, 소속 그룹) ✅ **COMPLETE**
+- [x] 주소 등록 API ✅ **COMPLETE**
 - [ ] 예산 설정 API
 - [ ] 취향 설정 API (카테고리 선호도)
 - [ ] 약관 동의 API

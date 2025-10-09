@@ -57,6 +57,8 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
 ### Controller -> application Service
 - DTO(XxxServiceRequest)
 
+### DTO를 제외한 모든 클래스에서 @Setter, @Data 사용을 금지한다.
+
 ### application Service -> Controller
 - DTO(XxxServiceResponse)
 
@@ -138,6 +140,15 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
     - 문서화는 IMPLEMENTATION_PROGRESS에 큼직한 단위로 정리하고, 별도의 문서에 상세 내용을 정리
 - 하나의 핵심 기능 단위로 채팅 세션을 종료할 것
 - IDE에서 발생하는 오류는 무시해도 돼.
+- created_at, updated_at 같은 감사로그는 DB의 DEFAULT CURRENT TIME STAMP 기능을 사용할 예정임.
+- created_at, updated_at는 절대로 노출시키지 말 것 (JPA 감사 기능을 이용하는 BaseEntity 생성 금지)
+- 단, 비즈니스적으로 의미있는 registered_at과 같은 칼럼은 엔티티, 도메인에 노출시켜야 함.
+(created_at, updated_at 을 제외한 시간 컬럼은 비즈니스적으로 의미있다고 보면 된다.)
+
+## 회원 계정 토큰 처리
+- STATELESS한 JWT 방식
+- ArgumentResolver를 사용하여 JWT 토큰을 전달받고 파싱하여 활용한다.
+    - 파라미터에 주입해주는 타입은 AuthenticatedUser 타입이다.
 
 ## 구현 방식
 - 핵심 기능 하나를 완전히 구현

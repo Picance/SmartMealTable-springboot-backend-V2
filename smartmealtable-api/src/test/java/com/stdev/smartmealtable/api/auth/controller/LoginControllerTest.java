@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ class LoginControllerTest extends AbstractContainerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Test
     @DisplayName("로그인 성공 - 200 OK")
@@ -268,7 +272,7 @@ class LoginControllerTest extends AbstractContainerTest {
     @Test
     @DisplayName("로그아웃 성공 - 200 OK")
     void logout_success() throws Exception {
-        // given - 먼저 회원가입 및 로그인하여 access token 획득
+        // given - 먼저 회원가입 및 로그인하여 memberId와 JWT 토큰 준비
         Map<String, String> signupRequest = new HashMap<>();
         signupRequest.put("name", "로그아웃테스트");
         signupRequest.put("email", "logout@example.com");
@@ -288,13 +292,15 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        // JSON에서 accessToken 추출
-        String accessToken = objectMapper.readTree(loginResponseJson)
-                .get("data").get("accessToken").asText();
+        // JSON에서 memberId 추출 후 실제 JWT 토큰 생성
+        Long memberId = objectMapper.readTree(loginResponseJson)
+                .get("data").get("memberId").asLong();
+        
+        String jwtToken = jwtTokenProvider.createToken(memberId);
 
         // when & then - 로그아웃 요청
         mockMvc.perform(post("/api/v1/auth/logout")
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", "Bearer " + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -304,31 +310,30 @@ class LoginControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("로그아웃 실패 - Authorization 헤더 없음 - 401 Unauthorized")
+    @DisplayName("로그아웃 실패 - Authorization 헤더 없음 - 400 Bad Request")
     void logout_noAuthorizationHeader() throws Exception {
         // when & then
         mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E401"))
-                .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
+                .andExpect(jsonPath("$.error.code").value("E400"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
-    @DisplayName("로그아웃 실패 - 유효하지 않은 Access Token - 401 Unauthorized")
+    @DisplayName("로그아웃 실패 - 유효하지 않은 Access Token - 400 Bad Request")
     void logout_invalidToken() throws Exception {
         // when & then
         mockMvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer invalid.jwt.token")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E401"))
-                .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
+                .andExpect(jsonPath("$.error.code").value("E400"))
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 인증 토큰입니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

@@ -1,14 +1,22 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
-import com.stdev.smartmealtable.api.onboarding.dto.OnboardingProfileRequest;
-import com.stdev.smartmealtable.api.onboarding.dto.OnboardingProfileResponse;
+import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequest;
+import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
+import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
+import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileResponse;
+import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
+import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceRequest;
+import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 public class OnboardingController {
 
     private final OnboardingProfileService onboardingProfileService;
+    private final OnboardingAddressService onboardingAddressService;
 
     /**
      * 온보딩 - 프로필 설정 (닉네임 및 소속 그룹)
@@ -31,17 +40,13 @@ public class OnboardingController {
     @PostMapping("/profile")
     public ResponseEntity<ApiResponse<OnboardingProfileResponse>> updateProfile(
             @Valid @RequestBody OnboardingProfileRequest request,
-            @RequestHeader(value = "X-Member-Id", required = false) Long memberId
-            // TODO: JWT 인증 구현 후 @AuthenticationPrincipal로 memberId 추출
+            @AuthUser AuthenticatedUser authenticatedUser
     ) {
-        log.info("온보딩 프로필 설정 API 호출 - nickname: {}, groupId: {}", 
-                request.nickname(), request.groupId());
-
-        // TODO: JWT에서 memberId 추출 (임시로 헤더에서 받거나 1L 사용)
-        Long authenticatedMemberId = (memberId != null) ? memberId : 1L;
+        log.info("온보딩 프로필 설정 API 호출 - memberId: {}, nickname: {}, groupId: {}", 
+                authenticatedUser.memberId(), request.nickname(), request.groupId());
 
         OnboardingProfileServiceRequest serviceRequest = new OnboardingProfileServiceRequest(
-                authenticatedMemberId,
+                authenticatedUser.memberId(),
                 request.nickname(),
                 request.groupId()
         );
@@ -54,11 +59,52 @@ public class OnboardingController {
                 new OnboardingProfileResponse.GroupInfo(
                         serviceResponse.group().groupId(),
                         serviceResponse.group().name(),
-                        serviceResponse.group().type(),
+                        serviceResponse.group().type().name(),
                         serviceResponse.group().address()
                 )
         );
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    /**
+     * 온보딩 - 주소 등록
+     * POST /api/v1/onboarding/address
+     */
+    @PostMapping("/address")
+    public ResponseEntity<ApiResponse<OnboardingAddressResponse>> registerAddress(
+            @Valid @RequestBody OnboardingAddressRequest request,
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("온보딩 주소 등록 API 호출 - memberId: {}, alias: {}, isPrimary: {}", 
+                authenticatedUser.memberId(), request.alias(), request.isPrimary());
+
+        OnboardingAddressServiceRequest serviceRequest = OnboardingAddressServiceRequest.of(
+                authenticatedUser.memberId(),
+                request.alias(),
+                request.lotNumberAddress(),
+                request.streetNameAddress(),
+                request.detailedAddress(),
+                request.latitude(),
+                request.longitude(),
+                request.addressType(),
+                request.isPrimary()
+        );
+
+        OnboardingAddressServiceResponse serviceResponse = onboardingAddressService.registerAddress(serviceRequest);
+
+        OnboardingAddressResponse response = new OnboardingAddressResponse(
+                serviceResponse.addressHistoryId(),
+                serviceResponse.alias(),
+                serviceResponse.lotNumberAddress(),
+                serviceResponse.streetNameAddress(),
+                serviceResponse.detailedAddress(),
+                serviceResponse.latitude(),
+                serviceResponse.longitude(),
+                serviceResponse.addressType(),
+                serviceResponse.isPrimary()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 }
