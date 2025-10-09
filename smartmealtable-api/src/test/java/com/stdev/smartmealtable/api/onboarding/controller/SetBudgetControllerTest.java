@@ -211,7 +211,7 @@ class SetBudgetControllerTest extends AbstractContainerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     // === Helper Methods ===

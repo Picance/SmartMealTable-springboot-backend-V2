@@ -341,7 +341,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andDo(document("onboarding/address/fail-missing-jwt",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -351,9 +351,9 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E400)"),
+                                        .description("에러 코드 (E401)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING)
-                                        .description("에러 메시지 (Authorization 헤더가 필요합니다)")
+                                        .description("에러 메시지 (유효하지 않은 토큰입니다.)")
                         )
                 ));
     }
@@ -379,7 +379,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andDo(document("onboarding/address/fail-invalid-jwt",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -392,9 +392,9 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E400)"),
+                                        .description("에러 코드 (E401)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING)
-                                        .description("에러 메시지 (유효하지 않은 JWT 토큰입니다)")
+                                        .description("에러 메시지 (유효하지 않은 토큰입니다.)")
                         )
                 ));
     }

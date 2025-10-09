@@ -310,30 +310,30 @@ class LoginControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("로그아웃 실패 - Authorization 헤더 없음 - 400 Bad Request")
+    @DisplayName("로그아웃 실패 - Authorization 헤더 없음 - 401 Unauthorized")
     void logout_noAuthorizationHeader() throws Exception {
         // when & then
         mockMvc.perform(post("/api/v1/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E400"))
+                .andExpect(jsonPath("$.error.code").value("E401"))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
-    @DisplayName("로그아웃 실패 - 유효하지 않은 Access Token - 400 Bad Request")
+    @DisplayName("로그아웃 실패 - 유효하지 않은 Access Token - 401 Unauthorized")
     void logout_invalidToken() throws Exception {
         // when & then
         mockMvc.perform(post("/api/v1/auth/logout")
                         .header("Authorization", "Bearer invalid.jwt.token")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E400"))
-                .andExpect(jsonPath("$.error.message").value("유효하지 않은 인증 토큰입니다."))
+                .andExpect(jsonPath("$.error.code").value("E401"))
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

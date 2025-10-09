@@ -211,7 +211,7 @@ class SetBudgetControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andDo(document("onboarding-budget-set-auth-error",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -233,7 +233,7 @@ class SetBudgetControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E400)"),
+                                        .description("에러 코드 (E401)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING)
                                         .description("에러 메시지"),
                                 fieldWithPath("error.data").type(JsonFieldType.NULL).optional()
