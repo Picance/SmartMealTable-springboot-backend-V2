@@ -274,4 +274,71 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.error.message").value("유효하지 않은 Refresh Token입니다."))
                 .andExpect(jsonPath("$.data").doesNotExist());
     }
+
+    @Test
+    @DisplayName("로그아웃 성공 - 200 OK")
+    void logout_success() throws Exception {
+        // given - 먼저 회원가입 및 로그인하여 access token 획득
+        Map<String, String> signupRequest = new HashMap<>();
+        signupRequest.put("name", "로그아웃테스트");
+        signupRequest.put("email", "logout@example.com");
+        signupRequest.put("password", "SecureP@ss123!");
+
+        mockMvc.perform(post("/api/v1/auth/signup/email")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest)));
+
+        Map<String, String> loginRequest = new HashMap<>();
+        loginRequest.put("email", "logout@example.com");
+        loginRequest.put("password", "SecureP@ss123!");
+
+        String loginResponseJson = mockMvc.perform(post("/api/v1/auth/login/email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // JSON에서 accessToken 추출
+        String accessToken = objectMapper.readTree(loginResponseJson)
+                .get("data").get("accessToken").asText();
+
+        // when & then - 로그아웃 요청
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").doesNotExist())
+                .andExpect(jsonPath("$.error").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 - Authorization 헤더 없음 - 401 Unauthorized")
+    void logout_noAuthorizationHeader() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E401"))
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("로그아웃 실패 - 유효하지 않은 Access Token - 401 Unauthorized")
+    void logout_invalidToken() throws Exception {
+        // when & then
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer invalid.jwt.token")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E401"))
+                .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
 }

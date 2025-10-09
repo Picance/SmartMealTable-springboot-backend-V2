@@ -128,7 +128,9 @@ Smartmealtable 서비스의 SpringBoot 백엔드 시스템을 구축합니다.
 
 ## 주의사항
 - IMPLEMENTATION_PROGRESS는 100% 신뢰할 수 있는 문서가 아님. 항상 사실 여부를 확인하고 진행할 것. 문서에는 구현되어있지 않다고 나와있어도, 실제로 일부 구현되어있을 수 있다.
-- Implementation 시 IMPLEMENTATION_PROGRESS 문서를 항상 최신화할 것
+- Implementation 시 하나의 핵심 기능이 구현되는데로 IMPLEMENTATION_PROGRESS 문서를 항상 최신화할 것
+    - 문서화는 IMPLEMENTATION_PROGRESS에 큼직한 단위로 정리하고, 별도의 문서에 상세 내용을 정리
+- 하나의 핵심 기능 단위로 채팅 세션을 종료할 것
 - IDE에서 발생하는 오류는 무시해도 돼.
 
 ## 구현 방식
