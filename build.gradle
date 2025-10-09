@@ -1,0 +1,65 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.6' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
+	id 'org.asciidoctor.jvm.convert' version '3.3.2' apply false
+}
+
+// 루트 프로젝트의 Java 플러그인 task 비활성화
+tasks.withType(JavaCompile).configureEach {
+	enabled = false
+}
+
+tasks.named('jar') {
+	enabled = false
+}
+
+allprojects {
+	group = 'com.stdev'
+	version = '0.0.1-SNAPSHOT'
+	
+	repositories {
+		mavenCentral()
+	}
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+	
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(21)
+		}
+	}
+	
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor
+		}
+	}
+	
+	dependencyManagement {
+		imports {
+			mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.6"
+			mavenBom "org.springframework.ai:spring-ai-bom:1.0.2"
+		}
+	}
+	
+	dependencies {
+		// 공통 의존성
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		
+		// 테스트 공통 의존성
+		testImplementation 'org.junit.jupiter:junit-jupiter'
+		testImplementation 'org.mockito:mockito-core'
+		testImplementation 'org.mockito:mockito-junit-jupiter'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+	
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+}

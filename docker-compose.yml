@@ -1,0 +1,186 @@
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스 (로컬 개발용)
+  db:
+    image: mysql:8.0
+    container_name: smartmealtable-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=smartmealtable
+      - MYSQL_USER=smartmeal_user
+      - MYSQL_PASSWORD=smartmeal123
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
+      - ./dml.sql:/docker-entrypoint-initdb.d/02-dml.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - monitoring
+
+  redis:
+    image: redis:7.0
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  # API 모듈
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: smartmealtable-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - monitoring
+
+  # Admin 모듈
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: smartmealtable-admin
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - monitoring
+
+  # Scheduler 모듈
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    container_name: smartmealtable-scheduler
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - monitoring
+
+  # Crawler 모듈 (필요시 수동 실행)
+  # crawler:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.crawler
+  #   container_name: smartmealtable-crawler
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+  #     SPRING_DATASOURCE_USERNAME: smartmeal_user
+  #     SPRING_DATASOURCE_PASSWORD: smartmeal1234
+  #     JAVA_OPTS: "-Xms128m -Xmx256m"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   networks:
+  #     - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  redis_exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    ports:
+      - "9121:9121"
+    command:
+      - '--redis.addr=redis://redis:6379'
+    depends_on:
+      - redis
+    networks:
+      - monitoring
+
+volumes:
+  mysql_data:
+  grafana_data:
+  redis_data:
+
+networks:
+  monitoring:

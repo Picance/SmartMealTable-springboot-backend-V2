@@ -1,0 +1,24 @@
+dependencies {
+    // core 모듈 의존성
+    implementation project(':smartmealtable-core')
+    
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Spring AI
+    implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
+}
+
+// bootJar를 생성하지 않음 (라이브러리 모듈)
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

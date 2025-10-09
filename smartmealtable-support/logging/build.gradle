@@ -1,0 +1,19 @@
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    
+    // Logback (Spring Boot에 포함되어 있지만 명시적으로 추가)
+    implementation 'ch.qos.logback:logback-classic'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// bootJar를 생성하지 않음 (라이브러리 모듈)
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

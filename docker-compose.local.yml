@@ -1,0 +1,225 @@
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스 (로컬 개발용)
+  mysql:
+    image: mysql:8.0
+    container_name: smartmealtable-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=smartmealtable
+      - MYSQL_USER=smartmeal_user
+      - MYSQL_PASSWORD=smartmeal123
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
+      - ./dml.sql:/docker-entrypoint-initdb.d/02-dml.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+      start_period: 30s
+    networks:
+      - smartmeal-network
+
+  # Redis (캐싱)
+  redis:
+    image: redis:7-alpine
+    container_name: smartmealtable-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server 
+      --maxmemory 256mb 
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - smartmeal-network
+
+  # API 서버
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: smartmealtable-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - DATABASE_URL=jdbc:mysql://mysql:3306/smartmealtable
+      - DATABASE_USERNAME=smartmeal_user
+      - DATABASE_PASSWORD=smartmeal123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JVM_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - smartmeal-network
+
+  # Admin 서버
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.admin
+    container_name: smartmealtable-admin
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - DATABASE_URL=jdbc:mysql://mysql:3306/smartmealtable
+      - DATABASE_USERNAME=smartmeal_user
+      - DATABASE_PASSWORD=smartmeal123
+      - JVM_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - smartmeal-network
+
+  # 스케줄러
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    container_name: smartmealtable-scheduler
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - DATABASE_URL=jdbc:mysql://mysql:3306/smartmealtable
+      - DATABASE_USERNAME=smartmeal_user
+      - DATABASE_PASSWORD=smartmeal123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JVM_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - smartmeal-network
+
+  # 크롤러 (필요시에만 실행)
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile.crawler
+    container_name: smartmealtable-crawler
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - DATABASE_URL=jdbc:mysql://mysql:3306/smartmealtable
+      - DATABASE_USERNAME=smartmeal_user
+      - DATABASE_PASSWORD=smartmeal123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JVM_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    profiles:
+      - crawler
+    networks:
+      - smartmeal-network
+
+  # Prometheus (모니터링)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: smartmealtable-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus-local.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - smartmeal-network
+
+  # Grafana (대시보드)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smartmealtable-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - smartmeal-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  smartmeal-network:
+    driver: bridge

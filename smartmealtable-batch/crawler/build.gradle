@@ -1,0 +1,26 @@
+dependencies {
+    // 모듈 의존성
+    implementation project(':smartmealtable-core')
+    implementation project(':smartmealtable-domain')
+    implementation project(':smartmealtable-storage:db')
+    
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
+}
+
+// 실행 가능한 jar 생성
+tasks.named('bootJar') {
+    enabled = true
+    mainClass = 'com.stdev.smartmealtable.batch.crawler.CrawlerApplication'
+}
+
+tasks.named('jar') {
+    enabled = false
+}

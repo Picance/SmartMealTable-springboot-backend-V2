@@ -1,0 +1,21 @@
+dependencies {
+    // core 모듈 의존성
+    implementation project(':smartmealtable-core')
+    
+    // Spring Boot 기본 의존성 (for @Transactional, Bean Container)
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework:spring-tx'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// bootJar를 생성하지 않음 (라이브러리 모듈)
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

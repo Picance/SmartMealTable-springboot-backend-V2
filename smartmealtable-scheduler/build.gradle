@@ -1,0 +1,22 @@
+dependencies {
+    // 모듈 의존성
+    implementation project(':smartmealtable-core')
+    implementation project(':smartmealtable-domain')
+    implementation project(':smartmealtable-storage:db')
+    
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// 실행 가능한 jar 생성
+tasks.named('bootJar') {
+    enabled = true
+    mainClass = 'com.stdev.smartmealtable.scheduler.SchedulerApplication'
+}
+
+tasks.named('jar') {
+    enabled = false
+}

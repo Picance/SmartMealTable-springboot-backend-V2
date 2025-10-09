@@ -1,0 +1,8 @@
+// support 부모 모듈은 라이브러리로 동작
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

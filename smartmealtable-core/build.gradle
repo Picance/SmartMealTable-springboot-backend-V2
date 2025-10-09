@@ -1,0 +1,27 @@
+dependencies {
+    // Spring Boot 기본 의존성 (for @Component, @Service 등)
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    
+    // Spring Web (HttpStatus 등)
+    implementation 'org.springframework:spring-web'
+    
+    // 로깅
+    implementation 'org.slf4j:slf4j-api'
+    
+    // Jackson (JSON 처리)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// bootJar를 생성하지 않음 (라이브러리 모듈)
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

@@ -1,0 +1,21 @@
+dependencies {
+    // 모듈 의존성
+    implementation project(':smartmealtable-core')
+    implementation project(':smartmealtable-domain')
+    implementation project(':smartmealtable-storage:db')
+    
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+// bootJar를 생성하지 않음 (라이브러리 모듈)
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}

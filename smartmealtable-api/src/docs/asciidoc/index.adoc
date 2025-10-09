@@ -1,0 +1,166 @@
+= SmartMealTable API Documentation
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+
+[[overview]]
+= 개요
+
+SmartMealTable API는 알뜰식탁 서비스의 백엔드 API입니다.
+
+== API 서버 정보
+
+|===
+| 환경 | Base URL
+
+| Production
+| `https://api.smartmealtable.com`
+
+| Staging
+| `https://staging-api.smartmealtable.com`
+
+| Development
+| `http://localhost:8080`
+|===
+
+== 공통 응답 형식
+
+모든 API는 다음과 같은 공통 응답 형식을 따릅니다.
+
+=== 성공 응답
+
+[source,json]
+----
+{
+  "result": "SUCCESS",
+  "data": { ... },
+  "error": null
+}
+----
+
+=== 에러 응답
+
+[source,json]
+----
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E400",
+    "message": "에러 메시지",
+    "data": { ... }
+  }
+}
+----
+
+== HTTP Status Codes
+
+|===
+| Status Code | Description
+
+| `200 OK`
+| 요청이 성공적으로 처리됨
+
+| `201 Created`
+| 리소스가 성공적으로 생성됨
+
+| `400 Bad Request`
+| 잘못된 요청
+
+| `401 Unauthorized`
+| 인증 실패
+
+| `403 Forbidden`
+| 권한 없음
+
+| `404 Not Found`
+| 리소스를 찾을 수 없음
+
+| `409 Conflict`
+| 리소스 충돌 (중복 등)
+
+| `422 Unprocessable Entity`
+| 유효성 검증 실패
+
+| `500 Internal Server Error`
+| 서버 내부 오류
+
+| `503 Service Unavailable`
+| 서비스 이용 불가
+|===
+
+[[auth]]
+= 인증 (Authentication)
+
+[[auth-signup]]
+== 회원가입
+
+=== 이메일 회원가입
+
+`POST /api/v1/auth/signup/email`
+
+이메일 주소를 사용하여 회원가입을 진행합니다.
+
+==== 요청
+
+include::{snippets}/auth/signup/email/success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth/signup/email/success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/auth/signup/email/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/signup/email/success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 이메일 중복 (409 Conflict)
+
+include::{snippets}/auth/signup/email/duplicate-email/http-response.adoc[]
+
+include::{snippets}/auth/signup/email/duplicate-email/response-fields.adoc[]
+
+===== 유효성 검증 실패 (422 Unprocessable Entity)
+
+include::{snippets}/auth/signup/email/validation-error/http-response.adoc[]
+
+include::{snippets}/auth/signup/email/validation-error/response-fields.adoc[]
+
+==== 유효성 규칙
+
+* `name`: 2-50자
+* `email`: 이메일 형식
+* `password`: 8-20자, 영문+숫자+특수문자 조합
+
+==== 예제
+
+===== cURL
+
+[source,bash]
+----
+curl -X POST https://api.smartmealtable.com/api/v1/auth/signup/email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "홍길동",
+    "email": "hong@example.com",
+    "password": "SecureP@ss123!"
+  }'
+----
+
+===== HTTPie
+
+[source,bash]
+----
+http POST https://api.smartmealtable.com/api/v1/auth/signup/email \
+  name="홍길동" \
+  email="hong@example.com" \
+  password="SecureP@ss123!"
+----

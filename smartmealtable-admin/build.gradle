@@ -1,0 +1,30 @@
+dependencies {
+    // 모듈 의존성
+    implementation project(':smartmealtable-core')
+    implementation project(':smartmealtable-domain')
+    implementation project(':smartmealtable-storage:db')
+    implementation project(':smartmealtable-storage:cache')
+    
+    // Spring Boot Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Spring Boot DevTools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    
+    // 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
+}
+
+// 실행 가능한 jar 생성
+tasks.named('bootJar') {
+    enabled = true
+    mainClass = 'com.stdev.smartmealtable.admin.AdminApplication'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
