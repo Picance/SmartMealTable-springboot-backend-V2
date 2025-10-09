@@ -13,12 +13,12 @@
 JWT 인증 시스템:        [████████████████████] 100% (4/4 API)
 회원 관리 API:          [████████████████████] 100% (5/5 API)
 소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
-온보딩 API:             [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
+온보딩 API:             [████░░░░░░░░░░░░░░░░]  20% (1/5 API) 🔥 NEW
 예산 관리 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 
-총 진행률:              [███████████░░░░░░░░░] 52% (13/25 API)
+총 진행률:              [████████████░░░░░░░░] 56% (14/25 API)
 ```
 
 ### ✅ 완료된 작업
@@ -353,6 +353,67 @@ JWT 인증 시스템:        [████████████████�
 # JWT 인증 API 스펙 문서화 완료
 ```
 
+### ✅ 온보딩 API 구현 시작 (2025-10-10) 🔥 NEW
+**목적**: 신규 가입 회원의 초기 프로필 설정 기능 구현
+
+**1. 온보딩 - 프로필 설정 API 완료** ⭐ COMPLETE
+- ✅ **Endpoint**: `POST /api/v1/onboarding/profile`
+- ✅ **기능**: 회원의 닉네임 및 소속 그룹 설정
+- ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+
+**구현 사항**:
+1. **Request/Response DTO**
+   - `OnboardingProfileRequest`: 닉네임, 그룹ID (Validation 포함)
+   - `OnboardingProfileResponse`: 회원ID, 닉네임, 그룹 정보
+   
+2. **Service 계층**
+   - `OnboardingProfileService`: 프로필 업데이트 유즈케이스
+   - `OnboardingProfileServiceRequest/Response`: Service DTO
+   
+3. **비즈니스 로직**
+   - 닉네임 중복 검증 (`existsByNickname`)
+   - 그룹 존재 여부 검증 (`findById`)
+   - Member 도메인 로직: `changeNickname()` 활용
+   
+4. **Controller**
+   - `OnboardingController`: `/api/v1/onboarding/profile` 엔드포인트
+   - 임시 인증: `X-Member-Id` 헤더 (JWT 구현 후 제거 예정)
+
+**테스트 완료**:
+- ✅ 성공 시나리오 (200 OK)
+- ✅ 닉네임 중복 (409 Conflict)
+- ✅ 그룹 미존재 (404 Not Found)
+- ✅ Validation 실패 (422 Unprocessable Entity)
+  - 닉네임 null
+  - 닉네임 길이 제한 (1자)
+  - groupId null
+
+**Spring Rest Docs 문서화 완료**:
+- ✅ `OnboardingProfileControllerRestDocsTest` 작성
+- ✅ 성공/실패 시나리오 문서화
+- ✅ Request/Response 필드 상세 설명
+
+**테스트 실행 결과**:
+```bash
+./gradlew :smartmealtable-api:test --tests OnboardingProfileControllerTest
+# 6 tests completed, 6 passed ✅
+# BUILD SUCCESSFUL
+
+./gradlew :smartmealtable-api:test --tests OnboardingProfileControllerRestDocsTest
+# 3 tests completed, 3 passed ✅
+# BUILD SUCCESSFUL - 문서 조각 생성 완료
+```
+
+**위치**: 
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/service/`
+- Test: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/`
+
+**기술 스택**:
+- Validation: Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Size`)
+- 테스트: TestContainers MySQL + MockMvc
+- 문서화: Spring Rest Docs
+
 ---
 
 ## 📋 다음 단계 (향후 API 구현)
@@ -373,13 +434,20 @@ JWT 인증 시스템:        [████████████████�
 - [x] 소셜 로그인 API (카카오, 구글 OAuth) ✅ **NEW**
 - [ ] 비밀번호 찾기 API
 
-### 우선순위 2: 프로필 관리 API (일부 완료)
+### 우선순위 2: 온보딩 API (20% 완료) 🔥 IN PROGRESS
+- [x] 프로필 설정 API (닉네임, 소속 그룹) ✅ **NEW**
+- [ ] 주소 등록 API
+- [ ] 예산 설정 API
+- [ ] 취향 설정 API (카테고리 선호도)
+- [ ] 약관 동의 API
+
+### 우선순위 3: 프로필 관리 API (일부 완료)
 - [ ] 프로필 조회 API
 - [ ] 프로필 수정 API
 - [x] 비밀번호 변경 API ✅
 - [x] 회원 탈퇴 API ✅
 
-### 우선순위 3: 예산 관리 API
+### 우선순위 4: 예산 관리 API
 - [ ] 예산 조회 API
 - [ ] 예산 수정 API
 - [ ] 선호도 설정 API
