@@ -9,11 +9,14 @@ import com.stdev.smartmealtable.api.onboarding.controller.dto.SetPreferencesRequ
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetPreferencesResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
+import com.stdev.smartmealtable.api.onboarding.dto.request.PolicyAgreementRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileResponse;
+import com.stdev.smartmealtable.api.onboarding.dto.response.PolicyAgreementResponse;
 import com.stdev.smartmealtable.api.onboarding.service.GetFoodsService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
+import com.stdev.smartmealtable.api.onboarding.service.PolicyAgreementService;
 import com.stdev.smartmealtable.api.onboarding.service.SaveFoodPreferencesService;
 import com.stdev.smartmealtable.api.onboarding.service.SetBudgetService;
 import com.stdev.smartmealtable.api.onboarding.service.SetPreferencesService;
@@ -25,6 +28,8 @@ import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServ
 import com.stdev.smartmealtable.api.onboarding.service.dto.SaveFoodPreferencesServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.SaveFoodPreferencesServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.SetBudgetServiceResponse;
+import com.stdev.smartmealtable.api.onboarding.service.request.PolicyAgreementServiceRequest;
+import com.stdev.smartmealtable.api.onboarding.service.response.PolicyAgreementServiceResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
@@ -34,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 온보딩 API Controller
@@ -51,6 +58,7 @@ public class OnboardingController {
     private final SetPreferencesService setPreferencesService;
     private final GetFoodsService getFoodsService;
     private final SaveFoodPreferencesService saveFoodPreferencesService;
+    private final PolicyAgreementService policyAgreementService;
 
     /**
      * 온보딩 - 프로필 설정 (닉네임 및 소속 그룹)
@@ -218,6 +226,35 @@ public class OnboardingController {
         );
 
         SaveFoodPreferencesResponse response = SaveFoodPreferencesResponse.from(serviceResponse);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 온보딩 - 약관 동의
+     * POST /api/v1/onboarding/policy-agreements
+     */
+    @PostMapping("/policy-agreements")
+    public ResponseEntity<ApiResponse<PolicyAgreementResponse>> agreeToPolicies(
+            @Valid @RequestBody PolicyAgreementRequest request,
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("온보딩 약관 동의 API 호출 - memberId: {}, agreements count: {}",
+                authenticatedUser.memberId(), request.getAgreements().size());
+
+        List<PolicyAgreementServiceRequest> serviceRequests = request.getAgreements().stream()
+                .map(item -> new PolicyAgreementServiceRequest(item.getPolicyId(), item.getIsAgreed()))
+                .toList();
+
+        PolicyAgreementServiceResponse serviceResponse = policyAgreementService.agreeToPolicies(
+                authenticatedUser.memberId(),
+                serviceRequests
+        );
+
+        PolicyAgreementResponse response = PolicyAgreementResponse.of(
+                serviceResponse.getMemberAuthenticationId(),
+                serviceResponse.getAgreedCount()
+        );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }

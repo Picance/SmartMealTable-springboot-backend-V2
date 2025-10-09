@@ -36,6 +36,9 @@ public class PolicyJpaEntity {
     @Column(name = "version", nullable = false, length = 20)
     private String version;
 
+    @Column(name = "is_mandatory", nullable = false)
+    private Boolean isMandatory;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
@@ -56,6 +59,7 @@ public class PolicyJpaEntity {
         entity.content = policy.getContent();
         entity.type = policy.getType();
         entity.version = policy.getVersion();
+        entity.isMandatory = policy.getIsMandatory();
         entity.isActive = policy.getIsActive();
         return entity;
     }
@@ -70,6 +74,7 @@ public class PolicyJpaEntity {
                 this.content,
                 this.type,
                 this.version,
+                this.isMandatory,
                 this.isActive
         );
     }

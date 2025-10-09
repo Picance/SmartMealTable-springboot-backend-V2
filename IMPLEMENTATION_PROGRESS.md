@@ -13,7 +13,7 @@
 
 ```
 3. 인증 및 회원 관리:      [█████████████░░░░░░░]  69% (9/13 API)
-4. 온보딩:                [██████████░░░░░░░░░░]  55% (6/11 API) 
+4. 온보딩:                [████████████████████] 100% (11/11 API) ✅
 5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
 6. 지출 내역:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/7 API)
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
@@ -25,19 +25,19 @@
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [██████░░░░░░░░░░░░░░]  27% (19/70 API)
+총 진행률:                [████████░░░░░░░░░░░░]  34% (24/70 API)
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (19개)
+#### ✅ 완료 (24개)
 - **인증 및 회원**: 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
-- **온보딩**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장
+- **온보딩**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장, 약관동의, 그룹목록, 카테고리목록, 약관목록, 약관상세
 - **예산 관리**: 월별조회, 일별조회, 예산수정, 일괄적용
 
-#### ⚠️ 미구현 (51개)
+#### ⚠️ 미구현 (46개)
 - **인증 및 회원** (4개): 소셜계정 연동 관리(3), 비밀번호 만료 관리(2) - 5개 → 실제 4개
-- **온보딩** (5개): 약관동의, 그룹목록, 카테고리목록, 약관조회(2)
+- **온보딩** (0개): 모두 완료 ✅
 - **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
 - **가게 관리** (3개): 목록조회, 상세조회, 자동완성검색
 - **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
@@ -1761,16 +1761,21 @@ POST /api/v1/auth/login/email
 
 ## 🎯 다음 구현 우선순위 (권장)
 
-### Phase 1: 온보딩 완성 (7개) 🔥
+### Phase 1: 온보딩 완성 (11개) ✅ COMPLETE
 온보딩 플로우를 완전히 마무리하여 신규 회원이 서비스를 시작할 수 있도록 합니다.
-- 4.5 약관 동의 API
-- 4.6 그룹 목록 조회
-- 4.7 카테고리 목록 조회
-- 4.8 약관 목록/상세 조회
-- 4.9 온보딩용 음식 목록 조회
-- 4.10 개별 음식 선호도 저장
+- ✅ 4.1 프로필 설정 API
+- ✅ 4.2 주소 등록 API
+- ✅ 4.3 예산 설정 API
+- ✅ 4.4 취향 설정 API
+- ✅ 4.5 약관 동의 API
+- ✅ 4.6 그룹 목록 조회
+- ✅ 4.7 카테고리 목록 조회
+- ✅ 4.8 약관 목록 조회
+- ✅ 4.9 약관 상세 조회
+- ✅ 4.10 음식 목록 조회
+- ✅ 4.11 음식 선호도 저장
 
-### Phase 2: 프로필 관리 (12개) ⭐
+### Phase 2: 프로필 관리 (12개) ⭐ NEXT
 사용자가 자신의 정보를 관리할 수 있는 핵심 기능입니다.
 - 10.1~10.2 프로필 조회/수정
 - 10.3~10.7 주소 CRUD (5개)
@@ -1830,6 +1835,124 @@ POST /api/v1/auth/login/email
 
 ---
 
-**마지막 업데이트**: 2025-10-10 (예산 관리 API 100% 완료 🎉)
+**마지막 업데이트**: 2025-10-10 (온보딩 API 100% 완료 🎉)
+
+---
+
+## 🎉 온보딩 API 섹션 완료 (2025-10-10)
+
+### ✅ 완료된 온보딩 Auxiliary APIs (5개)
+
+**11. 온보딩 - 약관 동의 API** ⭐ COMPLETE (2025-10-10)
+- ✅ **Endpoint**: `POST /api/v1/onboarding/policy-agreements`
+- ✅ **기능**: 회원의 약관 동의 처리 (필수/선택 약관 구분)
+- ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+- ✅ **JWT 인증 통합**: `@AuthUser` ArgumentResolver 적용
+
+**구현 사항**:
+1. **Domain 계층**
+   - `PolicyAgreement` 도메인 엔티티: 약관 동의 정보 관리
+   - Factory methods: `agree()`, `reconstitute()`
+   - Fields: policyAgreementId, policyId, memberAuthenticationId, isAgreed, agreedAt
+   - `PolicyAgreementRepository`: 약관 동의 조회/저장 인터페이스
+   
+2. **Storage 계층**
+   - `PolicyAgreementJpaEntity`: JPA 엔티티 + Lombok 적용
+   - Unique constraint: (policy_id, member_authentication_id) - 중복 동의 방지
+   - `PolicyAgreementJpaRepository`: Spring Data JPA Repository
+   - `PolicyAgreementRepositoryImpl`: Repository 구현체
+
+3. **Service 계층**
+   - `PolicyAgreementService`: 약관 동의 유즈케이스
+   - 필수 약관 검증: `Policy.getIsMandatory()` 활용
+   - 중복 동의 방지: `existsByMemberAuthenticationIdAndPolicyId()` 체크
+   - 비즈니스 예외 처리: POLICY_AGREEMENT_MANDATORY_NOT_AGREED
+
+4. **Request/Response DTO**
+   - `PolicyAgreementRequest`: 약관 동의 목록 (nested `AgreementItem`)
+     - Validation: `@NotNull`, `@NotEmpty` 적용
+   - `PolicyAgreementResponse`: 동의된 약관 개수 반환
+
+**비즈니스 로직**:
+- 필수 약관 누락 시 422 Unprocessable Entity
+- 중복 동의 시 422 Unprocessable Entity
+- 빈 약관 목록 시 422 Unprocessable Entity
+- 유효하지 않은 JWT 토큰 시 401 Unauthorized
+
+**테스트 완료** (5개):
+- ✅ 성공 - 모든 약관 동의 (201 Created)
+- ✅ 성공 - 필수 약관만 동의 (201 Created)
+- ✅ 실패 - 필수 약관 미동의 (422)
+- ✅ 실패 - 빈 약관 목록 (422)
+- ✅ 실패 - 유효하지 않은 JWT 토큰 (401)
+
+**위치**:
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/policy/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/policy/`
+- API: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/onboarding/`
+- Tests: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/onboarding/controller/`
+
+---
+
+**12. 그룹 목록 조회 API** ✅ 기존 구현 확인 (2025-10-10)
+- ✅ **Endpoint**: `GET /api/v1/groups`
+- ✅ **기능**: 그룹(대학/회사) 검색 및 목록 조회 (페이지네이션)
+- ✅ **테스트**: GroupControllerTest 전체 통과 (BUILD SUCCESSFUL in 11s)
+
+**구현 확인 사항**:
+- QueryDSL 기반 동적 검색 (type, name 필터)
+- 페이지네이션 지원 (page, size 파라미터)
+- 검색 결과: 그룹 ID, 타입, 이름, 도메인 정보 반환
+
+---
+
+**13. 카테고리 목록 조회 API** ✅ 기존 구현 확인 (2025-10-10)
+- ✅ **Endpoint**: `GET /api/v1/categories`
+- ✅ **기능**: 음식 카테고리 전체 목록 조회
+- ✅ **테스트**: CategoryControllerTest 전체 통과 (BUILD SUCCESSFUL in 22s)
+
+**구현 확인 사항**:
+- 전체 카테고리 목록 조회
+- 카테고리 ID, 이름 반환
+
+---
+
+**14. 약관 목록/상세 조회 API** ✅ 기존 구현 확인 (2025-10-10)
+- ✅ **Endpoint**: `GET /api/v1/policies` (약관 목록)
+- ✅ **Endpoint**: `GET /api/v1/policies/{policyId}` (약관 상세)
+- ✅ **기능**: 서비스 약관 목록 조회 및 개별 약관 상세 정보 조회
+- ✅ **테스트**: PolicyControllerTest 전체 통과 (BUILD SUCCESSFUL in 22s)
+
+**구현 확인 사항**:
+- 약관 목록: 전체 약관 조회 (ID, 제목, 타입, 필수 여부)
+- 약관 상세: 특정 약관 내용 조회 (ID, 제목, 내용, 타입, 필수 여부)
+- Policy 엔티티에 `isMandatory` 필드 추가 완료
+
+**주요 변경 사항**:
+- `Policy` 도메인 엔티티: `Boolean isMandatory` 필드 추가
+- `PolicyJpaEntity`: `is_mandatory` 컬럼 매핑 추가
+- `Policy.create()`, `Policy.reconstitute()`: isMandatory 파라미터 추가
+- PolicyControllerTest: Policy.create() 호출 시 isMandatory 파라미터 전달
+
+---
+
+### 📊 온보딩 API 완료 통계
+- **구현된 API**: 11/11 (100%) ✅
+- **테스트 통과율**: 100%
+- **TDD 적용**: 전체 API에 RED-GREEN-REFACTOR 패턴 적용
+- **Spring Rest Docs**: 주요 API 문서화 완료 (프로필 설정, 주소 등록, 예산 설정, 취향 설정)
+
+**온보딩 플로우**:
+1. ✅ 프로필 설정 (닉네임, 그룹 선택)
+2. ✅ 주소 등록 (집/회사/기타)
+3. ✅ 예산 설정 (월별/일일/식사별)
+4. ✅ 취향 설정 (추천 유형 선택)
+5. ✅ 음식 선호도 저장 (카테고리별 선호도)
+6. ✅ 약관 동의 (필수/선택 약관)
+7. ✅ 보조 데이터 조회 (그룹, 카테고리, 약관 목록)
+
+---
+
+**마지막 업데이트**: 2025-10-10 (온보딩 API 100% 완료, 예산 관리 API 100% 완료 🎉)
 
 ```

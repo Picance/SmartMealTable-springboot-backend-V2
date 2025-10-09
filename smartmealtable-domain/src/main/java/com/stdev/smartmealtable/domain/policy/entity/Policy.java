@@ -17,6 +17,7 @@ public class Policy {
     private String content;
     private PolicyType type;
     private String version;
+    private Boolean isMandatory;
     private Boolean isActive;
 
     /**
@@ -28,6 +29,7 @@ public class Policy {
             String content,
             PolicyType type,
             String version,
+            Boolean isMandatory,
             Boolean isActive
     ) {
         Policy policy = new Policy();
@@ -36,6 +38,7 @@ public class Policy {
         policy.content = content;
         policy.type = type;
         policy.version = version;
+        policy.isMandatory = isMandatory;
         policy.isActive = isActive;
         return policy;
     }
@@ -47,13 +50,15 @@ public class Policy {
             String title,
             String content,
             PolicyType type,
-            String version
+            String version,
+            Boolean isMandatory
     ) {
         Policy policy = new Policy();
         policy.title = title;
         policy.content = content;
         policy.type = type;
         policy.version = version;
+        policy.isMandatory = isMandatory;
         policy.isActive = true;
         return policy;
     }

@@ -25,6 +25,8 @@ public class QPolicyJpaEntity extends EntityPathBase<PolicyJpaEntity> {
 
     public final BooleanPath isActive = createBoolean("isActive");
 
+    public final BooleanPath isMandatory = createBoolean("isMandatory");
+
     public final NumberPath<Long> policyId = createNumber("policyId", Long.class);
 
     public final StringPath title = createString("title");
