@@ -1,15 +1,19 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetRequest;
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileResponse;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
+import com.stdev.smartmealtable.api.onboarding.service.SetBudgetService;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceResponse;
+import com.stdev.smartmealtable.api.onboarding.service.dto.SetBudgetServiceResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
@@ -32,6 +36,7 @@ public class OnboardingController {
 
     private final OnboardingProfileService onboardingProfileService;
     private final OnboardingAddressService onboardingAddressService;
+    private final SetBudgetService setBudgetService;
 
     /**
      * 온보딩 - 프로필 설정 (닉네임 및 소속 그룹)
@@ -104,6 +109,28 @@ public class OnboardingController {
                 serviceResponse.addressType(),
                 serviceResponse.isPrimary()
         );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+    
+    /**
+     * 온보딩 - 예산 설정
+     * POST /api/v1/onboarding/budget
+     */
+    @PostMapping("/budget")
+    public ResponseEntity<ApiResponse<SetBudgetResponse>> setBudget(
+            @Valid @RequestBody SetBudgetRequest request,
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("온보딩 예산 설정 API 호출 - memberId: {}, monthlyBudget: {}, dailyBudget: {}", 
+                authenticatedUser.memberId(), request.getMonthlyBudget(), request.getDailyBudget());
+
+        SetBudgetServiceResponse serviceResponse = setBudgetService.setBudget(
+                authenticatedUser.memberId(),
+                request.toServiceRequest()
+        );
+
+        SetBudgetResponse response = SetBudgetResponse.from(serviceResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
