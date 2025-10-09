@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.api.onboarding.controller;
 
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetRequest;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SetBudgetResponse;
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SetPreferencesRequest;
+import com.stdev.smartmealtable.api.onboarding.controller.dto.SetPreferencesResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingProfileRequest;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
@@ -9,6 +11,7 @@ import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileRes
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
 import com.stdev.smartmealtable.api.onboarding.service.SetBudgetService;
+import com.stdev.smartmealtable.api.onboarding.service.SetPreferencesService;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingProfileServiceRequest;
@@ -37,6 +40,7 @@ public class OnboardingController {
     private final OnboardingProfileService onboardingProfileService;
     private final OnboardingAddressService onboardingAddressService;
     private final SetBudgetService setBudgetService;
+    private final SetPreferencesService setPreferencesService;
 
     /**
      * 온보딩 - 프로필 설정 (닉네임 및 소속 그룹)
@@ -131,6 +135,35 @@ public class OnboardingController {
         );
 
         SetBudgetResponse response = SetBudgetResponse.from(serviceResponse);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+    
+    /**
+     * 온보딩 - 취향 설정 (추천 유형 + 카테고리별 선호도)
+     * POST /api/v1/onboarding/preferences
+     */
+    @PostMapping("/preferences")
+    public ResponseEntity<ApiResponse<SetPreferencesResponse>> setPreferences(
+            @Valid @RequestBody SetPreferencesRequest request,
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("온보딩 취향 설정 API 호출 - memberId: {}, recommendationType: {}, preferences count: {}", 
+                authenticatedUser.memberId(), request.getRecommendationType(), request.getPreferences().size());
+
+        var serviceRequest = new com.stdev.smartmealtable.api.onboarding.service.dto.SetPreferencesServiceRequest(
+                request.getRecommendationType(),
+                request.getPreferences().stream()
+                        .map(p -> new com.stdev.smartmealtable.api.onboarding.service.dto.SetPreferencesServiceRequest.PreferenceItem(
+                                p.getCategoryId(),
+                                p.getWeight()
+                        ))
+                        .toList()
+        );
+
+        var serviceResponse = setPreferencesService.setPreferences(authenticatedUser.memberId(), serviceRequest);
+
+        SetPreferencesResponse response = SetPreferencesResponse.from(serviceResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
