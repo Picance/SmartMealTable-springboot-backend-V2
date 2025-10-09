@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,4 +23,9 @@ public interface DailyBudgetJpaRepository extends JpaRepository<DailyBudgetJpaEn
      */
     @Query("SELECT d FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId ORDER BY d.budgetDate DESC LIMIT 1")
     Optional<DailyBudgetJpaEntity> findLatestByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 회원 ID와 특정 날짜(포함) 이후의 모든 일일 예산 조회
+     */
+    List<DailyBudgetJpaEntity> findByMemberIdAndBudgetDateGreaterThanEqual(Long memberId, LocalDate fromDate);
 }

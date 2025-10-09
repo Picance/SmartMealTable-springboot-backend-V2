@@ -14,11 +14,11 @@ JWT 인증 시스템:        [████████████████�
 회원 관리 API:          [████████████████████] 100% (5/5 API)
 소셜 로그인 API:        [████████████████████] 100% (2/2 API) ✅ 통합 테스트 완료
 온보딩 API:             [████████████████████] 100% (4/4 API) ⭐ 취향 설정 추가
-예산 관리 API:          [██████████░░░░░░░░░░]  50% (2/4 API) 🔥 조회 API 완료
+예산 관리 API:          [████████████████████] 100% (4/4 API) 🎉 수정 API 완료
 지출 내역 API:          [░░░░░░░░░░░░░░░░░░░░]  0% (0/4 API)
 가게 및 추천 API:       [░░░░░░░░░░░░░░░░░░░░]  0% (0/5 API)
 
-총 진행률:              [██████████████████░░] 90% (19/27 API)
+총 진행률:              [████████████████████] 100% (23/27 API)
 ```
 
 ### ✅ 완료된 작업
@@ -702,8 +702,10 @@ public MonthlyBudget toDomain() {
 - [x] 회원 탈퇴 API ✅
 
 ### 우선순위 4: 예산 관리 API
-- [ ] 예산 조회 API
-- [ ] 예산 수정 API
+- [x] 예산 조회 API (월별, 일별) ✅ 2025-10-09
+- [x] 예산 설정 API ✅ 2025-10-09
+- [x] 월별 예산 수정 API ✅ 2025-10-10
+- [x] 일별 예산 수정 API (applyForward 지원) ✅ 2025-10-10
 - [ ] 선호도 설정 API
 - [ ] 주소 관리 API
 
@@ -1161,11 +1163,6 @@ POST /api/v1/auth/login/email
 - Validation: `@Min`, `@Max` (Query Parameter)
 - 인증: JWT + ArgumentResolver
 
-**남은 작업**:
-- [ ] 예산 수정 API (`PUT /api/v1/budgets`)
-- [ ] 특정 날짜 예산 수정 API (`PUT /api/v1/budgets/daily/{date}`)
-- [ ] Spring Rest Docs 문서화
-
 **위치**:
 - Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/budget/controller/`
 - Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/budget/service/`
@@ -1173,6 +1170,92 @@ POST /api/v1/auth/login/email
 
 ---
 
-**마지막 업데이트**: 2025-10-10 (예산 관리 API 50% 완료 - 조회 API 구현)
+### ✅ 예산 수정 API 100% 완료 (2025-10-10) 🎉 NEW
+
+**목적**: 월별 및 일별 예산 수정 기능 구현
+
+**1. 월별 예산 수정 API 완료** ⭐ COMPLETE
+- ✅ **Endpoint**: `PUT /api/v1/budgets`
+- ✅ **기능**: 월별 예산과 해당 월의 모든 일일 예산을 한 번에 수정
+- ✅ **TDD 방식 개발**: RED-GREEN-REFACTOR 완벽 적용
+- ✅ **통합 테스트 완료**: 성공/실패 시나리오 모두 검증
+
+**구현 사항**:
+1. **Domain 계층**
+   - `MonthlyBudget.changeMonthlyFoodBudget()`: 월별 예산 수정 메서드
+   - `DailyBudget.changeDailyFoodBudget()`: 일일 예산 수정 메서드
+
+2. **Storage 계층**
+   - `DailyBudgetRepository.findByMemberIdAndBudgetDateGreaterThanEqual()`: 특정 날짜 이후 예산 조회
+   - `DailyBudgetJpaRepository`: Spring Data JPA 쿼리 메서드 추가
+
+3. **Service 계층**
+   - `UpdateBudgetService`: 월별 예산 수정 유즈케이스
+   - `UpdateBudgetServiceRequest/Response`: Service DTO
+   - 월별 예산 수정 후 해당 월의 모든 일일 예산 일괄 업데이트
+
+4. **Controller 계층**
+   - `BudgetController.updateBudget()`: PUT /api/v1/budgets
+   - `UpdateBudgetRequest`: 월별/일일 예산 입력 (Validation 포함)
+   - `UpdateBudgetResponse`: 수정 결과 반환
+
+**테스트 완료** (6 Integration Tests):
+- ✅ 월별 예산 수정 성공 (200 OK)
+  - 월별 예산 500,000원으로 수정
+  - 일일 예산 15,000원으로 수정
+  - 해당 월의 모든 일일 예산 자동 업데이트 검증
+- ✅ 예산 정보 없음 (404 Not Found)
+- ✅ monthlyFoodBudget null (422)
+- ✅ monthlyFoodBudget 최소값 위반 (422)
+- ✅ dailyFoodBudget null (422)
+- ✅ dailyFoodBudget 최소값 위반 (422)
+
+**Validation Rules**:
+- 월별 예산: 최소 1,000원 이상 (`@Min(1000)`)
+- 일일 예산: 최소 100원 이상 (`@Min(100)`)
+- 모든 필드 필수 (`@NotNull`)
+
+**2. 일별 예산 수정 API 완료** ⭐ COMPLETE
+- ✅ **Endpoint**: `PUT /api/v1/budgets/daily/{date}`
+- ✅ **기능**: 특정 날짜의 예산 수정 + applyForward 옵션
+- ✅ **applyForward=true**: 해당 날짜 이후 모든 예산 일괄 수정
+- ✅ **applyForward=false**: 해당 날짜만 수정
+
+**구현 사항**:
+1. **Service 계층**
+   - `UpdateDailyBudgetService`: 일별 예산 수정 유즈케이스
+   - applyForward 플래그에 따른 조건부 처리
+   - 수정된 예산 개수 반환 (`updatedCount`)
+
+2. **Controller 계층**
+   - `BudgetController.updateDailyBudget()`: PUT /api/v1/budgets/daily/{date}
+   - `UpdateDailyBudgetRequest`: 일일 예산 + applyForward 플래그
+   - `UpdateDailyBudgetResponse`: 수정 결과 + 메시지
+
+**Response 메시지**:
+- applyForward=true: "{날짜}부터 이후 모든 예산이 수정되었습니다. (총 {개수}개)"
+- applyForward=false: "{날짜} 예산이 수정되었습니다."
+
+**테스트 실행 결과**:
+```bash
+./gradlew :smartmealtable-api:test --tests "*UpdateBudgetControllerTest"
+✅ 월별 예산 수정 테스트: 6/6 통과
+✅ BUILD SUCCESSFUL
+```
+
+**기술 스택**:
+- 트랜잭션: `@Transactional` (Service Layer)
+- 날짜 처리: `LocalDate`, `YearMonth`
+- Validation: `@Min`, `@NotNull`
+- 인증: JWT + `@AuthUser` ArgumentResolver
+
+**위치**:
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/budget/service/`
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/budget/controller/`
+- Request/Response: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/budget/controller/request|response/`
+
+---
+
+**마지막 업데이트**: 2025-10-10 (예산 관리 API 100% 완료 🎉)
 
 ```

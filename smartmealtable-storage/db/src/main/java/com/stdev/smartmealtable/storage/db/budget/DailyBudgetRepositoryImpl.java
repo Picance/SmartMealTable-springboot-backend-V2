@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * DailyBudgetRepository 구현체
@@ -34,5 +36,13 @@ public class DailyBudgetRepositoryImpl implements DailyBudgetRepository {
     public Optional<DailyBudget> findLatestByMemberId(Long memberId) {
         return jpaRepository.findLatestByMemberId(memberId)
                 .map(DailyBudgetJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<DailyBudget> findByMemberIdAndBudgetDateGreaterThanEqual(Long memberId, LocalDate fromDate) {
+        return jpaRepository.findByMemberIdAndBudgetDateGreaterThanEqual(memberId, fromDate)
+                .stream()
+                .map(DailyBudgetJpaEntity::toDomain)
+                .collect(Collectors.toList());
     }
 }

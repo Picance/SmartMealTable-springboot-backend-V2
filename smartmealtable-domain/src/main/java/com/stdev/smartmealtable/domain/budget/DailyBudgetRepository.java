@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.domain.budget;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,9 @@ public interface DailyBudgetRepository {
      * 회원 ID로 가장 최근 일일 예산 조회
      */
     Optional<DailyBudget> findLatestByMemberId(Long memberId);
+
+    /**
+     * 회원 ID와 특정 날짜(포함) 이후의 모든 일일 예산 조회
+     */
+    List<DailyBudget> findByMemberIdAndBudgetDateGreaterThanEqual(Long memberId, LocalDate fromDate);
 }
