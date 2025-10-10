@@ -22,4 +22,9 @@ public interface CategoryRepository {
      * 모든 카테고리 조회
      */
     List<Category> findAll();
+
+    /**
+     * 여러 카테고리 ID로 조회
+     */
+    List<Category> findByIdIn(List<Long> categoryIds);
 }

@@ -37,4 +37,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             .map(CategoryJpaEntity::toDomain)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Category> findByIdIn(List<Long> categoryIds) {
+        return categoryJpaRepository.findAllById(categoryIds).stream()
+            .map(CategoryJpaEntity::toDomain)
+            .collect(Collectors.toList());
+    }
 }
