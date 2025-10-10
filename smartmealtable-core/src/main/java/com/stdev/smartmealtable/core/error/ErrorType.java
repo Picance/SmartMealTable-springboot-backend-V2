@@ -117,6 +117,13 @@ public enum ErrorType {
             LogLevel.WARN
     ),
     
+    FOOD_PREFERENCE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 음식 선호도입니다.",
+            LogLevel.WARN
+    ),
+    
     STORE_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,
@@ -171,6 +178,13 @@ public enum ErrorType {
             HttpStatus.CONFLICT,
             ErrorCode.E409,
             "이미 연동된 소셜 계정입니다.",
+            LogLevel.WARN
+    ),
+    
+    FOOD_PREFERENCE_ALREADY_EXISTS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 해당 음식에 대한 선호도가 등록되어 있습니다.",
             LogLevel.WARN
     ),
     

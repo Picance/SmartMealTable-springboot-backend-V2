@@ -24,6 +24,11 @@ public interface FoodPreferenceRepository {
     Optional<FoodPreference> findByMemberIdAndFoodId(Long memberId, Long foodId);
 
     /**
+     * ID로 음식 선호도 조회
+     */
+    Optional<FoodPreference> findById(Long foodPreferenceId);
+
+    /**
      * 회원의 선호 음식만 조회 (isPreferred = true)
      */
     List<FoodPreference> findByMemberIdAndIsPreferred(Long memberId, Boolean isPreferred);
@@ -37,6 +42,11 @@ public interface FoodPreferenceRepository {
      * 특정 음식 선호도 삭제
      */
     void deleteByMemberIdAndFoodId(Long memberId, Long foodId);
+
+    /**
+     * ID로 음식 선호도 삭제
+     */
+    void deleteById(Long foodPreferenceId);
 
     /**
      * 회원의 선호 음식 개수 조회

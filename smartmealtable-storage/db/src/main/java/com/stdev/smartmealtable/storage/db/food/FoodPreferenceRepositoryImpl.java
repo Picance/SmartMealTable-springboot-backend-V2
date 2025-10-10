@@ -39,6 +39,12 @@ public class FoodPreferenceRepositoryImpl implements FoodPreferenceRepository {
     }
 
     @Override
+    public Optional<FoodPreference> findById(Long foodPreferenceId) {
+        return foodPreferenceJpaRepository.findById(foodPreferenceId)
+                .map(FoodPreferenceJpaEntity::toDomain);
+    }
+
+    @Override
     public List<FoodPreference> findByMemberIdAndIsPreferred(Long memberId, Boolean isPreferred) {
         return foodPreferenceJpaRepository.findByMemberIdAndIsPreferred(memberId, isPreferred).stream()
                 .map(FoodPreferenceJpaEntity::toDomain)
@@ -53,6 +59,11 @@ public class FoodPreferenceRepositoryImpl implements FoodPreferenceRepository {
     @Override
     public void deleteByMemberIdAndFoodId(Long memberId, Long foodId) {
         foodPreferenceJpaRepository.deleteByMemberIdAndFoodId(memberId, foodId);
+    }
+
+    @Override
+    public void deleteById(Long foodPreferenceId) {
+        foodPreferenceJpaRepository.deleteById(foodPreferenceId);
     }
 
     @Override

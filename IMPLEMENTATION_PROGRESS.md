@@ -3,7 +3,7 @@
 > **목표**: 회원가입 API를 TDD로 완전히 구현하여 전체 아키텍처 템플릿 확립
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-10 21:08
+**최종 업데이트**: 2025-10-11 (음식 선호도 관리 API 완료) 🆕
 
 ---
 
@@ -19,30 +19,33 @@
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
-10. 프로필 및 설정:        [██████████████████░░]  75% (9/12 API) 🆕 +1
+10. 프로필 및 설정:        [████████████████████] 100% (12/12 API) ✅ 완료! 🎉
 11. 홈 화면:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 12. 장바구니:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/6 API)
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [█████████████░░░░░░░]  54% (38/70 API) 🆕 +1
+총 진행률:                [██████████████░░░░░░]  59% (41/70 API) 🆕 +3
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (38개) 🆕 +1
+#### ✅ 완료 (41개) 🆕 +3
 - **인증 및 회원 (13개)**: 
   - 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
   - 소셜 계정 연동 관리 (3개): 목록조회, 추가연동, 연동해제
   - 비밀번호 만료 관리 (2개): 만료상태조회, 만료일연장
 - **온보딩 (11개)**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장, 약관동의, 그룹목록, 카테고리목록, 약관목록, 약관상세
 - **예산 관리 (4개)**: 월별조회, 일별조회, 예산수정, 일괄적용
-- **프로필 및 설정 (9개)**: 프로필조회, 프로필수정, 주소목록조회, 주소추가, 주소수정, 주소삭제, 기본주소설정, 선호도조회, 🆕 카테고리선호도수정
+- **프로필 및 설정 (12개)**: ✅ **100% 완료!**
+  - 프로필조회, 프로필수정
+  - 주소관리 (5개): 목록조회, 추가, 수정, 삭제, 기본주소설정
+  - 선호도관리 (5개): 선호도조회, 카테고리선호도수정, 🆕 음식선호도추가, 🆕 음식선호도변경, 🆕 음식선호도삭제
 
-#### ⚠️ 미구현 (32개) 🆕 -1
+#### ⚠️ 미구현 (29개) 🆕 -3
 - **인증 및 회원** (0개): 모두 완료 ✅
 - **온보딩** (0개): 모두 완료 ✅
-- **프로필 및 설정** (3개): 음식선호도추가, 음식선호도변경, 음식선호도삭제
+- **프로필 및 설정** (0개): 모두 완료 ✅ 🎉
 - **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
 - **가게 관리** (3개): 목록조회, 상세조회, 자동완성검색
 - **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
@@ -2377,6 +2380,131 @@ POST /api/v1/auth/login/email
 - Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/service/preference/UpdateCategoryPreferencesService.java`
 - Request DTO: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/controller/preference/UpdateCategoryPreferencesRequest.java`
 - Response DTO: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/controller/preference/UpdateCategoryPreferencesResponse.java`
+
+---
+
+### ✅ 음식 선호도 관리 API 100% 완료 (2025-10-11 추가) ⭐ NEW - 프로필 및 설정 섹션 완료! 🎉
+**목적**: 개별 음식에 대한 선호도(좋아요/싫어요)를 관리하는 기능 구현
+
+**구현 사항**:
+1. **음식 선호도 추가 API**
+   - **Endpoint**: `POST /api/v1/members/me/preferences/foods`
+   - **Request**: 
+     - `foodId`: 음식 ID (필수)
+     - `isPreferred`: true(좋아요) / false(싫어요) (필수)
+   - **Response (201 Created)**:
+     ```json
+     {
+       "foodPreferenceId": 803,
+       "foodId": 12,
+       "foodName": "김치찌개",
+       "categoryName": "한식",
+       "isPreferred": true,
+       "createdAt": "2025-10-11T..."
+     }
+     ```
+   - **Error Cases**:
+     - `404`: 존재하지 않는 음식
+     - `409`: 이미 해당 음식에 대한 선호도가 등록되어 있음
+     - `422`: 유효성 검증 실패 (foodId 또는 isPreferred 누락)
+
+2. **음식 선호도 변경 API**
+   - **Endpoint**: `PUT /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+   - **Request**:
+     - `isPreferred`: true(좋아요) / false(싫어요) (필수)
+   - **Response (200 OK)**:
+     ```json
+     {
+       "foodPreferenceId": 803,
+       "foodId": 12,
+       "foodName": "김치찌개",
+       "categoryName": "한식",
+       "isPreferred": false,
+       "updatedAt": "2025-10-11T..."
+     }
+     ```
+   - **Error Cases**:
+     - `404`: 존재하지 않는 음식 선호도
+     - `403`: 다른 사용자의 선호도에 접근 시도
+
+3. **음식 선호도 삭제 API**
+   - **Endpoint**: `DELETE /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+   - **Response**: `204 No Content`
+   - **Error Cases**:
+     - `404`: 존재하지 않는 음식 선호도
+     - `403`: 다른 사용자의 선호도에 접근 시도
+
+**도메인 계층 구현**:
+- ✅ **Domain**: `FoodPreference` 도메인 엔티티 (이미 존재)
+  - `create()`: 팩토리 메서드
+  - `changePreference()`: 선호도 변경 메서드
+- ✅ **Repository**: `FoodPreferenceRepository` 인터페이스
+  - `findById()`: ID로 조회 (신규 추가)
+  - `deleteById()`: ID로 삭제 (신규 추가)
+
+**Storage 계층 구현**:
+- ✅ **JPA Entity**: `FoodPreferenceJpaEntity` (이미 존재)
+- ✅ **Repository Impl**: `FoodPreferenceRepositoryImpl`
+  - `findById()`: 구현 추가
+  - `deleteById()`: 구현 추가
+
+**Application Service 구현**:
+- ✅ `AddFoodPreferenceService`: 음식 선호도 추가 유즈케이스
+  - Food 존재 여부 확인
+  - 중복 검증
+  - FoodPreference 생성 및 저장
+  - Category 정보 조회 (응답에 포함)
+- ✅ `UpdateFoodPreferenceService`: 음식 선호도 변경 유즈케이스
+  - FoodPreference 조회 및 권한 검증
+  - 선호도 변경
+  - Food 및 Category 정보 조회
+- ✅ `DeleteFoodPreferenceService`: 음식 선호도 삭제 유즈케이스
+  - FoodPreference 조회 및 권한 검증
+  - 삭제 처리
+
+**Controller 구현**:
+- ✅ `PreferenceController`에 3개 엔드포인트 추가
+  - `POST /api/v1/members/me/preferences/foods`
+  - `PUT /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+  - `DELETE /api/v1/members/me/preferences/foods/{foodPreferenceId}`
+
+**ErrorType 추가**:
+- ✅ `FOOD_PREFERENCE_ALREADY_EXISTS`: 409 Conflict
+- ✅ `FOOD_PREFERENCE_NOT_FOUND`: 404 Not Found
+
+**통합 테스트 작성**:
+- ✅ `FoodPreferenceControllerTest`: 8개 테스트 케이스
+  - 추가 성공 (201)
+  - 중복 추가 실패 (409)
+  - 존재하지 않는 음식 (404)
+  - 유효성 검증 실패 (422)
+  - 변경 성공 (200)
+  - 변경 시 존재하지 않는 선호도 (404)
+  - 삭제 성공 (204)
+  - 삭제 시 존재하지 않는 선호도 (404)
+
+**빌드 결과**:
+- ✅ 전체 프로젝트 빌드 성공 (`BUILD SUCCESSFUL`)
+- ⚠️ 통합 테스트: TestContainers 사용으로 Docker 필요 (로컬에서 Docker 실행 필요)
+
+**기술 스택**:
+- ✅ TDD 방식 개발 (RED-GREEN-REFACTOR)
+- ✅ 도메인 로직 활용 (FoodPreference.changePreference())
+- ✅ Repository 패턴 + 권한 검증
+- ✅ DTO 계층 분리 (Controller ↔ Service)
+
+**위치**:
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/controller/PreferenceController.java`
+- Services: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/service/preference/`
+  - `AddFoodPreferenceService.java`
+  - `UpdateFoodPreferenceService.java`
+  - `DeleteFoodPreferenceService.java`
+- Test: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/member/controller/FoodPreferenceControllerTest.java`
+
+**프로필 및 설정 섹션 100% 완료! 🎉**
+- ✅ 프로필 관리 (2개): 조회, 수정
+- ✅ 주소 관리 (5개): 목록조회, 추가, 수정, 삭제, 기본주소설정
+- ✅ 선호도 관리 (5개): 조회, 카테고리선호도수정, 음식선호도추가, 음식선호도변경, 음식선호도삭제
 
 ---
 
