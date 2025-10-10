@@ -3,7 +3,7 @@
 > **목표**: 회원가입 API를 TDD로 완전히 구현하여 전체 아키텍처 템플릿 확립
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-11 (음식 선호도 관리 API 완료) 🆕
+**최종 업데이트**: 2025-10-11 (지출 내역 등록 API 구현) 🆕
 
 ---
 
@@ -15,7 +15,7 @@
 3. 인증 및 회원 관리:      [████████████████████] 100% (13/13 API) ✅
 4. 온보딩:                [████████████████████] 100% (11/11 API) ✅
 5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
-6. 지출 내역:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/7 API)
+6. 지출 내역:             [███░░░░░░░░░░░░░░░░░]  14% (1/7 API) 🆕
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
@@ -25,12 +25,12 @@
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [██████████████░░░░░░]  59% (41/70 API) 🆕 +3
+총 진행률:                [███████████████░░░░░]  60% (42/70 API) 🆕 +1
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (41개) 🆕 +3
+#### ✅ 완료 (42개) 🆕 +1
 - **인증 및 회원 (13개)**: 
   - 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
   - 소셜 계정 연동 관리 (3개): 목록조회, 추가연동, 연동해제
@@ -40,13 +40,14 @@
 - **프로필 및 설정 (12개)**: ✅ **100% 완료!**
   - 프로필조회, 프로필수정
   - 주소관리 (5개): 목록조회, 추가, 수정, 삭제, 기본주소설정
-  - 선호도관리 (5개): 선호도조회, 카테고리선호도수정, 🆕 음식선호도추가, 🆕 음식선호도변경, 🆕 음식선호도삭제
+  - 선호도관리 (5개): 선호도조회, 카테고리선호도수정, 음식선호도추가, 음식선호도변경, 음식선호도삭제
+- **🆕 지출 내역 (1개)**: 등록
 
-#### ⚠️ 미구현 (29개) 🆕 -3
+#### ⚠️ 미구현 (28개) 🆕 -1
 - **인증 및 회원** (0개): 모두 완료 ✅
 - **온보딩** (0개): 모두 완료 ✅
 - **프로필 및 설정** (0개): 모두 완료 ✅ 🎉
-- **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
+- **지출 내역** (6개): SMS파싱, 조회, 상세조회, 수정, 삭제, 통계
 - **가게 관리** (3개): 목록조회, 상세조회, 자동완성검색
 - **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
 - **즐겨찾기** (4개): 추가, 목록조회, 순서변경, 삭제
@@ -2505,6 +2506,107 @@ POST /api/v1/auth/login/email
 - ✅ 프로필 관리 (2개): 조회, 수정
 - ✅ 주소 관리 (5개): 목록조회, 추가, 수정, 삭제, 기본주소설정
 - ✅ 선호도 관리 (5개): 조회, 카테고리선호도수정, 음식선호도추가, 음식선호도변경, 음식선호도삭제
+
+---
+
+## 🎯 지출 내역 API 구현 시작 (2025-10-11) ⭐ NEW
+
+### 📌 구현 완료된 지출 내역 API (1/7개)
+
+#### 1. 지출 내역 등록 API ✅
+**Endpoint**: `POST /api/v1/expenditures`
+
+**기능**:
+- 음식 관련 지출 내역을 기록
+- 가게 정보, 금액, 날짜/시간, 카테고리, 식사 시간대(BREAKFAST, LUNCH, DINNER, OTHER) 등록
+- 지출 항목 상세 (음식명, 수량, 가격) 등록
+- 항목 총액과 지출 금액 일치 검증
+
+**구현 내용**:
+
+**1. Domain 계층**:
+- ✅ `MealType` enum: 식사 시간대 (BREAKFAST, LUNCH, DINNER, OTHER)
+- ✅ `Expenditure` 도메인 엔티티
+  - 비즈니스 규칙: 금액 0 이상 검증
+  - 비즈니스 규칙: 항목 총액과 지출 금액 일치 검증
+  - `create()`: 신규 생성 (검증 포함)
+  - `reconstruct()`: JPA 복원용 (검증 스킵)
+  - `update()`: 수정
+  - `delete()`: Soft Delete
+  - `isOwnedBy()`: 소유권 검증
+- ✅ `ExpenditureItem` 도메인 엔티티
+  - 비즈니스 규칙: 수량 1 이상, 가격 0 이상 검증
+  - `create()`: 신규 생성
+  - `getTotalAmount()`: 항목 총 금액 계산
+- ✅ `ExpenditureRepository` 인터페이스
+
+**2. Storage 계층**:
+- ✅ `ExpenditureJpaEntity`: 지출 내역 JPA 엔티티
+  - @OneToMany로 ExpenditureItemJpaEntity 매핑 (Aggregate 패턴)
+  - created_at, updated_at: @PrePersist, @PreUpdate 활용
+  - deleted: Soft Delete 플래그
+- ✅ `ExpenditureItemJpaEntity`: 지출 항목 JPA 엔티티
+  - @ManyToOne으로 ExpenditureJpaEntity 역참조
+- ✅ `ExpenditureJpaRepository`: Spring Data JPA Repository
+  - findByIdAndNotDeleted(): 삭제되지 않은 것만 조회
+  - findByMemberIdAndDateRange(): 기간별 조회
+  - findByIdAndMemberId(): 소유권 검증용
+  - existsByMemberIdAndMonth(): 월별 데이터 존재 여부
+- ✅ `ExpenditureRepositoryImpl`: Domain Repository 구현체
+
+**3. Application 계층**:
+- ✅ `CreateExpenditureServiceRequest`: Service 요청 DTO
+- ✅ `CreateExpenditureServiceResponse`: Service 응답 DTO
+- ✅ `CreateExpenditureService`: 지출 내역 등록 서비스
+  - 카테고리 검증 (존재하지 않으면 404)
+  - 지출 항목 도메인 객체 생성
+  - 도메인 검증 로직 활용 (금액, 항목 총액 검증)
+
+**4. Presentation 계층**:
+- ✅ `CreateExpenditureRequest`: Controller 요청 DTO
+  - Jakarta Validation: @NotBlank, @NotNull, @Min, @Size, @Valid
+  - 중첩 DTO: ExpenditureItemRequest
+- ✅ `CreateExpenditureResponse`: Controller 응답 DTO
+- ✅ `ExpenditureController`: 지출 내역 Controller
+  - @AuthUser를 통한 JWT 인증 사용자 정보 주입
+  - 201 Created 응답
+
+**5. 테스트**:
+- ✅ `CreateExpenditureControllerTest`: 통합 테스트 (작성 완료)
+  - 성공 케이스 (201)
+  - 항목 총액 불일치 (422)
+  - 카테고리 없음 (404)
+  - 인증 토큰 없음 (401)
+  - 유효하지 않은 요청 (422)
+  - 항목 없이 등록 성공 (201)
+
+**빌드 결과**:
+- ✅ Domain 모듈 빌드 성공
+- ✅ Storage 모듈 빌드 성공  
+- ✅ API 모듈 빌드 성공
+- ⚠️ 테스트: TestContainers Docker 환경 준비 필요
+
+**기술 스택**:
+- ✅ Aggregate 패턴: Expenditure와 ExpenditureItem의 양방향 관계
+- ✅ Domain 검증: 비즈니스 규칙을 Domain Entity에서 처리
+- ✅ Soft Delete: deleted 플래그 활용
+- ✅ DTO 계층 분리: Controller ↔ Service ↔ Domain
+- ✅ ArgumentResolver: @AuthUser를 통한 인증 처리
+
+**위치**:
+- Domain: `smartmealtable-domain/src/main/java/com/stdev/smartmealtable/domain/expenditure/`
+- Storage: `smartmealtable-storage/db/src/main/java/com/stdev/smartmealtable/storage/db/expenditure/`
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/expenditure/service/`
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/expenditure/controller/`
+- Test: `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/expenditure/controller/`
+
+**다음 단계**:
+- 지출 내역 조회 API (목록, 페이징, 필터)
+- 지출 내역 상세 조회 API
+- 지출 내역 수정 API
+- 지출 내역 삭제 API (Soft Delete)
+- SMS 파싱 API (legacy 코드 재활용)
+- 일별 지출 통계 API
 
 ---
 
