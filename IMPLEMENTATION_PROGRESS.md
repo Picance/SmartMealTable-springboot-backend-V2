@@ -3,7 +3,7 @@
 > **목표**: 회원가입 API를 TDD로 완전히 구현하여 전체 아키텍처 템플릿 확립
 
 **시작일**: 2025-10-08  
-**완료일**: 2025-10-08
+**최종 업데이트**: 2025-10-10
 
 ---
 
@@ -12,32 +12,35 @@
 > **전체 API 엔드포인트**: 70개 (API_SPECIFICATION.md 기준)
 
 ```
-3. 인증 및 회원 관리:      [█████████████░░░░░░░]  69% (9/13 API)
+3. 인증 및 회원 관리:      [████████████████████] 100% (13/13 API) 🎉 NEW!
 4. 온보딩:                [████████████████████] 100% (11/11 API) ✅
 5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
 6. 지출 내역:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/7 API)
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
-10. 프로필 및 설정:        [███████████░░░░░░░░░]  58% (7/12 API) ⭐ 주소 관리 완료
+10. 프로필 및 설정:        [███████████░░░░░░░░░]  58% (7/12 API) 
 11. 홈 화면:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 12. 장바구니:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/6 API)
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [██████████░░░░░░░░░░]  44% (31/70 API)
+총 진행률:                [███████████░░░░░░░░░]  51% (36/70 API) 🆕 +5
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (31개) 🆕 +5
-- **인증 및 회원**: 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
-- **온보딩**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장, 약관동의, 그룹목록, 카테고리목록, 약관목록, 약관상세
+#### ✅ 완료 (36개) 🆕 +5
+- **인증 및 회원 (13개)**: 
+  - 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
+  - 🆕 **소셜 계정 연동 관리 (3개)**: 목록조회, 추가연동, 연동해제
+  - 🆕 **비밀번호 만료 관리 (2개)**: 만료상태조회, 만료일연장
+- **온보딩 (11개)**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장, 약관동의, 그룹목록, 카테고리목록, 약관목록, 약관상세
 - **예산 관리**: 월별조회, 일별조회, 예산수정, 일괄적용
 - **프로필 및 설정**: 프로필조회, 프로필수정, 주소목록조회, 주소추가, 주소수정, 주소삭제, 기본주소설정 (7개) 🆕 +5
 
-#### ⚠️ 미구현 (39개) 🆕 -5
-- **인증 및 회원** (4개): 소셜계정 연동 관리(3), 비밀번호 만료 관리(2) - 5개 → 실제 4개
+#### ⚠️ 미구현 (34개) 🆕 -5
+- **인증 및 회원** (0개): 모두 완료 ✅
 - **온보딩** (0개): 모두 완료 ✅
 - **프로필 및 설정** (5개): 선호도조회, 카테고리선호도수정, 음식선호도추가, 음식선호도변경, 음식선호도삭제
 - **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
@@ -231,6 +234,143 @@
   - Soft Delete 처리 (204 No Content)
   - 비밀번호 검증 (401)
   - 탈퇴 사유 로깅
+
+### ✅ 소셜 계정 연동 관리 API 100% 완료 (2025-10-10 추가) ⭐ NEW
+**목적**: 로그인 후 추가 소셜 계정 연동 및 관리 기능 구현
+
+**구현 사항**:
+1. **소셜 계정 목록 조회 API**
+   - **Endpoint**: `GET /api/v1/members/me/social-accounts`
+   - **기능**: 현재 연동된 소셜 계정 목록 및 비밀번호 설정 여부 조회
+   - **Service**: `GetSocialAccountListService`
+   - **DTO**: `SocialAccountListServiceResponse`, `ConnectedSocialAccountResponse`
+   - **Domain 로직 활용**: `MemberAuthentication.hasPassword()`
+   - **Response 구조**:
+     ```json
+     {
+       "hasPassword": true,
+       "connectedAccounts": [
+         {
+           "socialAccountId": 1,
+           "provider": "KAKAO",
+           "email": "user@kakao.com",
+           "connectedAt": "2025-01-15T10:30:00"
+         }
+       ]
+     }
+     ```
+   - **통합 테스트**: `GetSocialAccountListControllerTest` (3개 테스트 통과 ✅)
+
+2. **소셜 계정 추가 연동 API**
+   - **Endpoint**: `POST /api/v1/members/me/social-accounts`
+   - **기능**: OAuth 인증 후 추가 소셜 계정 연동
+   - **Service**: `AddSocialAccountService`
+   - **DTO**: `AddSocialAccountServiceRequest`, `AddSocialAccountServiceResponse`
+   - **OAuth 클라이언트 재사용**: `KakaoAuthClient`, `GoogleAuthClient`
+   - **중복 검증**: `SocialAccountRepository.existsByProviderAndProviderId()`
+   - **ErrorType 추가**: `SOCIAL_ACCOUNT_ALREADY_LINKED` (409)
+   - **Request/Response**:
+     ```json
+     // Request
+     {
+       "provider": "GOOGLE",
+       "authorizationCode": "4/0AdLIrYd...",
+       "redirectUri": "http://localhost:3000/oauth/callback"
+     }
+     
+     // Response
+     {
+       "socialAccountId": 2,
+       "provider": "GOOGLE",
+       "email": "user@gmail.com",
+       "connectedAt": "2025-01-15T11:00:00"
+     }
+     ```
+
+3. **소셜 계정 연동 해제 API**
+   - **Endpoint**: `DELETE /api/v1/members/me/social-accounts/{socialAccountId}`
+   - **기능**: 연동된 소셜 계정 해제 (유일한 로그인 수단 검증 포함)
+   - **Service**: `RemoveSocialAccountService`
+   - **비즈니스 로직**:
+     - 본인 소셜 계정 확인 (`memberAuthenticationId` 비교)
+     - 유일한 로그인 수단 검증: 비밀번호 없고 소셜 계정 1개만 있으면 해제 불가 (403)
+     - 해제 가능 시 `SocialAccount` 삭제
+   - **ErrorType 추가**: `SOCIAL_ACCOUNT_NOT_FOUND` (404)
+   - **Response**: `204 No Content`
+
+**OAuth 흐름 재사용**:
+- 카카오: Authorization Code → Access Token → User Info API
+- 구글: Authorization Code → Access Token + ID Token → ID Token Parsing
+- 기존 소셜 로그인 클라이언트 100% 재사용
+
+**테스트 전략**:
+- 통합 테스트: `GetSocialAccountListControllerTest` (3개 통과)
+  - 비밀번호 없음 + 소셜 계정 있음
+  - 비밀번호 있음 + 소셜 계정 있음
+  - 소셜 계정 없음
+- 빌드 검증: BUILD SUCCESSFUL (전체 빌드 통과 ✅)
+
+**위치**:
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/controller/SocialAccountController.java`
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/service/socialaccount/`
+
+### ✅ 비밀번호 만료 관리 API 100% 완료 (2025-10-10 추가) ⭐ NEW
+**목적**: 비밀번호 만료 정책 구현 (90일 만료 정책)
+
+**구현 사항**:
+1. **비밀번호 만료 상태 조회 API**
+   - **Endpoint**: `GET /api/v1/members/me/password/expiry-status`
+   - **기능**: 비밀번호 만료 여부, 만료일, 남은 일수 조회
+   - **Service**: `GetPasswordExpiryStatusService`
+   - **DTO**: `PasswordExpiryStatusResponse`
+   - **Domain 로직 활용**: `MemberAuthentication.isPasswordExpired()`
+   - **비즈니스 로직**:
+     - `passwordChangedAt`에서 90일 후가 만료일
+     - `ChronoUnit.DAYS.between()`으로 남은 일수 계산
+     - `isExpired`: 만료 여부 (만료일 지남)
+     - `isExpiringSoon`: 만료 임박 여부 (7일 이내)
+   - **Response 구조**:
+     ```json
+     {
+       "passwordChangedAt": "2024-10-15T09:00:00",
+       "passwordExpiresAt": "2025-01-13T09:00:00",
+       "daysRemaining": 3,
+       "isExpired": false,
+       "isExpiringSoon": true
+     }
+     ```
+
+2. **비밀번호 만료일 연장 API**
+   - **Endpoint**: `POST /api/v1/members/me/password/extend-expiry`
+   - **기능**: 비밀번호 만료일 90일 연장
+   - **Service**: `ExtendPasswordExpiryService`
+   - **DTO**: `ExtendPasswordExpiryResponse`
+   - **Domain 로직 위임**: `MemberAuthentication.extendPasswordExpiry()`
+   - **비즈니스 로직**:
+     - 현재 시간 기준 90일 후로 `passwordChangedAt` 업데이트
+     - 새 만료일 계산 및 반환
+   - **Response 구조**:
+     ```json
+     {
+       "newPasswordChangedAt": "2025-01-15T10:00:00",
+       "newPasswordExpiresAt": "2025-04-15T10:00:00"
+     }
+     ```
+
+**도메인 로직**:
+- `MemberAuthentication.isPasswordExpired()`: 만료 여부 확인
+- `MemberAuthentication.extendPasswordExpiry()`: 만료일 연장 (90일)
+- 비밀번호 정책: 90일 자동 만료, 7일 이내 만료 임박 알림
+
+**테스트 전략**:
+- 빌드 검증: BUILD SUCCESSFUL (전체 빌드 통과 ✅)
+- Domain 로직 활용으로 비즈니스 로직 응집도 향상
+
+**위치**:
+- Controller: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/controller/PasswordExpiryController.java`
+- Service: `smartmealtable-api/src/main/java/com/stdev/smartmealtable/api/member/service/password/`
+
+---
 
 ### ✅ 소셜 로그인 API 100% 완료 (2025-10-09 추가) ✅ 통합 테스트 완료
 **목적**: 카카오 및 구글 OAuth 2.0 기반 소셜 로그인 구현

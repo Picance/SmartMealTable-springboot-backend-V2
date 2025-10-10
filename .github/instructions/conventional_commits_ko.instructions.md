@@ -16,7 +16,7 @@ The format is as follows:
 * **type**: 변경의 종류를 나타내는 한 단어(`feat`, `fix`, `docs`, `refactor`, `test`, `chore` …).
 * **scope**: 영향 범위(모듈·폴더 등)를 괄호로 표기하며 생략 가능.
 * **subject**: 50자 이내, 명령형 현재 시제, 첫 글자 소문자, 마침표 금지.
-* 한글 커밋도 허용하지만 `type`, `scope` 는 영문으로 유지합니다.
+* 한글 커밋으로 작성하지만, `type`, `scope` 는 영문으로 유지합니다.
 
 ## type
 

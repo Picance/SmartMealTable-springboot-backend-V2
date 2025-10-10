@@ -103,6 +103,13 @@ public enum ErrorType {
             LogLevel.WARN
     ),
     
+    SOCIAL_ACCOUNT_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 소셜 계정입니다.",
+            LogLevel.WARN
+    ),
+    
     FOOD_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,
@@ -164,6 +171,13 @@ public enum ErrorType {
             HttpStatus.CONFLICT,
             ErrorCode.E409,
             "이미 연동된 소셜 계정입니다.",
+            LogLevel.WARN
+    ),
+    
+    SOCIAL_ACCOUNT_ALREADY_LINKED(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 다른 계정에 연동된 소셜 계정입니다.",
             LogLevel.WARN
     ),
     
