@@ -137,6 +137,13 @@ public enum ErrorType {
             "해당 날짜의 예산 정보를 찾을 수 없습니다.",
             LogLevel.WARN
     ),
+    
+    ADDRESS_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 주소입니다.",
+            LogLevel.WARN
+    ),
 
     // ==================== 충돌 (409) ====================
     DUPLICATE_EMAIL(
@@ -164,6 +171,20 @@ public enum ErrorType {
             HttpStatus.CONFLICT,
             ErrorCode.E409,
             "유일한 로그인 수단입니다. 연동 해제하려면 먼저 비밀번호를 설정해주세요.",
+            LogLevel.WARN
+    ),
+    
+    CANNOT_DELETE_LAST_PRIMARY_ADDRESS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "기본 주소는 다른 주소가 있을 때만 삭제할 수 있습니다.",
+            LogLevel.WARN
+    ),
+    
+    FORBIDDEN_ACCESS(
+            HttpStatus.FORBIDDEN,
+            ErrorCode.E403,
+            "다른 사용자의 리소스에 접근할 수 없습니다.",
             LogLevel.WARN
     ),
 

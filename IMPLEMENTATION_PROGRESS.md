@@ -19,27 +19,27 @@
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
-10. 프로필 및 설정:        [███░░░░░░░░░░░░░░░░░]  17% (2/12 API) 🔄
+10. 프로필 및 설정:        [███████████░░░░░░░░░]  58% (7/12 API) ⭐ 주소 관리 완료
 11. 홈 화면:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 12. 장바구니:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/6 API)
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [█████████░░░░░░░░░░░]  37% (26/70 API)
+총 진행률:                [██████████░░░░░░░░░░]  44% (31/70 API)
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (26개)
+#### ✅ 완료 (31개) 🆕 +5
 - **인증 및 회원**: 회원가입, 로그인(이메일/카카오/구글), 토큰갱신, 로그아웃, 이메일중복검증, 비밀번호변경, 회원탈퇴
 - **온보딩**: 프로필설정, 주소등록, 예산설정, 취향설정, 음식목록조회, 음식선호도저장, 약관동의, 그룹목록, 카테고리목록, 약관목록, 약관상세
 - **예산 관리**: 월별조회, 일별조회, 예산수정, 일괄적용
-- **프로필 및 설정**: 프로필조회, 프로필수정 (2개) 🆕
+- **프로필 및 설정**: 프로필조회, 프로필수정, 주소목록조회, 주소추가, 주소수정, 주소삭제, 기본주소설정 (7개) 🆕 +5
 
-#### ⚠️ 미구현 (44개)
+#### ⚠️ 미구현 (39개) 🆕 -5
 - **인증 및 회원** (4개): 소셜계정 연동 관리(3), 비밀번호 만료 관리(2) - 5개 → 실제 4개
 - **온보딩** (0개): 모두 완료 ✅
-- **프로필 및 설정** (10개): 주소CRUD(5), 선호도CRUD(5) - 구현 가이드 제공됨
+- **프로필 및 설정** (5개): 선호도조회, 카테고리선호도수정, 음식선호도추가, 음식선호도변경, 음식선호도삭제
 - **지출 내역** (7개): SMS파싱, 등록, 조회, 상세조회, 수정, 삭제, 통계
 - **가게 관리** (3개): 목록조회, 상세조회, 자동완성검색
 - **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
@@ -1954,6 +1954,169 @@ POST /api/v1/auth/login/email
 
 ---
 
-**마지막 업데이트**: 2025-10-10 (온보딩 API 100% 완료, 예산 관리 API 100% 완료 🎉)
+**마지막 업데이트**: 2025-10-10 (온보딩 API 100% 완료, 예산 관리 API 100% 완료, 주소 관리 API 100% 완료 🎉)
+
+---
+
+## 🏠 주소 관리 API 100% 완성 (2025-10-10) ⭐ NEW
+
+### 📌 구현 완료된 주소 관리 API (5개)
+
+**목적**: 회원의 주소 목록 조회, 추가, 수정, 삭제, 기본 주소 설정 기능 제공
+
+#### 1. 주소 목록 조회 API
+**Endpoint**: `GET /api/v1/members/me/addresses`
+
+**기능**:
+- 회원의 모든 주소 목록 조회
+- 주소 별칭, 유형, 도로명/지번 주소, 좌표, 기본 주소 여부 반환
+
+**구현 내용**:
+- ✅ Controller: `AddressController.getAddresses()`
+- ✅ Service: `AddressService.getAddresses()`
+- ✅ Domain: `AddressHistory` 엔티티 (기존)
+- ✅ Storage: `AddressHistoryJpaEntity` (기존)
+- ✅ 단위 테스트: `AddressServiceTest.getAddresses_Success()` ✅ 통과
+
+---
+
+#### 2. 주소 추가 API
+**Endpoint**: `POST /api/v1/members/me/addresses`
+
+**기능**:
+- 새로운 주소 등록
+- 첫 번째 주소는 자동으로 기본 주소로 설정
+- 기본 주소로 설정 시 기존 기본 주소는 자동 해제
+
+**구현 내용**:
+- ✅ Controller: `AddressController.addAddress()`
+- ✅ Service: `AddressService.addAddress()`
+- ✅ Request DTO: `AddressRequest` (Validation 적용)
+- ✅ Response DTO: `AddressResponse`
+- ✅ 단위 테스트: `AddressServiceTest` 2개 테스트 ✅ 통과
+  - 첫 번째 주소 자동 기본 주소 설정 시나리오
+  - 기본 주소로 설정 시 기존 기본 주소 해제 시나리오
+
+---
+
+#### 3. 주소 수정 API
+**Endpoint**: `PUT /api/v1/members/me/addresses/{addressHistoryId}`
+
+**기능**:
+- 기존 주소 정보 수정
+- 주소 별칭, 도로명/지번 주소, 좌표, 유형 변경 가능
+- 본인의 주소만 수정 가능 (권한 체크)
+
+**구현 내용**:
+- ✅ Controller: `AddressController.updateAddress()`
+- ✅ Service: `AddressService.updateAddress()`
+- ✅ 단위 테스트: `AddressServiceTest` 3개 테스트 ✅ 통과
+  - 주소 수정 성공 시나리오
+  - 존재하지 않는 주소 수정 실패 (ADDRESS_NOT_FOUND)
+  - 다른 회원의 주소 수정 실패 (FORBIDDEN_ACCESS)
+
+---
+
+#### 4. 주소 삭제 API
+**Endpoint**: `DELETE /api/v1/members/me/addresses/{addressHistoryId}`
+
+**기능**:
+- 주소 삭제 (Soft Delete)
+- 기본 주소가 1개뿐일 경우 삭제 불가
+- 본인의 주소만 삭제 가능 (권한 체크)
+
+**구현 내용**:
+- ✅ Controller: `AddressController.deleteAddress()`
+- ✅ Service: `AddressService.deleteAddress()`
+- ✅ 단위 테스트: `AddressServiceTest` 2개 테스트 ✅ 통과
+  - 주소 삭제 성공 시나리오
+  - 기본 주소 1개만 남았을 때 삭제 실패 (CANNOT_DELETE_LAST_PRIMARY_ADDRESS)
+
+---
+
+#### 5. 기본 주소 설정 API
+**Endpoint**: `PUT /api/v1/members/me/addresses/{addressHistoryId}/primary`
+
+**기능**:
+- 특정 주소를 기본 주소로 설정
+- 기존 기본 주소는 자동으로 해제됨
+- 본인의 주소만 기본 주소로 설정 가능
+
+**구현 내용**:
+- ✅ Controller: `AddressController.setPrimaryAddress()`
+- ✅ Service: `AddressService.setPrimaryAddress()`
+- ✅ Response DTO: `PrimaryAddressResponse`
+- ✅ 단위 테스트: `AddressServiceTest` 2개 테스트 ✅ 통과
+  - 기본 주소 설정 성공 시나리오
+  - 존재하지 않는 주소 설정 실패 (ADDRESS_NOT_FOUND)
+
+---
+
+### 🧪 테스트 전략
+
+#### 단위 테스트 (Service 계층)
+- **테스트 방식**: Mockist 스타일 Unit Test
+- **프레임워크**: JUnit 5 + Mockito
+- **테스트 범위**: 10개 테스트 케이스
+  - 주소 목록 조회 성공
+  - 주소 추가 성공 (첫 번째 주소 자동 기본 주소)
+  - 주소 추가 성공 (기본 주소 설정 시 기존 해제)
+  - 주소 수정 성공
+  - 주소 수정 실패 (존재하지 않는 주소)
+  - 주소 수정 실패 (다른 회원의 주소)
+  - 주소 삭제 성공
+  - 주소 삭제 실패 (기본 주소 1개만 남음)
+  - 기본 주소 설정 성공
+  - 기본 주소 설정 실패 (존재하지 않는 주소)
+
+**테스트 결과**: ✅ 10/10 테스트 통과 (BUILD SUCCESSFUL)
+
+#### 통합 테스트 (Controller 계층)
+- **상태**: 다음 세션에서 진행 예정
+- **계획**: TestContainers + MockMvc를 활용한 통합 테스트
+
+---
+
+### 🔧 기술 스택
+
+**Core 모듈**:
+- ✅ `ErrorType` enum 확장: `ADDRESS_NOT_FOUND`, `FORBIDDEN_ACCESS`, `CANNOT_DELETE_LAST_PRIMARY_ADDRESS` 추가
+
+**Domain 모듈** (기존 활용):
+- ✅ `AddressHistory` 도메인 엔티티
+- ✅ `Address` Value Object
+- ✅ `AddressHistoryRepository` 인터페이스
+
+**Storage 모듈** (기존 활용):
+- ✅ `AddressHistoryJpaEntity`
+- ✅ `AddressEmbeddable` (임베디드 타입)
+- ✅ `AddressHistoryRepositoryImpl`
+
+**API 모듈**:
+- ✅ `AddressService` - Application Service (비즈니스 로직)
+- ✅ `AddressController` - REST API Controller
+- ✅ Request/Response DTO:
+  - `AddressServiceRequest`, `AddressServiceResponse` (Service 계층)
+  - `AddressRequest`, `AddressResponse`, `PrimaryAddressResponse` (Presentation 계층)
+
+**개발 방식**:
+- ✅ TDD (Test-Driven Development)
+- ✅ RED-GREEN-REFACTOR 사이클 적용
+- ✅ Mockist 스타일 단위 테스트
+
+---
+
+### 📊 주소 관리 API 완료 통계
+- **구현된 API**: 5/5 (100%) ✅
+- **단위 테스트 통과율**: 100% (10/10) ✅
+- **TDD 적용**: 전체 API에 RED-GREEN-REFACTOR 패턴 적용 ✅
+- **코드 컴파일**: 성공 ✅
+
+**다음 단계**:
+1. Controller 통합 테스트 작성 (TestContainers + MockMvc)
+2. Spring Rest Docs 문서화
+3. 선호도 관리 API 구현 (5개)
+
+---
 
 ```

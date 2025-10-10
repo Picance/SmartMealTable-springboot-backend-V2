@@ -1,18 +1,19 @@
 package com.stdev.smartmealtable.api.member.controller;
 
-import com.stdev.smartmealtable.api.member.dto.request.AddAddressRequest;
-import com.stdev.smartmealtable.api.member.dto.request.UpdateAddressRequest;
-import com.stdev.smartmealtable.api.member.dto.response.AddressListResponse;
+import com.stdev.smartmealtable.api.member.dto.request.AddressRequest;
 import com.stdev.smartmealtable.api.member.dto.response.AddressResponse;
 import com.stdev.smartmealtable.api.member.dto.response.PrimaryAddressResponse;
-import com.stdev.smartmealtable.api.member.service.AddressManagementService;
-import com.stdev.smartmealtable.api.member.service.dto.AddAddressServiceRequest;
-import com.stdev.smartmealtable.api.member.service.dto.UpdateAddressServiceRequest;
+import com.stdev.smartmealtable.api.member.service.AddressService;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 주소 관리 API Controller
@@ -22,68 +23,77 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AddressController {
 
-    private final AddressManagementService addressManagementService;
+    private final AddressService addressService;
 
     /**
      * 10.3 주소 목록 조회
+     * GET /api/v1/members/me/addresses
      */
     @GetMapping
-    public ApiResponse<AddressListResponse> getAddresses(@RequestHeader("X-Member-Id") Long memberId) {
-        AddressListResponse response = addressManagementService.getAddressList(memberId);
-        return ApiResponse.success(response);
+    public ApiResponse<List<AddressResponse>> getAddresses(@AuthUser AuthenticatedUser user) {
+        List<AddressResponse> responses = addressService.getAddresses(user.memberId())
+                .stream()
+                .map(AddressResponse::from)
+                .collect(Collectors.toList());
+        return ApiResponse.success(responses);
     }
 
     /**
      * 10.4 주소 추가
+     * POST /api/v1/members/me/addresses
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AddressResponse> addAddress(
-            @RequestHeader("X-Member-Id") Long memberId,
-            @Valid @RequestBody AddAddressRequest request
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody AddressRequest request
     ) {
-        AddAddressServiceRequest serviceRequest = AddAddressServiceRequest.of(memberId, request);
-        AddressResponse response = addressManagementService.addAddress(serviceRequest);
+        AddressResponse response = AddressResponse.from(
+                addressService.addAddress(user.memberId(), request.toServiceRequest())
+        );
         return ApiResponse.success(response);
     }
 
     /**
      * 10.5 주소 수정
+     * PUT /api/v1/members/me/addresses/{addressHistoryId}
      */
     @PutMapping("/{addressHistoryId}")
     public ApiResponse<AddressResponse> updateAddress(
-            @RequestHeader("X-Member-Id") Long memberId,
+            @AuthUser AuthenticatedUser user,
             @PathVariable Long addressHistoryId,
-            @Valid @RequestBody UpdateAddressRequest request
+            @Valid @RequestBody AddressRequest request
     ) {
-        UpdateAddressServiceRequest serviceRequest = UpdateAddressServiceRequest.of(
-                memberId, addressHistoryId, request
+        AddressResponse response = AddressResponse.from(
+                addressService.updateAddress(user.memberId(), addressHistoryId, request.toServiceRequest())
         );
-        AddressResponse response = addressManagementService.updateAddress(serviceRequest);
         return ApiResponse.success(response);
     }
 
     /**
      * 10.6 주소 삭제
+     * DELETE /api/v1/members/me/addresses/{addressHistoryId}
      */
     @DeleteMapping("/{addressHistoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAddress(
-            @RequestHeader("X-Member-Id") Long memberId,
+            @AuthUser AuthenticatedUser user,
             @PathVariable Long addressHistoryId
     ) {
-        addressManagementService.deleteAddress(memberId, addressHistoryId);
+        addressService.deleteAddress(user.memberId(), addressHistoryId);
     }
 
     /**
      * 10.7 기본 주소 설정
+     * PUT /api/v1/members/me/addresses/{addressHistoryId}/primary
      */
     @PutMapping("/{addressHistoryId}/primary")
     public ApiResponse<PrimaryAddressResponse> setPrimaryAddress(
-            @RequestHeader("X-Member-Id") Long memberId,
+            @AuthUser AuthenticatedUser user,
             @PathVariable Long addressHistoryId
     ) {
-        PrimaryAddressResponse response = addressManagementService.setPrimaryAddress(memberId, addressHistoryId);
+        addressService.setPrimaryAddress(user.memberId(), addressHistoryId);
+        PrimaryAddressResponse response = PrimaryAddressResponse.of(addressHistoryId, true);
         return ApiResponse.success(response);
     }
 }
