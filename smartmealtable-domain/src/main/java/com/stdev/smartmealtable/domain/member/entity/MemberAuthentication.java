@@ -22,6 +22,7 @@ public class MemberAuthentication {
     private LocalDateTime passwordExpiresAt;  // 비즈니스 필드
     private String name;
     private LocalDateTime deletedAt;  // 비즈니스 필드
+    private LocalDateTime registeredAt;  // 가입 일시 (비즈니스 필드)
 
     // 이메일 회원가입용 팩토리 메서드
     public static MemberAuthentication createEmailAuth(
@@ -38,6 +39,7 @@ public class MemberAuthentication {
         auth.failureCount = 0;
         auth.passwordChangedAt = LocalDateTime.now();
         auth.passwordExpiresAt = LocalDateTime.now().plusDays(90);
+        auth.registeredAt = LocalDateTime.now();
         return auth;
     }
 
@@ -48,6 +50,7 @@ public class MemberAuthentication {
         auth.email = email;
         auth.name = name;
         auth.failureCount = 0;
+        auth.registeredAt = LocalDateTime.now();
         return auth;
     }
 
@@ -61,7 +64,8 @@ public class MemberAuthentication {
             LocalDateTime passwordChangedAt,
             LocalDateTime passwordExpiresAt,
             String name,
-            LocalDateTime deletedAt
+            LocalDateTime deletedAt,
+            LocalDateTime registeredAt
     ) {
         MemberAuthentication auth = new MemberAuthentication();
         auth.memberAuthenticationId = memberAuthenticationId;
@@ -73,6 +77,7 @@ public class MemberAuthentication {
         auth.passwordExpiresAt = passwordExpiresAt;
         auth.name = name;
         auth.deletedAt = deletedAt;
+        auth.registeredAt = registeredAt;
         return auth;
     }
 

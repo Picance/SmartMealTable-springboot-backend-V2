@@ -48,6 +48,9 @@ public class MemberAuthenticationJpaEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    
+    @Column(name = "registered_at", updatable = false)
+    private LocalDateTime registeredAt;
 
     // Domain -> JPA Entity
     public static MemberAuthenticationJpaEntity from(MemberAuthentication auth) {
@@ -61,6 +64,7 @@ public class MemberAuthenticationJpaEntity {
         entity.passwordExpiresAt = auth.getPasswordExpiresAt();
         entity.name = auth.getName();
         entity.deletedAt = auth.getDeletedAt();
+        entity.registeredAt = auth.getRegisteredAt();
         return entity;
     }
 
@@ -75,7 +79,8 @@ public class MemberAuthenticationJpaEntity {
                 this.passwordChangedAt,
                 this.passwordExpiresAt,
                 this.name,
-                this.deletedAt
+                this.deletedAt,
+                this.registeredAt
         );
     }
 

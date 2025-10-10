@@ -21,6 +21,7 @@ public class SocialAccount {
     private String accessToken;
     private String refreshToken;
     private LocalDateTime expiresAt;  // 비즈니스 필드
+    private LocalDateTime connectedAt;  // 연동 시각
 
     public static SocialAccount create(
             Long memberAuthenticationId,
@@ -39,6 +40,7 @@ public class SocialAccount {
         account.refreshToken = refreshToken;
         account.tokenType = tokenType;
         account.expiresAt = expiresAt;
+        account.connectedAt = LocalDateTime.now();
         return account;
     }
 
@@ -51,7 +53,8 @@ public class SocialAccount {
             String accessToken,
             String refreshToken,
             String tokenType,
-            LocalDateTime expiresAt
+            LocalDateTime expiresAt,
+            LocalDateTime connectedAt
     ) {
         SocialAccount account = new SocialAccount();
         account.socialAccountId = socialAccountId;
@@ -62,6 +65,7 @@ public class SocialAccount {
         account.refreshToken = refreshToken;
         account.tokenType = tokenType;
         account.expiresAt = expiresAt;
+        account.connectedAt = connectedAt;
         return account;
     }
 

@@ -37,6 +37,8 @@ public class QMemberAuthenticationJpaEntity extends EntityPathBase<MemberAuthent
 
     public final DateTimePath<java.time.LocalDateTime> passwordExpiresAt = createDateTime("passwordExpiresAt", java.time.LocalDateTime.class);
 
+    public final DateTimePath<java.time.LocalDateTime> registeredAt = createDateTime("registeredAt", java.time.LocalDateTime.class);
+
     public QMemberAuthenticationJpaEntity(String variable) {
         super(MemberAuthenticationJpaEntity.class, forVariable(variable));
     }

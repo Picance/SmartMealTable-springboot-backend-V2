@@ -24,6 +24,11 @@ public interface MemberRepository {
      * 닉네임 중복 확인
      */
     boolean existsByNickname(String nickname);
+    
+    /**
+     * 닉네임 중복 확인 (특정 회원 제외)
+     */
+    boolean existsByNicknameExcludingMemberId(String nickname, Long memberId);
 
     /**
      * 회원 삭제

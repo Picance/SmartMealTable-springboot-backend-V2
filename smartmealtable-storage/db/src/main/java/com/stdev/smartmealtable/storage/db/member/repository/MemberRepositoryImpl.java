@@ -37,6 +37,11 @@ public class MemberRepositoryImpl implements MemberRepository {
     public boolean existsByNickname(String nickname) {
         return memberJpaRepository.existsByNickname(nickname);
     }
+    
+    @Override
+    public boolean existsByNicknameExcludingMemberId(String nickname, Long memberId) {
+        return memberJpaRepository.existsByNicknameAndMemberIdNot(nickname, memberId);
+    }
 
     @Override
     public void delete(Member member) {

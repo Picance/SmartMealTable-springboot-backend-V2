@@ -55,6 +55,14 @@ public class Member {
         this.recommendationType = type;
     }
     
+    // 도메인 로직: 그룹 변경
+    public void changeGroup(Long newGroupId) {
+        if (newGroupId == null) {
+            throw new IllegalArgumentException("그룹 ID는 필수입니다.");
+        }
+        this.groupId = newGroupId;
+    }
+    
     // 도메인 로직: 온보딩 완료 여부 확인
     public boolean isOnboardingComplete() {
         // 그룹이 설정되어 있으면 온보딩 완료로 간주

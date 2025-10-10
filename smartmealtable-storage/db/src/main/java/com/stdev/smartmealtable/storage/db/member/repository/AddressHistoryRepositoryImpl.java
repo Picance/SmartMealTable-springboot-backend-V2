@@ -50,4 +50,17 @@ public class AddressHistoryRepositoryImpl implements AddressHistoryRepository {
     public long countByMemberId(Long memberId) {
         return jpaRepository.countByMemberId(memberId);
     }
+    
+    @Override
+    public void delete(AddressHistory addressHistory) {
+        jpaRepository.findById(addressHistory.getAddressHistoryId())
+                .ifPresent(jpaRepository::delete);
+    }
+    
+    @Override
+    public void unmarkAllAsPrimaryByMemberId(Long memberId) {
+        List<AddressHistoryJpaEntity> entities = jpaRepository.findAllByMemberId(memberId);
+        entities.forEach(AddressHistoryJpaEntity::unmarkAsPrimary);
+        jpaRepository.saveAll(entities);
+    }
 }

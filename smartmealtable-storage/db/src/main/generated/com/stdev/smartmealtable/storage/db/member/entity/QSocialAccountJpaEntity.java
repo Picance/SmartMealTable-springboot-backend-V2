@@ -21,6 +21,8 @@ public class QSocialAccountJpaEntity extends EntityPathBase<SocialAccountJpaEnti
 
     public final StringPath accessToken = createString("accessToken");
 
+    public final DateTimePath<java.time.LocalDateTime> connectedAt = createDateTime("connectedAt", java.time.LocalDateTime.class);
+
     public final DateTimePath<java.time.LocalDateTime> expiresAt = createDateTime("expiresAt", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> memberAuthenticationId = createNumber("memberAuthenticationId", Long.class);

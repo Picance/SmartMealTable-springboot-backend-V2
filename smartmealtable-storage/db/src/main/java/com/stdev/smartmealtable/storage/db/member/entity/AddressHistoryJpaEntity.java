@@ -68,5 +68,26 @@ public class AddressHistoryJpaEntity {
                 this.registeredAt
         );
     }
+    
+    /**
+     * 기본 주소로 설정
+     */
+    public void markAsPrimary() {
+        this.isPrimary = true;
+    }
+    
+    /**
+     * 기본 주소 해제
+     */
+    public void unmarkAsPrimary() {
+        this.isPrimary = false;
+    }
+    
+    /**
+     * 주소 정보 업데이트
+     */
+    public void updateAddress(AddressEmbeddable newAddress) {
+        this.address = newAddress;
+    }
 }
 

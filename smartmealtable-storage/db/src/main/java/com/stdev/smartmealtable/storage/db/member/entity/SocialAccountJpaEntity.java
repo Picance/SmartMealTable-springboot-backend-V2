@@ -47,6 +47,9 @@ public class SocialAccountJpaEntity {
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
+    
+    @Column(name = "connected_at", updatable = false)
+    private LocalDateTime connectedAt;
 
     // Domain -> JPA Entity
     public static SocialAccountJpaEntity from(SocialAccount account) {
@@ -59,6 +62,7 @@ public class SocialAccountJpaEntity {
         entity.accessToken = account.getAccessToken();
         entity.refreshToken = account.getRefreshToken();
         entity.expiresAt = account.getExpiresAt();
+        entity.connectedAt = account.getConnectedAt();
         return entity;
     }
 
@@ -72,7 +76,8 @@ public class SocialAccountJpaEntity {
                 this.accessToken,
                 this.refreshToken,
                 this.tokenType,
-                this.expiresAt
+                this.expiresAt,
+                this.connectedAt
         );
     }
 

@@ -12,4 +12,9 @@ public interface MemberJpaRepository extends JpaRepository<MemberJpaEntity, Long
      * 닉네임 존재 여부 확인
      */
     boolean existsByNickname(String nickname);
+    
+    /**
+     * 닉네임 존재 여부 확인 (특정 회원 제외)
+     */
+    boolean existsByNicknameAndMemberIdNot(String nickname, Long memberId);
 }
