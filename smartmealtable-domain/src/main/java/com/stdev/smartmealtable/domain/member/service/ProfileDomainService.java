@@ -4,6 +4,7 @@ import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.Member;
+import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -112,6 +113,25 @@ public class ProfileDomainService {
         member.changeGroup(groupId);
 
         // 5. 저장 및 반환
+        return memberRepository.save(member);
+    }
+
+    /**
+     * 추천 유형 업데이트
+     *
+     * @param memberId 회원 ID
+     * @param recommendationType 새 추천 유형
+     * @return 업데이트된 Member 엔티티
+     */
+    public Member updateRecommendationType(Long memberId, RecommendationType recommendationType) {
+        // 1. 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorType.MEMBER_NOT_FOUND));
+
+        // 2. 도메인 로직 적용
+        member.changeRecommendationType(recommendationType);
+
+        // 3. 저장 및 반환
         return memberRepository.save(member);
     }
 }
