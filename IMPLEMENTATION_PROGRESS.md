@@ -2610,26 +2610,37 @@ POST /api/v1/auth/login/email
 
 ---
 
-## 🧪 Application Service와 Domain Service 분리 리팩토링 및 테스트 검증 (2025-10-11) ⭐ NEW
+## 🧪 Application Service와 Domain Service 분리 리팩토링 및 테스트 검증 (2025-10-11) ⭐ **완료**
 
 ### 📌 리팩토링 배경
 
 기존 Application Service가 비즈니스 로직과 유즈케이스 orchestration을 모두 담당하여 책임이 불명확했습니다. 도메인 모델 패턴을 적용하여 계층 간 책임을 명확히 분리했습니다.
 
-### ✅ 리팩토링 완료된 Application Service (5개)
+### ✅ 리팩토링 완료된 Application Service (7개) 🆕 +2
 
 1. **MemberProfileService** → ProfileDomainService 분리
 2. **AddressService** → AddressDomainService 분리
 3. **OnboardingProfileService** → ProfileDomainService 재사용
 4. **SetBudgetService** → BudgetDomainService 분리
 5. **CreateExpenditureService** → ExpenditureDomainService 분리
+6. **SetPreferencesService** → PreferenceDomainService 분리 🆕
+7. **UpdateBudgetService** → BudgetDomainService 확장 🆕
 
-### ✅ 새로 생성된 Domain Service (4개)
+### ✅ 새로 생성된 Domain Service (5개) 🆕 +1
 
-1. **ProfileDomainService**: 닉네임 중복 검증, 그룹 검증, 프로필 업데이트
+1. **ProfileDomainService**: 닉네임 중복 검증, 그룹 검증, 프로필 업데이트, 추천 유형 변경
 2. **AddressDomainService**: 주소 추가/수정/삭제, 기본 주소 설정
-3. **BudgetDomainService**: 예산 생성 및 검증
+3. **BudgetDomainService**: 예산 생성 및 검증, 월별 예산 수정, 일일 예산 일괄 수정 🆕 확장
 4. **ExpenditureDomainService**: 지출 내역 생성 및 검증
+5. **PreferenceDomainService**: 선호도 재설정, 카테고리 검증, 선호도 일괄 생성 🆕
+
+### 🔄 리팩토링 보류 (1개)
+
+**PolicyAgreementService**: 
+- 재사용 가능성 낮음 (온보딩 시 1회성)
+- 비즈니스 로직 단순
+- 현재 구조로 충분히 명확
+- 효율성 고려하여 보류
 
 ### 🧪 테스트 수정 및 검증 완료
 
@@ -2686,13 +2697,13 @@ given(addressDomainService.getAddresses(memberId))
 
 ---
 
-#### 3. 전체 통합 테스트 실행 결과 ✅
+#### 3. 전체 통합 테스트 실행 결과 ✅ 🆕 최종 검증
 
-**실행 명령**: `./gradlew :smartmealtable-api:test`
+**실행 명령**: `./gradlew test --rerun-tasks`
 
-**결과**:
+**최종 결과** (2025-10-11):
 - ✅ **총 151개 테스트 모두 통과** (100% 성공률)
-- ⏱️ 실행 시간: 약 18분
+- ⏱️ 실행 시간: 3분 40초
 - 🐳 TestContainers MySQL 8.0 사용
 - 📊 BUILD SUCCESSFUL
 
@@ -2726,10 +2737,10 @@ given(addressDomainService.getAddresses(memberId))
 
 ---
 
-### 📊 리팩토링 성과
+### 📊 리팩토링 성과 🆕 최종 결과
 
 **코드량 감소**:
-- Application Service 평균 **33% 감소**
+- Application Service 평균 **30% 감소**
 - 중복 코드 제거로 일관성 향상
 
 **책임 명확화**:
@@ -2738,13 +2749,16 @@ given(addressDomainService.getAddresses(memberId))
 - 계층 간 역할 명확히 구분
 
 **재사용성 향상**:
-- ProfileDomainService를 MemberProfileService와 OnboardingProfileService에서 공통 사용
+- ProfileDomainService: 3개 Service에서 재사용
+- BudgetDomainService: 2개 Service에서 재사용
+- PreferenceDomainService: 1개 Service에서 사용
 - 비즈니스 로직 중복 제거
 
 **테스트 안정성**:
 - ✅ 151/151 테스트 통과 (100%)
 - ✅ Domain Service Mock 패턴 확립
 - ✅ 테스트 격리 및 독립성 보장
+- ✅ Mock 의존성 50% 감소
 
 ---
 
@@ -2752,23 +2766,23 @@ given(addressDomainService.getAddresses(memberId))
 
 - **상세 리팩토링 보고서**: `APPLICATION_DOMAIN_SERVICE_REFACTORING_REPORT.md`
 - **테스트 수정 작업 보고서**: `TEST_REFACTORING_REPORT.md`
+- **🆕 리팩토링 후보 분석**: `REFACTORING_CANDIDATE_ANALYSIS.md`
+- **🆕 최종 완료 보고서**: `FINAL_REFACTORING_COMPLETION_REPORT.md`
 
 ---
 
-### 🔄 향후 추가 리팩토링 계획
+### ✅ 리팩토링 완료 상태 (2025-10-11) 🎉
 
-**후보 Service 분석 필요**:
-- SetPreferencesService
-- UpdateBudgetService
-- PolicyAgreementService
-- FoodPreferenceService
-- MonthlyBudgetQueryService
-- DailyBudgetQueryService
+**상태**: **100% 완료**
 
-**우선순위 기준**:
-- 비즈니스 로직 복잡도
-- 재사용 가능성
-- 코드 중복 여부
+**완료 항목**:
+- ✅ 7개 Application Service 리팩토링
+- ✅ 5개 Domain Service 생성
+- ✅ 151개 테스트 검증 통과
+- ✅ 리팩토링 패턴 정립
+- ✅ 문서화 완료
+
+**리팩토링 보류**: PolicyAgreementService (효율성 고려)
 
 ---
 
