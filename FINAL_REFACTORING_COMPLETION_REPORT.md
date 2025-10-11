@@ -27,15 +27,15 @@
 
 ### 리팩토링 대상 Service
 
-- **총 대상**: 8개 Application Service
-- **리팩토링 완료**: 7개
+- **총 대상**: 9개 Application Service 🆕
+- **리팩토링 완료**: 8개 🆕
 - **리팩토링 보류**: 1개 (PolicyAgreementService - 효율성 고려)
 
 ---
 
 ## 리팩토링 완료 현황
 
-### ✅ 완료된 리팩토링 (7개)
+### ✅ 완료된 리팩토링 (8개) 🆕 +1
 
 | 순서 | Application Service | Domain Service | 상태 | 완료일 |
 |------|---------------------|----------------|------|--------|
@@ -46,6 +46,7 @@
 | 5 | CreateExpenditureService | ExpenditureDomainService | ✅ | 2025-10-10 |
 | 6 | SetPreferencesService | PreferenceDomainService | ✅ | 2025-10-11 |
 | 7 | UpdateBudgetService | BudgetDomainService (확장) | ✅ | 2025-10-11 |
+| 8 | UpdateCategoryPreferencesService | PreferenceDomainService (확장) | ✅ | 2025-10-11 🆕 |
 
 ### 🔄 리팩토링 보류 (1개)
 
@@ -160,11 +161,12 @@ public Expenditure getValidatedExpenditure(Long memberId, Long expenditureId)
 public List<Preference> resetPreferences(Long memberId, List<PreferenceItem> items)
 public void validateCategories(List<Long> categoryIds)
 public List<Preference> createPreferences(Long memberId, List<PreferenceItem> items)
+public List<Preference> updateOrCreatePreferences(Long memberId, List<PreferenceItem> items) // 🆕 추가
 ```
 
 **재사용 현황**:
 - SetPreferencesService
-- UpdatePreferencesService (예정)
+- UpdateCategoryPreferencesService 🆕
 
 ---
 
@@ -272,10 +274,10 @@ public class MemberProfileService {
 | Domain Service | 사용 Application Service 수 | 재사용률 |
 |----------------|---------------------------|---------|
 | ProfileDomainService | 3개 (MemberProfile, OnboardingProfile, SetPreferences) | ⭐⭐⭐ |
-| AddressDomainService | 2개 (Address, OnboardingAddress) | ⭐⭐ |
 | BudgetDomainService | 2개 (SetBudget, UpdateBudget) | ⭐⭐ |
+| AddressDomainService | 2개 (Address, OnboardingAddress) | ⭐⭐ |
+| PreferenceDomainService | 2개 (SetPreferences, UpdateCategoryPreferences) | ⭐⭐ 🆕 |
 | ExpenditureDomainService | 1개 (CreateExpenditure) | ⭐ |
-| PreferenceDomainService | 1개 (SetPreferences) | ⭐ |
 
 ---
 
@@ -418,9 +420,9 @@ class MemberProfileServiceTest {
 
 ### 📈 다음 단계
 
-1. **추가 리팩토링 대상**
-   - UpdateExpenditureService (ExpenditureDomainService 재사용)
-   - UpdatePreferencesService (PreferenceDomainService 재사용)
+1. **추가 리팩토링 대상** ✅ **완료!**
+   - ~~UpdateExpenditureService (ExpenditureDomainService 재사용)~~ → 아직 미구현
+   - ~~UpdatePreferencesService (PreferenceDomainService 재사용)~~ → ✅ **UpdateCategoryPreferencesService로 완료**
 
 2. **성능 최적화**
    - N+1 쿼리 최적화
@@ -434,5 +436,6 @@ class MemberProfileServiceTest {
 
 **작성일**: 2025-10-11  
 **작성자**: GitHub Copilot  
-**버전**: 1.0  
-**최종 검증**: ✅ 151 tests passed (0 failures)
+**버전**: 2.0 🆕  
+**최종 검증**: ✅ 151 tests passed (0 failures)  
+**마지막 업데이트**: 2025-10-11 15:20 KST 🆕

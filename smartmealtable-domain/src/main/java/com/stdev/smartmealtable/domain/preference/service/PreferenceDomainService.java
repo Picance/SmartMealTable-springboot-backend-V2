@@ -60,6 +60,42 @@ public class PreferenceDomainService {
     }
 
     /**
+     * 선호도 업데이트 또는 생성
+     * - 기존 선호도가 있으면 weight 업데이트
+     * - 없으면 새로 생성
+     *
+     * @param memberId 회원 ID
+     * @param items 선호도 항목 리스트
+     * @return 업데이트/생성된 선호도 리스트
+     */
+    public List<Preference> updateOrCreatePreferences(Long memberId, List<PreferenceItem> items) {
+        // 1. 카테고리 검증
+        validateCategories(items.stream().map(PreferenceItem::categoryId).toList());
+
+        // 2. 기존 선호도 조회
+        List<Preference> existingPreferences = preferenceRepository.findByMemberId(memberId);
+        java.util.Map<Long, Preference> preferenceMap = existingPreferences.stream()
+                .collect(java.util.stream.Collectors.toMap(Preference::getCategoryId, p -> p));
+
+        // 3. 선호도 업데이트 또는 생성
+        List<Preference> result = new java.util.ArrayList<>();
+        for (PreferenceItem item : items) {
+            Preference preference = preferenceMap.get(item.categoryId());
+            if (preference != null) {
+                // 기존 선호도 업데이트
+                preference.changeWeight(item.weight());
+                result.add(preferenceRepository.save(preference));
+            } else {
+                // 새로운 선호도 생성
+                Preference newPreference = Preference.create(memberId, item.categoryId(), item.weight());
+                result.add(preferenceRepository.save(newPreference));
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * 카테고리 존재 여부 검증
      *
      * @param categoryIds 카테고리 ID 리스트
