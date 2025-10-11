@@ -7,6 +7,7 @@ import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
+import com.stdev.smartmealtable.domain.member.service.AddressDomainService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,15 +16,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.*;
 
 /**
- * 주소 관리 Service 테스트 (Mockist 스타일 Unit Test)
+ * 주소 관리 Application Service 테스트 (Mockist 스타일 Unit Test)
+ * Domain Service를 Mock하여 orchestration 로직만 테스트
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AddressService 단위 테스트")
@@ -34,6 +38,9 @@ class AddressServiceTest {
     
     @Mock
     private AddressHistoryRepository addressHistoryRepository;
+    
+    @Mock
+    private AddressDomainService addressDomainService;
     
     @Test
     @DisplayName("주소 목록 조회 - 성공")
@@ -71,15 +78,12 @@ class AddressServiceTest {
                 "101동 1234호", 37.497942, 127.027621, "HOME", false
         );
         
-        given(addressHistoryRepository.countByMemberId(memberId)).willReturn(0L);
-        given(addressHistoryRepository.save(any(AddressHistory.class)))
-                .willAnswer(invocation -> {
-                    AddressHistory arg = invocation.getArgument(0);
-                    return AddressHistory.reconstitute(
-                            1L, arg.getMemberId(), arg.getAddress(),
-                            arg.getIsPrimary(), arg.getRegisteredAt()
-                    );
-                });
+        AddressHistory savedAddress = AddressHistory.reconstitute(
+                1L, memberId, request.toAddress(), true, null
+        );
+        
+        given(addressDomainService.addAddress(eq(memberId), any(Address.class), eq(false)))
+                .willReturn(savedAddress);
         
         // when
         AddressServiceResponse response = addressService.addAddress(memberId, request);
@@ -87,7 +91,7 @@ class AddressServiceTest {
         // then
         assertThat(response.getAddressAlias()).isEqualTo("우리집");
         assertThat(response.getIsPrimary()).isTrue(); // 첫 번째 주소는 자동으로 기본 주소
-        verify(addressHistoryRepository, times(1)).save(any(AddressHistory.class));
+        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class), eq(false));
     }
     
     @Test
@@ -100,15 +104,12 @@ class AddressServiceTest {
                 "5층", 37.497942, 127.027621, "OFFICE", true
         );
         
-        given(addressHistoryRepository.countByMemberId(memberId)).willReturn(1L);
-        given(addressHistoryRepository.save(any(AddressHistory.class)))
-                .willAnswer(invocation -> {
-                    AddressHistory arg = invocation.getArgument(0);
-                    return AddressHistory.reconstitute(
-                            2L, arg.getMemberId(), arg.getAddress(),
-                            arg.getIsPrimary(), arg.getRegisteredAt()
-                    );
-                });
+        AddressHistory savedAddress = AddressHistory.reconstitute(
+                2L, memberId, request.toAddress(), true, null
+        );
+        
+        given(addressDomainService.addAddress(eq(memberId), any(Address.class), eq(true)))
+                .willReturn(savedAddress);
         
         // when
         AddressServiceResponse response = addressService.addAddress(memberId, request);
@@ -116,8 +117,7 @@ class AddressServiceTest {
         // then
         assertThat(response.getAddressAlias()).isEqualTo("회사");
         assertThat(response.getIsPrimary()).isTrue();
-        verify(addressHistoryRepository, times(1)).unmarkAllAsPrimaryByMemberId(memberId);
-        verify(addressHistoryRepository, times(1)).save(any(AddressHistory.class));
+        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class), eq(true));
     }
     
     @Test
@@ -126,23 +126,18 @@ class AddressServiceTest {
         // given
         Long memberId = 1L;
         Long addressHistoryId = 1L;
-        Address oldAddress = Address.of(
-                "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
-        );
-        AddressHistory addressHistory = AddressHistory.reconstitute(
-                addressHistoryId, memberId, oldAddress, true, null
-        );
-        
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
                 "202동 5678호", 37.497942, 127.027621, "HOME", true
         );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.of(addressHistory));
-        given(addressHistoryRepository.save(any(AddressHistory.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
+        AddressHistory updatedAddress = AddressHistory.reconstitute(
+                addressHistoryId, memberId, request.toAddress(), true, null
+        );
+        
+        given(addressDomainService.updateAddress(
+                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+        )).willReturn(updatedAddress);
         
         // when
         AddressServiceResponse response = addressService.updateAddress(memberId, addressHistoryId, request);
@@ -150,7 +145,9 @@ class AddressServiceTest {
         // then
         assertThat(response.getAddressAlias()).isEqualTo("우리집(수정)");
         assertThat(response.getStreetNameAddress()).isEqualTo("서울특별시 강남구 테헤란로 789");
-        verify(addressHistoryRepository, times(1)).save(any(AddressHistory.class));
+        verify(addressDomainService, times(1)).updateAddress(
+                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+        );
     }
     
     @Test
@@ -164,8 +161,9 @@ class AddressServiceTest {
                 "202동 5678호", 37.497942, 127.027621, "HOME", true
         );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.empty());
+        given(addressDomainService.updateAddress(
+                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+        )).willThrow(new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
         
         // when & then
         assertThatThrownBy(() -> addressService.updateAddress(memberId, addressHistoryId, request))
@@ -178,23 +176,15 @@ class AddressServiceTest {
     void updateAddress_Fail_NotOwner() {
         // given
         Long memberId = 1L;
-        Long otherMemberId = 2L;
         Long addressHistoryId = 1L;
-        Address address = Address.of(
-                "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
-        );
-        AddressHistory addressHistory = AddressHistory.reconstitute(
-                addressHistoryId, otherMemberId, address, true, null
-        );
-        
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
                 "202동 5678호", 37.497942, 127.027621, "HOME", true
         );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.of(addressHistory));
+        given(addressDomainService.updateAddress(
+                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+        )).willThrow(new BusinessException(ErrorType.FORBIDDEN_ACCESS));
         
         // when & then
         assertThatThrownBy(() -> addressService.updateAddress(memberId, addressHistoryId, request))
@@ -208,23 +198,15 @@ class AddressServiceTest {
         // given
         Long memberId = 1L;
         Long addressHistoryId = 2L; // 기본 주소가 아닌 다른 주소
-        Address address = Address.of(
-                "회사", null, "서울특별시 강남구 테헤란로 456",
-                "5층", 37.497942, 127.027621, "OFFICE"
-        );
-        AddressHistory addressHistory = AddressHistory.reconstitute(
-                addressHistoryId, memberId, address, false, null
-        );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.of(addressHistory));
-        // 기본 주소가 아니므로 countByMemberId는 호출되지 않음
+        // Domain Service가 정상 처리됨을 Mock (void 메서드는 willDoNothing 사용)
+        willDoNothing().given(addressDomainService).deleteAddress(memberId, addressHistoryId);
         
         // when
         addressService.deleteAddress(memberId, addressHistoryId);
         
         // then
-        verify(addressHistoryRepository, times(1)).delete(addressHistory);
+        verify(addressDomainService, times(1)).deleteAddress(memberId, addressHistoryId);
     }
     
     @Test
@@ -233,17 +215,9 @@ class AddressServiceTest {
         // given
         Long memberId = 1L;
         Long addressHistoryId = 1L;
-        Address address = Address.of(
-                "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
-        );
-        AddressHistory addressHistory = AddressHistory.reconstitute(
-                addressHistoryId, memberId, address, true, null
-        );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.of(addressHistory));
-        given(addressHistoryRepository.countByMemberId(memberId)).willReturn(1L);
+        willThrow(new BusinessException(ErrorType.CANNOT_DELETE_LAST_PRIMARY_ADDRESS))
+                .given(addressDomainService).deleteAddress(memberId, addressHistoryId);
         
         // when & then
         assertThatThrownBy(() -> addressService.deleteAddress(memberId, addressHistoryId))
@@ -261,22 +235,19 @@ class AddressServiceTest {
                 "회사", null, "서울특별시 강남구 테헤란로 456",
                 "5층", 37.497942, 127.027621, "OFFICE"
         );
-        AddressHistory addressHistory = AddressHistory.reconstitute(
-                addressHistoryId, memberId, address, false, null
+        AddressHistory updatedAddress = AddressHistory.reconstitute(
+                addressHistoryId, memberId, address, true, null
         );
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.of(addressHistory));
-        given(addressHistoryRepository.save(any(AddressHistory.class)))
-                .willAnswer(invocation -> invocation.getArgument(0));
+        given(addressDomainService.setPrimaryAddress(memberId, addressHistoryId))
+                .willReturn(updatedAddress);
         
         // when
         AddressServiceResponse response = addressService.setPrimaryAddress(memberId, addressHistoryId);
         
         // then
         assertThat(response.getIsPrimary()).isTrue();
-        verify(addressHistoryRepository, times(1)).unmarkAllAsPrimaryByMemberId(memberId);
-        verify(addressHistoryRepository, times(1)).save(any(AddressHistory.class));
+        verify(addressDomainService, times(1)).setPrimaryAddress(memberId, addressHistoryId);
     }
     
     @Test
@@ -286,8 +257,8 @@ class AddressServiceTest {
         Long memberId = 1L;
         Long addressHistoryId = 999L;
         
-        given(addressHistoryRepository.findById(addressHistoryId))
-                .willReturn(Optional.empty());
+        given(addressDomainService.setPrimaryAddress(memberId, addressHistoryId))
+                .willThrow(new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
         
         // when & then
         assertThatThrownBy(() -> addressService.setPrimaryAddress(memberId, addressHistoryId))

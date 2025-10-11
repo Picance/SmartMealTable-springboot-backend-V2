@@ -107,7 +107,7 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
     }
     
     @Test
-    @DisplayName("지출 내역 등록 실패 - 항목 총액과 지출 금액 불일치 (422)")
+    @DisplayName("지출 내역 등록 실패 - 항목 총액과 지출 금액 불일치 (400)")
     void createExpenditure_Fail_ItemsTotalMismatch() throws Exception {
         // Given
         CreateExpenditureRequest request = new CreateExpenditureRequest(
@@ -129,9 +129,9 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())  // 422 -> 400으로 변경 (도메인 검증 예외는 IllegalArgumentException -> 400)
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E422"))
+                .andExpect(jsonPath("$.error.code").value("E400"))  // E422 -> E400으로 변경
                 .andExpect(jsonPath("$.error.message").exists());
     }
     
