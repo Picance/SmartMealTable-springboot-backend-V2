@@ -51,6 +51,13 @@ public enum ErrorType {
             "소셜 로그인 인증 코드가 만료되었습니다.",
             LogLevel.WARN
     ),
+    
+    OAUTH_AUTHENTICATION_FAILED(
+            HttpStatus.UNAUTHORIZED,
+            ErrorCode.E401,
+            "소셜 로그인 인증에 실패했습니다. 인가 코드를 다시 확인해주세요.",
+            LogLevel.WARN
+    ),
 
     // ==================== 권한 관련 에러 (403) ====================
     ACCOUNT_LOCKED(

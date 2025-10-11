@@ -2,11 +2,11 @@ package com.stdev.smartmealtable.api.auth.service;
 
 import com.stdev.smartmealtable.api.auth.service.dto.LoginServiceRequest;
 import com.stdev.smartmealtable.api.auth.service.dto.LoginServiceResponse;
-import com.stdev.smartmealtable.api.config.JwtConfig;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
 import com.stdev.smartmealtable.domain.member.service.AuthenticationDomainService;
 import com.stdev.smartmealtable.domain.member.service.MemberDomainService;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class LoginService {
     
     private final AuthenticationDomainService authenticationDomainService;
     private final MemberDomainService memberDomainService;
-    private final JwtConfig.JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
     
     /**
      * 이메일 로그인
@@ -38,9 +38,9 @@ public class LoginService {
         // 2. 회원 정보 조회
         Member member = memberDomainService.getMemberById(authentication.getMemberId());
         
-        // 3. JWT 토큰 생성 
-        String accessToken = jwtTokenProvider.generateAccessToken(authentication.getEmail());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication.getEmail());
+        // 3. JWT 토큰 생성 (memberId 기반)
+        String accessToken = jwtTokenProvider.createToken(member.getMemberId());
+        String refreshToken = jwtTokenProvider.createToken(member.getMemberId());
         
         // 4. 응답 DTO 생성
         return LoginServiceResponse.of(member, authentication, accessToken, refreshToken);

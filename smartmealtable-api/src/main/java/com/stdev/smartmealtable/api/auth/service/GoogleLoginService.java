@@ -45,28 +45,35 @@ public class GoogleLoginService {
     public GoogleLoginServiceResponse login(GoogleLoginServiceRequest request) {
         log.info("구글 로그인 시작: redirectUri={}", request.redirectUri());
 
-        // 1. 구글 Access Token 발급
-        OAuthTokenResponse tokenResponse = googleAuthClient.getAccessToken(
-                request.authorizationCode()
-        );
-        log.debug("구글 Access Token 발급 완료: tokenType={}", tokenResponse.getTokenType());
+        try {
+            // 1. 구글 Access Token 발급
+            OAuthTokenResponse tokenResponse = googleAuthClient.getAccessToken(
+                    request.authorizationCode()
+            );
+            log.debug("구글 Access Token 발급 완료: tokenType={}", tokenResponse.getTokenType());
 
-        // 2. 구글 사용자 정보 조회 (ID Token에서 추출)
-        OAuthUserInfo userInfo = googleAuthClient.extractUserInfo(tokenResponse.getIdToken());
-        log.info("구글 사용자 정보 조회 완료: providerId={}, email={}", userInfo.getProviderId(), userInfo.getEmail());
+            // 2. 구글 사용자 정보 조회 (ID Token에서 추출)
+            OAuthUserInfo userInfo = googleAuthClient.extractUserInfo(tokenResponse.getIdToken());
+            log.info("구글 사용자 정보 조회 완료: providerId={}, email={}", userInfo.getProviderId(), userInfo.getEmail());
 
-        // 3. 기존 소셜 계정 확인
-        Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderAndProviderId(
-                SocialProvider.GOOGLE,
-                userInfo.getProviderId()
-        );
+            // 3. 기존 소셜 계정 확인
+            Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderAndProviderId(
+                    SocialProvider.GOOGLE,
+                    userInfo.getProviderId()
+            );
 
-        if (existingSocialAccount.isPresent()) {
-            // 기존 회원 로그인
-            return handleExistingMember(existingSocialAccount.get(), tokenResponse, userInfo);
-        } else {
-            // 신규 회원 가입
-            return handleNewMember(tokenResponse, userInfo);
+            if (existingSocialAccount.isPresent()) {
+                // 기존 회원 로그인
+                return handleExistingMember(existingSocialAccount.get(), tokenResponse, userInfo);
+            } else {
+                // 신규 회원 가입
+                return handleNewMember(tokenResponse, userInfo);
+            }
+        } catch (Exception e) {
+            log.error("구글 OAuth 인증 실패", e);
+            throw new com.stdev.smartmealtable.core.exception.BusinessException(
+                    com.stdev.smartmealtable.core.error.ErrorType.OAUTH_AUTHENTICATION_FAILED
+            );
         }
     }
 

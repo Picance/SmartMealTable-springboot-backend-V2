@@ -2,7 +2,7 @@ package com.stdev.smartmealtable.api.auth.service;
 
 import com.stdev.smartmealtable.api.auth.service.request.RefreshTokenServiceRequest;
 import com.stdev.smartmealtable.api.auth.service.response.RefreshTokenServiceResponse;
-import com.stdev.smartmealtable.api.config.JwtConfig.JwtTokenProvider;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import com.stdev.smartmealtable.core.exception.AuthenticationException;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import org.springframework.stereotype.Service;
@@ -27,22 +27,16 @@ public class RefreshTokenService {
 
         try {
             // 토큰 유효성 검증
-            if (!jwtTokenProvider.isTokenValid(refreshToken)) {
+            if (!jwtTokenProvider.validateToken(refreshToken)) {
                 throw new AuthenticationException(ErrorType.INVALID_REFRESH_TOKEN);
             }
 
-            // 토큰 타입 검증 (refresh 토큰인지 확인)
-            String tokenType = jwtTokenProvider.getTypeFromToken(refreshToken);
-            if (!"refresh".equals(tokenType)) {
-                throw new AuthenticationException(ErrorType.INVALID_REFRESH_TOKEN);
-            }
-
-            // 토큰에서 이메일 추출
-            String email = jwtTokenProvider.getEmailFromToken(refreshToken);
+            // 토큰에서 memberId 추출
+            Long memberId = jwtTokenProvider.extractMemberId(refreshToken);
 
             // 새로운 액세스 토큰 및 리프레시 토큰 생성
-            String newAccessToken = jwtTokenProvider.generateAccessToken(email);
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(email);
+            String newAccessToken = jwtTokenProvider.createToken(memberId);
+            String newRefreshToken = jwtTokenProvider.createToken(memberId);
 
             return new RefreshTokenServiceResponse(newAccessToken, newRefreshToken);
 

@@ -45,28 +45,35 @@ public class KakaoLoginService {
     public KakaoLoginServiceResponse login(KakaoLoginServiceRequest request) {
         log.info("카카오 로그인 시작: redirectUri={}", request.redirectUri());
 
-        // 1. 카카오 Access Token 발급
-        OAuthTokenResponse tokenResponse = kakaoAuthClient.getAccessToken(
-                request.authorizationCode()
-        );
-        log.debug("카카오 Access Token 발급 완료: tokenType={}", tokenResponse.getTokenType());
+        try {
+            // 1. 카카오 Access Token 발급
+            OAuthTokenResponse tokenResponse = kakaoAuthClient.getAccessToken(
+                    request.authorizationCode()
+            );
+            log.debug("카카오 Access Token 발급 완료: tokenType={}", tokenResponse.getTokenType());
 
-        // 2. 카카오 사용자 정보 조회 (ID Token에서 추출)
-        OAuthUserInfo userInfo = kakaoAuthClient.extractUserInfo(tokenResponse.getIdToken());
-        log.info("카카오 사용자 정보 조회 완료: providerId={}, email={}", userInfo.getProviderId(), userInfo.getEmail());
+            // 2. 카카오 사용자 정보 조회 (ID Token에서 추출)
+            OAuthUserInfo userInfo = kakaoAuthClient.extractUserInfo(tokenResponse.getIdToken());
+            log.info("카카오 사용자 정보 조회 완료: providerId={}, email={}", userInfo.getProviderId(), userInfo.getEmail());
 
-        // 3. 기존 소셜 계정 확인
-        Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderAndProviderId(
-                SocialProvider.KAKAO,
-                userInfo.getProviderId()
-        );
+            // 3. 기존 소셜 계정 확인
+            Optional<SocialAccount> existingSocialAccount = socialAccountRepository.findByProviderAndProviderId(
+                    SocialProvider.KAKAO,
+                    userInfo.getProviderId()
+            );
 
-        if (existingSocialAccount.isPresent()) {
-            // 기존 회원 로그인
-            return handleExistingMember(existingSocialAccount.get(), tokenResponse, userInfo);
-        } else {
-            // 신규 회원 가입
-            return handleNewMember(tokenResponse, userInfo);
+            if (existingSocialAccount.isPresent()) {
+                // 기존 회원 로그인
+                return handleExistingMember(existingSocialAccount.get(), tokenResponse, userInfo);
+            } else {
+                // 신규 회원 가입
+                return handleNewMember(tokenResponse, userInfo);
+            }
+        } catch (Exception e) {
+            log.error("카카오 OAuth 인증 실패", e);
+            throw new com.stdev.smartmealtable.core.exception.BusinessException(
+                    com.stdev.smartmealtable.core.error.ErrorType.OAUTH_AUTHENTICATION_FAILED
+            );
         }
     }
 
