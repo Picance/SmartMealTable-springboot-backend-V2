@@ -172,6 +172,20 @@ public enum ErrorType {
             "존재하지 않는 즐겨찾기입니다.",
             LogLevel.WARN
     ),
+    
+    CART_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 장바구니입니다.",
+            LogLevel.WARN
+    ),
+    
+    CART_ITEM_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 장바구니 아이템입니다.",
+            LogLevel.WARN
+    ),
 
     // ==================== 충돌 (409) ====================
     DUPLICATE_EMAIL(
@@ -277,6 +291,13 @@ public enum ErrorType {
             HttpStatus.UNPROCESSABLE_ENTITY,
             ErrorCode.E422,
             "SMS 메시지 파싱에 실패했습니다. 지원하지 않는 형식입니다.",
+            LogLevel.WARN
+    ),
+    
+    INVALID_INPUT_VALUE(
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            ErrorCode.E422,
+            "입력 값이 유효하지 않습니다.",
             LogLevel.WARN
     ),
 
