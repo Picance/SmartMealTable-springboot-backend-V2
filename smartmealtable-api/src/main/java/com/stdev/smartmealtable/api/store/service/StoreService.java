@@ -6,13 +6,14 @@ import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
 import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
-import com.stdev.smartmealtable.domain.member.AddressHistory;
+import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.store.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -39,14 +40,14 @@ public class StoreService {
      */
     public StoreListResponse getStores(Long memberId, StoreListRequest request) {
         // 사용자의 기본 주소 조회
-        AddressHistory primaryAddress = addressHistoryRepository.findPrimaryAddressByMemberId(memberId)
+        AddressHistory primaryAddress = addressHistoryRepository.findPrimaryByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
         
         // 가게 검색
         StoreRepository.StoreSearchResult searchResult = storeRepository.searchStores(
                 request.keyword(),
-                primaryAddress.getLatitude(),
-                primaryAddress.getLongitude(),
+                BigDecimal.valueOf(primaryAddress.getAddress().getLatitude()),
+                BigDecimal.valueOf(primaryAddress.getAddress().getLongitude()),
                 request.radius(),
                 request.categoryId(),
                 request.isOpen(),

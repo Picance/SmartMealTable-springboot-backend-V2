@@ -165,6 +165,13 @@ public enum ErrorType {
             "존재하지 않는 주소입니다.",
             LogLevel.WARN
     ),
+    
+    FAVORITE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 즐겨찾기입니다.",
+            LogLevel.WARN
+    ),
 
     // ==================== 충돌 (409) ====================
     DUPLICATE_EMAIL(
@@ -213,6 +220,13 @@ public enum ErrorType {
             HttpStatus.CONFLICT,
             ErrorCode.E409,
             "기본 주소는 다른 주소가 있을 때만 삭제할 수 있습니다.",
+            LogLevel.WARN
+    ),
+    
+    FAVORITE_ALREADY_EXISTS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 즐겨찾기에 추가된 가게입니다.",
             LogLevel.WARN
     ),
     
