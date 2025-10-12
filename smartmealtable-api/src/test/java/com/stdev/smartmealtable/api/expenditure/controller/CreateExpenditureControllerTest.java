@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.expenditure.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(MockChatModelConfig.class)
 class CreateExpenditureControllerTest extends AbstractContainerTest {
     
     @Autowired

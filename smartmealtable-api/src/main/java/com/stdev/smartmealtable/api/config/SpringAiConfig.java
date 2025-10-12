@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.config;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +11,11 @@ import org.springframework.context.annotation.Configuration;
  * Gemini를 활용한 SMS 파싱 등 AI 기능을 위한 ChatClient 빈을 제공합니다.
  */
 @Configuration
+@ConditionalOnProperty(
+        name = "spring.ai.vertex.ai.gemini.enabled",
+        havingValue = "true",
+        matchIfMissing = true  // 설정이 없으면 기본적으로 활성화
+)
 public class SpringAiConfig {
 
     /**
@@ -25,3 +31,4 @@ public class SpringAiConfig {
         return ChatClient.builder(chatModel);
     }
 }
+

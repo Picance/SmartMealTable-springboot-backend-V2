@@ -35,11 +35,15 @@ public abstract class AbstractContainerTest {
 
     /**
      * Spring Boot의 DataSource 설정을 컨테이너 정보로 동적 구성
+     * Spring AI ChatModel을 자동 설정에서 제외하여 테스트 환경에서 불필요한 의존성 방지
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", MYSQL_CONTAINER::getJdbcUrl);
         registry.add("spring.datasource.username", MYSQL_CONTAINER::getUsername);
         registry.add("spring.datasource.password", MYSQL_CONTAINER::getPassword);
+        
+        // Spring AI 자동 설정 비활성화 (테스트에서 불필요)
+        registry.add("spring.ai.vertex.ai.gemini.enabled", () -> "false");
     }
 }

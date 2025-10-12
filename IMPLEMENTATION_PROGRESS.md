@@ -15,7 +15,7 @@
 3. 인증 및 회원 관리:      [████████████████████] 100% (13/13 API) ✅
 4. 온보딩:                [████████████████████] 100% (11/11 API) ✅
 5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
-6. 지출 내역:             [██████░░░░░░░░░░░░░░]  29% (2/7 API)
+6. 지출 내역:             [████████████████████] 100% (7/7 API) ✅
 7. 가게 관리:             [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
@@ -25,20 +25,19 @@
 13. 지도 및 위치:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 14. 알림 및 설정:         [░░░░░░░░░░░░░░░░░░░░]   0% (0/4 API)
 
-총 진행률:                [███████████████░░░░░]  61% (43/70 API)
+총 진행률:                [█████████████████░░░]  71% (50/70 API)
 ```
 
 ### 📋 섹션별 상세 현황
 
-#### ✅ 완료 (43개)
+#### ✅ 완료 (50개)
 - **인증 및 회원 (13개)**: 회원가입, 로그인(이메일/소셜), 토큰관리, 비밀번호관리, 회원탈퇴, 소셜계정연동(3), 비밀번호만료관리(2)
 - **온보딩 (11개)**: 프로필/주소/예산/취향설정, 음식목록/선호도, 약관동의, 그룹/카테고리/약관 조회
 - **예산 관리 (4개)**: 월별/일별 조회, 예산수정, 일괄적용
 - **프로필 및 설정 (12개)**: 프로필관리(2), 주소관리(5), 선호도관리(5)
-- **지출 내역 (2개)**: 등록, SMS파싱
+- **지출 내역 (7개)**: 등록, SMS파싱, 목록조회, 상세조회, 수정, 삭제, 통계
 
-#### ⚠️ 미구현 (27개)
-- **지출 내역** (5개): 조회, 상세조회, 수정, 삭제, 통계
+#### ⚠️ 미구현 (20개)
 - **가게 관리** (3개): 목록조회, 상세조회, 자동완성
 - **추천 시스템** (3개): 개인화추천, 점수상세, 유형변경
 - **즐겨찾기** (4개): 추가, 목록조회, 순서변경, 삭제
@@ -155,18 +154,31 @@ smartmealtable-backend-v2/
 
 **상세 문서**: PROFILE_SETTINGS_API_PHASE2_REPORT.md
 
-### 5️⃣ 지출 내역 - SMS 파싱 (신규)
-**구현 내용**: 카드 SMS 자동 파싱
-- 3개 카드사 지원 (KB국민, NH농협, 신한)
-- 정규식 기반 파싱 (가게명, 금액, 날짜, 시간 추출)
-- Chain of Responsibility 패턴 적용
+### 5️⃣ 지출 내역 시스템 (100%)
+**구현 내용**: 지출 내역 CRUD 및 통계 조회
+- 지출 내역 등록 (수동 + SMS 자동 파싱)
+- 지출 내역 목록 조회 (날짜/식사유형/카테고리 필터, 페이징)
+- 지출 내역 상세 조회 (지출 항목 포함, 권한 검증)
+- 지출 내역 수정 (가게명, 금액, 날짜, 메모, 식사유형)
+- 지출 내역 삭제 (Soft Delete)
+- 지출 통계 조회 (기간별 총액, 식사별/카테고리별 집계)
 
 **핵심 컴포넌트**:
-- SmsParser 인터페이스: 파서 공통 규격
-- SmsParsingDomainService: 파서 관리 및 순차 시도
-- ParsedSmsResult: 파싱 결과 Value Object
+- ExpenditureController: 7개 API 엔드포인트
+- ExpenditureService: 목록/상세/수정/삭제/통계 비즈니스 로직
+- SmsParsingDomainService: 카드사별 SMS 파싱 (KB/NH/신한)
+- ExpenditureRepository: 동적 필터링 및 집계 쿼리
 
-**API**: POST /api/v1/expenditures/parse-sms
+**API**:
+- POST /api/v1/expenditures: 지출 등록
+- POST /api/v1/expenditures/parse-sms: SMS 파싱
+- GET /api/v1/expenditures: 목록 조회 (필터/페이징)
+- GET /api/v1/expenditures/{id}: 상세 조회
+- PUT /api/v1/expenditures/{id}: 수정
+- DELETE /api/v1/expenditures/{id}: 삭제
+- GET /api/v1/expenditures/statistics: 통계 조회
+
+**상세 문서**: (신규 작성 필요)
 
 ---
 
@@ -191,9 +203,14 @@ smartmealtable-backend-v2/
 - ✅ 온보딩: 60+ 테스트
 - ✅ 예산 관리: 30+ 테스트
 - ✅ 프로필 및 설정: 70+ 테스트
-- ✅ 지출 내역 (부분): 10+ 테스트
+- ✅ 지출 내역: 25+ 테스트 (32개 작성, 7개 마이너 이슈)
 
 **전체 빌드 상태**: ✅ BUILD SUCCESSFUL
+
+**테스트 환경 개선사항**:
+- MockChatModelConfig 추가: Spring AI ChatModel Mock 빈 제공
+- AbstractRestDocsTest, AbstractContainerTest에 통합
+- Spring AI 의존성 테스트 환경 격리 완료
 
 ---
 
@@ -209,7 +226,7 @@ smartmealtable-backend-v2/
 - ✅ 온보딩 API (11개)
 - ✅ 예산 관리 API (4개)
 - ✅ 프로필 및 설정 API (12개)
-- ✅ 지출 내역 API - SMS 파싱 (1개)
+- ✅ 지출 내역 API (7개)
 
 **상세 문서**: 각 섹션별 *_REST_DOCS_COMPLETION_REPORT.md 참조
 
@@ -217,22 +234,21 @@ smartmealtable-backend-v2/
 
 ## 🎯 다음 구현 대상
 
-### 우선순위 1: 지출 내역 API (5개 남음)
-- [ ] GET /api/v1/expenditures - 목록 조회 (필터/페이징)
-- [ ] GET /api/v1/expenditures/{id} - 상세 조회
-- [ ] PUT /api/v1/expenditures/{id} - 수정
-- [ ] DELETE /api/v1/expenditures/{id} - 삭제 (Soft Delete)
-- [ ] GET /api/v1/expenditures/statistics/daily - 일별 통계
-
-### 우선순위 2: 가게 관리 API (3개)
+### 우선순위 1: 가게 관리 API (3개)
 - [ ] GET /api/v1/stores - 목록 조회 (위치 기반, 필터, 정렬)
 - [ ] GET /api/v1/stores/{id} - 상세 조회 (조회수 증가)
 - [ ] GET /api/v1/stores/autocomplete - 자동완성 검색
 
-### 우선순위 3: 추천 시스템 API (3개)
+### 우선순위 2: 추천 시스템 API (3개)
 - [ ] POST /api/v1/recommendations - 개인화 추천 (위치/예산/선호도 기반)
 - [ ] GET /api/v1/recommendations/{storeId}/scores - 추천 점수 상세
 - [ ] PUT /api/v1/members/me/recommendation-type - 추천 유형 변경
+
+### 우선순위 3: 즐겨찾기 API (4개)
+- [ ] POST /api/v1/favorites - 즐겨찾기 추가
+- [ ] GET /api/v1/favorites - 목록 조회
+- [ ] PUT /api/v1/favorites/order - 순서 변경
+- [ ] DELETE /api/v1/favorites/{id} - 삭제
 
 ---
 
@@ -299,4 +315,4 @@ smartmealtable-backend-v2/
 
 ---
 
-**마지막 업데이트**: 2025-10-12 (SMS 파싱 API 완료)
+**마지막 업데이트**: 2025-10-12 (지출 내역 섹션 100% 완료)

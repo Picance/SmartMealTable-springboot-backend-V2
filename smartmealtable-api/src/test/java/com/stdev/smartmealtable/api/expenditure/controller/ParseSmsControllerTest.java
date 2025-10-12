@@ -2,12 +2,14 @@ package com.stdev.smartmealtable.api.expenditure.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.api.expenditure.dto.request.ParseSmsRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("SMS 파싱 API 통합 테스트")
+@Import(MockChatModelConfig.class)
 class ParseSmsControllerTest extends AbstractContainerTest {
 
     @Autowired
@@ -53,7 +56,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("12:30:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").isEmpty());
+                .andExpect(jsonPath("$.error").doesNotExist());
     }
 
     @Test
@@ -76,7 +79,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("13:45:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").isEmpty());
+                .andExpect(jsonPath("$.error").doesNotExist());
     }
 
     @Test
@@ -99,7 +102,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("18:30:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").isEmpty());
+                .andExpect(jsonPath("$.error").doesNotExist());
     }
 
     @Test
@@ -117,7 +120,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
         // then
         result.andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.data").doesNotExist())
                 .andExpect(jsonPath("$.error.code").value("E422"))
                 .andExpect(jsonPath("$.error.message").value("SMS 메시지 파싱에 실패했습니다. 지원하지 않는 형식입니다."));
     }
