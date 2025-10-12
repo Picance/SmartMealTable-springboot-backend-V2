@@ -3,7 +3,7 @@
 > **목표**: 회원가입 API를 TDD로 완전히 구현하여 전체 아키텍처 템플릿 확립
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-11 (지출 내역 등록 API 구현) 🆕
+**최종 업데이트**: 2025-10-12 (SMS 파싱 테스트 HTTP 상태 코드 수정) 🆕
 
 ---
 
@@ -2785,5 +2785,155 @@ given(addressDomainService.getAddresses(memberId))
 **리팩토링 보류**: PolicyAgreementService (효율성 고려)
 
 ---
+
+## 🧪 SMS 파싱 실패 테스트 HTTP 상태 코드 수정 (2025-10-12) ⭐ **완료**
+
+### 📌 문제 상황
+
+SMS 파싱 API의 실패 테스트들에서 HTTP 상태 코드가 일관되지 않아 테스트가 실패하고 있었습니다.
+
+**실패한 테스트**:
+- `ExpenditureControllerRestDocsTest.parseSms_EmptyMessage_Failed`
+- `ExpenditureControllerRestDocsTest.parseSms_InvalidFormat_Failed`
+
+### 🔍 원인 분석
+
+#### 1. 빈 문자열 테스트 (`parseSms_EmptyMessage_Failed`)
+
+**기대값**: 400 (Bad Request)  
+**실제값**: 422 (Unprocessable Entity)
+
+**원인**:
+- `ParseSmsRequest`에 `@NotBlank` 검증 어노테이션 존재
+- 빈 문자열(`""`)은 Controller 진입 전에 Validation 실패
+- `MethodArgumentNotValidException` 발생 → `GlobalExceptionHandler`가 422로 처리
+
+**코드**:
+```java
+public record ParseSmsRequest(
+    @NotBlank(message = "SMS 메시지는 필수입니다.")
+    String smsMessage
+) {}
+```
+
+#### 2. 파싱 불가 형식 테스트 (`parseSms_InvalidFormat_Failed`)
+
+**기대값**: 400 (Bad Request)  
+**실제값**: 400 (Bad Request) ✅
+
+**원인**:
+- Service 계층에서 `IllegalArgumentException` 발생
+- `GlobalExceptionHandler`가 `IllegalArgumentException`을 400으로 처리
+
+**코드**:
+```java
+@ExceptionHandler(IllegalArgumentException.class)
+public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
+    ErrorMessage errorMessage = ErrorMessage.of(ErrorCode.E400, ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(errorMessage));
+}
+```
+
+### ✅ 수정 내용
+
+#### 1. `parseSms_EmptyMessage_Failed` 테스트 수정
+
+**변경 사항**:
+- HTTP 상태 코드: 400 → **422** (Validation 실패는 422가 맞음)
+- 에러 코드: E400 → **E422**
+- 응답 필드: `error.data` 필드 추가 (validation 에러는 field, reason 포함)
+- Mock 제거: Validation은 Controller 진입 전에 발생하므로 Service Mock 불필요
+
+```java
+@Test
+@DisplayName("SMS 파싱 실패 - 빈 문자열")
+void parseSms_EmptyMessage_Failed() throws Exception {
+    ParseSmsRequest request = new ParseSmsRequest("");
+    
+    mockMvc.perform(post("/api/v1/expenditures/parse-sms")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity())  // 422
+            .andExpect(jsonPath("$.error.code").value("E422"))
+            .andExpect(jsonPath("$.error.message").value("SMS 메시지는 필수입니다."))
+            .andExpect(jsonPath("$.error.data.field").exists())
+            .andExpect(jsonPath("$.error.data.reason").exists());
+}
+```
+
+#### 2. `parseSms_InvalidFormat_Failed` 테스트 수정
+
+**변경 사항**:
+- 에러 코드 검증 추가: `jsonPath("$.error.code").value("E400")`
+- 응답 필드 간소화: `error.data` 필드 제거 (IllegalArgumentException은 data 없음)
+- 설명 업데이트: "E400: Bad Request"
+
+```java
+@Test
+@DisplayName("SMS 파싱 실패 - 파싱할 수 없는 형식")
+void parseSms_InvalidFormat_Failed() throws Exception {
+    ParseSmsRequest request = new ParseSmsRequest("이것은 카드 결제 문자가 아닙니다. 단순 텍스트입니다.");
+    
+    when(parseSmsService.parseSms(any())).thenThrow(
+            new IllegalArgumentException("SMS 파싱에 실패했습니다.")
+    );
+
+    mockMvc.perform(post("/api/v1/expenditures/parse-sms")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isBadRequest())  // 400
+            .andExpect(jsonPath("$.error.code").value("E400"));
+}
+```
+
+### 🧪 테스트 결과
+
+**실행 명령**:
+```bash
+./gradlew :smartmealtable-api:test \
+  --tests "ExpenditureControllerRestDocsTest.parseSms_EmptyMessage_Failed" \
+  --tests "ExpenditureControllerRestDocsTest.parseSms_InvalidFormat_Failed"
+```
+
+**결과**: ✅ **2/2 테스트 통과**
+
+```
+BUILD SUCCESSFUL in 9s
+18 actionable tasks: 2 executed, 16 up-to-date
+```
+
+### 📊 HTTP 상태 코드 매핑 정리
+
+| 예외 유형 | HTTP 상태 | 에러 코드 | 설명 |
+|---------|---------|---------|------|
+| `MethodArgumentNotValidException` | 422 | E422 | Request Body Validation 실패 (@NotBlank 등) |
+| `ConstraintViolationException` | 422 | E422 | Query Parameter Validation 실패 |
+| `IllegalArgumentException` | 400 | E400 | 비즈니스 로직 검증 실패 (도메인 규칙 위반) |
+| `MissingServletRequestParameterException` | 400 | E400 | 필수 파라미터 누락 |
+| `BaseException` | varies | varies | 커스텀 예외 (ErrorType에 따라 상태 코드 결정) |
+
+### 🎯 핵심 인사이트
+
+1. **Validation vs Business Logic**:
+   - Validation 실패 (@NotBlank 등): **422 Unprocessable Entity**
+   - 비즈니스 로직 실패 (IllegalArgumentException): **400 Bad Request**
+
+2. **에러 응답 구조**:
+   - Validation 에러: `error.data.field`, `error.data.reason` 포함
+   - 일반 에러: `error.code`, `error.message`만 포함
+
+3. **테스트 작성 원칙**:
+   - Controller 진입 전 발생하는 예외(Validation)는 Service Mock 불필요
+   - Service 계층에서 발생하는 예외는 Service Mock 필수
+
+### 📁 수정된 파일
+
+- `smartmealtable-api/src/test/java/com/stdev/smartmealtable/api/expenditure/controller/ExpenditureControllerRestDocsTest.java`
+
+---
+
+
 
 ```
