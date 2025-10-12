@@ -12,6 +12,8 @@ import com.stdev.smartmealtable.api.member.service.WithdrawMemberService;
 import com.stdev.smartmealtable.api.member.service.dto.ChangePasswordServiceResponse;
 import com.stdev.smartmealtable.api.member.service.dto.UpdateProfileServiceRequest;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,25 +33,23 @@ public class MemberController {
 
     /**
      * 10.1 내 프로필 조회
-     * TODO: @RequestHeader를 JWT ArgumentResolver로 대체 필요
      */
     @GetMapping("/me")
-    public ApiResponse<MemberProfileResponse> getMyProfile(@RequestHeader("X-Member-Id") Long memberId) {
-        MemberProfileResponse response = memberProfileService.getProfile(memberId);
+    public ApiResponse<MemberProfileResponse> getMyProfile(@AuthUser AuthenticatedUser user) {
+        MemberProfileResponse response = memberProfileService.getProfile(user.memberId());
         return ApiResponse.success(response);
     }
 
     /**
      * 10.2 프로필 수정 (닉네임, 그룹)
-     * TODO: @RequestHeader를 JWT ArgumentResolver로 대체 필요
      */
     @PutMapping("/me")
     public ApiResponse<UpdateProfileResponse> updateProfile(
-            @RequestHeader("X-Member-Id") Long memberId,
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody UpdateProfileRequest request
     ) {
         UpdateProfileServiceRequest serviceRequest = UpdateProfileServiceRequest.of(
-                memberId,
+                user.memberId(),
                 request.getNickname(),
                 request.getGroupId()
         );
@@ -59,15 +59,14 @@ public class MemberController {
 
     /**
      * 비밀번호 변경
-     * TODO: @RequestHeader를 JWT ArgumentResolver로 대체 필요
      */
     @PutMapping("/me/password")
     public ApiResponse<ChangePasswordResponse> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request,
-            @RequestHeader("X-Member-Id") Long memberId
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody ChangePasswordRequest request
     ) {
         ChangePasswordServiceResponse serviceResponse = changePasswordService.changePassword(
-                request.toServiceRequest(memberId)
+                request.toServiceRequest(user.memberId())
         );
         ChangePasswordResponse response = ChangePasswordResponse.from(serviceResponse);
         return ApiResponse.success(response);
@@ -75,14 +74,13 @@ public class MemberController {
 
     /**
      * 회원 탈퇴
-     * TODO: @RequestHeader를 JWT ArgumentResolver로 대체 필요
      */
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void withdrawMember(
-            @Valid @RequestBody WithdrawMemberRequest request,
-            @RequestHeader("X-Member-Id") Long memberId
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody WithdrawMemberRequest request
     ) {
-        withdrawMemberService.withdrawMember(request.toServiceRequest(memberId));
+        withdrawMemberService.withdrawMember(request.toServiceRequest(user.memberId()));
     }
 }

@@ -31,7 +31,7 @@ public class FoodPreferenceJpaEntity {
     @Column(name = "is_preferred", nullable = false)
     private Boolean isPreferred;
 
-    @Column(name = "preferred_at", nullable = false)
+    @Column(name = "preferred_at")
     private LocalDateTime preferredAt;
 
     // created_at, updated_at은 DB DEFAULT CURRENT_TIMESTAMP로 관리 (도메인에 노출 안 함)

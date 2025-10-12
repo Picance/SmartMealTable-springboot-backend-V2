@@ -8,6 +8,8 @@ import com.stdev.smartmealtable.api.member.controller.preference.UpdateFoodPrefe
 import com.stdev.smartmealtable.api.member.controller.preference.UpdateFoodPreferenceResponse;
 import com.stdev.smartmealtable.api.member.service.preference.*;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,9 +35,9 @@ public class PreferenceController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<GetPreferencesServiceResponse>> getPreferences(
-            @RequestHeader("X-Member-Id") Long memberId  // TODO: JWT 인증으로 대체
+            @AuthUser AuthenticatedUser user
     ) {
-        GetPreferencesServiceResponse response = getPreferencesService.execute(memberId);
+        GetPreferencesServiceResponse response = getPreferencesService.execute(user.memberId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -44,11 +46,11 @@ public class PreferenceController {
      */
     @PutMapping("/categories")
     public ResponseEntity<ApiResponse<UpdateCategoryPreferencesResponse>> updateCategoryPreferences(
-            @RequestHeader("X-Member-Id") Long memberId,  // TODO: JWT 인증으로 대체
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody UpdateCategoryPreferencesRequest request
     ) {
         UpdateCategoryPreferencesServiceResponse serviceResponse = 
-                updateCategoryPreferencesService.execute(memberId, request.toServiceRequest());
+                updateCategoryPreferencesService.execute(user.memberId(), request.toServiceRequest());
         UpdateCategoryPreferencesResponse response = UpdateCategoryPreferencesResponse.from(serviceResponse);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -58,11 +60,11 @@ public class PreferenceController {
      */
     @PostMapping("/foods")
     public ResponseEntity<ApiResponse<AddFoodPreferenceResponse>> addFoodPreference(
-            @RequestHeader("X-Member-Id") Long memberId,  // TODO: JWT 인증으로 대체
+            @AuthUser AuthenticatedUser user,
             @Valid @RequestBody AddFoodPreferenceRequest request
     ) {
         AddFoodPreferenceServiceResponse serviceResponse = 
-                addFoodPreferenceService.execute(memberId, request.toServiceRequest());
+                addFoodPreferenceService.execute(user.memberId(), request.toServiceRequest());
         AddFoodPreferenceResponse response = AddFoodPreferenceResponse.from(serviceResponse);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
@@ -72,12 +74,12 @@ public class PreferenceController {
      */
     @PutMapping("/foods/{foodPreferenceId}")
     public ResponseEntity<ApiResponse<UpdateFoodPreferenceResponse>> updateFoodPreference(
-            @RequestHeader("X-Member-Id") Long memberId,  // TODO: JWT 인증으로 대체
+            @AuthUser AuthenticatedUser user,
             @PathVariable Long foodPreferenceId,
             @Valid @RequestBody UpdateFoodPreferenceRequest request
     ) {
         UpdateFoodPreferenceServiceResponse serviceResponse = 
-                updateFoodPreferenceService.execute(memberId, foodPreferenceId, request.toServiceRequest());
+                updateFoodPreferenceService.execute(user.memberId(), foodPreferenceId, request.toServiceRequest());
         UpdateFoodPreferenceResponse response = UpdateFoodPreferenceResponse.from(serviceResponse);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -87,10 +89,10 @@ public class PreferenceController {
      */
     @DeleteMapping("/foods/{foodPreferenceId}")
     public ResponseEntity<Void> deleteFoodPreference(
-            @RequestHeader("X-Member-Id") Long memberId,  // TODO: JWT 인증으로 대체
+            @AuthUser AuthenticatedUser user,
             @PathVariable Long foodPreferenceId
     ) {
-        deleteFoodPreferenceService.execute(memberId, foodPreferenceId);
+        deleteFoodPreferenceService.execute(user.memberId(), foodPreferenceId);
         return ResponseEntity.noContent().build();
     }
 }
