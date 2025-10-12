@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -99,6 +100,27 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(errorMessage));
+    }
+    
+    /**
+     * 필수 Request Parameter 누락 처리 (400)
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException ex
+    ) {
+        log.warn("Missing request parameter: {}", ex.getMessage());
+        
+        String message = String.format("필수 파라미터가 누락되었습니다: %s", ex.getParameterName());
+        
+        ErrorMessage errorMessage = ErrorMessage.of(
+                ErrorCode.E400,
+                message
+        );
+        
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(errorMessage));
     }
     
