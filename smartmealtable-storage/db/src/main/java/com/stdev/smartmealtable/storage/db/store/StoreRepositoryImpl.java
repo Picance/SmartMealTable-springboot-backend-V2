@@ -35,6 +35,14 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
     
     @Override
+    public List<Store> findByIdIn(List<Long> storeIds) {
+        return jpaRepository.findByStoreIdInAndDeletedAtIsNull(storeIds)
+                .stream()
+                .map(StoreEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
     public Store save(Store store) {
         StoreJpaEntity entity = StoreEntityMapper.toJpaEntity(store);
         StoreJpaEntity saved = jpaRepository.save(entity);

@@ -18,6 +18,11 @@ public interface StoreJpaRepository extends JpaRepository<StoreJpaEntity, Long> 
     Optional<StoreJpaEntity> findByStoreIdAndDeletedAtIsNull(Long storeId);
     
     /**
+     * 여러 ID로 조회 (삭제되지 않은 가게만)
+     */
+    List<StoreJpaEntity> findByStoreIdInAndDeletedAtIsNull(List<Long> storeIds);
+    
+    /**
      * 키워드로 가게명 또는 카테고리명 검색 (자동완성용)
      * 가게명에 키워드가 포함되어 있거나, 가게의 카테고리명에 키워드가 포함된 가게를 검색합니다.
      */

@@ -20,6 +20,11 @@ public interface StoreRepository {
     Optional<Store> findByIdAndDeletedAtIsNull(Long storeId);
     
     /**
+     * 여러 가게 ID로 조회
+     */
+    List<Store> findByIdIn(List<Long> storeIds);
+    
+    /**
      * 가게 저장
      */
     Store save(Store store);

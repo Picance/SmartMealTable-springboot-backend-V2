@@ -6,6 +6,7 @@ import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -28,6 +29,7 @@ public class FavoriteController {
      * @return 추가된 즐겨찾기 정보
      */
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AddFavoriteResponse> addFavorite(
             @AuthUser AuthenticatedUser user,
             @RequestBody AddFavoriteRequest request) {

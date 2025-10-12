@@ -14,13 +14,11 @@ public class FavoriteMapper {
      * @return JPA 엔티티
      */
     public static FavoriteEntity toEntity(Favorite favorite) {
-        return FavoriteEntity.builder()
-                .favoriteId(favorite.getFavoriteId())
-                .memberId(favorite.getMemberId())
-                .storeId(favorite.getStoreId())
-                .priority(favorite.getPriority())
-                .favoritedAt(favorite.getFavoritedAt())
-                .build();
+        if (favorite.getFavoriteId() == null) {
+            return FavoriteEntity.fromDomain(favorite);
+        } else {
+            return FavoriteEntity.fromDomainWithId(favorite);
+        }
     }
     
     /**
@@ -30,12 +28,6 @@ public class FavoriteMapper {
      * @return 도메인 엔티티
      */
     public static Favorite toDomain(FavoriteEntity entity) {
-        return Favorite.builder()
-                .favoriteId(entity.getFavoriteId())
-                .memberId(entity.getMemberId())
-                .storeId(entity.getStoreId())
-                .priority(entity.getPriority())
-                .favoritedAt(entity.getFavoritedAt())
-                .build();
+        return entity.toDomain();
     }
 }

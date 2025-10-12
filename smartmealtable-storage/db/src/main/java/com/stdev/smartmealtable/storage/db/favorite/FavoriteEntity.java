@@ -1,9 +1,8 @@
 package com.stdev.smartmealtable.storage.db.favorite;
 
+import com.stdev.smartmealtable.domain.favorite.Favorite;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,9 +20,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_priority", columnList = "priority")
        })
 @Getter
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class FavoriteEntity {
     
     @Id
@@ -43,22 +40,12 @@ public class FavoriteEntity {
     @Column(name = "favorited_at", nullable = false)
     private LocalDateTime favoritedAt;
     
-    @Column(name = "created_at", nullable = false, updatable = false)
+    // created_at, updated_at은 DB DEFAULT CURRENT_TIMESTAMP로 관리 (도메인에 노출 안 함)
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
     
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
     
     /**
      * 우선순위 변경
@@ -67,5 +54,43 @@ public class FavoriteEntity {
      */
     public void changePriority(Long newPriority) {
         this.priority = newPriority;
+    }
+    
+    /**
+     * Domain Entity → JPA Entity 변환 (신규 생성)
+     */
+    public static FavoriteEntity fromDomain(Favorite favorite) {
+        FavoriteEntity entity = new FavoriteEntity();
+        entity.memberId = favorite.getMemberId();
+        entity.storeId = favorite.getStoreId();
+        entity.priority = favorite.getPriority();
+        entity.favoritedAt = favorite.getFavoritedAt();
+        return entity;
+    }
+    
+    /**
+     * Domain Entity → JPA Entity 변환 (ID 보존)
+     */
+    public static FavoriteEntity fromDomainWithId(Favorite favorite) {
+        FavoriteEntity entity = new FavoriteEntity();
+        entity.favoriteId = favorite.getFavoriteId();
+        entity.memberId = favorite.getMemberId();
+        entity.storeId = favorite.getStoreId();
+        entity.priority = favorite.getPriority();
+        entity.favoritedAt = favorite.getFavoritedAt();
+        return entity;
+    }
+    
+    /**
+     * JPA Entity → Domain Entity 변환
+     */
+    public Favorite toDomain() {
+        return Favorite.builder()
+                .favoriteId(this.favoriteId)
+                .memberId(this.memberId)
+                .storeId(this.storeId)
+                .priority(this.priority)
+                .favoritedAt(this.favoritedAt)
+                .build();
     }
 }
