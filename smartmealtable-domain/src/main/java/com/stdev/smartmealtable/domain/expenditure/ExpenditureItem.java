@@ -14,7 +14,7 @@ public class ExpenditureItem {
     
     private Long expenditureItemId;
     private Long expenditureId;
-    private String foodName;
+    private Long foodId;
     private Integer quantity;
     private Integer price;
     
@@ -22,18 +22,38 @@ public class ExpenditureItem {
      * 지출 항목 생성 - 정적 팩토리 메서드
      */
     public static ExpenditureItem create(
-            String foodName,
+            Long foodId,
             Integer quantity,
             Integer price
     ) {
         ExpenditureItem item = new ExpenditureItem();
-        item.foodName = foodName;
+        item.foodId = foodId;
         item.quantity = quantity;
         item.price = price;
         
         // 비즈니스 규칙 검증
         item.validateQuantity();
         item.validatePrice();
+        
+        return item;
+    }
+    
+    /**
+     * 지출 항목 재구성 - JPA 엔티티로부터 도메인 복원용
+     */
+    public static ExpenditureItem reconstruct(
+            Long expenditureItemId,
+            Long expenditureId,
+            Long foodId,
+            Integer quantity,
+            Integer price
+    ) {
+        ExpenditureItem item = new ExpenditureItem();
+        item.expenditureItemId = expenditureItemId;
+        item.expenditureId = expenditureId;
+        item.foodId = foodId;
+        item.quantity = quantity;
+        item.price = price;
         
         return item;
     }

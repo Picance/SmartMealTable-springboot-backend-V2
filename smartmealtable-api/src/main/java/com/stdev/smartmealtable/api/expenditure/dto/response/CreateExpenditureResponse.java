@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.expenditure.dto.response;
 
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
+import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServiceResponse;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
 
 import java.time.LocalDate;
@@ -54,16 +55,18 @@ public record CreateExpenditureResponse(
      */
     public record ExpenditureItemResponse(
             Long expenditureItemId,
+            Long foodId,
             String foodName,
             Integer quantity,
             Integer price
     ) {
-        public static ExpenditureItemResponse from(CreateExpenditureServiceResponse.ExpenditureItemServiceResponse serviceItem) {
+        public static ExpenditureItemResponse from(ExpenditureItemServiceResponse serviceItem) {
             return new ExpenditureItemResponse(
-                    serviceItem.expenditureItemId(),
-                    serviceItem.foodName(),
-                    serviceItem.quantity(),
-                    serviceItem.price()
+                    serviceItem.getExpenditureItemId(),
+                    serviceItem.getFoodId(),
+                    serviceItem.getFoodName(),
+                    serviceItem.getQuantity(),
+                    serviceItem.getPrice()
             );
         }
     }

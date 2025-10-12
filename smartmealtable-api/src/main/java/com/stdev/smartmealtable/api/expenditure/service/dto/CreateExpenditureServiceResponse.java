@@ -27,7 +27,13 @@ public record CreateExpenditureServiceResponse(
 ) {
     public static CreateExpenditureServiceResponse from(Expenditure expenditure, String categoryName) {
         List<ExpenditureItemServiceResponse> itemResponses = expenditure.getItems().stream()
-                .map(ExpenditureItemServiceResponse::from)
+                .map(item -> ExpenditureItemServiceResponse.builder()
+                        .expenditureItemId(item.getExpenditureItemId())
+                        .foodId(item.getFoodId())
+                        .foodName(null) // 등록 시에는 음식 이름을 조회하지 않음
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
                 .collect(Collectors.toList());
         
         return new CreateExpenditureServiceResponse(
@@ -43,24 +49,5 @@ public record CreateExpenditureServiceResponse(
                 itemResponses,
                 expenditure.getCreatedAt()
         );
-    }
-    
-    /**
-     * 지출 항목 서비스 응답 DTO
-     */
-    public record ExpenditureItemServiceResponse(
-            Long expenditureItemId,
-            String foodName,
-            Integer quantity,
-            Integer price
-    ) {
-        public static ExpenditureItemServiceResponse from(com.stdev.smartmealtable.domain.expenditure.ExpenditureItem item) {
-            return new ExpenditureItemServiceResponse(
-                    item.getExpenditureItemId(),
-                    item.getFoodName(),
-                    item.getQuantity(),
-                    item.getPrice()
-            );
-        }
     }
 }

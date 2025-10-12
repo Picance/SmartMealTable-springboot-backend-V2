@@ -26,13 +26,13 @@ public class ExpenditureItemJpaEntity {
     @JoinColumn(name = "expenditure_id", nullable = false)
     private ExpenditureJpaEntity expenditure;
     
-    @Column(name = "food_name", nullable = false, length = 200)
-    private String foodName;
+    @Column(name = "food_id", nullable = false)
+    private Long foodId;
     
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "order_quantity", nullable = false)
     private Integer quantity;
     
-    @Column(name = "price", nullable = false)
+    @Column(name = "order_price", nullable = false)
     private Integer price;
     
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -57,8 +57,9 @@ public class ExpenditureItemJpaEntity {
      */
     public static ExpenditureItemJpaEntity from(ExpenditureItem domain, ExpenditureJpaEntity expenditure) {
         ExpenditureItemJpaEntity entity = new ExpenditureItemJpaEntity();
+        entity.id = domain.getExpenditureItemId();
         entity.expenditure = expenditure;
-        entity.foodName = domain.getFoodName();
+        entity.foodId = domain.getFoodId();
         entity.quantity = domain.getQuantity();
         entity.price = domain.getPrice();
         return entity;
@@ -68,8 +69,10 @@ public class ExpenditureItemJpaEntity {
      * JPA Entity → Domain 변환
      */
     public ExpenditureItem toDomain() {
-        return ExpenditureItem.create(
-                this.foodName,
+        return ExpenditureItem.reconstruct(
+                this.id,
+                this.expenditure != null ? this.expenditure.getId() : null,
+                this.foodId,
                 this.quantity,
                 this.price
         );

@@ -9,9 +9,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * 지출 내역 등록 요청 DTO
+ * 지출 내역 수정 요청 DTO
  */
-public record CreateExpenditureRequest(
+public record UpdateExpenditureRequest(
         @NotBlank(message = "가게 이름은 필수입니다.")
         @Size(max = 200, message = "가게 이름은 200자를 초과할 수 없습니다.")
         String storeName,
@@ -35,9 +35,6 @@ public record CreateExpenditureRequest(
         @Valid
         List<ExpenditureItemRequest> items
 ) {
-    /**
-     * 지출 항목 요청 DTO
-     */
     public record ExpenditureItemRequest(
             @NotNull(message = "음식 ID는 필수입니다.")
             Long foodId,

@@ -31,7 +31,7 @@ public class CreateExpenditureService {
         List<ExpenditureDomainService.ExpenditureItemRequest> itemRequests = request.items() != null
                 ? request.items().stream()
                 .map(itemReq -> new ExpenditureDomainService.ExpenditureItemRequest(
-                        itemReq.foodName(),
+                        itemReq.foodId(),
                         itemReq.quantity(),
                         itemReq.price()
                 ))

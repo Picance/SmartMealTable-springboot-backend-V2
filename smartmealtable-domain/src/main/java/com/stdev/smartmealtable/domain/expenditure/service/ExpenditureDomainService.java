@@ -72,7 +72,7 @@ public class ExpenditureDomainService {
         List<ExpenditureItem> expenditureItems = items != null
                 ? items.stream()
                 .map(itemReq -> ExpenditureItem.create(
-                        itemReq.foodName(),
+                        itemReq.foodId(),
                         itemReq.quantity(),
                         itemReq.price()
                 ))
@@ -105,7 +105,7 @@ public class ExpenditureDomainService {
      * 지출 항목 요청 DTO
      */
     public record ExpenditureItemRequest(
-            String foodName,
+            Long foodId,
             Integer quantity,
             Integer price
     ) {

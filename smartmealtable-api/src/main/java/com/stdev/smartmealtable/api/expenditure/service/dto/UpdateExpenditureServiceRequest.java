@@ -7,10 +7,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * 지출 내역 등록 서비스 요청 DTO
+ * 지출 내역 수정 서비스 요청 DTO
  */
-public record CreateExpenditureServiceRequest(
-        Long memberId,
+public record UpdateExpenditureServiceRequest(
         String storeName,
         Integer amount,
         LocalDate expendedDate,
@@ -18,12 +17,9 @@ public record CreateExpenditureServiceRequest(
         Long categoryId,
         MealType mealType,
         String memo,
-        List<ExpenditureItemServiceRequest> items
+        List<ExpenditureItemRequest> items
 ) {
-    /**
-     * 지출 항목 서비스 요청 DTO
-     */
-    public record ExpenditureItemServiceRequest(
+    public record ExpenditureItemRequest(
             Long foodId,
             Integer quantity,
             Integer price
