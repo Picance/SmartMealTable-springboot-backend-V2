@@ -6,6 +6,8 @@ import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureReq
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
+import com.stdev.smartmealtable.domain.food.Food;
+import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
@@ -48,11 +50,16 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
     private CategoryRepository categoryRepository;
     
     @Autowired
+    private FoodRepository foodRepository;
+    
+    @Autowired
     private JwtTokenProvider jwtTokenProvider;
     
     private String accessToken;
     private Long memberId;
     private Long categoryId;
+    private Long food1Id;  // 싸이버거 세트
+    private Long food2Id;  // 치킨버거 세트
     
     @BeforeEach
     void setUp() {
@@ -68,6 +75,15 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
         Category category = Category.reconstitute(null, "한식");
         Category savedCategory = categoryRepository.save(category);
         categoryId = savedCategory.getCategoryId();
+        
+        // 테스트용 음식 생성
+        Food food1 = Food.reconstitute(null, "싸이버거 세트", categoryId, "매운 버거", "images/food1.jpg", 6500);
+        Food savedFood1 = foodRepository.save(food1);
+        food1Id = savedFood1.getFoodId();
+        
+        Food food2 = Food.reconstitute(null, "치킨버거 세트", categoryId, "바삭한 치킨 버거", "images/food2.jpg", 7000);
+        Food savedFood2 = foodRepository.save(food2);
+        food2Id = savedFood2.getFoodId();
     }
     
     @Test
@@ -83,8 +99,8 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                 MealType.LUNCH,
                 "동료와 점심",
                 List.of(
-                        new CreateExpenditureRequest.ExpenditureItemRequest("싸이버거 세트", 1, 6500),
-                        new CreateExpenditureRequest.ExpenditureItemRequest("치킨버거 세트", 1, 7000)
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food1Id, 1, 6500),
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food2Id, 1, 7000)
                 )
         );
         
@@ -119,8 +135,8 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                 MealType.LUNCH,
                 "동료와 점심",
                 List.of(
-                        new CreateExpenditureRequest.ExpenditureItemRequest("싸이버거 세트", 1, 6500),
-                        new CreateExpenditureRequest.ExpenditureItemRequest("치킨버거 세트", 1, 7000)
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food1Id, 1, 6500),
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food2Id, 1, 7000)
                 )
         );
         
@@ -148,8 +164,8 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                 MealType.LUNCH,
                 "동료와 점심",
                 List.of(
-                        new CreateExpenditureRequest.ExpenditureItemRequest("싸이버거 세트", 1, 6500),
-                        new CreateExpenditureRequest.ExpenditureItemRequest("치킨버거 세트", 1, 7000)
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food1Id, 1, 6500),
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food2Id, 1, 7000)
                 )
         );
         
@@ -177,8 +193,8 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                 MealType.LUNCH,
                 "동료와 점심",
                 List.of(
-                        new CreateExpenditureRequest.ExpenditureItemRequest("싸이버거 세트", 1, 6500),
-                        new CreateExpenditureRequest.ExpenditureItemRequest("치킨버거 세트", 1, 7000)
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food1Id, 1, 6500),
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food2Id, 1, 7000)
                 )
         );
         
@@ -204,8 +220,8 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
                 MealType.LUNCH,
                 "동료와 점심",
                 List.of(
-                        new CreateExpenditureRequest.ExpenditureItemRequest("싸이버거 세트", 1, 6500),
-                        new CreateExpenditureRequest.ExpenditureItemRequest("치킨버거 세트", 1, 7000)
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food1Id, 1, 6500),
+                        new CreateExpenditureRequest.ExpenditureItemRequest(food2Id, 1, 7000)
                 )
         );
         

@@ -3,19 +3,27 @@ package com.stdev.smartmealtable.api.expenditure.controller;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
+import com.stdev.smartmealtable.api.expenditure.dto.request.ParseSmsRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.response.CreateExpenditureResponse;
 import com.stdev.smartmealtable.api.expenditure.dto.response.GetExpenditureDetailResponse;
 import com.stdev.smartmealtable.api.expenditure.dto.response.GetExpenditureListResponse;
+import com.stdev.smartmealtable.api.expenditure.dto.response.GetExpenditureStatisticsResponse;
+import com.stdev.smartmealtable.api.expenditure.dto.response.ParseSmsResponse;
 import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.DeleteExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.GetExpenditureDetailService;
 import com.stdev.smartmealtable.api.expenditure.service.GetExpenditureListService;
+import com.stdev.smartmealtable.api.expenditure.service.GetExpenditureStatisticsService;
+import com.stdev.smartmealtable.api.expenditure.service.ParseSmsService;
 import com.stdev.smartmealtable.api.expenditure.service.UpdateExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceRequest;
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureDetailServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureListServiceResponse;
+import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureStatisticsServiceResponse;
+import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceRequest;
+import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.UpdateExpenditureServiceRequest;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
@@ -44,6 +52,8 @@ public class ExpenditureController {
     private final GetExpenditureDetailService getExpenditureDetailService;
     private final UpdateExpenditureService updateExpenditureService;
     private final DeleteExpenditureService deleteExpenditureService;
+    private final ParseSmsService parseSmsService;
+    private final GetExpenditureStatisticsService getExpenditureStatisticsService;
     
     /**
      * 지출 내역 등록
@@ -63,6 +73,49 @@ public class ExpenditureController {
         
         // Response 변환
         CreateExpenditureResponse response = CreateExpenditureResponse.from(serviceResponse);
+        
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * SMS 파싱
+     * POST /api/v1/expenditures/parse-sms
+     */
+    @PostMapping("/parse-sms")
+    public ApiResponse<ParseSmsResponse> parseSms(
+            @Valid @RequestBody ParseSmsRequest request
+    ) {
+        // DTO 변환
+        ParseSmsServiceRequest serviceRequest = new ParseSmsServiceRequest(request.smsMessage());
+        
+        // Service 호출
+        ParseSmsServiceResponse serviceResponse = parseSmsService.parseSms(serviceRequest);
+        
+        // Response 변환
+        ParseSmsResponse response = ParseSmsResponse.from(serviceResponse);
+        
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * 지출 통계 조회
+     * GET /api/v1/expenditures/statistics?startDate=2025-10-01&endDate=2025-10-31
+     */
+    @GetMapping("/statistics")
+    public ApiResponse<GetExpenditureStatisticsResponse> getExpenditureStatistics(
+            @AuthUser AuthenticatedUser user,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        // Service 호출
+        ExpenditureStatisticsServiceResponse serviceResponse = getExpenditureStatisticsService.getStatistics(
+                user.memberId(),
+                startDate,
+                endDate
+        );
+        
+        // Response 변환
+        GetExpenditureStatisticsResponse response = GetExpenditureStatisticsResponse.from(serviceResponse);
         
         return ApiResponse.success(response);
     }

@@ -63,3 +63,17 @@ oauth:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
     redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+  ai:
+  model:
+    chat: vertexai
+  vertex:
+    ai:
+      gemini:
+        project-id: ${VERTEX_AI_PROJECT_ID}
+        transport: rest
+        chat:
+          options:
+            model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
+            temperature: ${VERTEX_AI_TEMPERATURE:0.1}
+        location: ${VERTEX_AI_LOCATION:asia-northeast3}

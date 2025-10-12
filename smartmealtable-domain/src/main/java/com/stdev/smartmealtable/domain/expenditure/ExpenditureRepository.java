@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.domain.expenditure;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -47,4 +48,24 @@ public interface ExpenditureRepository {
      * 회원의 특정 월 지출 내역 존재 여부 확인
      */
     boolean existsByMemberIdAndMonth(Long memberId, int year, int month);
+    
+    /**
+     * 기간별 총 지출 금액 조회
+     */
+    Long getTotalAmountByPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
+    
+    /**
+     * 카테고리별 지출 금액 집계 조회
+     */
+    Map<Long, Long> getAmountByCategoryForPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
+    
+    /**
+     * 일별 지출 금액 집계 조회
+     */
+    Map<LocalDate, Long> getDailyAmountForPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
+    
+    /**
+     * 식사 유형별 지출 금액 집계 조회
+     */
+    Map<MealType, Long> getAmountByMealTypeForPeriod(Long memberId, LocalDate startDate, LocalDate endDate);
 }

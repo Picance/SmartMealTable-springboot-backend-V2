@@ -84,9 +84,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     void createExpenditure_WithItems_Success() throws Exception {
         // given
         CreateExpenditureRequest.ExpenditureItemRequest item1 =
-                new CreateExpenditureRequest.ExpenditureItemRequest("비빔밥", 1, 8000);
+                new CreateExpenditureRequest.ExpenditureItemRequest(1L, 1, 8000);
         CreateExpenditureRequest.ExpenditureItemRequest item2 =
-                new CreateExpenditureRequest.ExpenditureItemRequest("김치찌개", 1, 7000);
+                new CreateExpenditureRequest.ExpenditureItemRequest(2L, 1, 7000);
 
         CreateExpenditureRequest request = new CreateExpenditureRequest(
                 "맛있는집",
@@ -133,8 +133,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("메모 (최대 500자)").optional(),
                                 fieldWithPath("items").type(JsonFieldType.ARRAY)
                                         .description("지출 항목 목록").optional(),
-                                fieldWithPath("items[].foodName").type(JsonFieldType.STRING)
-                                        .description("음식 이름 (최대 200자)"),
+                                fieldWithPath("items[].foodId").type(JsonFieldType.NUMBER)
+                                        .description("음식 ID"),
                                 fieldWithPath("items[].quantity").type(JsonFieldType.NUMBER)
                                         .description("수량 (1 이상)"),
                                 fieldWithPath("items[].price").type(JsonFieldType.NUMBER)
@@ -167,6 +167,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("지출 항목 목록"),
                                 fieldWithPath("data.items[].expenditureItemId").type(JsonFieldType.NUMBER)
                                         .description("지출 항목 ID"),
+                                fieldWithPath("data.items[].foodId").type(JsonFieldType.NUMBER)
+                                        .description("음식 ID"),
                                 fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING)
                                         .description("음식 이름"),
                                 fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER)
