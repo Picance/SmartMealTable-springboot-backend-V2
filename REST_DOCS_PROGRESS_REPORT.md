@@ -252,7 +252,102 @@ Spring REST Docs 테스트 코드 작성 및 기존 API 문서화 작업 진행
 
 ---
 
-### 18. 예산 관리 API REST Docs ✅ (신규 작성)
+### 18. 선호도 관리 API REST Docs ✅ (기존 테스트 검증)
+**파일:** `PreferenceControllerRestDocsTest.java`  
+**테스트 상태:** 6/6 통과 (100%)  
+**작업일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `preference-get-preferences-success` - 선호도 조회 성공 (200 OK)
+2. ✅ `preference-update-category-preferences-success` - 카테고리 선호도 수정 성공 (200 OK)
+3. ✅ `preference-add-food-preference-success` - 음식 선호도 추가 성공 (201 CREATED)
+4. ✅ `preference-update-food-preference-success` - 음식 선호도 변경 성공 (200 OK)
+5. ✅ `preference-delete-food-preference-success` - 음식 선호도 삭제 성공 (204 NO_CONTENT)
+6. ✅ `preference-get-preferences-not-found` - 선호도 조회 실패 - 회원 없음 (404 NOT_FOUND)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ 카테고리 선호도 + 음식 선호도 통합 관리
+- ✅ 카테고리 선호도: weight 값 사용 (100, 0, -100)
+- ✅ 음식 선호도: isPreferred boolean 사용 (true, false)
+- ✅ 선호도 조회 시 liked/disliked 분리 응답
+- ✅ 음식 선호도 CRUD 완전 문서화
+
+#### 해결한 주요 문제
+- ✅ 카테고리 vs 음식 선호도 구분 명확화
+- ✅ 중첩된 응답 구조 문서화 (foodPreferences.liked[], disliked[])
+- ✅ 일괄 수정 vs 개별 CRUD 패턴 구현
+
+---
+
+### 19. 소셜 계정 관리 API REST Docs ✅ (기존 테스트 검증)
+**파일:** `SocialAccountControllerRestDocsTest.java`  
+**테스트 상태:** 7/7 통과 (100%)  
+**작업일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getSocialAccountList_success_docs` - 소셜 계정 목록 조회 성공 (200 OK)
+2. ✅ `addSocialAccount_success_docs` - 소셜 계정 추가 연동 성공 (201 CREATED)
+3. ✅ `removeSocialAccount_success_docs` - 소셜 계정 연동 해제 성공 (204 NO_CONTENT)
+4. ✅ `addSocialAccount_duplicate_docs` - 소셜 계정 추가 실패 - 이미 연동된 계정 (409 CONFLICT)
+5. ✅ `addSocialAccount_validation_docs` - 소셜 계정 추가 실패 - 유효성 검증 실패 (422 UNPROCESSABLE_ENTITY)
+6. ✅ `removeSocialAccount_notFound_docs` - 소셜 계정 연동 해제 실패 - 존재하지 않는 계정 (404 NOT_FOUND)
+7. ✅ `removeSocialAccount_lastLoginMethod_docs` - 소셜 계정 연동 해제 실패 - 유일한 로그인 수단 (409 CONFLICT)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ OAuth 클라이언트 MockBean 설정 (KakaoAuthClient, GoogleAuthClient)
+- ✅ 소셜 계정 연동/해제 기능 문서화
+- ✅ hasPassword 필드로 비밀번호 설정 여부 확인
+- ✅ 유일한 로그인 수단 보호 로직
+- ✅ 다중 소셜 계정 연동 지원 (KAKAO, GOOGLE)
+
+#### 해결한 주요 문제
+- ✅ OAuth 인증 플로우 Mock 처리
+  - OAuthTokenResponse, OAuthUserInfo DTO 활용
+  - given().willReturn() 패턴 사용
+- ✅ 소셜 전용 계정 테스트 시나리오 구성
+  - MemberAuthentication.createSocialAuth() 활용
+
+---
+
+### 20. 주소 관리 API REST Docs ✅ (신규 작성)
+**파일:** `AddressControllerRestDocsTest.java`  
+**테스트 상태:** 11/11 통과 (100%)  
+**작성일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getAddresses_success_docs` - 주소 목록 조회 성공 (200 OK)
+2. ✅ `addAddress_success_docs` - 주소 추가 성공 (201 CREATED)
+3. ✅ `updateAddress_success_docs` - 주소 수정 성공 (200 OK)
+4. ✅ `deleteAddress_success_docs` - 주소 삭제 성공 (204 NO_CONTENT)
+5. ✅ `setPrimaryAddress_success_docs` - 기본 주소 설정 성공 (200 OK)
+6. ✅ `getAddresses_empty_docs` - 주소 목록 조회 - 빈 배열 반환 (200 OK)
+7. ✅ `addAddress_validation_docs` - 주소 추가 실패 - 유효성 검증 실패 (422 UNPROCESSABLE_ENTITY)
+8. ✅ `updateAddress_notFound_docs` - 주소 수정 실패 - 존재하지 않는 주소 (404 NOT_FOUND)
+9. ✅ `deleteAddress_notFound_docs` - 주소 삭제 실패 - 존재하지 않는 주소 (404 NOT_FOUND)
+10. ✅ `setPrimaryAddress_notFound_docs` - 기본 주소 설정 실패 - 존재하지 않는 주소 (404 NOT_FOUND)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ Address 값 타입 (Value Object) 사용
+- ✅ 주소 CRUD 완전 문서화
+- ✅ 기본 주소 설정 기능 포함
+- ✅ AddressType enum 활용 (HOME, WORK, ETC)
+- ✅ 빈 배열 응답 시나리오 포함
+
+#### 해결한 주요 문제
+- ✅ Domain 엔티티와 값 타입 이해
+  - Address.of() 정적 팩토리 메서드 사용
+  - AddressHistory.create() 패턴 적용
+- ✅ JWT 토큰 중복 "Bearer " 접두사 문제 해결
+  - createAccessToken()이 이미 "Bearer " 포함
+- ✅ 회원 없음 시나리오 수정
+  - 빈 배열 반환 (200 OK)으로 변경
+
+---
+
+### 21. 예산 관리 API REST Docs ✅ (신규 작성)
 **파일:** `BudgetControllerRestDocsTest.java`  
 **테스트 상태:** 8/8 통과 (100%)  
 **작성일:** 2025-10-12
@@ -292,12 +387,12 @@ Spring REST Docs 테스트 코드 작성 및 기존 API 문서화 작업 진행
 | 항목 | 완료 | 전체 | 비율 |
 |------|------|------|------|
 | **Authentication API REST Docs** | 7 | 7 | **100%** |
-| **Member Management API REST Docs** | 1 | 1 | **100%** |
+| **Member Management API REST Docs** | 3 | 3 | **100%** |
 | **Onboarding API REST Docs** | 4 | 4 | **100%** |
-| **Profile & Preference API REST Docs** | 2 | 2 | **100%** |
+| **Profile & Preference API REST Docs** | 4 | 4 | **100%** |
 | **Budget Management API REST Docs** | 1 | 1 | **100%** |
-| **총 테스트 케이스** | 63 | 63 | **100%** |
-| **완전 통과 파일** | 15 | 15 | **100%** |
+| **총 테스트 케이스** | 88 | 88 | **100%** |
+| **완전 통과 파일** | 19 | 19 | **100%** |
 
 ### 파일별 상태 🆕
 | 파일명 | 테스트 수 | 통과 | 실패 | 상태 |
@@ -314,10 +409,11 @@ Spring REST Docs 테스트 코드 작성 및 기존 API 문서화 작업 진행
 | OnboardingAddressControllerRestDocsTest | 6 | 6 | 0 | ✅ |
 | FoodPreferenceControllerRestDocsTest | 2 | 2 | 0 | ✅ |
 | SetBudgetControllerRestDocsTest | 3 | 3 | 0 | ✅ |
-| **PreferenceControllerRestDocsTest** | **6** | **6** | **0** | ✅ |
+| **PreferenceControllerRestDocsTest** | **6** | **6** | **0** | ✅ 🆕 |
 | **PasswordExpiryControllerRestDocsTest** | **4** | **4** | **0** | ✅ |
 | **SocialAccountControllerRestDocsTest** | **7** | **7** | **0** | ✅ |
-| **BudgetControllerRestDocsTest** | **8** | **8** | **0** | ✅ 🆕 |
+| **AddressControllerRestDocsTest** | **11** | **11** | **0** | ✅ |
+| **BudgetControllerRestDocsTest** | **8** | **8** | **0** | ✅ |
 
 ---
 

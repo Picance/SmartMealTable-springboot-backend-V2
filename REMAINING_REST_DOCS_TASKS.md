@@ -1,31 +1,140 @@
 # 남은 REST Docs 작업 상세 계획
 
 **문서 작성일:** 2025-10-12  
-**현재 완료 상태:** 13개 파일, 49개 테스트 케이스 완료
-**남은 작업:** 8개 Controller
+**현재 완료 상태:** 21개 파일, 100개 테스트 케이스 완료
+**보류 작업:** 2개 Controller (기능 미완성으로 인한 보류)
 
 ---
 
 ## 📋 작업 우선순위 및 개요
 
-### P1 - 높은 우선순위 (ArgumentResolver 인프라 구축 후)
-1. **PreferenceController** - X-Member-Id 헤더 사용 (즉시 작업 가능)
-2. **BudgetController** - JWT 토큰 필요, 응답 구조 수정 필요
+### P1 - 높은 우선순위 ✅ 모두 완료
+1. ~~**PreferenceController**~~ - ✅ 완료 (2025-10-12)
+2. ~~**BudgetController**~~ - ✅ 완료 (2025-10-12)
 
-### P2 - 중간 우선순위 (JWT 인증 확인됨)
+### P2 - 중간 우선순위 ✅ 모두 완료
 3. ~~**PasswordExpiryController**~~ - ✅ 완료 (2025-10-12)
-4. **AddressController** - 주소 관리 CRUD
-5. **SocialAccountController** - 소셜 계정 연동/해제
+4. ~~**AddressController**~~ - ✅ 완료 (2025-10-12)
+5. ~~**SocialAccountController**~~ - ✅ 완료 (2025-10-12)
 
-### P3 - 낮은 우선순위
-6. **ExpenditureController** - 지출 내역 관리
-7. **PolicyController** - 약관 관리
-8. **CategoryController** - 카테고리 조회
-9. **GroupController** - 그룹 관리
+### P3 - 낮은 우선순위 ✅ 부분 완료
+6. ~~**CategoryController**~~ - ✅ 완료 (2025-10-12)
+7. ~~**PolicyController**~~ - ✅ 완료 (2025-10-12)
+8. **ExpenditureController** - ⏸️ 보류 (등록 API만 구현됨, CRUD 전체 구현 후 작업)
+9. **GroupController** - ⏸️ 보류 (검색 API만 구현됨, CRUD 전체 구현 후 작업)
 
 ---
 
 ## ✅ 완료된 작업
+
+### PreferenceController REST Docs (2025-10-12)
+- **파일:** `PreferenceControllerRestDocsTest.java`
+- **테스트 케이스:** 6개 (모두 통과)
+  - 선호도 조회 성공 (GET /api/v1/members/me/preferences)
+  - 카테고리 선호도 수정 성공 (PUT /api/v1/members/me/preferences/categories)
+  - 음식 선호도 추가 성공 (POST /api/v1/members/me/preferences/foods)
+  - 음식 선호도 변경 성공 (PUT /api/v1/members/me/preferences/foods/{id})
+  - 음식 선호도 삭제 성공 (DELETE /api/v1/members/me/preferences/foods/{id})
+  - 선호도 조회 실패 - 회원 없음 (404)
+- **인증 방식:** JWT Authorization Bearer Token
+- **생성된 Snippet:** 6개 API 문서
+- **소요 시간:** 약 5분 (기존 테스트 검증)
+- **특이사항:** 카테고리 선호도 + 음식 선호도 통합 관리
+
+### BudgetController REST Docs (2025-10-12)
+- **파일:** `BudgetControllerRestDocsTest.java`
+- **테스트 케이스:** 8개 (모두 통과)
+  - 월별 예산 조회 성공, 일별 예산 조회 성공
+  - 월별 예산 수정 성공, 일별 예산 수정 성공
+  - 월별 예산 수정 실패 - 유효성 검증 실패 (422)
+  - 월별 예산 조회 실패 - 잘못된 파라미터 (422)
+  - 월별 예산 조회 실패 - 인증되지 않은 요청 (401)
+  - 월별 예산 수정 실패 - 인증되지 않은 요청 (401)
+- **인증 방식:** JWT Authorization Bearer Token
+- **생성된 Snippet:** 8개 API 문서
+- **소요 시간:** 약 1.5시간
+
+### SocialAccountController REST Docs (2025-10-12)
+- **파일:** `SocialAccountControllerRestDocsTest.java`
+- **테스트 케이스:** 7개 (모두 통과)
+  - 소셜 계정 목록 조회 성공 (GET /api/v1/members/me/social-accounts)
+  - 소셜 계정 추가 연동 성공 (POST /api/v1/members/me/social-accounts)
+  - 소셜 계정 연동 해제 성공 (DELETE /api/v1/members/me/social-accounts/{socialAccountId})
+  - 소셜 계정 추가 실패 - 중복 연동 (409)
+  - 소셜 계정 추가 실패 - 유효성 검증 실패 (422)
+  - 소셜 계정 연동 해제 실패 - 존재하지 않는 계정 (404)
+  - 소셜 계정 연동 해제 실패 - 유일한 로그인 수단 (409)
+- **인증 방식:** JWT Authorization Bearer Token
+- **생성된 Snippet:** 7개 API 문서
+- **소요 시간:** 약 10분 (기존 테스트 검증)
+- **특이사항:** OAuth 클라이언트 MockBean 설정 (KakaoAuthClient, GoogleAuthClient)
+
+### CategoryController REST Docs (2025-10-12)
+- **파일:** `CategoryControllerRestDocsTest.java`
+- **테스트 케이스:** 2개 (모두 통과)
+  - 카테고리 목록 조회 성공 (GET /api/v1/categories)
+  - 카테고리 목록 조회 - 빈 목록 (200)
+- **인증 방식:** 인증 불필요 (공개 API)
+- **생성된 Snippet:** 2개 API 문서 (get-categories-success, get-categories-empty)
+- **소요 시간:** 즉시 (기존 테스트 존재)
+- **특이사항:** 가장 간단한 REST API, 인증 불필요
+
+### PolicyController REST Docs (2025-10-12)
+- **파일:** `PolicyControllerRestDocsTest.java`
+- **테스트 케이스:** 3개 (모두 통과)
+  - 약관 목록 조회 성공 (GET /api/v1/policies)
+  - 약관 상세 조회 성공 (GET /api/v1/policies/{policyId})
+  - 약관 상세 조회 실패 - 존재하지 않는 약관 (404)
+- **인증 방식:** 인증 불필요 (공개 API)
+- **생성된 Snippet:** 3개 API 문서 (get-policies-success, get-policy-success, get-policy-not-found)
+- **소요 시간:** 즉시 (기존 테스트 존재)
+- **특이사항:** 약관 동의 API는 별도 Controller에 없음 (온보딩 프로세스에 통합된 것으로 보임)
+
+---
+
+## ⏸️ 보류된 작업
+
+### ExpenditureController REST Docs (보류 사유: 기능 미완성)
+- **현재 상태:** 등록 API만 구현됨 (POST /api/v1/expenditures)
+- **미구현 기능:**
+  - 지출 내역 목록 조회 (GET /api/v1/expenditures) - 필터링, 페이징
+  - 지출 내역 상세 조회 (GET /api/v1/expenditures/{id})
+  - 지출 내역 수정 (PUT /api/v1/expenditures/{id})
+  - 지출 내역 삭제 (DELETE /api/v1/expenditures/{id})
+  - 지출 통계 조회 (GET /api/v1/expenditures/statistics)
+- **작업 시도 내용:**
+  - ExpenditureControllerRestDocsTest.java 작성 시도
+  - 등록 API에 대한 4개 테스트 케이스 작성 (성공 2개, 실패 2개)
+  - 인증 및 응답 구조 이슈로 테스트 실패
+- **다음 단계:** CRUD 전체 기능 구현 후 REST Docs 작업 재개
+
+### GroupController REST Docs (보류 사유: 기능 미완성)
+- **현재 상태:** 검색 API만 구현됨 (GET /api/v1/groups)
+- **미구현 기능:**
+  - 그룹 상세 조회 (GET /api/v1/groups/{id})
+  - 그룹 생성 (POST /api/v1/groups) - Admin 전용
+  - 그룹 수정 (PUT /api/v1/groups/{id}) - Admin 전용
+  - 그룹 삭제 (DELETE /api/v1/groups/{id}) - Admin 전용
+  - 그룹 멤버 추가 (POST /api/v1/groups/{id}/members) - Admin 전용
+  - 그룹 멤버 제거 (DELETE /api/v1/groups/{id}/members/{memberId}) - Admin 전용
+- **다음 단계:** CRUD 전체 기능 구현 후 REST Docs 작업 진행 (Admin 모듈에서 작업 가능성)
+
+### AddressController REST Docs (2025-10-12)
+- **파일:** `AddressControllerRestDocsTest.java`
+- **테스트 케이스:** 11개 (모두 통과)
+  - 주소 목록 조회 성공 (GET /api/v1/members/me/addresses)
+  - 주소 추가 성공 (POST /api/v1/members/me/addresses)
+  - 주소 수정 성공 (PUT /api/v1/members/me/addresses/{addressHistoryId})
+  - 주소 삭제 성공 (DELETE /api/v1/members/me/addresses/{addressHistoryId})
+  - 기본 주소 설정 성공 (PUT /api/v1/members/me/addresses/{addressHistoryId}/primary)
+  - 주소 목록 조회 - 빈 배열 (200)
+  - 주소 추가 실패 - 유효성 검증 실패 (422)
+  - 주소 수정 실패 - 존재하지 않는 주소 (404)
+  - 주소 삭제 실패 - 존재하지 않는 주소 (404)
+  - 기본 주소 설정 실패 - 존재하지 않는 주소 (404)
+- **인증 방식:** JWT Authorization Bearer Token
+- **생성된 Snippet:** 11개 API 문서
+- **소요 시간:** 약 1.5시간
 
 ### PasswordExpiryController REST Docs (2025-10-12)
 - **파일:** `PasswordExpiryControllerRestDocsTest.java`
