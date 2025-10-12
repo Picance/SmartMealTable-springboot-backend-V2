@@ -1,14 +1,17 @@
 package com.stdev.smartmealtable.api.expenditure.service.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * SMS 파싱 응답 DTO
+ * API Spec 기준: storeName, amount, date, time, isParsed
  */
 public record ParseSmsServiceResponse(
-        String vendor,
-        LocalDateTime transactionDateTime,
+        String storeName,
         Long amount,
-        String storeName
+        LocalDate date,
+        LocalTime time,
+        boolean isParsed
 ) {
 }

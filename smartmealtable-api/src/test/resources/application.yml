@@ -20,6 +20,12 @@ spring:
       write-dates-as-timestamps: false
     time-zone: Asia/Seoul
 
+  # Spring AI 자동 설정 비활성화
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.vertexai.autoconfigure.gemini.VertexAiGeminiChatAutoConfiguration
+      - org.springframework.ai.model.vertexai.autoconfigure.VertexAiChatAutoConfiguration
+
 logging:
   level:
     root: INFO

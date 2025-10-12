@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -412,15 +411,16 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     void parseSms_KBCard_Success() throws Exception {
         // given
         ParseSmsRequest request = new ParseSmsRequest(
-                "[국민카드] 10/08 12:30 맘스터치강남점 13,500원 일시불 승인"
+                "[KB국민카드] 10/08 12:30 승인 13,500원 일시불 맘스터치강남점"
         );
         
         // Mock 설정
         ParseSmsServiceResponse mockResponse = new ParseSmsServiceResponse(
-                "KB국민카드",
-                LocalDateTime.of(2025, 10, 8, 12, 30),
+                "맘스터치강남점",
                 13500L,
-                "맘스터치강남점"
+                LocalDate.of(2025, 10, 8),
+                LocalTime.of(12, 30),
+                true
         );
         when(parseSmsService.parseSms(any())).thenReturn(mockResponse);
 
@@ -433,8 +433,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.storeName").exists())
                 .andExpect(jsonPath("$.data.amount").exists())
-                .andExpect(jsonPath("$.data.vendor").exists())
-                .andExpect(jsonPath("$.data.transactionDateTime").exists())
+                .andExpect(jsonPath("$.data.date").exists())
+                .andExpect(jsonPath("$.data.time").exists())
+                .andExpect(jsonPath("$.data.isParsed").value(true))
                 .andDo(document("expenditure/parse-sms-success",
                         requestFields(
                                 fieldWithPath("smsMessage").type(JsonFieldType.STRING)
@@ -445,14 +446,17 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                                         .description("파싱 결과 데이터"),
-                                fieldWithPath("data.vendor").type(JsonFieldType.STRING)
-                                        .description("카드사 이름 (예: KB국민카드, NH농협카드)"),
-                                fieldWithPath("data.transactionDateTime").type(JsonFieldType.STRING)
-                                        .description("거래 일시 (yyyy-MM-dd'T'HH:mm:ss)"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
                                 fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
                                         .description("결제 금액"),
-                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
-                                        .description("가게 이름")
+                                fieldWithPath("data.date").type(JsonFieldType.STRING)
+                                        .description("결제 날짜 (yyyy-MM-dd)"),
+                                fieldWithPath("data.time").type(JsonFieldType.STRING)
+                                        .description("결제 시간 (HH:mm:ss)"),
+                                fieldWithPath("data.isParsed").type(JsonFieldType.BOOLEAN)
+                                        .description("파싱 성공 여부"),
+                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -462,15 +466,16 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     void parseSms_NHCard_Success() throws Exception {
         // given
         ParseSmsRequest request = new ParseSmsRequest(
-                "[NH농협카드] 승인 10/08 14:20 스타벅스역삼점 5,500원"
+                "NH농협카드 승인 5,500원 10/08 14:20 스타벅스역삼점"
         );
         
         // Mock 설정
         ParseSmsServiceResponse mockResponse = new ParseSmsServiceResponse(
-                "NH농협카드",
-                LocalDateTime.of(2025, 10, 8, 14, 20),
+                "스타벅스역삼점",
                 5500L,
-                "스타벅스역삼점"
+                LocalDate.of(2025, 10, 8),
+                LocalTime.of(14, 20),
+                true
         );
         when(parseSmsService.parseSms(any())).thenReturn(mockResponse);
 
