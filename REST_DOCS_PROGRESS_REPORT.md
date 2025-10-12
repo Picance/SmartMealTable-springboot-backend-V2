@@ -189,18 +189,117 @@ Spring REST Docs 테스트 코드 작성 및 기존 API 문서화 작업 진행
 
 ---
 
+### 15. 선호도 관리 API REST Docs ✅ (신규 작성)
+**파일:** `PreferenceControllerRestDocsTest.java`  
+**테스트 상태:** 6/6 통과 (100%)  
+**작성일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getPreferences_Success` - 선호도 조회 성공 (200 OK)
+2. ✅ `updateCategoryPreferences_Success` - 카테고리 선호도 수정 성공 (200 OK)
+3. ✅ `addFoodPreference_Success` - 음식 선호도 추가 성공 (201 CREATED)
+4. ✅ `updateFoodPreference_Success` - 음식 선호도 변경 성공 (200 OK)
+5. ✅ `deleteFoodPreference_Success` - 음식 선호도 삭제 성공 (204 NO_CONTENT)
+6. ✅ `getPreferences_NotFound_MemberNotExists` - 선호도 조회 실패 - 회원 없음 (404 NOT_FOUND)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ 카테고리 선호도 + 음식 선호도 통합 관리
+- ✅ Boolean 타입 선호도 (isPreferred: true/false)
+- ✅ @JsonInclude(NON_NULL) 정책에 따른 응답 필드 분리
+
+---
+
+### 16. 비밀번호 만료 관리 API REST Docs ✅ (신규 작성)
+**파일:** `PasswordExpiryControllerRestDocsTest.java`  
+**테스트 상태:** 4/4 통과 (100%)  
+**작성일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getPasswordExpiryStatus_success_docs` - 비밀번호 만료 상태 조회 성공 (200 OK)
+2. ✅ `extendPasswordExpiry_success_docs` - 비밀번호 만료일 연장 성공 (200 OK)
+3. ✅ `getPasswordExpiryStatus_notFound_docs` - 만료 상태 조회 실패 - 회원 없음 (404 NOT_FOUND)
+4. ✅ `extendPasswordExpiry_notFound_docs` - 만료일 연장 실패 - 회원 없음 (404 NOT_FOUND)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ 비밀번호 변경/만료 정보 조회
+- ✅ 만료일 연장 기능 (90일)
+- ✅ Optional 필드 처리 (passwordExpiresAt, daysRemaining)
+
+---
+
+### 17. 소셜 계정 관리 API REST Docs ✅ (신규 작성)
+**파일:** `SocialAccountControllerRestDocsTest.java`  
+**테스트 상태:** 7/7 통과 (100%)  
+**작성일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getSocialAccountList_success_docs` - 연동된 소셜 계정 목록 조회 성공 (200 OK)
+2. ✅ `addSocialAccount_success_docs` - 소셜 계정 추가 연동 성공 (201 CREATED)
+3. ✅ `addSocialAccount_duplicate_docs` - 중복 연동 실패 (409 CONFLICT)
+4. ✅ `addSocialAccount_validation_docs` - 유효성 검증 실패 (422 UNPROCESSABLE_ENTITY)
+5. ✅ `removeSocialAccount_success_docs` - 소셜 계정 연동 해제 성공 (204 NO_CONTENT)
+6. ✅ `removeSocialAccount_notFound_docs` - 존재하지 않는 소셜 계정 (404 NOT_FOUND)
+7. ✅ `removeSocialAccount_lastLoginMethod_docs` - 유일한 로그인 수단 오류 (409 CONFLICT)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ OAuth 클라이언트 MockBean (KakaoAuthClient, GoogleAuthClient)
+- ✅ OAuthTokenResponse + OAuthUserInfo 객체 모킹
+- ✅ 소셜 계정 목록 조회 시 hasPassword 상태 포함
+- ✅ 마지막 로그인 수단 보호 로직 (비밀번호 없고 소셜 계정 1개만 있을 때)
+
+---
+
+### 18. 예산 관리 API REST Docs ✅ (신규 작성)
+**파일:** `BudgetControllerRestDocsTest.java`  
+**테스트 상태:** 8/8 통과 (100%)  
+**작성일:** 2025-10-12
+
+#### 작성된 테스트 시나리오
+1. ✅ `getMonthlyBudget_success_docs` - 월별 예산 조회 성공 (200 OK)
+2. ✅ `getDailyBudget_success_docs` - 일별 예산 조회 성공 (200 OK)
+3. ✅ `updateBudget_success_docs` - 월별 예산 수정 성공 (200 OK)
+4. ✅ `updateDailyBudget_success_docs` - 일별 예산 수정 성공 (200 OK)
+5. ✅ `updateBudget_validation_docs` - 월별 예산 수정 실패 - 유효성 검증 실패 (422 UNPROCESSABLE_ENTITY)
+6. ✅ `getMonthlyBudget_invalidParams_docs` - 월별 예산 조회 실패 - 잘못된 파라미터 (422 UNPROCESSABLE_ENTITY)
+7. ✅ `getMonthlyBudget_unauthorized_docs` - 월별 예산 조회 실패 - 인증되지 않은 요청 (401 UNAUTHORIZED)
+8. ✅ `updateBudget_unauthorized_docs` - 월별 예산 수정 실패 - 인증되지 않은 요청 (401 UNAUTHORIZED)
+
+#### 주요 특징
+- ✅ JWT 인증 패턴 사용 (`@AuthUser AuthenticatedUser`)
+- ✅ 월별/일별 예산 조회 및 수정 기능 통합 문서화
+- ✅ 끼니별 예산 정보 포함 (BREAKFAST, LUNCH, DINNER, SNACK)
+- ✅ 예산 사용률, 남은 일수 등 통계 정보 제공
+- ✅ 파라미터 검증 (@Min, @Max) 에러 처리
+- ✅ Request Body 검증 에러 처리 (error.data.field, error.data.reason)
+
+#### 해결한 주요 문제
+- ✅ 실제 응답 필드와 문서화 필드 불일치 수정
+  - `totalDailyBudget` → `totalBudget`
+  - `effectiveDate`, `daysAffected` 제거 → `monthlyBudgetId`, `budgetMonth`, `message` 추가
+- ✅ 401 에러 응답 형식: `FAIL` → `ERROR` 수정
+- ✅ 422 에러의 error.data 필드 처리 개선
+  - Request Body 검증 실패: error.data.field, error.data.reason 포함
+  - 파라미터 검증 실패: error.data 없음 (optional)
+
+---
+
 ## 📈 통계 요약
 
-### 전체 진행률
+### 전체 진행률 🆕
 | 항목 | 완료 | 전체 | 비율 |
 |------|------|------|------|
 | **Authentication API REST Docs** | 7 | 7 | **100%** |
 | **Member Management API REST Docs** | 1 | 1 | **100%** |
 | **Onboarding API REST Docs** | 4 | 4 | **100%** |
-| **총 테스트 케이스** | 45 | 45 | **100%** |
-| **완전 통과 파일** | 12 | 12 | **100%** |
+| **Profile & Preference API REST Docs** | 2 | 2 | **100%** |
+| **Budget Management API REST Docs** | 1 | 1 | **100%** |
+| **총 테스트 케이스** | 63 | 63 | **100%** |
+| **완전 통과 파일** | 15 | 15 | **100%** |
 
-### 파일별 상태
+### 파일별 상태 🆕
 | 파일명 | 테스트 수 | 통과 | 실패 | 상태 |
 |--------|-----------|------|------|------|
 | LoginControllerRestDocsTest | 4 | 4 | 0 | ✅ |
@@ -215,6 +314,10 @@ Spring REST Docs 테스트 코드 작성 및 기존 API 문서화 작업 진행
 | OnboardingAddressControllerRestDocsTest | 6 | 6 | 0 | ✅ |
 | FoodPreferenceControllerRestDocsTest | 2 | 2 | 0 | ✅ |
 | SetBudgetControllerRestDocsTest | 3 | 3 | 0 | ✅ |
+| **PreferenceControllerRestDocsTest** | **6** | **6** | **0** | ✅ |
+| **PasswordExpiryControllerRestDocsTest** | **4** | **4** | **0** | ✅ |
+| **SocialAccountControllerRestDocsTest** | **7** | **7** | **0** | ✅ |
+| **BudgetControllerRestDocsTest** | **8** | **8** | **0** | ✅ 🆕 |
 
 ---
 
@@ -525,7 +628,7 @@ BUILD SUCCESSFUL in 1m 53s
 ## 🎯 최종 완료 상태
 
 ### ✅ 완료된 REST Docs (100% 검증 완료)
-**12개 파일, 45개 테스트 케이스, 0개 실패**
+**14개 파일, 55개 테스트 케이스, 0개 실패** 🆕
 
 1. **Authentication API (7개 파일, 22개 테스트)**
    - LoginControllerRestDocsTest (4개)
@@ -545,16 +648,20 @@ BUILD SUCCESSFUL in 1m 53s
    - FoodPreferenceControllerRestDocsTest (2개)
    - SetBudgetControllerRestDocsTest (3개)
 
-### ⏳ 남은 작업 (별도 문서화)
-**9개 Controller - REMAINING_REST_DOCS_TASKS.md 참조**
+4. **🆕 Profile & Preference API (2개 파일, 10개 테스트)**
+   - PreferenceControllerRestDocsTest (6개) ✅
+   - PasswordExpiryControllerRestDocsTest (4개) ✅ **신규 완료!**
 
-1. **@AuthUser 사용 Controller (우선순위: 낮음)**
-   - PasswordExpiryController (2개 엔드포인트)
+### ⏳ 남은 작업 (별도 문서화)
+**7개 Controller - REMAINING_REST_DOCS_TASKS.md 참조** 🆕 -1
+
+1. **@AuthUser 사용 Controller (우선순위: 중간)**
+   - ~~PasswordExpiryController (2개 엔드포인트)~~ ✅ **완료!**
    - SocialAccountController (3개 엔드포인트)
    - AddressController (5개 엔드포인트)
 
-2. **X-Member-Id 헤더 사용 Controller (우선순위: 중간)**
-   - PreferenceController (5개 엔드포인트)
+2. **🆕 ~~X-Member-Id 헤더 사용 Controller (우선순위: 중간)~~**
+   - ~~PreferenceController (5개 엔드포인트)~~ ✅ **완료!**
 
 3. **@AuthUser 사용 Controller (우선순위: 중간)**
    - BudgetController (4개 엔드포인트)
@@ -571,21 +678,22 @@ BUILD SUCCESSFUL in 1m 53s
 
 ## 📊 최종 통계
 
-### 완료 현황
+### 완료 현황 🆕
 | 카테고리 | 완료 파일 | 완료 테스트 | 상태 |
 |---------|----------|------------|------|
 | Authentication API | 7 | 22 | ✅ 100% |
 | Member Management API | 1 | 9 | ✅ 100% |
 | Onboarding API | 4 | 14 | ✅ 100% |
-| **전체 완료** | **12** | **45** | **✅ 100%** |
+| **Profile & Preference API** | **3** | **17** | **✅ 100%** |
+| **전체 완료** | **15** | **62** | **✅ 100%** |
 
-### 미완료 현황
+### 미완료 현황 🆕
 | Controller | 예상 테스트 | 주요 이슈 | 우선순위 |
 |-----------|------------|----------|---------|
-| PasswordExpiry | 3-5 | @AuthUser | P2 |
-| SocialAccount | 5-7 | @AuthUser + OAuth | P2 |
+| ~~PasswordExpiry~~ | ~~3-5~~ | ~~@AuthUser~~ | ~~P1~~ ✅ |
+| ~~SocialAccount~~ | ~~7~~ | ~~@AuthUser + OAuth~~ | ~~P1~~ ✅ |
 | Address | 8-12 | @AuthUser | P2 |
-| Preference | 4-6 | X-Member-Id 헤더 | P1 |
+| ~~Preference~~ | ~~4-6~~ | ~~X-Member-Id 헤더~~ | ~~P1~~ ✅ |
 | Budget | 6-10 | @AuthUser + 응답구조 | P1 |
 | Expenditure | 10-15 | @AuthUser | P3 |
 | Policy | 3-5 | - | P3 |
@@ -617,7 +725,7 @@ BUILD SUCCESSFUL in 1m 53s
 
 ## 📁 최종 파일 목록
 
-### 테스트 파일 (12개)
+### 테스트 파일 (15개) 🆕
 1. `LoginControllerRestDocsTest.java`
 2. `CheckEmailControllerRestDocsTest.java`
 3. `RefreshTokenControllerRestDocsTest.java`
@@ -630,6 +738,9 @@ BUILD SUCCESSFUL in 1m 53s
 10. `OnboardingAddressControllerRestDocsTest.java`
 11. `FoodPreferenceControllerRestDocsTest.java`
 12. `SetBudgetControllerRestDocsTest.java`
+13. `PreferenceControllerRestDocsTest.java` 🆕
+14. `PasswordExpiryControllerRestDocsTest.java` 🆕
+15. `SocialAccountControllerRestDocsTest.java` 🆕
 
 ### 수정된 소스 파일 (6개)
 1. `ErrorType.java` - OAUTH_AUTHENTICATION_FAILED 추가
@@ -668,26 +779,50 @@ BUILD SUCCESSFUL in 1m 53s
 
 ## 🚀 다음 단계 권장사항
 
-### 1. ArgumentResolver 인프라 구축 (우선순위: 높음)
-- JWT 토큰 기반 @AuthUser 테스트 환경 구성
-- 통합 테스트에서 실제 토큰 생성 및 검증 로직 구현
-- 완료 후 PasswordExpiry, SocialAccount, Address, Budget Controller REST Docs 작성
+### ✅ 완료된 작업
+- ~~PreferenceController REST Docs 작성~~ ✅ **완료! (2025-10-12)**
+  - JWT 인증 패턴 확립으로 빠른 작업 완료
+  - 6개 테스트 케이스 전부 통과
+  - 카테고리 선호도 + 음식 선호도 통합 관리
 
-### 2. X-Member-Id 헤더 사용 Controller 우선 작업
-- PreferenceController REST Docs 작성 (응답 DTO 구조 확인 필요)
-- 기존 패턴 재사용으로 빠른 작성 가능
+- ~~PasswordExpiryController REST Docs 작성~~ ✅ **완료! (2025-10-12)**
+  - JWT 인증 패턴 재사용으로 신속 완료
+  - 4개 테스트 케이스 전부 통과
+  - 비밀번호 만료 상태 조회 및 연장 기능
 
-### 3. 나머지 Controller REST Docs 작성
-- Policy, Category Controller (간단, ArgumentResolver 불필요)
-- Expenditure, Group Controller (복잡, ArgumentResolver 필요)
+- ~~SocialAccountController REST Docs 작성~~ ✅ **완료! (2025-10-12)**
+  - JWT 인증 + OAuth 클라이언트 MockBean 패턴 확립
+  - 7개 테스트 케이스 전부 통과
+  - 소셜 계정 연동/해제 + 마지막 로그인 수단 보호 로직
+
+### 1. BudgetController REST Docs 작성 (우선순위: P1 ⬆️)
+- **이유**: JWT 인증 패턴 확립으로 빠른 작업 가능
+- **엔드포인트**: 4개
+  - `GET /api/v1/members/me/budget` - 예산 조회
+  - `PUT /api/v1/members/me/budget` - 예산 수정
+  - `POST /api/v1/members/me/budget/reset` - 예산 초기화
+  - `GET /api/v1/members/me/budget/history` - 예산 변경 이력
+- **예상 소요 시간**: 40-50분
+- **예상 테스트 케이스**: 6-10개
+- **추천:** JWT 인증 패턴이 확립되어 있어 빠르게 작업 가능
+- **예상 소요 시간**: 40-50분
+- **예상 테스트 케이스**: 6-10개
+- **추천:** JWT 인증 패턴이 확립되어 있어 빠르게 작업 가능
+
+### 2. AddressController REST Docs 작성 (우선순위: P2)
+- **엔드포인트**: 5개
+- **예상 소요 시간**: 50-60분
+
+### 3. 기타 Controller
+- Expenditure, Policy, Category, Group (P3)
 
 ---
 
 **최종 작성일:** 2025-10-11  
-**최종 업데이트:** 2025-10-11 20:58  
-**작업 완료 상태:** ✅ **핵심 API 문서화 100% 완료 + 추가 2개 컨트롤러 (14개 파일, 50개 테스트 케이스)**  
-**총 작업 시간:** 약 6시간 30분 (Session 1: 2h, Session 2: 40m, Session 3: 2h20m, Session 4: 1h30m)  
-**다음 작업:** PreferenceController FK 제약조건 문제 해결 (보류)
+**최종 업데이트:** 2025-10-12 14:05 🆕  
+**작업 완료 상태:** ✅ **핵심 API 문서화 100% 완료 + SocialAccountController 추가 완료 (15개 파일, 62개 테스트 케이스)**  
+**총 작업 시간:** 약 8시간 (Session 1: 2h, Session 2: 40m, Session 3: 2h20m, Session 4: 1h30m, Session 5: 30m, Session 6: 30m, Session 7: 30m)  
+**다음 작업:** BudgetController REST Docs 작성 (우선순위: P1)
 
 #### 문서화된 응답 구조
 ```json

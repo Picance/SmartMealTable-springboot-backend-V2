@@ -195,7 +195,7 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.date")
                                         .type(JsonFieldType.STRING)
                                         .description("조회한 날짜"),
-                                fieldWithPath("data.totalDailyBudget")
+                                fieldWithPath("data.totalBudget")
                                         .type(JsonFieldType.NUMBER)
                                         .description("일일 총 예산"),
                                 fieldWithPath("data.totalSpent")
@@ -206,19 +206,8 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("남은 예산"),
                                 fieldWithPath("data.mealBudgets")
                                         .type(JsonFieldType.ARRAY)
+                                        .optional()
                                         .description("끼니별 예산 목록"),
-                                fieldWithPath("data.mealBudgets[].mealType")
-                                        .type(JsonFieldType.STRING)
-                                        .description("끼니 종류 (BREAKFAST, LUNCH, DINNER, SNACK)"),
-                                fieldWithPath("data.mealBudgets[].budget")
-                                        .type(JsonFieldType.NUMBER)
-                                        .description("끼니별 예산"),
-                                fieldWithPath("data.mealBudgets[].spent")
-                                        .type(JsonFieldType.NUMBER)
-                                        .description("끼니별 사용 금액"),
-                                fieldWithPath("data.mealBudgets[].remaining")
-                                        .type(JsonFieldType.NUMBER)
-                                        .description("끼니별 남은 예산"),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .optional()
@@ -269,18 +258,21 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data")
                                         .type(JsonFieldType.OBJECT)
                                         .description("응답 데이터"),
+                                fieldWithPath("data.monthlyBudgetId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("월별 예산 ID"),
                                 fieldWithPath("data.monthlyFoodBudget")
                                         .type(JsonFieldType.NUMBER)
                                         .description("수정된 월별 예산"),
                                 fieldWithPath("data.dailyFoodBudget")
                                         .type(JsonFieldType.NUMBER)
                                         .description("수정된 일일 예산"),
-                                fieldWithPath("data.effectiveDate")
+                                fieldWithPath("data.budgetMonth")
                                         .type(JsonFieldType.STRING)
-                                        .description("적용 시작 날짜 (YYYY-MM-DD)"),
-                                fieldWithPath("data.daysAffected")
-                                        .type(JsonFieldType.NUMBER)
-                                        .description("영향받는 일수"),
+                                        .description("예산 적용 월 (YYYY-MM)"),
+                                fieldWithPath("data.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("처리 결과 메시지"),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .optional()
@@ -396,14 +388,185 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("에러 메시지"),
                                 fieldWithPath("error.data")
                                         .type(JsonFieldType.OBJECT)
-                                        .description("에러 상세 데이터"),
-                                fieldWithPath("error.data.field")
+                                        .optional()
+                                        .description("에러 상세 데이터 (파라미터 검증 실패 시 null 가능)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("일별 예산 수정 성공")
+    void updateDailyBudget_success_docs() throws Exception {
+        // given
+        LocalDate today = LocalDate.now();
+        String requestBody = """
+                {
+                    "dailyFoodBudget": 15000,
+                    "applyForward": false
+                }
+                """;
+
+        // when & then
+        mockMvc.perform(put("/api/v1/budgets/daily/{date}", today)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.dailyFoodBudget").value(15000))
+                .andDo(document("budget/update-daily-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("Bearer {accessToken}")
+                        ),
+                        pathParameters(
+                                parameterWithName("date")
+                                        .description("수정할 날짜 (YYYY-MM-DD 형식)")
+                        ),
+                        requestFields(
+                                fieldWithPath("dailyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("일일 식비 예산 (0 이상)"),
+                                fieldWithPath("applyForward")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("이후 날짜 적용 여부 (true: 해당 날짜 이후 모두 수정, false: 해당 날짜만)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
-                                        .description("검증 실패한 필드명"),
-                                fieldWithPath("error.data.reason")
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.budgetId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("일별 예산 ID"),
+                                fieldWithPath("data.dailyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("수정된 일일 예산"),
+                                fieldWithPath("data.budgetDate")
                                         .type(JsonFieldType.STRING)
-                                        .description("검증 실패 이유")
+                                        .description("예산 적용 날짜"),
+                                fieldWithPath("data.appliedForward")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("이후 날짜 적용 여부"),
+                                fieldWithPath("data.updatedCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("수정된 예산 개수"),
+                                fieldWithPath("data.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("처리 결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("에러 정보 (성공 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("월별 예산 조회 실패 - 인증되지 않은 요청")
+    void getMonthlyBudget_unauthorized_docs() throws Exception {
+        // given
+        YearMonth currentMonth = YearMonth.now();
+        int year = currentMonth.getYear();
+        int month = currentMonth.getMonthValue();
+
+        // when & then
+        mockMvc.perform(get("/api/v1/budgets/monthly")
+                        .param("year", String.valueOf(year))
+                        .param("month", String.valueOf(month)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").exists())
+                .andDo(document("budget/get-monthly-unauthorized",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        queryParameters(
+                                parameterWithName("year")
+                                        .description("조회할 연도 (2000-2100)"),
+                                parameterWithName("month")
+                                        .description("조회할 월 (1-12)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code")
+                                        .type(JsonFieldType.STRING)
+                                        .description("에러 코드"),
+                                fieldWithPath("error.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("에러 상세 데이터 (401 에러 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("월별 예산 수정 실패 - 인증되지 않은 요청")
+    void updateBudget_unauthorized_docs() throws Exception {
+        // given
+        String requestBody = """
+                {
+                    "monthlyFoodBudget": 400000,
+                    "dailyFoodBudget": 15000
+                }
+                """;
+
+        // when & then
+        mockMvc.perform(put("/api/v1/budgets")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").exists())
+                .andDo(document("budget/update-monthly-unauthorized",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("monthlyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("월별 식비 예산 (0 이상)"),
+                                fieldWithPath("dailyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("일일 식비 예산 (0 이상)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code")
+                                        .type(JsonFieldType.STRING)
+                                        .description("에러 코드"),
+                                fieldWithPath("error.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("에러 상세 데이터 (401 에러 시 null)")
                         )
                 ));
     }
 }
+
