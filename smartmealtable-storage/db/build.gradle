@@ -2,6 +2,9 @@ dependencies {
     // domain 모듈 의존성
     implementation project(':smartmealtable-domain')
     
+    // recommendation 모듈 의존성 (추천 시스템 연동)
+    implementation project(':smartmealtable-recommendation')
+    
     // Spring Data JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     

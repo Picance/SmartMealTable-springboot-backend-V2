@@ -2,7 +2,9 @@ dependencies {
     // 모듈 의존성
     implementation project(':smartmealtable-core')
     implementation project(':smartmealtable-domain')
-    implementation project(':smartmealtable-storage:db')
+    // NOTE: storage 의존성 제거 (순환 의존성 방지)
+    // RecommendationDataRepository 인터페이스는 domain layer에 위치
+    // 구현체는 storage에서 제공
     
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
