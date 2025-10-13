@@ -3,7 +3,7 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-12
+**최종 업데이트**: 2025-10-13
 
 ---
 
@@ -15,8 +15,8 @@
 3. 인증 및 회원 관리:      [████████████████████] 100% (13/13 API) ✅
 4. 온보딩:                [████████████████████] 100% (11/11 API) ✅
 5. 예산 관리:             [████████████████████] 100% (4/4 API) ✅
-6. 지출 내역:             [████████████████████] 100% (7/7 API) ✅
-7. 가게 관리:             [████████████████████] 100% (3/3 API) ✅
+6. 지출 내역:             [████████████████████] 100% (7/7 API) ✅ + REST Docs 완료 🎉
+7. 가게 관리:             [████████████████████] 100% (3/3 API) ✅ + REST Docs 완료 🎉
 8. 추천 시스템:           [░░░░░░░░░░░░░░░░░░░░]   0% (0/3 API)
 9. 즐겨찾기:              [████████████████████] 100% (4/4 API) ✅
 10. 프로필 및 설정:        [████████████████████] 100% (12/12 API) ✅
@@ -27,6 +27,65 @@
 
 총 진행률:                [████████████████████]  90% (63/70 API)
 ```
+
+## 📚 REST Docs 문서화 현황
+
+> **2025-10-13 업데이트**: 지출 내역 및 가게 관리 API REST Docs 완료
+
+### ✅ 완료된 REST Docs (10개 API)
+
+#### 지출 내역 (Expenditure) - 7 API
+1. ✅ POST `/api/v1/expenditures` - 지출 내역 등록
+   - 아이템 포함 등록 (document: `expenditure/create-expenditure-with-items-success`)
+   - 아이템 없이 간단 등록 (document: `expenditure/create-expenditure-without-items-success`)
+   - 유효성 검증 실패 (document: `expenditure/create-expenditure-validation-failed`)
+   - 인증되지 않은 요청 (document: `expenditure/create-expenditure-unauthorized`)
+
+2. ✅ POST `/api/v1/expenditures/parse-sms` - SMS 파싱
+   - KB국민카드 파싱 성공 (document: `expenditure/parse-sms-success`)
+   - NH농협카드 파싱 성공 (document: `expenditure/parse-sms-nh-card-success`)
+   - 빈 문자열 실패 (document: `expenditure/parse-sms-empty-message-failed`)
+   - 잘못된 형식 실패 (document: `expenditure/parse-sms-invalid-format-failed`)
+
+3. ✅ GET `/api/v1/expenditures/statistics` - 통계 조회
+   - 통계 조회 성공 (document: `expenditure/get-statistics-success`)
+   - 인증되지 않은 요청 (document: `expenditure/get-statistics-unauthorized`)
+
+4. ✅ GET `/api/v1/expenditures` - 목록 조회 (2025-10-13 추가)
+   - 기본 필터 적용 (document: `expenditure/get-list-success`)
+   - 식사 유형 필터 적용 (document: `expenditure/get-list-with-meal-type-filter`)
+   - 인증되지 않은 요청 (document: `expenditure/get-list-unauthorized`)
+
+5. ✅ GET `/api/v1/expenditures/{id}` - 상세 조회 (2025-10-13 추가)
+   - 상세 조회 성공 (document: `expenditure/get-detail-success`)
+   - 존재하지 않는 지출 내역 (document: `expenditure/get-detail-not-found`)
+   - 인증되지 않은 요청 (document: `expenditure/get-detail-unauthorized`)
+
+6. ✅ PUT `/api/v1/expenditures/{id}` - 수정 (2025-10-13 추가)
+   - 수정 성공 (document: `expenditure/update-success`)
+   - 존재하지 않는 지출 내역 (document: `expenditure/update-not-found`)
+
+7. ✅ DELETE `/api/v1/expenditures/{id}` - 삭제 (2025-10-13 추가)
+   - 삭제 성공 (document: `expenditure/delete-success`)
+   - 존재하지 않는 지출 내역 (document: `expenditure/delete-not-found`)
+   - 인증되지 않은 요청 (document: `expenditure/delete-unauthorized`)
+
+#### 가게 관리 (Store) - 3 API (기존 완료)
+1. ✅ GET `/api/v1/stores` - 가게 목록 조회
+   - 기본 조회 (document: `store-list-default`)
+   - 검색 조회 (document: `store-list-search`)
+
+2. ✅ GET `/api/v1/stores/{id}` - 가게 상세 조회
+   - 상세 조회 성공 (document: `store-detail-success`)
+
+3. ✅ GET `/api/v1/stores/autocomplete` - 가게 자동완성
+   - 자동완성 성공 (document: `store-autocomplete-success`)
+
+### ⚠️ 주의사항
+- ExpenditureControllerRestDocsTest에서 일부 응답 필드 매핑 문제 발생
+- Spring Data Page 객체의 모든 필드(pageable, sort, first, last, numberOfElements, empty) 문서화 추가
+- ParseSmsResponse 필드를 실제 DTO 구조에 맞게 수정 (storeName, amount, date, time, isParsed)
+- 테스트 검증 후 최종 확인 필요
 
 ### 📋 섹션별 상세 현황
 

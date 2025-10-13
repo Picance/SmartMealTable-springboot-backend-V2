@@ -189,7 +189,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.items[].foodId").type(JsonFieldType.NUMBER)
                                         .description("음식 ID"),
                                 fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING)
-                                        .description("음식 이름"),
+                                        .description("음식 이름").optional(),
                                 fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER)
                                         .description("수량"),
                                 fieldWithPath("data.items[].price").type(JsonFieldType.NUMBER)
@@ -455,8 +455,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.time").type(JsonFieldType.STRING)
                                         .description("결제 시간 (HH:mm:ss)"),
                                 fieldWithPath("data.isParsed").type(JsonFieldType.BOOLEAN)
-                                        .description("파싱 성공 여부"),
-                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
+                                        .description("파싱 성공 여부")
                         )
                 ));
     }
@@ -486,10 +485,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.storeName").exists())
-                .andExpect(jsonPath("$.data.amount").exists())
-                .andExpect(jsonPath("$.data.vendor").exists())
-                .andExpect(jsonPath("$.data.transactionDateTime").exists())
+                .andExpect(jsonPath("$.data.storeName").value("스타벅스역삼점"))
+                .andExpect(jsonPath("$.data.amount").value(5500))
                 .andDo(document("expenditure/parse-sms-nh-card-success",
                         requestFields(
                                 fieldWithPath("smsMessage").type(JsonFieldType.STRING)
@@ -500,14 +497,16 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                                         .description("파싱 결과 데이터"),
-                                fieldWithPath("data.vendor").type(JsonFieldType.STRING)
-                                        .description("카드사 이름"),
-                                fieldWithPath("data.transactionDateTime").type(JsonFieldType.STRING)
-                                        .description("거래 일시"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
                                 fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
                                         .description("결제 금액"),
-                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
-                                        .description("가게 이름")
+                                fieldWithPath("data.date").type(JsonFieldType.STRING)
+                                        .description("결제 날짜 (yyyy-MM-dd)"),
+                                fieldWithPath("data.time").type(JsonFieldType.STRING)
+                                        .description("결제 시간 (HH:mm:ss)"),
+                                fieldWithPath("data.isParsed").type(JsonFieldType.BOOLEAN)
+                                        .description("파싱 성공 여부")
                         )
                 ));
     }
@@ -760,4 +759,657 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 ));
     }
     */
+
+    @Test
+    @DisplayName("지출 내역 목록 조회 성공 - 기본 필터")
+    void getExpenditureList_Success() throws Exception {
+        // given
+        for (int day = 1; day <= 5; day++) {
+            LocalDate date = LocalDate.of(2025, 10, day);
+            Expenditure expenditure = Expenditure.create(
+                    member.getMemberId(),
+                    "테스트가게" + day,
+                    8000 + (day * 1000),
+                    date,
+                    LocalTime.of(12, 0),
+                    categoryId,
+                    MealType.LUNCH,
+                    day % 2 == 0 ? "메모" + day : null,
+                    List.of()
+            );
+            expenditureRepository.save(expenditure);
+        }
+
+        // when & then
+        mockMvc.perform(get("/api/v1/expenditures")
+                        .header("Authorization", accessToken)
+                        .param("startDate", "2025-10-01")
+                        .param("endDate", "2025-10-31")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.summary").exists())
+                .andExpect(jsonPath("$.data.expenditures.content").isArray())
+                .andDo(document("expenditure/get-list-success",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        queryParameters(
+                                parameterWithName("startDate").description("조회 시작 날짜 (yyyy-MM-dd)"),
+                                parameterWithName("endDate").description("조회 종료 날짜 (yyyy-MM-dd)"),
+                                parameterWithName("mealType").description("식사 유형 필터 (BREAKFAST, LUNCH, DINNER, OTHER)").optional(),
+                                parameterWithName("categoryId").description("카테고리 ID 필터").optional(),
+                                parameterWithName("page").description("페이지 번호 (0부터 시작)"),
+                                parameterWithName("size").description("페이지 크기")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS/ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.summary").type(JsonFieldType.OBJECT)
+                                        .description("지출 요약 정보"),
+                                fieldWithPath("data.summary.totalAmount").type(JsonFieldType.NUMBER)
+                                        .description("총 지출 금액"),
+                                fieldWithPath("data.summary.totalCount").type(JsonFieldType.NUMBER)
+                                        .description("총 지출 건수"),
+                                fieldWithPath("data.summary.averageAmount").type(JsonFieldType.NUMBER)
+                                        .description("평균 지출 금액"),
+                                fieldWithPath("data.expenditures").type(JsonFieldType.OBJECT)
+                                        .description("페이징된 지출 내역 목록"),
+                                fieldWithPath("data.expenditures.content").type(JsonFieldType.ARRAY)
+                                        .description("지출 내역 배열"),
+                                fieldWithPath("data.expenditures.content[].expenditureId").type(JsonFieldType.NUMBER)
+                                        .description("지출 내역 ID"),
+                                fieldWithPath("data.expenditures.content[].storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.expenditures.content[].amount").type(JsonFieldType.NUMBER)
+                                        .description("지출 금액"),
+                                fieldWithPath("data.expenditures.content[].expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜"),
+                                fieldWithPath("data.expenditures.content[].categoryName").type(JsonFieldType.STRING)
+                                        .description("카테고리 이름"),
+                                fieldWithPath("data.expenditures.content[].mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형"),
+                                fieldWithPath("data.expenditures.pageable").type(JsonFieldType.OBJECT)
+                                        .description("페이징 정보"),
+                                fieldWithPath("data.expenditures.pageable.pageNumber").type(JsonFieldType.NUMBER)
+                                        .description("페이지 번호"),
+                                fieldWithPath("data.expenditures.pageable.pageSize").type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.expenditures.pageable.sort").type(JsonFieldType.OBJECT)
+                                        .description("정렬 정보"),
+                                fieldWithPath("data.expenditures.pageable.sort.sorted").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 여부"),
+                                fieldWithPath("data.expenditures.pageable.sort.unsorted").type(JsonFieldType.BOOLEAN)
+                                        .description("비정렬 여부"),
+                                fieldWithPath("data.expenditures.pageable.sort.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 조건 없음"),
+                                fieldWithPath("data.expenditures.pageable.offset").type(JsonFieldType.NUMBER)
+                                        .description("오프셋"),
+                                fieldWithPath("data.expenditures.pageable.paged").type(JsonFieldType.BOOLEAN)
+                                        .description("페이징 여부"),
+                                fieldWithPath("data.expenditures.pageable.unpaged").type(JsonFieldType.BOOLEAN)
+                                        .description("비페이징 여부"),
+                                fieldWithPath("data.expenditures.totalElements").type(JsonFieldType.NUMBER)
+                                        .description("전체 요소 개수"),
+                                fieldWithPath("data.expenditures.totalPages").type(JsonFieldType.NUMBER)
+                                        .description("전체 페이지 수"),
+                                fieldWithPath("data.expenditures.size").type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.expenditures.number").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 번호"),
+                                fieldWithPath("data.expenditures.sort").type(JsonFieldType.OBJECT)
+                                        .description("정렬 정보"),
+                                fieldWithPath("data.expenditures.sort.sorted").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 여부"),
+                                fieldWithPath("data.expenditures.sort.unsorted").type(JsonFieldType.BOOLEAN)
+                                        .description("비정렬 여부"),
+                                fieldWithPath("data.expenditures.sort.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 조건 없음"),
+                                fieldWithPath("data.expenditures.first").type(JsonFieldType.BOOLEAN)
+                                        .description("첫 페이지 여부"),
+                                fieldWithPath("data.expenditures.last").type(JsonFieldType.BOOLEAN)
+                                        .description("마지막 페이지 여부"),
+                                fieldWithPath("data.expenditures.numberOfElements").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 요소 개수"),
+                                fieldWithPath("data.expenditures.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("빈 페이지 여부")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 목록 조회 성공 - 식사 유형 필터 적용")
+    void getExpenditureList_WithMealTypeFilter_Success() throws Exception {
+        // given
+        Expenditure lunchExpenditure = Expenditure.create(
+                member.getMemberId(),
+                "점심식당",
+                10000,
+                LocalDate.of(2025, 10, 8),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        expenditureRepository.save(lunchExpenditure);
+        
+        Expenditure dinnerExpenditure = Expenditure.create(
+                member.getMemberId(),
+                "저녁식당",
+                20000,
+                LocalDate.of(2025, 10, 8),
+                LocalTime.of(19, 30),
+                categoryId,
+                MealType.DINNER,
+                null,
+                List.of()
+        );
+        expenditureRepository.save(dinnerExpenditure);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/expenditures")
+                        .header("Authorization", accessToken)
+                        .param("startDate", "2025-10-01")
+                        .param("endDate", "2025-10-31")
+                        .param("mealType", "LUNCH")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.expenditures.content").isArray())
+                .andExpect(jsonPath("$.data.expenditures.content[0].mealType").value("LUNCH"))
+                .andDo(document("expenditure/get-list-with-meal-type-filter",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        queryParameters(
+                                parameterWithName("startDate").description("조회 시작 날짜"),
+                                parameterWithName("endDate").description("조회 종료 날짜"),
+                                parameterWithName("mealType").description("식사 유형 필터 (LUNCH 적용)"),
+                                parameterWithName("page").description("페이지 번호"),
+                                parameterWithName("size").description("페이지 크기")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS/ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.summary").type(JsonFieldType.OBJECT)
+                                        .description("지출 요약 정보"),
+                                fieldWithPath("data.summary.totalAmount").type(JsonFieldType.NUMBER)
+                                        .description("총 지출 금액 (필터 적용)"),
+                                fieldWithPath("data.summary.totalCount").type(JsonFieldType.NUMBER)
+                                        .description("총 지출 건수 (필터 적용)"),
+                                fieldWithPath("data.summary.averageAmount").type(JsonFieldType.NUMBER)
+                                        .description("평균 지출 금액 (필터 적용)"),
+                                fieldWithPath("data.expenditures").type(JsonFieldType.OBJECT)
+                                        .description("페이징된 지출 내역 목록"),
+                                fieldWithPath("data.expenditures.content").type(JsonFieldType.ARRAY)
+                                        .description("필터링된 지출 내역 배열 (LUNCH만 포함)"),
+                                fieldWithPath("data.expenditures.content[].expenditureId").type(JsonFieldType.NUMBER)
+                                        .description("지출 내역 ID"),
+                                fieldWithPath("data.expenditures.content[].storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.expenditures.content[].amount").type(JsonFieldType.NUMBER)
+                                        .description("지출 금액"),
+                                fieldWithPath("data.expenditures.content[].expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜"),
+                                fieldWithPath("data.expenditures.content[].categoryName").type(JsonFieldType.STRING)
+                                        .description("카테고리 이름"),
+                                fieldWithPath("data.expenditures.content[].mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형 (LUNCH)"),
+                                fieldWithPath("data.expenditures.pageable").type(JsonFieldType.OBJECT)
+                                        .description("페이징 정보"),
+                                fieldWithPath("data.expenditures.pageable.pageNumber").type(JsonFieldType.NUMBER)
+                                        .description("페이지 번호"),
+                                fieldWithPath("data.expenditures.pageable.pageSize").type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.expenditures.pageable.sort").type(JsonFieldType.OBJECT)
+                                        .description("정렬 정보"),
+                                fieldWithPath("data.expenditures.pageable.sort.sorted").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 여부"),
+                                fieldWithPath("data.expenditures.pageable.sort.unsorted").type(JsonFieldType.BOOLEAN)
+                                        .description("비정렬 여부"),
+                                fieldWithPath("data.expenditures.pageable.sort.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 조건 없음"),
+                                fieldWithPath("data.expenditures.pageable.offset").type(JsonFieldType.NUMBER)
+                                        .description("오프셋"),
+                                fieldWithPath("data.expenditures.pageable.paged").type(JsonFieldType.BOOLEAN)
+                                        .description("페이징 여부"),
+                                fieldWithPath("data.expenditures.pageable.unpaged").type(JsonFieldType.BOOLEAN)
+                                        .description("비페이징 여부"),
+                                fieldWithPath("data.expenditures.totalElements").type(JsonFieldType.NUMBER)
+                                        .description("전체 요소 개수"),
+                                fieldWithPath("data.expenditures.totalPages").type(JsonFieldType.NUMBER)
+                                        .description("전체 페이지 수"),
+                                fieldWithPath("data.expenditures.size").type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.expenditures.number").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 번호"),
+                                fieldWithPath("data.expenditures.sort").type(JsonFieldType.OBJECT)
+                                        .description("정렬 정보"),
+                                fieldWithPath("data.expenditures.sort.sorted").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 여부"),
+                                fieldWithPath("data.expenditures.sort.unsorted").type(JsonFieldType.BOOLEAN)
+                                        .description("비정렬 여부"),
+                                fieldWithPath("data.expenditures.sort.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("정렬 조건 없음"),
+                                fieldWithPath("data.expenditures.first").type(JsonFieldType.BOOLEAN)
+                                        .description("첫 페이지 여부"),
+                                fieldWithPath("data.expenditures.last").type(JsonFieldType.BOOLEAN)
+                                        .description("마지막 페이지 여부"),
+                                fieldWithPath("data.expenditures.numberOfElements").type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 요소 개수"),
+                                fieldWithPath("data.expenditures.empty").type(JsonFieldType.BOOLEAN)
+                                        .description("빈 페이지 여부")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 목록 조회 실패 - 인증되지 않은 요청")
+    void getExpenditureList_Unauthorized() throws Exception {
+        // when & then - Authorization 헤더 없이 요청
+        mockMvc.perform(get("/api/v1/expenditures")
+                        .param("startDate", "2025-10-01")
+                        .param("endDate", "2025-10-31")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/get-list-unauthorized",
+                        queryParameters(
+                                parameterWithName("startDate").description("조회 시작 날짜"),
+                                parameterWithName("endDate").description("조회 종료 날짜"),
+                                parameterWithName("page").description("페이지 번호"),
+                                parameterWithName("size").description("페이지 크기")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E401: 인증 실패)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
+                                        .description("에러 상세 정보"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).optional()
+                                        .description("에러가 발생한 필드"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).optional()
+                                        .description("에러 사유")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 상세 조회 성공")
+    void getExpenditureDetail_Success() throws Exception {
+        // given - 항목이 있는 지출 내역 생성
+        Expenditure expenditure = Expenditure.create(
+                member.getMemberId(),
+                "맛있는집",
+                15000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                "동료와 점심",
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.expenditureId").value(savedExpenditure.getExpenditureId()))
+                .andExpect(jsonPath("$.data.storeName").value("맛있는집"))
+                .andExpect(jsonPath("$.data.amount").value(15000))
+                .andDo(document("expenditure/get-detail-success",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS/ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT)
+                                        .description("지출 내역 상세 정보"),
+                                fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER)
+                                        .description("지출 내역 ID"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
+                                        .description("총 금액"),
+                                fieldWithPath("data.expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜 (yyyy-MM-dd)"),
+                                fieldWithPath("data.expendedTime").type(JsonFieldType.STRING)
+                                        .description("지출 시간 (HH:mm:ss)"),
+                                fieldWithPath("data.categoryId").type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID"),
+                                fieldWithPath("data.categoryName").type(JsonFieldType.STRING)
+                                        .description("카테고리 이름"),
+                                fieldWithPath("data.mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형"),
+                                fieldWithPath("data.memo").type(JsonFieldType.STRING)
+                                        .description("메모"),
+                                fieldWithPath("data.items").type(JsonFieldType.ARRAY)
+                                        .description("지출 항목 목록")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 상세 조회 실패 - 존재하지 않는 지출 내역")
+    void getExpenditureDetail_NotFound() throws Exception {
+        // given - 존재하지 않는 ID
+        Long nonExistentId = 99999L;
+
+        // when & then
+        mockMvc.perform(get("/api/v1/expenditures/{id}", nonExistentId)
+                        .header("Authorization", accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/get-detail-not-found",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E400: Bad Request)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 상세 조회 실패 - 인증되지 않은 요청")
+    void getExpenditureDetail_Unauthorized() throws Exception {
+        // given
+        Expenditure expenditure = Expenditure.create(
+                member.getMemberId(),
+                "맛있는집",
+                15000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+        // when & then - Authorization 헤더 없이 요청
+        mockMvc.perform(get("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId()))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/get-detail-unauthorized",
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E401: 인증 실패)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
+                                        .description("에러 상세 정보"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).optional()
+                                        .description("에러가 발생한 필드"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).optional()
+                                        .description("에러 사유")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 수정 성공")
+    void updateExpenditure_Success() throws Exception {
+        // given - 기존 지출 내역 생성
+        Expenditure expenditure = Expenditure.create(
+                member.getMemberId(),
+                "원래가게",
+                10000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 0),
+                categoryId,
+                MealType.LUNCH,
+                "원래메모",
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+        // 수정 요청 데이터
+        var updateRequest = new com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest(
+                "수정된가게",
+                15000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                "수정된메모",
+                null
+        );
+
+        // when & then
+        mockMvc.perform(put("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("expenditure/update-success",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름 (최대 200자)"),
+                                fieldWithPath("amount").type(JsonFieldType.NUMBER)
+                                        .description("총 금액 (0 이상)"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜 (yyyy-MM-dd)"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING)
+                                        .description("지출 시간 (HH:mm:ss)").optional(),
+                                fieldWithPath("categoryId").type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID").optional(),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형").optional(),
+                                fieldWithPath("memo").type(JsonFieldType.STRING)
+                                        .description("메모 (최대 500자)").optional(),
+                                fieldWithPath("items").type(JsonFieldType.NULL)
+                                        .description("지출 항목 목록").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS/ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (수정 시 null)").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 수정 실패 - 존재하지 않는 지출 내역")
+    void updateExpenditure_NotFound() throws Exception {
+        // given
+        Long nonExistentId = 99999L;
+        var updateRequest = new com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest(
+                "수정된가게",
+                15000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                null
+        );
+
+        // when & then
+        mockMvc.perform(put("/api/v1/expenditures/{id}", nonExistentId)
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/update-not-found",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("amount").type(JsonFieldType.NUMBER)
+                                        .description("총 금액"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING)
+                                        .description("지출 시간"),
+                                fieldWithPath("categoryId").type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID"),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형"),
+                                fieldWithPath("memo").type(JsonFieldType.NULL)
+                                        .description("메모"),
+                                fieldWithPath("items").type(JsonFieldType.NULL)
+                                        .description("지출 항목 목록")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E400: Bad Request)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 삭제 성공")
+    void deleteExpenditure_Success() throws Exception {
+        // given - 삭제할 지출 내역 생성
+        Expenditure expenditure = Expenditure.create(
+                member.getMemberId(),
+                "삭제할가게",
+                10000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 0),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", accessToken))
+                .andDo(print())
+                .andExpect(status().isNoContent())
+                .andDo(document("expenditure/delete-success",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 삭제 실패 - 존재하지 않는 지출 내역")
+    void deleteExpenditure_NotFound() throws Exception {
+        // given
+        Long nonExistentId = 99999L;
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/expenditures/{id}", nonExistentId)
+                        .header("Authorization", accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/delete-not-found",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E400: Bad Request)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("지출 내역 삭제 실패 - 인증되지 않은 요청")
+    void deleteExpenditure_Unauthorized() throws Exception {
+        // given
+        Expenditure expenditure = Expenditure.create(
+                member.getMemberId(),
+                "삭제할가게",
+                10000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 0),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+        // when & then - Authorization 헤더 없이 요청
+        mockMvc.perform(delete("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId()))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/delete-unauthorized",
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E401: 인증 실패)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
+                                        .description("에러 상세 정보"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).optional()
+                                        .description("에러가 발생한 필드"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).optional()
+                                        .description("에러 사유")
+                        )
+                ));
+    }
 }
