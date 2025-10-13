@@ -1,11 +1,17 @@
 package com.stdev.smartmealtable.api.recommendation.service;
 
 import com.stcom.smartmealtable.recommendation.domain.model.RecommendationResult;
+import com.stcom.smartmealtable.recommendation.domain.model.ScoreDetail;
 import com.stcom.smartmealtable.recommendation.domain.model.UserProfile;
 import com.stcom.smartmealtable.recommendation.domain.repository.RecommendationDataRepository;
 import com.stcom.smartmealtable.recommendation.domain.service.RecommendationDomainService;
 import com.stdev.smartmealtable.api.recommendation.dto.RecommendationRequestDto;
+import com.stdev.smartmealtable.api.recommendation.dto.ScoreDetailResponseDto;
+import com.stdev.smartmealtable.domain.member.entity.Member;
+import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
+import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +34,8 @@ public class RecommendationApplicationService {
 
     private final RecommendationDomainService recommendationDomainService;
     private final RecommendationDataRepository recommendationDataRepository;
+    private final StoreRepository storeRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 추천 목록 조회
@@ -135,6 +143,151 @@ public class RecommendationApplicationService {
         }
         
         return results.subList(fromIndex, toIndex);
+    }
+
+    /**
+     * 특정 가게의 점수 상세 조회 (DTO 반환)
+     * 
+     * @param memberId 회원 ID
+     * @param storeId 가게 ID
+     * @param latitude 현재 위도 (선택)
+     * @param longitude 현재 경도 (선택)
+     * @return 점수 상세 정보 DTO
+     */
+    public ScoreDetailResponseDto getScoreDetailResponse(
+            Long memberId,
+            Long storeId,
+            BigDecimal latitude,
+            BigDecimal longitude
+    ) {
+        log.info("점수 상세 조회 (DTO) 시작 - memberId: {}, storeId: {}", memberId, storeId);
+
+        // 1. 가게 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다. storeId: " + storeId));
+
+        // 2. 사용자 프로필 조회
+        UserProfile userProfile = recommendationDataRepository.loadUserProfile(memberId);
+        
+        // 3. 위도/경도 오버라이드
+        if (latitude != null && longitude != null) {
+            userProfile = UserProfile.builder()
+                    .memberId(userProfile.getMemberId())
+                    .recommendationType(userProfile.getRecommendationType())
+                    .currentLatitude(latitude)
+                    .currentLongitude(longitude)
+                    .categoryPreferences(userProfile.getCategoryPreferences())
+                    .recentExpenditures(userProfile.getRecentExpenditures())
+                    .storeLastVisitDates(userProfile.getStoreLastVisitDates())
+                    .build();
+        }
+
+        // 4. 단일 가게에 대한 추천 점수 계산
+        List<RecommendationResult> results = recommendationDomainService.calculateRecommendations(
+                List.of(store),
+                userProfile
+        );
+
+        if (results.isEmpty()) {
+            throw new IllegalStateException("추천 점수 계산 실패");
+        }
+
+        RecommendationResult result = results.get(0);
+        
+        // 5. 거리 계산
+        double distance = calculateDistance(
+                userProfile.getCurrentLatitude(),
+                userProfile.getCurrentLongitude(),
+                store.getLatitude(),
+                store.getLongitude()
+        );
+        
+        // 6. DTO로 변환하여 반환
+        return ScoreDetailResponseDto.from(
+                result.getScoreDetail(),
+                store.getStoreId(),
+                store.getName(),
+                distance
+        );
+    }
+
+    /**
+     * 특정 가게의 점수 상세 조회
+     * 
+     * @param memberId 회원 ID
+     * @param storeId 가게 ID
+     * @param latitude 현재 위도 (선택)
+     * @param longitude 현재 경도 (선택)
+     * @return 점수 상세 정보
+     */
+    public ScoreDetail getScoreDetail(
+            Long memberId,
+            Long storeId,
+            BigDecimal latitude,
+            BigDecimal longitude
+    ) {
+        log.info("점수 상세 조회 시작 - memberId: {}, storeId: {}", memberId, storeId);
+
+        // 1. 가게 조회
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다. storeId: " + storeId));
+
+        // 2. 사용자 프로필 조회
+        UserProfile userProfile = recommendationDataRepository.loadUserProfile(memberId);
+        
+        // 3. 위도/경도 오버라이드
+        if (latitude != null && longitude != null) {
+            userProfile = UserProfile.builder()
+                    .memberId(userProfile.getMemberId())
+                    .recommendationType(userProfile.getRecommendationType())
+                    .currentLatitude(latitude)
+                    .currentLongitude(longitude)
+                    .categoryPreferences(userProfile.getCategoryPreferences())
+                    .recentExpenditures(userProfile.getRecentExpenditures())
+                    .storeLastVisitDates(userProfile.getStoreLastVisitDates())
+                    .build();
+        }
+
+        // 4. 단일 가게에 대한 추천 점수 계산
+        List<RecommendationResult> results = recommendationDomainService.calculateRecommendations(
+                List.of(store),
+                userProfile
+        );
+
+        if (results.isEmpty()) {
+            throw new IllegalStateException("추천 점수 계산 실패");
+        }
+
+        RecommendationResult result = results.get(0);
+        
+        // 5. ScoreDetail 반환
+        return result.getScoreDetail();
+    }
+
+    /**
+     * 추천 유형 변경
+     * 
+     * @param memberId 회원 ID
+     * @param newType 새로운 추천 유형
+     * @return 변경된 회원 정보
+     */
+    @Transactional
+    public Member updateRecommendationType(Long memberId, RecommendationType newType) {
+        log.info("추천 유형 변경 시작 - memberId: {}, newType: {}", memberId, newType);
+
+        // 1. 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다. memberId: " + memberId));
+
+        // 2. 추천 유형 변경 (도메인 로직)
+        member.changeRecommendationType(newType);
+
+        // 3. 저장
+        Member updatedMember = memberRepository.save(member);
+
+        log.info("추천 유형 변경 완료 - memberId: {}, newType: {}", memberId, newType);
+        
+        return updatedMember;
     }
 
     /**

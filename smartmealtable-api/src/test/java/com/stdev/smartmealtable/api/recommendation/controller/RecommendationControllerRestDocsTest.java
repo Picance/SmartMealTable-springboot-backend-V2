@@ -419,4 +419,195 @@ class RecommendationControllerRestDocsTest extends AbstractRestDocsTest {
                         )
                 ));
     }
+
+    @Test
+    @DisplayName("점수 상세 조회 성공 - 200")
+    void getScoreDetail_Success() throws Exception {
+        mockMvc.perform(get("/api/v1/recommendations/{storeId}/score-detail", store1.getStoreId())
+                        .header("Authorization", accessToken)
+                        .param("latitude", "37.4783")
+                        .param("longitude", "126.9516"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.storeId").value(store1.getStoreId()))
+                .andExpect(jsonPath("$.data.storeName").value(store1.getName()))
+                .andExpect(jsonPath("$.data.recommendationType").exists())
+                .andExpect(jsonPath("$.data.finalScore").exists())
+                .andExpect(jsonPath("$.data.stabilityScore").exists())
+                .andExpect(jsonPath("$.data.explorationScore").exists())
+                .andExpect(jsonPath("$.data.budgetEfficiencyScore").exists())
+                .andExpect(jsonPath("$.data.accessibilityScore").exists())
+                .andExpect(jsonPath("$.data.distance").exists())
+                .andDo(document("recommendation-score-detail-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        pathParameters(
+                                parameterWithName("storeId").description("점수를 조회할 가게 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("latitude").description("현재 위도 (WGS84) - 선택").optional(),
+                                parameterWithName("longitude").description("현재 경도 (WGS84) - 선택").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("점수 상세 정보"),
+                                fieldWithPath("data.storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING).description("가게명"),
+                                fieldWithPath("data.recommendationType").type(JsonFieldType.STRING).description("사용자 추천 유형 (SAVER/ADVENTURER/BALANCED)"),
+                                fieldWithPath("data.finalScore").type(JsonFieldType.NUMBER).description("최종 추천 점수 (0-100)"),
+                                fieldWithPath("data.stabilityScore").type(JsonFieldType.NUMBER).description("안정성 점수 (0-100)"),
+                                fieldWithPath("data.explorationScore").type(JsonFieldType.NUMBER).description("탐험성 점수 (0-100)"),
+                                fieldWithPath("data.budgetEfficiencyScore").type(JsonFieldType.NUMBER).description("예산 효율성 점수 (0-100)"),
+                                fieldWithPath("data.accessibilityScore").type(JsonFieldType.NUMBER).description("접근성 점수 (0-100)"),
+                                fieldWithPath("data.weightedStabilityScore").type(JsonFieldType.NUMBER).description("가중 안정성 점수"),
+                                fieldWithPath("data.weightedExplorationScore").type(JsonFieldType.NUMBER).description("가중 탐험성 점수"),
+                                fieldWithPath("data.weightedBudgetEfficiencyScore").type(JsonFieldType.NUMBER).description("가중 예산 효율성 점수"),
+                                fieldWithPath("data.weightedAccessibilityScore").type(JsonFieldType.NUMBER).description("가중 접근성 점수"),
+                                fieldWithPath("data.distance").type(JsonFieldType.NUMBER).description("거리 (km)"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (정상 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("점수 상세 조회 실패 - 가게를 찾을 수 없음 - 400")
+    void getScoreDetail_Fail_StoreNotFound() throws Exception {
+        mockMvc.perform(get("/api/v1/recommendations/{storeId}/score-detail", 999999L)
+                        .header("Authorization", accessToken)
+                        .param("latitude", "37.4783")
+                        .param("longitude", "126.9516"))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("recommendation-score-detail-fail-not-found",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        pathParameters(
+                                parameterWithName("storeId").description("존재하지 않는 가게 ID")
+                        ),
+                        queryParameters(
+                                parameterWithName("latitude").description("현재 위도 (WGS84) - 선택").optional(),
+                                parameterWithName("longitude").description("현재 경도 (WGS84) - 선택").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E400)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지 (가게를 찾을 수 없습니다)"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("추천 유형 변경 성공 - 200")
+    void updateRecommendationType_Success() throws Exception {
+        String requestBody = """
+                {
+                    "recommendationType": "SAVER"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/recommendations/type")
+                        .header("Authorization", accessToken)
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.memberId").value(member.getMemberId()))
+                .andExpect(jsonPath("$.data.recommendationType").value("SAVER"))
+                .andExpect(jsonPath("$.data.message").exists())
+                .andDo(document("recommendation-type-update-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        requestFields(
+                                fieldWithPath("recommendationType").type(JsonFieldType.STRING).description("변경할 추천 유형 (SAVER/ADVENTURER/BALANCED)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("변경 결과"),
+                                fieldWithPath("data.memberId").type(JsonFieldType.NUMBER).description("회원 ID"),
+                                fieldWithPath("data.recommendationType").type(JsonFieldType.STRING).description("변경된 추천 유형"),
+                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("변경 완료 메시지"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (정상 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("추천 유형 변경 실패 - 필수 파라미터 누락 - 400")
+    void updateRecommendationType_Fail_MissingParameter() throws Exception {
+        String requestBody = """
+                {
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/recommendations/type")
+                        .header("Authorization", accessToken)
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("recommendation-type-update-fail-missing-parameter",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        requestFields(
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E400)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("추천 유형 변경 실패 - 유효하지 않은 추천 유형 - 400")
+    void updateRecommendationType_Fail_InvalidType() throws Exception {
+        String requestBody = """
+                {
+                    "recommendationType": "INVALID_TYPE"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/recommendations/type")
+                        .header("Authorization", accessToken)
+                        .contentType("application/json")
+                        .content(requestBody))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("recommendation-type-update-fail-invalid-type",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        requestFields(
+                                fieldWithPath("recommendationType").type(JsonFieldType.STRING).description("유효하지 않은 추천 유형")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E400)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional()
+                        )
+                ));
+    }
 }
