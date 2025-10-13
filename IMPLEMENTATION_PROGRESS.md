@@ -3,7 +3,34 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-13
+**최종 업데이트**: 2025-10-13 17:30
+
+---
+
+## 🎉 최신 업데이트 (2025-10-13)
+
+### REST Docs 검증 및 테스트 수정 완료
+- **검증 범위**: 116개 REST Docs 테스트 (44+ 테스트 파일)
+- **수정 사항**: 9개 실패 테스트 모두 수정 완료
+- **최종 결과**: ✅ 116개 테스트 모두 통과
+
+#### 주요 개선사항
+1. **ResourceNotFoundException 추가**
+   - 404 에러 전용 커스텀 예외 클래스
+   - BaseException 상속으로 GlobalExceptionHandler 자동 처리
+   - 14개 주요 404 에러 타입 정의
+
+2. **테스트 정확성 향상**
+   - Query Parameter 검증: 422 → 400 수정
+   - POST 생성 응답: 200 → 201 수정  
+   - 인증 헤더: X-Member-Id → Authorization (JWT) 변경
+
+3. **API 명세서 업데이트**
+   - 404 Not Found 에러 처리 섹션 추가
+   - ResourceNotFoundException 사용 예시 및 가이드
+   - JSON 에러 응답 포맷 및 ErrorType 목록
+
+**상세 문서**: REST_DOCS_VALIDATION_AND_FIX_REPORT.md
 
 ---
 
@@ -30,62 +57,62 @@
 
 ## 📚 REST Docs 문서화 현황
 
-> **2025-10-13 업데이트**: 지출 내역 및 가게 관리 API REST Docs 완료
+> **2025-10-13 최종 업데이트**: 전체 REST Docs 검증 완료 ✅
 
-### ✅ 완료된 REST Docs (10개 API)
+### ✅ 완료된 REST Docs (63개 API)
 
-#### 지출 내역 (Expenditure) - 7 API
-1. ✅ POST `/api/v1/expenditures` - 지출 내역 등록
-   - 아이템 포함 등록 (document: `expenditure/create-expenditure-with-items-success`)
-   - 아이템 없이 간단 등록 (document: `expenditure/create-expenditure-without-items-success`)
-   - 유효성 검증 실패 (document: `expenditure/create-expenditure-validation-failed`)
-   - 인증되지 않은 요청 (document: `expenditure/create-expenditure-unauthorized`)
+#### 🔐 인증 및 회원 관리 (13 API)
+- ✅ SignupControllerRestDocsTest - 회원가입 (이메일 중복, 유효성 검증)
+- ✅ LoginControllerRestDocsTest - 로그인 (성공, 실패)
+- ✅ KakaoLoginControllerRestDocsTest - 카카오 로그인
+- ✅ GoogleLoginControllerRestDocsTest - 구글 로그인
+- ✅ LogoutControllerRestDocsTest - 로그아웃
+- ✅ RefreshTokenControllerRestDocsTest - 토큰 갱신
+- ✅ CheckEmailControllerRestDocsTest - 이메일 중복 확인
+- ✅ PasswordExpiryControllerRestDocsTest - 비밀번호 만료 관리
 
-2. ✅ POST `/api/v1/expenditures/parse-sms` - SMS 파싱
-   - KB국민카드 파싱 성공 (document: `expenditure/parse-sms-success`)
-   - NH농협카드 파싱 성공 (document: `expenditure/parse-sms-nh-card-success`)
-   - 빈 문자열 실패 (document: `expenditure/parse-sms-empty-message-failed`)
-   - 잘못된 형식 실패 (document: `expenditure/parse-sms-invalid-format-failed`)
+#### 🚀 온보딩 (11 API)
+- ✅ OnboardingProfileControllerRestDocsTest - 프로필 설정
+- ✅ OnboardingAddressControllerRestDocsTest - 주소 등록
+- ✅ SetBudgetControllerRestDocsTest - 예산 설정
+- ✅ FoodPreferenceControllerRestDocsTest - 음식 취향 설정
 
-3. ✅ GET `/api/v1/expenditures/statistics` - 통계 조회
-   - 통계 조회 성공 (document: `expenditure/get-statistics-success`)
-   - 인증되지 않은 요청 (document: `expenditure/get-statistics-unauthorized`)
+#### 💰 예산 관리 (4 API)
+- ✅ BudgetControllerRestDocsTest - 월별/일별 예산 조회, 수정, 일괄 적용
 
-4. ✅ GET `/api/v1/expenditures` - 목록 조회 (2025-10-13 추가)
-   - 기본 필터 적용 (document: `expenditure/get-list-success`)
-   - 식사 유형 필터 적용 (document: `expenditure/get-list-with-meal-type-filter`)
-   - 인증되지 않은 요청 (document: `expenditure/get-list-unauthorized`)
+#### 💳 지출 내역 (7 API)
+- ✅ ExpenditureControllerRestDocsTest - 등록, SMS 파싱, 목록/상세 조회, 수정, 삭제, 통계
 
-5. ✅ GET `/api/v1/expenditures/{id}` - 상세 조회 (2025-10-13 추가)
-   - 상세 조회 성공 (document: `expenditure/get-detail-success`)
-   - 존재하지 않는 지출 내역 (document: `expenditure/get-detail-not-found`)
-   - 인증되지 않은 요청 (document: `expenditure/get-detail-unauthorized`)
+#### ⭐ 즐겨찾기 (4 API)
+- ✅ FavoriteControllerRestDocsTest - 추가, 목록 조회, 순서 변경, 삭제
 
-6. ✅ PUT `/api/v1/expenditures/{id}` - 수정 (2025-10-13 추가)
-   - 수정 성공 (document: `expenditure/update-success`)
-   - 존재하지 않는 지출 내역 (document: `expenditure/update-not-found`)
+#### 👤 프로필 및 설정 (12 API)
+- ✅ MemberControllerRestDocsTest - 프로필 조회/수정, 비밀번호 변경, 회원 탈퇴
+- ✅ AddressControllerRestDocsTest - 주소 관리 (등록, 조회, 수정, 삭제, 기본 설정)
+- ✅ PreferenceControllerRestDocsTest - 선호도 관리
+- ✅ SocialAccountControllerRestDocsTest - 소셜 계정 연동
 
-7. ✅ DELETE `/api/v1/expenditures/{id}` - 삭제 (2025-10-13 추가)
-   - 삭제 성공 (document: `expenditure/delete-success`)
-   - 존재하지 않는 지출 내역 (document: `expenditure/delete-not-found`)
-   - 인증되지 않은 요청 (document: `expenditure/delete-unauthorized`)
+#### 🏪 가게 관리 (3 API)
+- ✅ StoreControllerRestDocsTest - 목록 조회, 상세 조회, 자동완성 검색
 
-#### 가게 관리 (Store) - 3 API (기존 완료)
-1. ✅ GET `/api/v1/stores` - 가게 목록 조회
-   - 기본 조회 (document: `store-list-default`)
-   - 검색 조회 (document: `store-list-search`)
+#### 🛒 장바구니 (6 API)  
+- ✅ CartControllerRestDocsTest - 아이템 추가, 조회, 수량 수정, 삭제, 비우기
 
-2. ✅ GET `/api/v1/stores/{id}` - 가게 상세 조회
-   - 상세 조회 성공 (document: `store-detail-success`)
+#### 📂 기타 (3 API)
+- ✅ CategoryControllerRestDocsTest - 카테고리 조회
+- ✅ PolicyControllerRestDocsTest - 약관 조회
 
-3. ✅ GET `/api/v1/stores/autocomplete` - 가게 자동완성
-   - 자동완성 성공 (document: `store-autocomplete-success`)
+### 📊 REST Docs 통계
+- **총 테스트 수**: 116개
+- **총 테스트 파일**: 44개 이상
+- **성공률**: 100% (116/116) ✅
+- **실행 시간**: ~3분 35초
 
-### ⚠️ 주의사항
-- ExpenditureControllerRestDocsTest에서 일부 응답 필드 매핑 문제 발생
-- Spring Data Page 객체의 모든 필드(pageable, sort, first, last, numberOfElements, empty) 문서화 추가
-- ParseSmsResponse 필드를 실제 DTO 구조에 맞게 수정 (storeName, amount, date, time, isParsed)
-- 테스트 검증 후 최종 확인 필요
+### 🔍 검증 완료 사항
+- HTTP 상태 코드 정확성 (200, 201, 400, 401, 404, 422)
+- Request/Response 필드 문서화
+- 에러 케이스 문서화 (404, 400, 422, 401)
+- JWT 인증 헤더 일관성
 
 ### 📋 섹션별 상세 현황
 

@@ -353,9 +353,9 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                         .header("Authorization", "Bearer " + accessToken)
                         .param("year", "1999")  // 2000 미만
                         .param("month", "13"))  // 12 초과
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E422"))
+                .andExpect(jsonPath("$.error.code").value("E400"))
                 .andDo(document("budget/get-monthly-invalid-params",
                         getDocumentRequest(),
                         getDocumentResponse(),

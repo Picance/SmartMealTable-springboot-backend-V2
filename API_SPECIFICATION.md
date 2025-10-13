@@ -107,6 +107,55 @@ Accept-Language: ko-KR
 | 500 | E500 | 내부 서버 오류 (Internal Server Error) |
 | 503 | E503 | 서비스 이용 불가 (Service Unavailable) - 외부 API 오류 |
 
+#### 404 Not Found 에러 처리
+
+리소스를 찾을 수 없을 때 발생하는 에러입니다. `ResourceNotFoundException`을 사용하여 처리합니다.
+
+**사용 예시:**
+```java
+// Service Layer
+public ExpenditureDetail getExpenditureDetail(Long memberId, Long expenditureId) {
+    Expenditure expenditure = expenditureRepository.findById(expenditureId)
+            .orElseThrow(() -> new ResourceNotFoundException(ErrorType.EXPENDITURE_NOT_FOUND));
+    
+    // 권한 확인
+    if (!expenditure.getMemberId().equals(memberId)) {
+        throw new AuthorizationException(ErrorType.ACCESS_DENIED);
+    }
+    
+    return convertToDetail(expenditure);
+}
+```
+
+**에러 응답 예시:**
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E404",
+    "message": "존재하지 않는 지출 내역입니다.",
+    "data": null
+  }
+}
+```
+
+**주요 404 에러 타입:**
+- `MEMBER_NOT_FOUND`: 존재하지 않는 회원
+- `EMAIL_NOT_FOUND`: 존재하지 않는 이메일
+- `GROUP_NOT_FOUND`: 존재하지 않는 그룹
+- `POLICY_NOT_FOUND`: 존재하지 않는 약관
+- `CATEGORY_NOT_FOUND`: 존재하지 않는 카테고리
+- `STORE_NOT_FOUND`: 존재하지 않는 가게
+- `FOOD_NOT_FOUND`: 존재하지 않는 음식
+- `EXPENDITURE_NOT_FOUND`: 존재하지 않는 지출 내역
+- `MONTHLY_BUDGET_NOT_FOUND`: 해당 월의 예산 정보를 찾을 수 없음
+- `DAILY_BUDGET_NOT_FOUND`: 해당 날짜의 예산 정보를 찾을 수 없음
+- `ADDRESS_NOT_FOUND`: 존재하지 않는 주소
+- `FAVORITE_NOT_FOUND`: 존재하지 않는 즐겨찾기
+- `CART_NOT_FOUND`: 존재하지 않는 장바구니
+- `CART_ITEM_NOT_FOUND`: 존재하지 않는 장바구니 아이템
+
 ### 2.5 페이징
 ```json
 {

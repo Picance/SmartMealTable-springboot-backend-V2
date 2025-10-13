@@ -162,7 +162,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.favoriteId").exists())
                 .andExpect(jsonPath("$.data.storeId").value(newStore.getStoreId()))

@@ -48,6 +48,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     private Long testGroupId;
     private String testEmail = "member@example.com";
     private String testPassword = "Test@1234";
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -66,6 +67,9 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
         MemberAuthentication auth = memberAuthenticationRepository.findByEmail(testEmail)
                 .orElseThrow();
         testMemberId = auth.getMemberId();
+        
+        // JWT Access Token 생성
+        accessToken = createAccessToken(testMemberId);
     }
 
     @Test
@@ -73,7 +77,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     void getMyProfile_success_docs() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -81,8 +85,8 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
-                                        .description("회원 ID (JWT 토큰에서 추출, 향후 ArgumentResolver로 대체 예정)")
+                                headerWithName("Authorization")
+                                        .description("JWT 인증 토큰 (Bearer {token})")
                         ),
                         responseFields(
                                 fieldWithPath("result")
@@ -141,10 +145,11 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     void getMyProfile_notFound_docs() throws Exception {
         // given
         Long nonExistentMemberId = 99999L;
+        String invalidAccessToken = createAccessToken(nonExistentMemberId);
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me")
-                        .header("X-Member-Id", nonExistentMemberId))
+                        .header("Authorization", invalidAccessToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -152,8 +157,8 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
-                                        .description("회원 ID (존재하지 않는 ID)")
+                                headerWithName("Authorization")
+                                        .description("JWT 인증 토큰 (존재하지 않는 회원의 토큰)")
                         ),
                         responseFields(
                                 fieldWithPath("result")
@@ -182,7 +187,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -192,7 +197,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID (JWT 토큰에서 추출)")
                         ),
                         requestFields(
@@ -251,7 +256,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -261,7 +266,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID")
                         ),
                         requestFields(
@@ -305,7 +310,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me/password")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -315,7 +320,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID (JWT 토큰에서 추출)")
                         ),
                         requestFields(
@@ -350,7 +355,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me/password")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -360,7 +365,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID")
                         ),
                         requestFields(
@@ -398,7 +403,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me/password")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -408,7 +413,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID")
                         ),
                         requestFields(
@@ -455,7 +460,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(delete("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -464,7 +469,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID (JWT 토큰에서 추출)")
                         ),
                         requestFields(
@@ -488,7 +493,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(delete("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -498,7 +503,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
-                                headerWithName("X-Member-Id")
+                                headerWithName("Authorization")
                                         .description("회원 ID")
                         ),
                         requestFields(
