@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     }
     
     /**
-     * Constraint Violation 예외 처리 (422) - Query Parameters
+     * Constraint Violation 예외 처리 (400) - Query Parameters
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException ex) {
@@ -94,12 +94,12 @@ public class GlobalExceptionHandler {
         }
         
         ErrorMessage errorMessage = ErrorMessage.of(
-                ErrorCode.E422,
+                ErrorCode.E400,
                 message
         );
         
         return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(errorMessage));
     }
     
