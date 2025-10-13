@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -199,6 +200,12 @@ class GetStoreListControllerTest extends AbstractContainerTest {
         // Debug: JWT token 확인
         assertThat(jwtToken).isNotNull();
         assertThat(jwtToken).startsWith("Bearer ");
+        
+        // Debug: 데이터 확인
+        System.out.println("=== Setup Data ===");
+        System.out.println("Test Member ID: " + testMember.getMemberId());
+        System.out.println("Test Address: " + testAddress.getAddress());
+        System.out.println("Saved Stores Count: " + storeRepository.findByIdIn(List.of(1L, 2L, 3L, 4L)).size());
         
         // when & then
         mockMvc.perform(get("/api/v1/stores")

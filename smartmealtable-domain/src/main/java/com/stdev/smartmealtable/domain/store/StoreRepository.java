@@ -51,7 +51,7 @@ public interface StoreRepository {
      * @param sortBy 정렬 기준
      * @param page 페이지 번호
      * @param size 페이지 크기
-     * @return 가게 목록과 총 개수
+     * @return 거리 정보를 포함한 가게 목록과 총 개수
      */
     StoreSearchResult searchStores(
             String keyword,
@@ -70,7 +70,7 @@ public interface StoreRepository {
      * 가게 검색 결과를 담는 레코드
      */
     record StoreSearchResult(
-            List<Store> stores,
+            List<StoreWithDistance> stores,
             long totalCount
     ) {
     }

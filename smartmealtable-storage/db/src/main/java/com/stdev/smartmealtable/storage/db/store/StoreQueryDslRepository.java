@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.storage.db.store;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -8,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository.StoreSearchResult;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.domain.store.StoreWithDistance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -97,9 +99,10 @@ public class StoreQueryDslRepository {
         // 정렬 기준 결정
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, distanceExpression);
         
-        // 데이터 조회
-        List<StoreJpaEntity> entities = queryFactory
-                .selectFrom(storeJpaEntity)
+        // 데이터 조회 (Store + Distance)
+        List<Tuple> tuples = queryFactory
+                .select(storeJpaEntity, distanceExpression)
+                .from(storeJpaEntity)
                 .leftJoin(categoryJpaEntity).on(storeJpaEntity.categoryId.eq(categoryJpaEntity.categoryId))
                 .where(finalCondition)
                 .orderBy(orderSpecifier)
@@ -107,50 +110,34 @@ public class StoreQueryDslRepository {
                 .limit(size)
                 .fetch();
         
-        List<Store> stores = entities.stream()
-                .map(StoreEntityMapper::toDomain)
+        List<StoreWithDistance> storesWithDistance = tuples.stream()
+                .map(tuple -> {
+                    StoreJpaEntity entity = tuple.get(storeJpaEntity);
+                    Double distance = tuple.get(distanceExpression);
+                    Store store = StoreEntityMapper.toDomain(entity);
+                    return StoreWithDistance.of(store, distance);
+                })
                 .collect(Collectors.toList());
         
-        return new StoreSearchResult(stores, totalCount);
+        return new StoreSearchResult(storesWithDistance, totalCount);
     }
     
     /**
      * Haversine 공식을 사용한 거리 계산 (단위: km)
      * 
-     * distance = 2 * R * asin(sqrt(sin²((lat2-lat1)/2) + cos(lat1) * cos(lat2) * sin²((lon2-lon1)/2)))
+     * distance = R * ACOS(COS(lat1) * COS(lat2) * COS(lon2 - lon1) + SIN(lat1) * SIN(lat2))
      * R = 6371 km (지구 반지름)
      */
     private NumberExpression<Double> calculateDistance(double userLat, double userLon) {
-        final double EARTH_RADIUS_KM = 6371.0;
-        
-        // 위도, 경도를 라디안으로 변환
-        double userLatRadValue = Math.toRadians(userLat);
-        double userLonRadValue = Math.toRadians(userLon);
-        
-        NumberExpression<Double> storeLatRad = 
-                Expressions.numberTemplate(Double.class, "RADIANS({0})", storeJpaEntity.latitude);
-        NumberExpression<Double> storeLonRad = 
-                Expressions.numberTemplate(Double.class, "RADIANS({0})", storeJpaEntity.longitude);
-        
-        // Δlat, Δlon
-        NumberExpression<Double> deltaLat = Expressions.numberTemplate(Double.class, "{0} - {1}", storeLatRad, userLatRadValue);
-        NumberExpression<Double> deltaLon = Expressions.numberTemplate(Double.class, "{0} - {1}", storeLonRad, userLonRadValue);
-        
-        // Haversine 공식
-        // a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
-        NumberExpression<Double> a = 
-                Expressions.numberTemplate(Double.class,
-                        "POW(SIN({0} / 2), 2) + COS({1}) * COS({2}) * POW(SIN({3} / 2), 2)",
-                        deltaLat, userLatRadValue, storeLatRad, deltaLon);
-        
-        // c = 2 * atan2(sqrt(a), sqrt(1-a))
-        NumberExpression<Double> c = 
-                Expressions.numberTemplate(Double.class,
-                        "2 * ATAN2(SQRT({0}), SQRT(1 - {0}))",
-                        a);
-        
-        // distance = R * c
-        return Expressions.numberTemplate(Double.class, "{0} * {1}", EARTH_RADIUS_KM, c);
+        // MySQL Haversine 공식을 사용한 거리 계산 (km 단위)
+        // distance = R * ACOS(SIN(lat1) * SIN(lat2) + COS(lat1) * COS(lat2) * COS(lon2 - lon1))
+        return Expressions.numberTemplate(Double.class,
+                "6371.0 * ACOS(COS(RADIANS({0})) * COS(RADIANS({1})) * COS(RADIANS({2}) - RADIANS({3})) + SIN(RADIANS({0})) * SIN(RADIANS({1})))",
+                userLat,
+                storeJpaEntity.latitude,
+                storeJpaEntity.longitude,
+                userLon
+        );
     }
     
     /**

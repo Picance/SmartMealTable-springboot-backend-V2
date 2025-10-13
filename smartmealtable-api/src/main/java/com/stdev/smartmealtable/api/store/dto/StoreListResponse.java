@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.store.dto;
 
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.domain.store.StoreWithDistance;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,7 +17,7 @@ public record StoreListResponse(
         int pageSize,
         int totalPages
 ) {
-    public static StoreListResponse from(List<Store> stores, long totalCount, int page, int size) {
+    public static StoreListResponse from(List<StoreWithDistance> stores, long totalCount, int page, int size) {
         List<StoreItem> storeItems = stores.stream()
                 .map(StoreItem::from)
                 .toList();
@@ -51,7 +52,8 @@ public record StoreListResponse(
             Boolean isOpen,
             String phoneNumber
     ) {
-        public static StoreItem from(Store store) {
+        public static StoreItem from(StoreWithDistance storeWithDistance) {
+            Store store = storeWithDistance.store();
             return new StoreItem(
                     store.getStoreId(),
                     store.getName(),
@@ -64,7 +66,7 @@ public record StoreListResponse(
                     store.getViewCount(),
                     store.getStoreType(),
                     store.getImageUrl(),
-                    null, // TODO: 거리 계산 결과 추가
+                    storeWithDistance.distance(),
                     null, // TODO: 영업 중 여부 계산
                     store.getPhoneNumber()
             );
