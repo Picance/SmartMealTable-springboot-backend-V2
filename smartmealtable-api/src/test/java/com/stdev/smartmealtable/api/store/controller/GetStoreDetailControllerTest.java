@@ -1,7 +1,6 @@
 package com.stdev.smartmealtable.api.store.controller;
 
-import com.stdev.smartmealtable.api.common.AbstractContainerTest;
-import com.stdev.smartmealtable.api.config.MockChatModelConfig;
+import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -11,18 +10,11 @@ import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepositor
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.*;
-import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -30,6 +22,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,15 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 가게 상세 조회 API 통합 테스트
  * TDD: RED-GREEN-REFACTOR
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Transactional
-@Import(MockChatModelConfig.class)
-class GetStoreDetailControllerTest extends AbstractContainerTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
+@DisplayName("가게 상세 조회 API 테스트")
+class GetStoreDetailControllerTest extends AbstractRestDocsTest {
     
     @Autowired
     private StoreRepository storeRepository;
@@ -66,9 +54,6 @@ class GetStoreDetailControllerTest extends AbstractContainerTest {
     
     @Autowired
     private AddressHistoryRepository addressHistoryRepository;
-    
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
     
     private Member testMember;
     private Store testStore;
@@ -105,8 +90,8 @@ class GetStoreDetailControllerTest extends AbstractContainerTest {
         );
         addressHistoryRepository.save(testAddress);
         
-        // JWT 토큰 생성
-        jwtToken = "Bearer " + jwtTokenProvider.createToken(testMember.getMemberId());
+        // JWT 토큰 생성 (AbstractRestDocsTest의 createAccessToken 사용)
+        jwtToken = createAccessToken(testMember.getMemberId());
         
         // 테스트 가게 데이터 생성
         testStore = Store.builder()
@@ -213,7 +198,37 @@ class GetStoreDetailControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.openingHours").isArray())
                 .andExpect(jsonPath("$.data.openingHours.length()").value(7))
                 .andExpect(jsonPath("$.data.temporaryClosures").isArray())
-                .andExpect(jsonPath("$.data.temporaryClosures.length()").value(1));
+                .andExpect(jsonPath("$.data.temporaryClosures.length()").value(1))
+                .andDo(document("store-detail-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        pathParameters(
+                                parameterWithName("storeId").description("가게 ID")
+                        ),
+                        relaxedResponseFields(
+                                fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data.storeId").description("가게 ID"),
+                                fieldWithPath("data.name").description("가게명"),
+                                fieldWithPath("data.categoryName").description("카테고리명").optional(),
+                                fieldWithPath("data.address").description("주소"),
+                                fieldWithPath("data.lotNumberAddress").description("지번 주소"),
+                                fieldWithPath("data.latitude").description("위도"),
+                                fieldWithPath("data.longitude").description("경도"),
+                                fieldWithPath("data.phoneNumber").description("전화번호"),
+                                fieldWithPath("data.description").description("가게 설명"),
+                                fieldWithPath("data.averagePrice").description("평균 가격"),
+                                fieldWithPath("data.reviewCount").description("리뷰 수"),
+                                fieldWithPath("data.viewCount").description("조회 수 (조회 시마다 증가)"),
+                                fieldWithPath("data.favoriteCount").description("즐겨찾기 수"),
+                                fieldWithPath("data.storeType").description("가게 유형 (RESTAURANT, CAMPUS_RESTAURANT 등)"),
+                                fieldWithPath("data.imageUrl").description("가게 대표 이미지 URL"),
+                                fieldWithPath("data.isFavorite").description("사용자가 즐겨찾기한 가게 여부"),
+                                fieldWithPath("data.openingHours[]").description("영업시간 목록 (요일별)"),
+                                fieldWithPath("data.openingHours[].dayOfWeek").description("요일 (MONDAY ~ SUNDAY)"),
+                                fieldWithPath("data.temporaryClosures[]").description("임시 휴무 목록")
+                        )
+                ));
     }
     
     @Test

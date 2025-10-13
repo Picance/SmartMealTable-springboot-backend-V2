@@ -1,7 +1,6 @@
 package com.stdev.smartmealtable.api.store.controller;
 
-import com.stdev.smartmealtable.api.common.AbstractContainerTest;
-import com.stdev.smartmealtable.api.config.MockChatModelConfig;
+import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -13,18 +12,11 @@ import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
-import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,6 +24,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,15 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 가게 목록 조회 API 통합 테스트
  * TDD: RED-GREEN-REFACTOR
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Transactional
-@Import(MockChatModelConfig.class)
-class GetStoreListControllerTest extends AbstractContainerTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
+@DisplayName("가게 목록 조회 API 테스트")
+class GetStoreListControllerTest extends AbstractRestDocsTest {
     
     @Autowired
     private StoreRepository storeRepository;
@@ -62,9 +50,6 @@ class GetStoreListControllerTest extends AbstractContainerTest {
     
     @Autowired
     private AddressHistoryRepository addressHistoryRepository;
-    
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
     
     private Member testMember;
     private AddressHistory testAddress;
@@ -101,8 +86,8 @@ class GetStoreListControllerTest extends AbstractContainerTest {
         );
         testAddress = addressHistoryRepository.save(testAddress); // 저장된 객체 다시 할당하여 ID 확보
         
-        // JWT 토큰 생성
-        jwtToken = "Bearer " + jwtTokenProvider.createToken(testMember.getMemberId());
+        // JWT 토큰 생성 (AbstractRestDocsTest의 createAccessToken 사용)
+        jwtToken = createAccessToken(testMember.getMemberId());
         
         // 테스트 가게 데이터 생성
         createTestStores();
@@ -217,7 +202,43 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.stores.length()").value(greaterThan(0)))
                 .andExpect(jsonPath("$.data.totalCount").value(greaterThan(0)))
                 .andExpect(jsonPath("$.data.currentPage").value(0))
-                .andExpect(jsonPath("$.data.pageSize").value(20));
+                .andExpect(jsonPath("$.data.pageSize").value(20))
+                .andDo(document("store-list-default",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        queryParameters(
+                                parameterWithName("latitude").description("현재 위치의 위도").optional(),
+                                parameterWithName("longitude").description("현재 위치의 경도").optional(),
+                                parameterWithName("radius").description("검색 반경 (km, 기본값: 3.0)").optional(),
+                                parameterWithName("keyword").description("검색 키워드 (가게명 또는 카테고리)").optional(),
+                                parameterWithName("sortBy").description("정렬 기준 (DISTANCE_ASC, REVIEW_COUNT_DESC, VIEW_COUNT_DESC, AVERAGE_PRICE_ASC, AVERAGE_PRICE_DESC)").optional(),
+                                parameterWithName("page").description("페이지 번호 (0부터 시작, 기본값: 0)").optional(),
+                                parameterWithName("size").description("페이지 크기 (기본값: 20)").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data.stores[]").description("가게 목록"),
+                                fieldWithPath("data.stores[].storeId").description("가게 ID"),
+                                fieldWithPath("data.stores[].name").description("가게명"),
+                                fieldWithPath("data.stores[].categoryName").description("카테고리명").optional(),
+                                fieldWithPath("data.stores[].address").description("주소"),
+                                fieldWithPath("data.stores[].latitude").description("위도"),
+                                fieldWithPath("data.stores[].longitude").description("경도"),
+                                fieldWithPath("data.stores[].phoneNumber").description("전화번호"),
+                                fieldWithPath("data.stores[].averagePrice").description("평균 가격"),
+                                fieldWithPath("data.stores[].reviewCount").description("리뷰 수"),
+                                fieldWithPath("data.stores[].viewCount").description("조회 수"),
+                                fieldWithPath("data.stores[].distance").description("사용자와의 거리 (km)"),
+                                fieldWithPath("data.stores[].storeType").description("가게 유형 (RESTAURANT, CAMPUS_RESTAURANT 등)"),
+                                fieldWithPath("data.stores[].imageUrl").description("가게 대표 이미지 URL"),
+                                fieldWithPath("data.stores[].isOpen").description("영업 중 여부").optional(),
+                                fieldWithPath("data.totalCount").description("전체 가게 수"),
+                                fieldWithPath("data.currentPage").description("현재 페이지 번호 (0부터 시작)"),
+                                fieldWithPath("data.pageSize").description("페이지 크기"),
+                                fieldWithPath("data.totalPages").description("전체 페이지 수")
+                        )
+                ));
     }
     
     @Test
@@ -245,7 +266,37 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("강남"))));
+                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("강남"))))
+                .andDo(document("store-list-search",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        authorizationHeader(),
+                        queryParameters(
+                                parameterWithName("keyword").description("검색 키워드 (가게명 또는 주소 검색)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data.stores[]").description("가게 목록"),
+                                fieldWithPath("data.stores[].storeId").description("가게 ID"),
+                                fieldWithPath("data.stores[].name").description("가게명"),
+                                fieldWithPath("data.stores[].categoryName").description("카테고리명"),
+                                fieldWithPath("data.stores[].address").description("주소"),
+                                fieldWithPath("data.stores[].latitude").description("위도"),
+                                fieldWithPath("data.stores[].longitude").description("경도"),
+                                fieldWithPath("data.stores[].phoneNumber").description("전화번호"),
+                                fieldWithPath("data.stores[].averagePrice").description("평균 가격"),
+                                fieldWithPath("data.stores[].reviewCount").description("리뷰 수"),
+                                fieldWithPath("data.stores[].viewCount").description("조회 수"),
+                                fieldWithPath("data.stores[].distance").description("사용자와의 거리 (km)"),
+                                fieldWithPath("data.stores[].storeType").description("가게 유형"),
+                                fieldWithPath("data.stores[].imageUrl").description("가게 대표 이미지 URL"),
+                                fieldWithPath("data.stores[].isOpen").description("영업 중 여부").optional(),
+                                fieldWithPath("data.totalCount").description("전체 가게 수"),
+                                fieldWithPath("data.currentPage").description("현재 페이지 번호"),
+                                fieldWithPath("data.pageSize").description("페이지 크기"),
+                                fieldWithPath("data.totalPages").description("전체 페이지 수")
+                        )
+                ));
     }
     
     @Test

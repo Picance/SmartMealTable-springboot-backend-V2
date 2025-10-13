@@ -1,7 +1,6 @@
 package com.stdev.smartmealtable.api.store.controller;
 
-import com.stdev.smartmealtable.api.common.AbstractContainerTest;
-import com.stdev.smartmealtable.api.config.MockChatModelConfig;
+import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -9,17 +8,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,15 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 가게 자동완성 검색 API 통합 테스트
  * TDD: RED-GREEN-REFACTOR
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Transactional
-@Import(MockChatModelConfig.class)
-class GetStoreAutocompleteControllerTest extends AbstractContainerTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
+@DisplayName("가게 자동완성 검색 API 테스트")
+class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     
     @Autowired
     private StoreRepository storeRepository;
@@ -95,7 +84,23 @@ class GetStoreAutocompleteControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.stores").isArray())
                 .andExpect(jsonPath("$.data.stores.length()").value(3))
-                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("강남"))));
+                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("강남"))))
+                .andDo(document("store-autocomplete-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        queryParameters(
+                                parameterWithName("keyword").description("검색 키워드"),
+                                parameterWithName("limit").description("검색 결과 최대 개수 (기본값: 10, 최대값: 20)").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
+                                fieldWithPath("data.stores[]").description("자동완성 가게 목록"),
+                                fieldWithPath("data.stores[].storeId").description("가게 ID"),
+                                fieldWithPath("data.stores[].name").description("가게명"),
+                                fieldWithPath("data.stores[].address").description("주소"),
+                                fieldWithPath("data.stores[].categoryName").description("카테고리명").optional()
+                        )
+                ));
     }
     
     @Test

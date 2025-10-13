@@ -61,8 +61,15 @@ tasks.named('test') {
 
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
-    dependsOn test
+    // test 의존성 제거: snippets가 이미 생성되어 있으면 바로 문서 생성
+    // dependsOn test
     attributes 'snippets': snippetsDir
+    
+    // 소스 디렉터리 명시
+    sourceDir = file('src/docs/asciidoc')
+    
+    // 출력 디렉터리 명시
+    outputDir = file('build/docs/asciidoc')
 }
 
 // 실행 가능한 jar 생성
