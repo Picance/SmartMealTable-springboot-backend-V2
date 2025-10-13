@@ -2,18 +2,21 @@ package com.stdev.smartmealtable.api.recommendation.controller;
 
 import com.stcom.smartmealtable.recommendation.domain.model.RecommendationResult;
 import com.stcom.smartmealtable.recommendation.domain.model.ScoreDetail;
-import com.stdev.smartmealtable.api.common.auth.AuthenticatedUser;
+import com.stdev.smartmealtable.core.auth.AuthUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.api.recommendation.dto.RecommendationRequestDto;
 import com.stdev.smartmealtable.api.recommendation.dto.RecommendationResponseDto;
 import com.stdev.smartmealtable.api.recommendation.dto.ScoreDetailResponseDto;
 import com.stdev.smartmealtable.api.recommendation.dto.UpdateRecommendationTypeRequestDto;
 import com.stdev.smartmealtable.api.recommendation.dto.UpdateRecommendationTypeResponseDto;
 import com.stdev.smartmealtable.api.recommendation.service.RecommendationApplicationService;
-import com.stdev.smartmealtable.core.response.ApiResponse;
+import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,6 +29,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/recommendations")
 @RequiredArgsConstructor
+@Validated  // 메서드 파라미터 validation 활성화
 public class RecommendationController {
 
     private final RecommendationApplicationService recommendationApplicationService;
@@ -36,16 +40,61 @@ public class RecommendationController {
      * <p>사용자 프로필과 현재 위치를 기반으로 개인화된 가게 추천을 제공합니다.</p>
      * 
      * @param authenticatedUser 인증된 사용자
-     * @param request 추천 요청
+     * @param latitude 현재 위도 (필수)
+     * @param longitude 현재 경도 (필수)
+     * @param radius 검색 반경 (km, 기본값: 0.5)
+     * @param sortBy 정렬 기준 (기본값: SCORE)
+     * @param includeDisliked 불호 음식 포함 여부 (기본값: false)
+     * @param openNow 영업 중인 가게만 조회 (기본값: false)
+     * @param storeType 가게 타입 필터 (기본값: ALL)
+     * @param page 페이지 번호 (기본값: 0)
+     * @param size 페이지 크기 (기본값: 20)
      * @return 추천 결과 목록
      */
     @GetMapping
     public ApiResponse<List<RecommendationResponseDto>> getRecommendations(
-            AuthenticatedUser authenticatedUser,
-            @Valid @ModelAttribute RecommendationRequestDto request
+            @AuthUser AuthenticatedUser authenticatedUser,
+            @RequestParam(required = true)
+            @NotNull(message = "위도는 필수입니다")
+            @DecimalMin(value = "-90.0", message = "위도는 -90 ~ 90 범위여야 합니다")
+            @DecimalMax(value = "90.0", message = "위도는 -90 ~ 90 범위여야 합니다")
+            BigDecimal latitude,
+            @RequestParam(required = true)
+            @NotNull(message = "경도는 필수입니다")
+            @DecimalMin(value = "-180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
+            @DecimalMax(value = "180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
+            BigDecimal longitude,
+            @RequestParam(required = false, defaultValue = "0.5")
+            @DecimalMin(value = "0.1", message = "반경은 0.1km 이상이어야 합니다")
+            @DecimalMax(value = "10.0", message = "반경은 10km 이하여야 합니다")
+            Double radius,
+            @RequestParam(required = false, defaultValue = "SCORE") RecommendationRequestDto.SortBy sortBy,
+            @RequestParam(required = false, defaultValue = "false") Boolean includeDisliked,
+            @RequestParam(required = false, defaultValue = "false") Boolean openNow,
+            @RequestParam(required = false, defaultValue = "ALL") RecommendationRequestDto.StoreTypeFilter storeType,
+            @RequestParam(required = false, defaultValue = "0")
+            @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다")
+            Integer page,
+            @RequestParam(required = false, defaultValue = "20")
+            @Min(value = 1, message = "페이지 크기는 1 이상이어야 합니다")
+            @Max(value = 100, message = "페이지 크기는 100 이하여야 합니다")
+            Integer size
     ) {
-        log.info("추천 목록 조회 API 호출 - memberId: {}, request: {}", 
-                authenticatedUser.memberId(), request);
+        log.info("추천 목록 조회 API 호출 - memberId: {}, lat: {}, lng: {}, radius: {}", 
+                authenticatedUser.memberId(), latitude, longitude, radius);
+
+        // DTO 생성
+        RecommendationRequestDto request = RecommendationRequestDto.builder()
+                .latitude(latitude)
+                .longitude(longitude)
+                .radius(radius)
+                .sortBy(sortBy)
+                .includeDisliked(includeDisliked)
+                .openNow(openNow)
+                .storeType(storeType)
+                .page(page)
+                .size(size)
+                .build();
 
         List<RecommendationResult> results = recommendationApplicationService.getRecommendations(
                 authenticatedUser.memberId(),
@@ -70,7 +119,7 @@ public class RecommendationController {
      */
     @GetMapping("/{storeId}/score-detail")
     public ApiResponse<ScoreDetailResponseDto> getScoreDetail(
-            AuthenticatedUser authenticatedUser,
+            @AuthUser AuthenticatedUser authenticatedUser,
             @PathVariable Long storeId,
             @RequestParam(required = false) BigDecimal latitude,
             @RequestParam(required = false) BigDecimal longitude
@@ -99,7 +148,7 @@ public class RecommendationController {
      */
     @PutMapping("/type")
     public ApiResponse<UpdateRecommendationTypeResponseDto> updateRecommendationType(
-            AuthenticatedUser authenticatedUser,
+            @AuthUser AuthenticatedUser authenticatedUser,
             @Valid @RequestBody UpdateRecommendationTypeRequestDto request
     ) {
         log.info("추천 유형 변경 API 호출 - memberId: {}, type: {}", 

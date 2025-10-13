@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,14 +23,14 @@ import java.math.BigDecimal;
 @Schema(description = "추천 목록 조회 요청")
 public class RecommendationRequestDto {
 
-    @Schema(description = "현재 위도", example = "37.5665")
-    @DecimalMin(value = "-90.0", message = "위도는 -90 이상이어야 합니다")
-    @DecimalMax(value = "90.0", message = "위도는 90 이하여야 합니다")
+    @Schema(description = "현재 위도", example = "37.5665", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DecimalMin(value = "-90.0", message = "위도는 -90 ~ 90 범위여야 합니다")
+    @DecimalMax(value = "90.0", message = "위도는 -90 ~ 90 범위여야 합니다")
     private BigDecimal latitude;
 
-    @Schema(description = "현재 경도", example = "126.9780")
-    @DecimalMin(value = "-180.0", message = "경도는 -180 이상이어야 합니다")
-    @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다")
+    @Schema(description = "현재 경도", example = "126.9780", requiredMode = Schema.RequiredMode.REQUIRED)
+    @DecimalMin(value = "-180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
+    @DecimalMax(value = "180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
     private BigDecimal longitude;
 
     @Schema(description = "검색 반경 (km)", example = "1.0", defaultValue = "0.5")
