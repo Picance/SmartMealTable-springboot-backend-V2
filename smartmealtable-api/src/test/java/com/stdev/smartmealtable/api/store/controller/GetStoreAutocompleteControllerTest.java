@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.store.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -11,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @Transactional
+@Import(MockChatModelConfig.class)
 class GetStoreAutocompleteControllerTest extends AbstractContainerTest {
     
     @Autowired
@@ -76,6 +80,7 @@ class GetStoreAutocompleteControllerTest extends AbstractContainerTest {
                 .favoriteCount(50)
                 .storeType(StoreType.RESTAURANT)
                 .imageUrl("https://example.com/store.jpg")
+                .registeredAt(LocalDateTime.now())
                 .build();
     }
     

@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.store.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -12,6 +13,7 @@ import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,12 +21,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -39,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @Transactional
+@Import(MockChatModelConfig.class)
 class GetStoreListControllerTest extends AbstractContainerTest {
     
     @Autowired
@@ -56,15 +62,18 @@ class GetStoreListControllerTest extends AbstractContainerTest {
     @Autowired
     private AddressHistoryRepository addressHistoryRepository;
     
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+    
     private Member testMember;
     private AddressHistory testAddress;
     private String jwtToken;
     
     @BeforeEach
     void setUp() {
-        // 테스트 회원 생성
+        // 테스트 회원 생성 및 저장
         testMember = Member.create(null, "테스트유저", RecommendationType.BALANCED);
-        memberRepository.save(testMember);
+        testMember = memberRepository.save(testMember); // 저장된 객체 다시 할당하여 ID 확보
         
         MemberAuthentication auth = MemberAuthentication.createEmailAuth(
                 testMember.getMemberId(),
@@ -91,8 +100,8 @@ class GetStoreListControllerTest extends AbstractContainerTest {
         );
         addressHistoryRepository.save(testAddress);
         
-        // JWT 토큰 생성 (실제로는 JwtTokenProvider 사용)
-        jwtToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtZW1iZXJJZCI6MX0.test";
+        // JWT 토큰 생성
+        jwtToken = "Bearer " + jwtTokenProvider.createToken(testMember.getMemberId());
         
         // 테스트 가게 데이터 생성
         createTestStores();
@@ -116,6 +125,7 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .favoriteCount(50)
                 .storeType(StoreType.RESTAURANT)
                 .imageUrl("https://example.com/store1.jpg")
+                .registeredAt(java.time.LocalDateTime.now())
                 .build();
         storeRepository.save(store1);
         
@@ -136,6 +146,7 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .favoriteCount(80)
                 .storeType(StoreType.RESTAURANT)
                 .imageUrl("https://example.com/store2.jpg")
+                .registeredAt(java.time.LocalDateTime.now())
                 .build();
         storeRepository.save(store2);
         
@@ -156,6 +167,7 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .favoriteCount(120)
                 .storeType(StoreType.CAMPUS_RESTAURANT)
                 .imageUrl("https://example.com/store3.jpg")
+                .registeredAt(LocalDateTime.now())
                 .build();
         storeRepository.save(store3);
         
@@ -176,6 +188,7 @@ class GetStoreListControllerTest extends AbstractContainerTest {
                 .favoriteCount(60)
                 .storeType(StoreType.RESTAURANT)
                 .imageUrl("https://example.com/store4.jpg")
+                .registeredAt(LocalDateTime.now())
                 .build();
         storeRepository.save(store4);
     }
@@ -183,6 +196,10 @@ class GetStoreListControllerTest extends AbstractContainerTest {
     @Test
     @DisplayName("가게 목록 조회 성공 - 기본 조회 (반경 3km)")
     void getStores_Success_DefaultRadius() throws Exception {
+        // Debug: JWT token 확인
+        assertThat(jwtToken).isNotNull();
+        assertThat(jwtToken).startsWith("Bearer ");
+        
         // when & then
         mockMvc.perform(get("/api/v1/stores")
                         .header(HttpHeaders.AUTHORIZATION, jwtToken))
