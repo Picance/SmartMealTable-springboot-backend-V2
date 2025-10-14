@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,10 +13,14 @@ import java.time.LocalDateTime;
 /**
  * Spring AI - Gemini를 활용한 SMS 파싱 서비스
  * KB국민, NH농협, 신한 등 다양한 금융기관의 카드 결제 승인 문자를 파싱합니다.
+ * 
+ * ChatClient.Builder 빈이 존재할 때만 활성화됩니다.
+ * 테스트 환경에서는 Vertex AI 설정이 없으므로 자동으로 비활성화됩니다.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnBean(ChatClient.Builder.class)
 public class GeminiSmsParsingService implements SmsParsingService {
     
     private final ChatClient.Builder chatClientBuilder;
