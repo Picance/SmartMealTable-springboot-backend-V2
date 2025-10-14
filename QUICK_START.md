@@ -1,5 +1,29 @@
 # SmartMealTable - 빠른 시작 가이드
 
+## 📚 API 문서 배포 (신규)
+
+### API 문서 자동 생성 및 배포
+```bash
+# 1. API 문서 생성 (REST Docs)
+./deploy-docs.sh
+
+# 2. GitHub Pages에 배포
+git add docs/
+git commit -m "docs: Update API documentation"
+git push origin main
+
+# 3. GitHub Pages 활성화
+# Settings > Pages > Source: main/docs
+```
+
+**문서 위치**:
+- **로컬**: `docs/api-docs.html` (브라우저에서 열기)
+- **온라인**: `https://picance.github.io/SmartMealTable-springboot-backend-V2/`
+
+**자세한 내용**: [DEPLOYMENT_READINESS_REPORT.md](./DEPLOYMENT_READINESS_REPORT.md)
+
+---
+
 ## 🏠 로컬 개발 환경
 
 ### 원클릭 로컬 실행
