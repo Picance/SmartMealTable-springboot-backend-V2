@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.domain.budget;
 
+import com.stdev.smartmealtable.domain.expenditure.MealType;
+
 import java.time.LocalDate;
 import java.util.List;
 

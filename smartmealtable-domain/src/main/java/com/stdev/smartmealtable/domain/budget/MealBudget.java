@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.domain.budget;
 
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

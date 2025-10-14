@@ -1,6 +1,6 @@
 package com.stdev.smartmealtable.api.onboarding.service.dto;
 
-import com.stdev.smartmealtable.domain.budget.MealType;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

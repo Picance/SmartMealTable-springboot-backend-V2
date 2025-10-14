@@ -5,7 +5,7 @@ import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MealBudget;
 import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
-import com.stdev.smartmealtable.domain.budget.MealType;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;

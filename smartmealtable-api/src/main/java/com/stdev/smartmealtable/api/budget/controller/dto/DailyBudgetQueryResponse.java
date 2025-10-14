@@ -1,7 +1,7 @@
 package com.stdev.smartmealtable.api.budget.controller.dto;
 
 import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse;
-import com.stdev.smartmealtable.domain.budget.MealType;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 
 import java.time.LocalDate;
 import java.util.List;

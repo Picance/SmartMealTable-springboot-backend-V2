@@ -29,7 +29,7 @@ public class QMealBudgetJpaEntity extends EntityPathBase<MealBudgetJpaEntity> {
 
     public final NumberPath<Long> mealBudgetId = createNumber("mealBudgetId", Long.class);
 
-    public final EnumPath<com.stdev.smartmealtable.domain.budget.MealType> mealType = createEnum("mealType", com.stdev.smartmealtable.domain.budget.MealType.class);
+    public final EnumPath<com.stdev.smartmealtable.domain.expenditure.MealType> mealType = createEnum("mealType", com.stdev.smartmealtable.domain.expenditure.MealType.class);
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 

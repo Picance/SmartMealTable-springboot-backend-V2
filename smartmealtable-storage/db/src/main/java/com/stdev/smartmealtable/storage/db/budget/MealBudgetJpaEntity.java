@@ -1,7 +1,7 @@
 package com.stdev.smartmealtable.storage.db.budget;
 
 import com.stdev.smartmealtable.domain.budget.MealBudget;
-import com.stdev.smartmealtable.domain.budget.MealType;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

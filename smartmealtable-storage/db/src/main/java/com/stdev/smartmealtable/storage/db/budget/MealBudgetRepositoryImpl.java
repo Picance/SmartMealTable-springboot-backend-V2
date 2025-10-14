@@ -2,7 +2,7 @@ package com.stdev.smartmealtable.storage.db.budget;
 
 import com.stdev.smartmealtable.domain.budget.MealBudget;
 import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
-import com.stdev.smartmealtable.domain.budget.MealType;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

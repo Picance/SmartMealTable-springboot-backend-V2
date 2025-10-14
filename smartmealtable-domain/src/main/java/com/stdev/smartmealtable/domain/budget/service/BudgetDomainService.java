@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.domain.budget.service;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.budget.*;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

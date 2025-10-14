@@ -8,6 +8,7 @@ import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MealBudget;
 import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
 import com.stdev.smartmealtable.domain.expenditure.ExpenditureRepository;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -42,10 +44,21 @@ public class HomeDashboardQueryService {
         Long todaySpentLong = expenditureRepository.getTotalAmountByPeriod(memberId, today, today);
         BigDecimal todaySpent = todaySpentLong != null ? BigDecimal.valueOf(todaySpentLong) : BigDecimal.ZERO;
 
-        BigDecimal breakfastSpent = BigDecimal.ZERO;
-        BigDecimal lunchSpent = BigDecimal.ZERO;
-        BigDecimal dinnerSpent = BigDecimal.ZERO;
-        BigDecimal otherSpent = BigDecimal.ZERO;
+        // 식사 유형별 지출 조회
+        Map<MealType, Long> mealTypeSpent = expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today);
+        
+        BigDecimal breakfastSpent = mealTypeSpent.containsKey(MealType.BREAKFAST) 
+                ? BigDecimal.valueOf(mealTypeSpent.get(MealType.BREAKFAST)) 
+                : BigDecimal.ZERO;
+        BigDecimal lunchSpent = mealTypeSpent.containsKey(MealType.LUNCH) 
+                ? BigDecimal.valueOf(mealTypeSpent.get(MealType.LUNCH)) 
+                : BigDecimal.ZERO;
+        BigDecimal dinnerSpent = mealTypeSpent.containsKey(MealType.DINNER) 
+                ? BigDecimal.valueOf(mealTypeSpent.get(MealType.DINNER)) 
+                : BigDecimal.ZERO;
+        BigDecimal otherSpent = mealTypeSpent.containsKey(MealType.OTHER) 
+                ? BigDecimal.valueOf(mealTypeSpent.get(MealType.OTHER)) 
+                : BigDecimal.ZERO;
 
         BigDecimal todayBudget = dailyBudget != null ? BigDecimal.valueOf(dailyBudget.getDailyFoodBudget()) : BigDecimal.ZERO;
 
