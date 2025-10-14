@@ -1,10 +1,6 @@
 package com.stdev.smartmealtable.api.settings.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
-import com.stdev.smartmealtable.api.settings.dto.AppSettingsServiceResponse;
-import com.stdev.smartmealtable.api.settings.dto.TrackingSettingsServiceResponse;
-import com.stdev.smartmealtable.api.settings.dto.UpdateTrackingSettingsServiceRequest;
-import com.stdev.smartmealtable.api.settings.service.AppSettingsApplicationService;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -13,21 +9,16 @@ import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.domain.settings.entity.AppSettings;
+import com.stdev.smartmealtable.domain.settings.repository.AppSettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,16 +29,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * 앱 설정 API REST Docs 테스트
- * 
- * NOTE: 현재 @MockBean 방식으로는 응답 구조가 맞지 않아 임시로 비활성화합니다.
- * 추후 실제 통합 테스트 방식으로 재작성 필요합니다.
  */
 @Transactional
-@Disabled("MockBean 방식 개선 필요 - 실제 Repository를 사용한 통합 테스트로 전환해야 함")
+@DisplayName("AppSettingsController REST Docs 테스트")
 class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
-
-    @MockBean
-    private AppSettingsApplicationService appSettingsApplicationService;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -57,6 +42,9 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
 
     @Autowired
     private GroupRepository groupRepository;
+
+    @Autowired
+    private AppSettingsRepository appSettingsRepository;
 
     private Long testMemberId;
 
@@ -79,36 +67,33 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                 "테스트유저"
         );
         memberAuthenticationRepository.save(auth);
+
+        // 테스트용 앱 설정 생성
+        AppSettings appSettings = AppSettings.create(testMemberId);
+        appSettingsRepository.save(appSettings);
     }
 
     @Test
     @DisplayName("[Docs] 앱 설정 조회 성공")
     void getAppSettings_Success_Docs() throws Exception {
-        // given
-        AppSettingsServiceResponse response = AppSettingsServiceResponse.createDefault();
-
-        given(appSettingsApplicationService.getAppSettings())
-                .willReturn(response);
-
         // when & then
         mockMvc.perform(get("/api/v1/settings/app"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.privacyPolicyUrl").value("https://smartmealtable.com/policies/privacy"))
                 .andExpect(jsonPath("$.data.appVersion").value("1.0.0"))
                 .andDo(document("app-settings/get",
                         getDocumentRequest(),
                         getDocumentResponse(),
                         responseFields(
-                                fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태 (success/error)"),
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.privacyPolicyUrl").type(JsonFieldType.STRING).description("개인정보처리방침 URL"),
                                 fieldWithPath("data.termsOfServiceUrl").type(JsonFieldType.STRING).description("서비스 이용약관 URL"),
                                 fieldWithPath("data.contactEmail").type(JsonFieldType.STRING).description("문의 이메일"),
                                 fieldWithPath("data.appVersion").type(JsonFieldType.STRING).description("현재 앱 버전"),
-                                fieldWithPath("data.minSupportedVersion").type(JsonFieldType.STRING).description("최소 지원 버전"),
-                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)")
+                                fieldWithPath("data.minSupportedVersion").type(JsonFieldType.STRING).description("최소 지원 버전")
                         )
                 ));
     }
@@ -117,24 +102,20 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("[Docs] 사용자 추적 설정 변경 성공")
     void updateTrackingSettings_Success_Docs() throws Exception {
         // given
-        UpdateTrackingSettingsServiceRequest request = new UpdateTrackingSettingsServiceRequest(true);
-
-        TrackingSettingsServiceResponse response = new TrackingSettingsServiceResponse(
-                true,
-                LocalDateTime.of(2025, 10, 14, 14, 30, 0)
-        );
-
-        given(appSettingsApplicationService.updateTrackingSettings(eq(testMemberId), any(UpdateTrackingSettingsServiceRequest.class)))
-                .willReturn(response);
+        String requestBody = """
+                {
+                    "allowTracking": true
+                }
+                """;
 
         // when & then
         mockMvc.perform(put("/api/v1/settings/app/tracking")
                         .header("Authorization", createAccessToken(testMemberId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(requestBody))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.allowTracking").value(true))
                 .andDo(document("app-settings/update-tracking",
                         getDocumentRequest(),
@@ -144,11 +125,10 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("allowTracking").type(JsonFieldType.BOOLEAN).description("사용자 추적 허용 여부")
                         ),
                         responseFields(
-                                fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태 (success/error)"),
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.allowTracking").type(JsonFieldType.BOOLEAN).description("사용자 추적 허용 여부"),
-                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("설정 변경 일시"),
-                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)")
+                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("설정 변경 일시")
                         )
                 ));
     }
@@ -165,18 +145,20 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidRequest))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.result").value("ERROR"))
                 .andDo(document("app-settings/update-tracking-fail-missing-field",
                         getDocumentRequest(),
                         getDocumentResponse(),
                         authorizationHeader(),
                         responseFields(
-                                fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태 (error)"),
-                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
-                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지")
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).description("에러 사유"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).description("문제가 있는 필드명")
                         )
                 ));
     }
@@ -185,24 +167,28 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("[Docs] 사용자 추적 설정 변경 실패 - 인증 토큰 없음")
     void updateTrackingSettings_Fail_NoAuth_Docs() throws Exception {
         // given
-        UpdateTrackingSettingsServiceRequest request = new UpdateTrackingSettingsServiceRequest(false);
+        String requestBody = """
+                {
+                    "allowTracking": false
+                }
+                """;
 
         // when & then
         mockMvc.perform(put("/api/v1/settings/app/tracking")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(requestBody))
                 .andDo(print())
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.result").value("ERROR"))
                 .andDo(document("app-settings/update-tracking-fail-no-auth",
                         getDocumentRequest(),
                         getDocumentResponse(),
                         responseFields(
-                                fieldWithPath("status").type(JsonFieldType.STRING).description("응답 상태 (error)"),
-                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)"),
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
-                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지")
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional()
                         )
                 ));
     }

@@ -1,10 +1,10 @@
 package com.stdev.smartmealtable.api.settings.controller;
 
-import com.stdev.smartmealtable.api.common.auth.AuthenticatedUser;
+import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.api.settings.dto.NotificationSettingsServiceResponse;
 import com.stdev.smartmealtable.api.settings.dto.UpdateNotificationSettingsServiceRequest;
 import com.stdev.smartmealtable.api.settings.service.NotificationSettingsApplicationService;
-import com.stdev.smartmealtable.core.response.ApiResponse;
+import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

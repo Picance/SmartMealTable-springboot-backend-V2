@@ -12,6 +12,9 @@ public record AddressSearchResultResponse(
         String jibunAddress,
         BigDecimal latitude,
         BigDecimal longitude,
+        String sido,
+        String sigungu,
+        String dong,
         String buildingName,
         String sigunguCode,
         String bcode
@@ -22,6 +25,9 @@ public record AddressSearchResultResponse(
                 result.jibunAddress(),
                 result.latitude(),
                 result.longitude(),
+                result.sido(),
+                result.sigungu(),
+                result.dong(),
                 result.buildingName(),
                 result.sigunguCode(),
                 result.bcode()

@@ -623,9 +623,11 @@ throw new AuthorizationException(ErrorType.ACCESS_DENIED);
 **마지막 업데이트:** 2025-10-15 02:54  
 **완료된 작업:** 
 - Phase 1 대부분 완료 (LoginControllerTest, 모든 선호도 Controller 테스트, SimplePreferenceTest 수정 완료)
-- MapControllerRestDocsTest, AppSettingsControllerRestDocsTest, NotificationSettingsControllerRestDocsTest는 @Disabled 처리하여 임시 스킵
-- ✅ **전체 API 모듈 테스트 통과! (390 tests completed, 13 skipped)**
+- ✅ **MapControllerRestDocsTest 수정 완료! (5개 테스트 모두 통과)**
+- ✅ **AppSettingsControllerRestDocsTest 수정 완료! (4개 테스트 모두 통과)**
+- ✅ **NotificationSettingsControllerRestDocsTest 수정 완료! (4개 테스트 모두 통과)**
+- ✅ **전체 API 모듈 테스트 통과! (403 tests completed, 0 skipped)**
 
 **다음 작업:** 
-1. Phase 2 진행 (Service 레이어 테스트 확인) 또는
-2. @Disabled 처리된 Rest Docs 테스트 수정 (별도 세션)
+1. ✅ ~~@Disabled 처리된 Rest Docs 테스트 수정 (MapControllerRestDocsTest, AppSettingsControllerRestDocsTest, NotificationSettingsControllerRestDocsTest)~~ **완료!**
+2. Phase 2 진행 (Service 레이어 테스트 확인)

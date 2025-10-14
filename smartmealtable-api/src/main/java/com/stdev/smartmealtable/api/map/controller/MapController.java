@@ -3,7 +3,7 @@ package com.stdev.smartmealtable.api.map.controller;
 import com.stdev.smartmealtable.api.map.dto.AddressSearchServiceResponse;
 import com.stdev.smartmealtable.api.map.dto.ReverseGeocodeServiceResponse;
 import com.stdev.smartmealtable.api.map.service.MapApplicationService;
-import com.stdev.smartmealtable.core.response.ApiResponse;
+import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
