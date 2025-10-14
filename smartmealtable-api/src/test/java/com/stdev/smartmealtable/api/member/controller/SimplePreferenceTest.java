@@ -4,6 +4,7 @@ import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,20 @@ class SimplePreferenceTest extends AbstractContainerTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     @Test
     @DisplayName("간단한 선호도 조회 테스트")
     void simpleTest() throws Exception {
         // given
         Member member = Member.create(null, "테스터", RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(member);
+        String accessToken = jwtTokenProvider.createToken(savedMember.getMemberId());
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me/preferences")
-                        .header("X-Member-Id", savedMember.getMemberId())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
