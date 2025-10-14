@@ -3,11 +3,39 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-14 12:00
+**최종 업데이트**: 2025-10-14 14:05
 
 ---
 
-## 🎉 최신 업데이트 (2025-10-14 12:00)
+## 🎉 최신 업데이트 (2025-10-14 14:05)
+
+### 홈 화면 API 리팩토링 완료! 🎉
+- **완료 범위**: HomeDashboardService 복잡도 개선 및 빌드 안정화
+- **구현 내용**:
+  - ✅ HomeDashboardServiceResponse 간소화 (파라미터 14개 → 8개, 43% 감소)
+  - ✅ 의존성 제거 (6개 → 4개, FoodRepository/StoreRepository 제거)
+  - ✅ 타입 정합성 수정 (Address latitude/longitude: BigDecimal → Double)
+  - ✅ 타입 정합성 수정 (MealBudget: Integer 올바른 처리)
+  - ✅ 추천 기능 분리 (추후 별도 RecommendationService 구현 예정)
+- **테스트 결과**: ✅ 빌드 성공 (BUILD SUCCESSFUL in 5s)
+- **API 현황**: ✅ 3/3 API 구현 완료
+  - GET `/api/v1/home/dashboard` - 홈 대시보드 (간소화 버전)
+  - GET `/api/v1/members/me/onboarding-status` - 온보딩 상태 조회
+  - POST `/api/v1/members/me/monthly-budget-confirmed` - 월간 예산 확인
+- **주요 개선사항**:
+  - 책임 분리 원칙 준수 (대시보드 기본 기능 vs 추천 기능)
+  - 파일 중복 문제 해결 (terminal heredoc 방식 사용)
+  - 코드 복잡도 감소 (Cognitive Complexity 대폭 감소)
+
+**상세 문서**: HOME_SCREEN_API_REFACTORING_COMPLETION_REPORT.md
+
+**알려진 제약사항**:
+- 식사별 지출: 현재 0으로 반환 (ExpenditureRepository 메서드 추가 필요)
+- 추천 기능: 빈 리스트 반환 (recommendation 모듈 연동 필요)
+
+---
+
+## 🎉 이전 업데이트 (2025-10-14 12:00)
 
 ### 추천 시스템 100% 완료! 🎉🎉🎉
 - **완료 범위**: 추천 시스템 전체 (Phase 1~4)

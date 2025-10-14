@@ -372,6 +372,22 @@ CREATE TABLE favorite (
                           INDEX idx_priority (priority)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자가 선호하는 음식점을 저장 및 관리하는 테이블';
 
+-- 월별 예산 확인 이력 테이블
+CREATE TABLE monthly_budget_confirmation (
+                                             monthly_budget_confirmation_id BIGINT      NOT NULL AUTO_INCREMENT COMMENT '월별 예산 확인의 고유 식별자',
+                                             member_id                      BIGINT      NOT NULL COMMENT '회원 ID (FK)',
+                                             year                           INT         NOT NULL COMMENT '연도',
+                                             month                          INT         NOT NULL COMMENT '월 (1-12)',
+                                             action                         VARCHAR(20) NOT NULL COMMENT '사용자 액션 (KEEP: 유지, CHANGE: 변경)',
+                                             confirmed_at                   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '확인 시각 (비즈니스 필드)',
+                                             created_at                     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                             updated_at                     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                             PRIMARY KEY (monthly_budget_confirmation_id),
+                                             UNIQUE KEY uq_member_year_month (member_id, year, month),
+                                             INDEX idx_member_id (member_id),
+                                             INDEX idx_confirmed_at (confirmed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='월별 예산 확인 이력을 저장하는 테이블 (매월 초 예산 확인 모달 처리용)';
+
 -- 사용자 조회 이력 (추천 알고리즘용) - 중복 제거
 -- 위의 store_view_history 테이블로 통합됨
 

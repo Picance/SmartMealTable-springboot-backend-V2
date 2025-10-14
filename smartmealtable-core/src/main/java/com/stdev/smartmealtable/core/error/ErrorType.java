@@ -337,6 +337,21 @@ public enum ErrorType {
             ErrorCode.E503,
             "소셜 로그인 서비스를 일시적으로 이용할 수 없습니다.",
             LogLevel.ERROR
+    ),
+
+    // ==================== 예산 확인 관련 에러 ====================
+    ALREADY_CONFIRMED_MONTHLY_BUDGET(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 해당 월의 예산을 확인했습니다.",
+            LogLevel.WARN
+    ),
+    
+    INVALID_BUDGET_CONFIRM_ACTION(
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            ErrorCode.E422,
+            "유효하지 않은 예산 확인 액션입니다. KEEP 또는 CHANGE만 가능합니다.",
+            LogLevel.WARN
     );
 
     private final HttpStatus httpStatus;
