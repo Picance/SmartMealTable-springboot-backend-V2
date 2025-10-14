@@ -2,6 +2,9 @@ package com.stdev.smartmealtable.api.expenditure.service;
 
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureDetailServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServiceResponse;
+import com.stdev.smartmealtable.core.error.ErrorType;
+import com.stdev.smartmealtable.core.exception.AuthorizationException;
+import com.stdev.smartmealtable.core.exception.ResourceNotFoundException;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.expenditure.Expenditure;
@@ -39,11 +42,11 @@ public class GetExpenditureDetailService {
     public ExpenditureDetailServiceResponse getExpenditureDetail(Long expenditureId, Long memberId) {
         // 1. 지출 내역 조회
         Expenditure expenditure = expenditureRepository.findByIdAndNotDeleted(expenditureId)
-                .orElseThrow(() -> new IllegalArgumentException("지출 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorType.EXPENDITURE_NOT_FOUND));
 
         // 2. 소유권 검증
         if (!expenditure.isOwnedBy(memberId)) {
-            throw new SecurityException("해당 지출 내역에 접근할 권한이 없습니다.");
+            throw new AuthorizationException(ErrorType.ACCESS_DENIED);
         }
 
         // 3. 카테고리 정보 조회

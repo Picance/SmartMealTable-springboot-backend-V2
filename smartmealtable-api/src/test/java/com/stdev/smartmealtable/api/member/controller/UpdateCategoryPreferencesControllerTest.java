@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -45,6 +46,9 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
@@ -57,6 +61,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
     private PreferenceRepository preferenceRepository;
 
     private Long memberId;
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -72,6 +77,9 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
                 "테스트회원"
         );
         authenticationRepository.save(authentication);
+
+        // JWT 토큰 생성
+        this.accessToken = jwtTokenProvider.createToken(this.memberId);
 
         // 테스트용 카테고리 3개 생성
         categoryRepository.save(Category.reconstitute(null, "한식"));
@@ -109,7 +117,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/members/me/preferences/categories")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -144,7 +152,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/members/me/preferences/categories")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -166,7 +174,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/members/me/preferences/categories")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -184,7 +192,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/members/me/preferences/categories")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -209,6 +217,8 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isInternalServerError());  // 헤더 없음 → NullPointerException → 500
+                .andExpect(status().isUnauthorized())  // 인증 헤더 없음 → 401
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E401"));
     }
 }

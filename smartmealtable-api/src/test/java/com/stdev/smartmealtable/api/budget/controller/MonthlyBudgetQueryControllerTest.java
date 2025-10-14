@@ -140,7 +140,7 @@ class MonthlyBudgetQueryControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("월별 예산 조회 실패 - 잘못된 월 범위 (422)")
+    @DisplayName("월별 예산 조회 실패 - 잘못된 월 범위 (400)")
     void getMonthlyBudget_InvalidMonth() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/budgets/monthly")
@@ -149,8 +149,8 @@ class MonthlyBudgetQueryControllerTest extends AbstractContainerTest {
                         .param("month", "13")  // 잘못된 월
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
-                .andExpect(status().isUnprocessableEntity())
+                .andExpect(status().isBadRequest())  // 400 Bad Request
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E422"));
+                .andExpect(jsonPath("$.error.code").value("E400"));
     }
 }

@@ -9,6 +9,7 @@ import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,9 +55,13 @@ class MemberControllerTest extends AbstractContainerTest {
     @Autowired
     private GroupRepository groupRepository;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     private Long testMemberId;
     private String testEmail = "test@example.com";
     private Long testGroupId;
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -79,6 +84,9 @@ class MemberControllerTest extends AbstractContainerTest {
         member.changeNickname("초기닉네임");
         member.changeGroup(testGroupId);
         memberRepository.save(member);
+
+        // JWT 토큰 생성
+        accessToken = jwtTokenProvider.createToken(testMemberId);
     }
 
     // ===== 10.1 내 프로필 조회 =====
@@ -88,7 +96,7 @@ class MemberControllerTest extends AbstractContainerTest {
     void getMyProfile_success() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/members/me")
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -105,10 +113,11 @@ class MemberControllerTest extends AbstractContainerTest {
     void getMyProfile_memberNotFound() throws Exception {
         // given
         Long invalidMemberId = 99999L;
+        String invalidToken = jwtTokenProvider.createToken(invalidMemberId);
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me")
-                        .header("X-Member-Id", invalidMemberId))
+                        .header("Authorization", "Bearer " + invalidToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -130,7 +139,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -156,7 +165,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -182,7 +191,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -197,6 +206,7 @@ class MemberControllerTest extends AbstractContainerTest {
     void updateProfile_memberNotFound() throws Exception {
         // given
         Long invalidMemberId = 99999L;
+        String invalidToken = jwtTokenProvider.createToken(invalidMemberId);
         Map<String, Object> request = new HashMap<>();
         request.put("nickname", "변경된닉네임");
         request.put("groupId", testGroupId);
@@ -205,7 +215,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", invalidMemberId))
+                        .header("Authorization", "Bearer " + invalidToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -226,7 +236,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -247,7 +257,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -266,7 +276,7 @@ class MemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))

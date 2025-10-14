@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,9 +43,13 @@ class ChangePasswordControllerTest extends AbstractContainerTest {
     @Autowired
     private SignupService signupService;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     private Long testMemberId;
     private String testEmail = "test@example.com";
     private String currentPassword = "OldP@ss123!";
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -55,6 +60,9 @@ class ChangePasswordControllerTest extends AbstractContainerTest {
                 currentPassword
         ));
         testMemberId = response.getMemberId();
+        
+        // JWT 토큰 생성
+        accessToken = jwtTokenProvider.createToken(testMemberId);
     }
 
     @Test
@@ -69,7 +77,7 @@ class ChangePasswordControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId)) // 임시로 헤더로 회원 ID 전달
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -89,7 +97,7 @@ class ChangePasswordControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -109,7 +117,7 @@ class ChangePasswordControllerTest extends AbstractContainerTest {
         mockMvc.perform(put("/api/v1/members/me/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))

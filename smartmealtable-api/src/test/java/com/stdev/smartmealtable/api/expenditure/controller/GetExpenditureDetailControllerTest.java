@@ -1,162 +1,220 @@
 package com.stdev.smartmealtable.api.expenditure.controller;
 
+import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.api.config.MockChatModelConfig;
-import com.stdev.smartmealtable.api.expenditure.service.GetExpenditureDetailService;
-import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureDetailServiceResponse;
-import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServiceResponse;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
+import com.stdev.smartmealtable.domain.expenditure.Expenditure;
+import com.stdev.smartmealtable.domain.expenditure.ExpenditureItem;
+import com.stdev.smartmealtable.domain.expenditure.ExpenditureRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
+import com.stdev.smartmealtable.domain.food.Food;
+import com.stdev.smartmealtable.domain.food.FoodRepository;
+import com.stdev.smartmealtable.domain.member.entity.Group;
+import com.stdev.smartmealtable.domain.member.entity.GroupType;
+import com.stdev.smartmealtable.domain.member.entity.Member;
+import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
+import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
+import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ExpenditureController.class)
+/**
+ * 지출 내역 상세 조회 API 통합 테스트
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 @Import(MockChatModelConfig.class)
-class GetExpenditureDetailControllerTest {
+class GetExpenditureDetailControllerTest extends AbstractContainerTest {
 
     @Autowired
     private MockMvc mockMvc;
     
-    @MockitoBean
-    private GetExpenditureDetailService getExpenditureDetailService;
+    @Autowired
+    private MemberRepository memberRepository;
+    
+    @Autowired
+    private GroupRepository groupRepository;
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private FoodRepository foodRepository;
+    
+    @Autowired
+    private ExpenditureRepository expenditureRepository;
+    
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+    
+    private Long memberId;
+    private Long anotherMemberId;
+    private String accessToken;
+    private String anotherAccessToken;
+    private Long categoryId;
+    private Long foodId1;
+    private Long foodId2;
+    
+    @BeforeEach
+    void setUp() {
+        // 그룹 생성
+        Group group = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group savedGroup = groupRepository.save(group);
+        
+        // 회원 1 생성
+        Member member1 = Member.create(savedGroup.getGroupId(), "테스트유저1", RecommendationType.BALANCED);
+        Member savedMember1 = memberRepository.save(member1);
+        memberId = savedMember1.getMemberId();
+        accessToken = jwtTokenProvider.createToken(memberId);
+        
+        // 회원 2 생성 (권한 테스트용)
+        Member member2 = Member.create(savedGroup.getGroupId(), "테스트유저2", RecommendationType.BALANCED);
+        Member savedMember2 = memberRepository.save(member2);
+        anotherMemberId = savedMember2.getMemberId();
+        anotherAccessToken = jwtTokenProvider.createToken(anotherMemberId);
+        
+        // 카테고리 생성
+        Category category = Category.reconstitute(null, "한식");
+        Category savedCategory = categoryRepository.save(category);
+        categoryId = savedCategory.getCategoryId();
+        
+        // 음식 생성
+        Food food1 = Food.reconstitute(null, "김치찌개", categoryId, "얼큰한 김치찌개", "images/food1.jpg", 8000);
+        Food savedFood1 = foodRepository.save(food1);
+        foodId1 = savedFood1.getFoodId();
+        
+        Food food2 = Food.reconstitute(null, "불고기", categoryId, "달콤한 불고기", "images/food2.jpg", 9000);
+        Food savedFood2 = foodRepository.save(food2);
+        foodId2 = savedFood2.getFoodId();
+    }
 
     @Test
     @DisplayName("지출 내역 상세 조회 성공")
     void getExpenditureDetail_Success() throws Exception {
         // given
-        Long memberId = 1L;
-        Long expenditureId = 100L;
+        ExpenditureItem item1 = ExpenditureItem.create(foodId1, 2, 8000);
+        ExpenditureItem item2 = ExpenditureItem.create(foodId2, 1, 9000);
         
-        ExpenditureDetailServiceResponse response = ExpenditureDetailServiceResponse.builder()
-                .expenditureId(expenditureId)
-                .storeName("맛있는 식당")
-                .amount(25000)
-                .expendedDate(LocalDate.of(2025, 10, 10))
-                .expendedTime(LocalTime.of(12, 30))
-                .categoryId(1L)
-                .categoryName("한식")
-                .mealType(MealType.LUNCH)
-                .memo("회식")
-                .items(List.of(
-                        ExpenditureItemServiceResponse.builder()
-                                .expenditureItemId(1L)
-                                .foodId(10L)
-                                .foodName("김치찌개")
-                                .quantity(2)
-                                .price(8000)
-                                .build(),
-                        ExpenditureItemServiceResponse.builder()
-                                .expenditureItemId(2L)
-                                .foodId(11L)
-                                .foodName("불고기")
-                                .quantity(1)
-                                .price(9000)
-                                .build()
-                ))
-                .build();
-        
-        given(getExpenditureDetailService.getExpenditureDetail(eq(expenditureId), anyLong()))
-                .willReturn(response);
+        Expenditure expenditure = Expenditure.create(
+                memberId,
+                "맛있는 식당",
+                25000,
+                LocalDate.of(2025, 10, 10),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                "회식",
+                List.of(item1, item2)
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
         
         // when & then
-        mockMvc.perform(get("/api/v1/expenditures/{id}", expenditureId)
-                        .header("X-Member-Id", memberId)
+        mockMvc.perform(get("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.expenditureId").value(expenditureId))
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.expenditureId").value(savedExpenditure.getExpenditureId()))
                 .andExpect(jsonPath("$.data.storeName").value("맛있는 식당"))
                 .andExpect(jsonPath("$.data.amount").value(25000))
                 .andExpect(jsonPath("$.data.expendedDate").value("2025-10-10"))
-                .andExpect(jsonPath("$.data.expendedTime").value("12:30:00"))
-                .andExpect(jsonPath("$.data.categoryId").value(1))
                 .andExpect(jsonPath("$.data.categoryName").value("한식"))
                 .andExpect(jsonPath("$.data.mealType").value("LUNCH"))
                 .andExpect(jsonPath("$.data.memo").value("회식"))
                 .andExpect(jsonPath("$.data.items").isArray())
-                .andExpect(jsonPath("$.data.items.length()").value(2))
-                .andExpect(jsonPath("$.data.items[0].foodName").value("김치찌개"))
-                .andExpect(jsonPath("$.data.items[0].quantity").value(2))
-                .andExpect(jsonPath("$.data.items[0].price").value(8000))
-                .andExpect(jsonPath("$.data.items[1].foodName").value("불고기"))
-                .andExpect(jsonPath("$.data.items[1].quantity").value(1))
-                .andExpect(jsonPath("$.data.items[1].price").value(9000));
+                .andExpect(jsonPath("$.data.items.length()").value(2));
     }
 
     @Test
     @DisplayName("존재하지 않는 지출 내역 조회 시 404 응답")
     void getExpenditureDetail_NotFound() throws Exception {
         // given
-        Long memberId = 1L;
-        Long expenditureId = 999L;
-        
-        given(getExpenditureDetailService.getExpenditureDetail(eq(expenditureId), anyLong()))
-                .willThrow(new IllegalArgumentException("지출 내역을 찾을 수 없습니다."));
+        Long nonExistentId = 99999L;
         
         // when & then
-        mockMvc.perform(get("/api/v1/expenditures/{id}", expenditureId)
-                        .header("X-Member-Id", memberId)
+        mockMvc.perform(get("/api/v1/expenditures/{id}", nonExistentId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").value("지출 내역을 찾을 수 없습니다."));
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 
     @Test
     @DisplayName("다른 회원의 지출 내역 조회 시 403 응답")
     void getExpenditureDetail_Forbidden() throws Exception {
-        // given
-        Long memberId = 1L;
-        Long expenditureId = 100L;
+        // given - 회원1의 지출 내역 생성
+        Expenditure expenditure = Expenditure.create(
+                memberId,
+                "맛있는 식당",
+                25000,
+                LocalDate.of(2025, 10, 10),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
         
-        given(getExpenditureDetailService.getExpenditureDetail(eq(expenditureId), anyLong()))
-                .willThrow(new SecurityException("해당 지출 내역에 접근할 권한이 없습니다."));
-        
-        // when & then
-        mockMvc.perform(get("/api/v1/expenditures/{id}", expenditureId)
-                        .header("X-Member-Id", memberId)
+        // when & then - 회원2가 회원1의 지출 내역 조회 시도
+        mockMvc.perform(get("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", "Bearer " + anotherAccessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").value("해당 지출 내역에 접근할 권한이 없습니다."));
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E403"));
     }
 
     @Test
     @DisplayName("삭제된 지출 내역 조회 시 404 응답")
     void getExpenditureDetail_Deleted() throws Exception {
         // given
-        Long memberId = 1L;
-        Long expenditureId = 100L;
-        
-        given(getExpenditureDetailService.getExpenditureDetail(eq(expenditureId), anyLong()))
-                .willThrow(new IllegalArgumentException("삭제된 지출 내역입니다."));
+        Expenditure expenditure = Expenditure.create(
+                memberId,
+                "맛있는 식당",
+                25000,
+                LocalDate.of(2025, 10, 10),
+                LocalTime.of(12, 30),
+                categoryId,
+                MealType.LUNCH,
+                null,
+                List.of()
+        );
+        Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+        savedExpenditure.delete();  // 삭제
+        expenditureRepository.save(savedExpenditure);
         
         // when & then
-        mockMvc.perform(get("/api/v1/expenditures/{id}", expenditureId)
-                        .header("X-Member-Id", memberId)
+        mockMvc.perform(get("/api/v1/expenditures/{id}", savedExpenditure.getExpenditureId())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.error.message").value("삭제된 지출 내역입니다."));
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 }

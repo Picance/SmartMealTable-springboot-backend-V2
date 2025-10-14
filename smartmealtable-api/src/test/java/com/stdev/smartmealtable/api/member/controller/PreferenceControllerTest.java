@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.member.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.food.Food;
@@ -37,6 +38,9 @@ class PreferenceControllerTest extends AbstractContainerTest {
     private MockMvc mockMvc;
 
     @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
@@ -56,12 +60,16 @@ class PreferenceControllerTest extends AbstractContainerTest {
     private Category japaneseCategory;
     private Food kimchiJjigae;
     private Food sushi;
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
         // 테스트용 회원 생성
         Member member = Member.create(null, "테스터", RecommendationType.BALANCED);
         testMember = memberRepository.save(member);
+
+        // JWT 토큰 생성
+        accessToken = jwtTokenProvider.createToken(testMember.getMemberId());
 
         // 카테고리 생성 (Storage 레이어를 통해 직접 삽입)
         koreanCategory = Category.reconstitute(null, "한식");
@@ -85,7 +93,7 @@ class PreferenceControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me/preferences")
-                        .header("X-Member-Id", testMember.getMemberId())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -102,7 +110,7 @@ class PreferenceControllerTest extends AbstractContainerTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/members/me/preferences")
-                        .header("X-Member-Id", testMember.getMemberId())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())

@@ -1120,7 +1120,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
         mockMvc.perform(get("/api/v1/expenditures/{id}", nonExistentId)
                         .header("Authorization", accessToken))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error").exists())
                 .andDo(document("expenditure/get-detail-not-found",
@@ -1133,7 +1133,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E400: Bad Request)"),
+                                        .description("에러 코드 (E404: Not Found)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING)
                                         .description("에러 메시지")
                         )

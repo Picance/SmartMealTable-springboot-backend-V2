@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.food.Food;
@@ -41,6 +42,9 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
     private MemberRepository memberRepository;
 
     @Autowired
@@ -54,6 +58,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
     private Long memberId;
     private Long foodId;
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -70,6 +75,9 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 "테스트회원"
         );
         authenticationRepository.save(authentication);
+
+        // JWT 토큰 생성
+        this.accessToken = jwtTokenProvider.createToken(this.memberId);
 
         // 카테고리 및 음식 생성
         Category category = Category.reconstitute(null, "한식");
@@ -92,7 +100,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -114,14 +122,14 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 "isPreferred", true
         );
         mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
         // When & Then: 동일한 음식에 대해 다시 추가 시도
         mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -142,7 +150,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -162,7 +170,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -178,7 +186,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 "isPreferred", true
         );
         String addResponse = mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRequest)))
                 .andExpect(status().isCreated())
@@ -198,7 +206,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // Then
         mockMvc.perform(put("/api/v1/members/me/preferences/foods/" + foodPreferenceId)
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andDo(print())
@@ -219,7 +227,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // When & Then
         mockMvc.perform(put("/api/v1/members/me/preferences/foods/99999")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -238,7 +246,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 "isPreferred", true
         );
         String addResponse = mockMvc.perform(post("/api/v1/members/me/preferences/foods")
-                        .header("X-Member-Id", memberId)
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRequest)))
                 .andExpect(status().isCreated())
@@ -253,7 +261,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
 
         // When & Then: 삭제
         mockMvc.perform(delete("/api/v1/members/me/preferences/foods/" + foodPreferenceId)
-                        .header("X-Member-Id", memberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -263,7 +271,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     void deleteFoodPreference_NotFound() throws Exception {
         // When & Then
         mockMvc.perform(delete("/api/v1/members/me/preferences/foods/99999")
-                        .header("X-Member-Id", memberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))

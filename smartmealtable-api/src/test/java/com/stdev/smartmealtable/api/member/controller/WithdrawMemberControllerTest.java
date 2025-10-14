@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,8 +43,12 @@ class WithdrawMemberControllerTest extends AbstractContainerTest {
     @Autowired
     private SignupService signupService;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
     private Long testMemberId;
     private String testPassword = "TestP@ss123!";
+    private String accessToken;
 
     @BeforeEach
     void setUp() {
@@ -53,6 +58,9 @@ class WithdrawMemberControllerTest extends AbstractContainerTest {
                 testPassword
         ));
         testMemberId = response.getMemberId();
+        
+        // JWT 토큰 생성
+        accessToken = jwtTokenProvider.createToken(testMemberId);
     }
 
     @Test
@@ -67,7 +75,7 @@ class WithdrawMemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(delete("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -84,7 +92,7 @@ class WithdrawMemberControllerTest extends AbstractContainerTest {
         mockMvc.perform(delete("/api/v1/members/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
-                        .header("X-Member-Id", testMemberId))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").value("ERROR"))
