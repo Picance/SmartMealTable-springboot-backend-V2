@@ -2,6 +2,10 @@ spring:
   application:
     name: smartmealtable-api
 
+  # Client 설정 포함
+  profiles:
+    include: client
+
   # Database 설정
   datasource:
     url: ${DB_URL:jdbc:mysql://localhost:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
@@ -53,27 +57,3 @@ server:
   error:
     include-message: always
     include-binding-errors: always
-
-# OAuth 설정
-oauth:
-  kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    redirect-uri: ${KAKAO_REDIRECT_URI}
-  google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
-
-  ai:
-  model:
-    chat: vertexai
-  vertex:
-    ai:
-      gemini:
-        project-id: ${VERTEX_AI_PROJECT_ID}
-        transport: rest
-        chat:
-          options:
-            model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
-            temperature: ${VERTEX_AI_TEMPERATURE:0.1}
-        location: ${VERTEX_AI_LOCATION:asia-northeast3}

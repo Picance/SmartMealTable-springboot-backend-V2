@@ -1,0 +1,27 @@
+# Test용 External Client 설정
+
+# OAuth 설정 (테스트용 더미 값)
+oauth:
+  kakao:
+    client-id: test-kakao-client-id
+    redirect-uri: http://localhost:3000/auth/kakao/callback
+    token-url: https://kauth.kakao.com/oauth/token
+    user-info-url: https://kapi.kakao.com/v2/user/me
+  google:
+    client-id: test-google-client-id
+    client-secret: test-google-client-secret
+    redirect-uri: http://localhost:3000/auth/google/callback
+    token-url: https://oauth2.googleapis.com/token
+
+# 네이버 지도 API 설정 (테스트용 더미 값)
+naver:
+  map:
+    client-id: test-naver-map-client-id
+    client-secret: test-naver-map-client-secret
+
+# Spring AI 자동 설정 비활성화
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.vertexai.autoconfigure.gemini.VertexAiGeminiChatAutoConfiguration
+      - org.springframework.ai.model.vertexai.autoconfigure.VertexAiChatAutoConfiguration

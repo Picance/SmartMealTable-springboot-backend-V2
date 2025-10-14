@@ -1,0 +1,34 @@
+# External Client 설정
+# OAuth, Naver Map API 등 외부 클라이언트 관련 설정
+
+# OAuth 설정
+oauth:
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+# 네이버 지도 API 설정
+naver:
+  map:
+    client-id: ${NAVER_MAP_CLIENT_ID}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET}
+
+# Spring AI 설정
+spring:
+  ai:
+    model:
+      chat: vertexai
+    vertex:
+      ai:
+        gemini:
+          project-id: ${VERTEX_AI_PROJECT_ID}
+          transport: rest
+          chat:
+            options:
+              model: ${VERTEX_AI_MODEL:gemini-2.5-flash}
+              temperature: ${VERTEX_AI_TEMPERATURE:0.1}
+          location: ${VERTEX_AI_LOCATION:asia-northeast3}

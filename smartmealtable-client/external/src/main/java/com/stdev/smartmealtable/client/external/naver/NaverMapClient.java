@@ -53,11 +53,12 @@ public class NaverMapClient implements MapService {
             NaverGeocodingResponse response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .scheme("https")
-                            .host("naveropenapi.apigw.ntruss.com")
+                            .host("maps.apigw.ntruss.com")
                             .path("/map-geocode/v2/geocode")
                             .queryParam("query", keyword)
                             .queryParam("count", searchLimit)
                             .build())
+                    .header(HttpHeaders.ACCEPT, "application/json")
                     .header("X-NCP-APIGW-API-KEY-ID", clientId)
                     .header("X-NCP-APIGW-API-KEY", clientSecret)
                     .retrieve()
@@ -93,7 +94,7 @@ public class NaverMapClient implements MapService {
             NaverReverseGeocodingResponse response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .scheme("https")
-                            .host("naveropenapi.apigw.ntruss.com")
+                            .host("maps.apigw.ntruss.com")
                             .path("/map-reversegeocode/v2/gc")
                             .queryParam("coords", longitude + "," + latitude)  // 경도,위도 순서
                             .queryParam("orders", "roadaddr,addr")

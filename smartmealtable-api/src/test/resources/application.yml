@@ -20,12 +20,6 @@ spring:
       write-dates-as-timestamps: false
     time-zone: Asia/Seoul
 
-  # Spring AI 자동 설정 비활성화
-  autoconfigure:
-    exclude:
-      - org.springframework.ai.model.vertexai.autoconfigure.gemini.VertexAiGeminiChatAutoConfiguration
-      - org.springframework.ai.model.vertexai.autoconfigure.VertexAiChatAutoConfiguration
-
 logging:
   level:
     root: INFO
@@ -45,3 +39,9 @@ oauth:
     client-secret: test-google-client-secret
     redirect-uri: http://localhost:3000/auth/google/callback
     token-url: https://oauth2.googleapis.com/token
+
+# 네이버 지도 API 설정 (테스트용 더미 값)
+naver:
+  map:
+    client-id: test-naver-map-client-id
+    client-secret: test-naver-map-client-secret
