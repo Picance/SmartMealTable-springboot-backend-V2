@@ -423,3 +423,36 @@ CREATE TABLE monthly_budget_confirmation (
 --     INDEX idx_food_id (food_id)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 -- COMMENT='사용자가 선호하는 개별 음식을 저장하는 테이블 (온보딩 REQ-ONBOARD-405)';
+
+
+-- ================================================================================= --
+--                                   알림 및 설정
+-- ================================================================================= --
+
+-- 알림 설정 테이블
+CREATE TABLE notification_settings (
+    notification_settings_id  BIGINT    NOT NULL AUTO_INCREMENT COMMENT '알림 설정의 고유 식별자',
+    member_id                 BIGINT    NOT NULL COMMENT '회원 식별자 (논리 FK)',
+    push_enabled              BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '전체 푸시 알림 활성화 여부',
+    store_notice_enabled      BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '가게 공지 알림 활성화 여부',
+    recommendation_enabled    BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '음식점 추천 알림 활성화 여부',
+    budget_alert_enabled      BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '예산 알림 활성화 여부',
+    password_expiry_alert_enabled BOOLEAN NOT NULL DEFAULT TRUE COMMENT '비밀번호 만료 알림 활성화 여부',
+    created_at                DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at                DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (notification_settings_id),
+    UNIQUE KEY uq_member_id (member_id),
+    INDEX idx_member_id (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 알림 설정을 저장하는 테이블';
+
+-- 앱 설정 테이블
+CREATE TABLE app_settings (
+    app_settings_id    BIGINT    NOT NULL AUTO_INCREMENT COMMENT '앱 설정의 고유 식별자',
+    member_id          BIGINT    NOT NULL COMMENT '회원 식별자 (논리 FK)',
+    allow_tracking     BOOLEAN   NOT NULL DEFAULT FALSE COMMENT '사용자 추적 허용 여부',
+    created_at         DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at         DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (app_settings_id),
+    UNIQUE KEY uq_member_id (member_id),
+    INDEX idx_member_id (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 앱 설정을 저장하는 테이블';

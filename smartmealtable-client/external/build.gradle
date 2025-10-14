@@ -2,6 +2,9 @@ dependencies {
     // core 모듈 의존성
     implementation project(':smartmealtable-core')
     
+    // domain 모듈 의존성
+    implementation project(':smartmealtable-domain')
+    
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
