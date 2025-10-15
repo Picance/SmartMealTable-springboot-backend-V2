@@ -103,7 +103,8 @@ class MapControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.addresses[].buildingName").type(JsonFieldType.STRING).description("건물명").optional(),
                                 fieldWithPath("data.addresses[].sigunguCode").type(JsonFieldType.STRING).description("시군구 코드"),
                                 fieldWithPath("data.addresses[].bcode").type(JsonFieldType.STRING).description("법정동 코드"),
-                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 결과 개수")
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 결과 개수"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -123,10 +124,10 @@ class MapControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
-                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional(),
                                 fieldWithPath("error.data").type(JsonFieldType.OBJECT).description("에러 상세 정보").optional()
                         )
                 ));
@@ -183,7 +184,8 @@ class MapControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.dong").type(JsonFieldType.STRING).description("읍/면/동"),
                                 fieldWithPath("data.buildingName").type(JsonFieldType.STRING).description("건물명").optional(),
                                 fieldWithPath("data.sigunguCode").type(JsonFieldType.STRING).description("시군구 코드"),
-                                fieldWithPath("data.bcode").type(JsonFieldType.STRING).description("법정동 코드")
+                                fieldWithPath("data.bcode").type(JsonFieldType.STRING).description("법정동 코드"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -204,7 +206,7 @@ class MapControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
-                                
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -228,7 +230,7 @@ class MapControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
-                                
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),

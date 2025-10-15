@@ -229,6 +229,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E422)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -290,7 +291,8 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
                                 fieldWithPath("data.longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
                                 fieldWithPath("data.isPrimary").type(JsonFieldType.BOOLEAN).description("기본 주소 여부"),
-                                fieldWithPath("data.registeredAt").type(JsonFieldType.STRING).description("등록 일시")
+                                fieldWithPath("data.registeredAt").type(JsonFieldType.STRING).description("등록 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -336,6 +338,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -398,6 +401,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -445,7 +449,8 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.addressHistoryId").type(JsonFieldType.NUMBER).description("기본 주소로 설정된 주소 이력 ID"),
                                 fieldWithPath("data.isPrimary").type(JsonFieldType.BOOLEAN).description("기본 주소 여부 (항상 true)"),
-                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("수정 일시")
+                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("수정 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -469,6 +474,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -499,7 +505,8 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         authorizationHeader(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
-                                fieldWithPath("data").type(JsonFieldType.ARRAY).description("주소 목록 (빈 배열)")
+                                fieldWithPath("data").type(JsonFieldType.ARRAY).description("주소 목록 (빈 배열)"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }

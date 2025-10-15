@@ -175,7 +175,8 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.foodPreferences.disliked[].categoryName").type(JsonFieldType.STRING)
                                         .description("카테고리명"),
                                 fieldWithPath("data.foodPreferences.disliked[].createdAt").type(JsonFieldType.STRING)
-                                        .description("생성 일시")
+                                        .description("생성 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -215,7 +216,8 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.updatedCount").type(JsonFieldType.NUMBER)
                                         .description("수정된 선호도 개수"),
                                 fieldWithPath("data.updatedAt").type(JsonFieldType.STRING)
-                                        .description("수정 일시")
+                                        .description("수정 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -256,7 +258,8 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.isPreferred").type(JsonFieldType.BOOLEAN)
                                         .description("선호 여부 (true: 좋아요, false: 싫어요)"),
                                 fieldWithPath("data.createdAt").type(JsonFieldType.STRING)
-                                        .description("생성 일시")
+                                        .description("생성 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -299,7 +302,8 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.isPreferred").type(JsonFieldType.BOOLEAN)
                                         .description("변경된 선호 여부 (true: 좋아요, false: 싫어요)"),
                                 fieldWithPath("data.updatedAt").type(JsonFieldType.STRING)
-                                        .description("수정 일시")
+                                        .description("수정 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -341,6 +345,7 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                         authorizationHeader(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
