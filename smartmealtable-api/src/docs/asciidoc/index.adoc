@@ -550,3 +550,1955 @@ http GET 'https://api.smartmealtable.com/api/v1/stores/autocomplete?keyword=강�
   Authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ----
 
+[[auth-login]]
+== 로그인
+
+=== 이메일 로그인
+
+`POST /api/v1/auth/login/email`
+
+이메일과 비밀번호로 로그인합니다.
+
+==== 요청
+
+include::{snippets}/auth/login/email/success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth/login/email/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/auth/login/email/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/login/email/success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 잘못된 인증 정보 (401 Unauthorized)
+
+include::{snippets}/auth/login/email/invalid-credentials/http-response.adoc[]
+
+include::{snippets}/auth/login/email/invalid-credentials/response-fields.adoc[]
+
+===== 유효성 검증 실패 (422 Unprocessable Entity)
+
+include::{snippets}/auth/login/email/validation-error/http-response.adoc[]
+
+include::{snippets}/auth/login/email/validation-error/response-fields.adoc[]
+
+=== 카카오 로그인
+
+`POST /api/v1/auth/login/kakao`
+
+카카오 OAuth 인증 코드로 로그인합니다.
+
+==== 요청
+
+include::{snippets}/auth/login/kakao/success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth/login/kakao/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/auth/login/kakao/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/login/kakao/success/response-fields.adoc[]
+
+=== 구글 로그인
+
+`POST /api/v1/auth/login/google`
+
+구글 OAuth 인증 코드로 로그인합니다.
+
+==== 요청
+
+include::{snippets}/auth/login/google/success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth/login/google/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/auth/login/google/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/login/google/success/response-fields.adoc[]
+
+[[auth-token]]
+== 토큰 관리
+
+=== 토큰 갱신
+
+`POST /api/v1/auth/refresh`
+
+Refresh Token을 사용하여 새로운 Access Token을 발급받습니다.
+
+==== 요청
+
+include::{snippets}/auth/refresh/success/http-request.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/auth/refresh/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/auth/refresh/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/refresh/success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 유효하지 않은 Refresh Token (401 Unauthorized)
+
+include::{snippets}/auth/refresh/invalid-token/http-response.adoc[]
+
+include::{snippets}/auth/refresh/invalid-token/response-fields.adoc[]
+
+=== 로그아웃
+
+`POST /api/v1/auth/logout`
+
+현재 사용자를 로그아웃합니다.
+
+==== 요청
+
+include::{snippets}/auth/logout/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/auth/logout/success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/auth/logout/success/http-response.adoc[]
+
+[[auth-email]]
+== 이메일 검증
+
+=== 이메일 중복 확인
+
+`GET /api/v1/auth/check-email`
+
+회원가입 전 이메일 중복 여부를 확인합니다.
+
+==== 요청
+
+include::{snippets}/auth/check-email/available/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/auth/check-email/available/query-parameters.adoc[]
+
+==== 성공 응답 - 사용 가능 (200 OK)
+
+include::{snippets}/auth/check-email/available/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/check-email/available/response-fields.adoc[]
+
+==== 성공 응답 - 이미 사용 중 (200 OK)
+
+include::{snippets}/auth/check-email/duplicate/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/auth/check-email/duplicate/response-fields.adoc[]
+
+[[members]]
+= 회원 관리 (Members)
+
+회원 정보 조회, 수정, 비밀번호 변경, 회원 탈퇴 등의 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 회원 관리 API는 JWT 인증이 필요합니다.
+
+[[members-profile]]
+== 회원 정보
+
+=== 회원 정보 조회
+
+`GET /api/v1/members/me`
+
+현재 로그인한 회원의 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/members/get-profile/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/members/get-profile/success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/members/get-profile/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/members/get-profile/success/response-fields.adoc[]
+
+=== 회원 정보 수정
+
+`PUT /api/v1/members/me`
+
+현재 로그인한 회원의 정보를 수정합니다.
+
+==== 요청
+
+include::{snippets}/members/update-profile/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/members/update-profile/success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/members/update-profile/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/members/update-profile/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/members/update-profile/success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 닉네임 중복 (409 Conflict)
+
+include::{snippets}/members/update-profile/fail-duplicate-nickname/http-response.adoc[]
+
+include::{snippets}/members/update-profile/fail-duplicate-nickname/response-fields.adoc[]
+
+[[members-password]]
+== 비밀번호 관리
+
+=== 비밀번호 변경
+
+`PUT /api/v1/members/me/password`
+
+현재 로그인한 회원의 비밀번호를 변경합니다.
+
+==== 요청
+
+include::{snippets}/members/change-password/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/members/change-password/success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/members/change-password/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/members/change-password/success/http-response.adoc[]
+
+==== 에러 응답
+
+===== 현재 비밀번호 불일치 (400 Bad Request)
+
+include::{snippets}/members/change-password/fail-wrong-current-password/http-response.adoc[]
+
+include::{snippets}/members/change-password/fail-wrong-current-password/response-fields.adoc[]
+
+===== 유효성 검증 실패 (422 Unprocessable Entity)
+
+include::{snippets}/members/change-password/fail-validation-error/http-response.adoc[]
+
+include::{snippets}/members/change-password/fail-validation-error/response-fields.adoc[]
+
+[[password-expiry]]
+== 비밀번호 만료 관리
+
+=== 비밀번호 만료 상태 조회
+
+`GET /api/v1/members/me/password-expiry`
+
+비밀번호 만료 상태를 조회합니다.
+
+==== 요청
+
+include::{snippets}/password-expiry/get-status-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/password-expiry/get-status-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/password-expiry/get-status-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/password-expiry/get-status-success/response-fields.adoc[]
+
+=== 비밀번호 만료일 연장
+
+`POST /api/v1/members/me/password-expiry/extend`
+
+비밀번호 만료일을 90일 연장합니다.
+
+==== 요청
+
+include::{snippets}/password-expiry/extend-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/password-expiry/extend-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/password-expiry/extend-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/password-expiry/extend-success/response-fields.adoc[]
+
+[[members-withdraw]]
+== 회원 탈퇴
+
+=== 회원 탈퇴
+
+`DELETE /api/v1/members/me`
+
+현재 로그인한 회원을 탈퇴 처리합니다.
+
+==== 요청
+
+include::{snippets}/members/withdraw/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/members/withdraw/success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/members/withdraw/success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/members/withdraw/success/http-response.adoc[]
+
+==== 에러 응답
+
+===== 비밀번호 불일치 (400 Bad Request)
+
+include::{snippets}/members/withdraw/fail-wrong-password/http-response.adoc[]
+
+include::{snippets}/members/withdraw/fail-wrong-password/response-fields.adoc[]
+
+[[social-account]]
+== 소셜 계정 연동
+
+=== 연동된 소셜 계정 목록 조회
+
+`GET /api/v1/members/me/social-accounts`
+
+현재 회원에게 연동된 소셜 계정 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/social-account/get-list-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/social-account/get-list-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/social-account/get-list-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/social-account/get-list-success/response-fields.adoc[]
+
+=== 소셜 계정 추가 연동
+
+`POST /api/v1/members/me/social-accounts`
+
+새로운 소셜 계정을 연동합니다.
+
+==== 요청
+
+include::{snippets}/social-account/add-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/social-account/add-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/social-account/add-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/social-account/add-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/social-account/add-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 이미 연동된 계정 (409 Conflict)
+
+include::{snippets}/social-account/add-duplicate/http-response.adoc[]
+
+include::{snippets}/social-account/add-duplicate/response-fields.adoc[]
+
+=== 소셜 계정 연동 해제
+
+`DELETE /api/v1/members/me/social-accounts/{provider}`
+
+연동된 소셜 계정을 해제합니다.
+
+==== 요청
+
+include::{snippets}/social-account/remove-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/social-account/remove-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/social-account/remove-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/social-account/remove-success/http-response.adoc[]
+
+==== 에러 응답
+
+===== 마지막 로그인 수단 (400 Bad Request)
+
+include::{snippets}/social-account/remove-last-login-method/http-response.adoc[]
+
+include::{snippets}/social-account/remove-last-login-method/response-fields.adoc[]
+
+[[address]]
+== 주소 관리
+
+=== 주소 목록 조회
+
+`GET /api/v1/members/me/addresses`
+
+현재 회원의 등록된 주소 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/address-get-addresses-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/address-get-addresses-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/address-get-addresses-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/address-get-addresses-success/response-fields.adoc[]
+
+=== 주소 추가
+
+`POST /api/v1/members/me/addresses`
+
+새로운 주소를 추가합니다.
+
+==== 요청
+
+include::{snippets}/address-add-address-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/address-add-address-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/address-add-address-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/address-add-address-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/address-add-address-success/response-fields.adoc[]
+
+=== 주소 수정
+
+`PUT /api/v1/members/me/addresses/{addressId}`
+
+등록된 주소를 수정합니다.
+
+==== 요청
+
+include::{snippets}/address-update-address-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/address-update-address-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/address-update-address-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/address-update-address-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/address-update-address-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/address-update-address-success/response-fields.adoc[]
+
+=== 주 거주지 설정
+
+`PUT /api/v1/members/me/addresses/{addressId}/primary`
+
+주소를 주 거주지로 설정합니다.
+
+==== 요청
+
+include::{snippets}/address-set-primary-address-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/address-set-primary-address-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/address-set-primary-address-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/address-set-primary-address-success/http-response.adoc[]
+
+=== 주소 삭제
+
+`DELETE /api/v1/members/me/addresses/{addressId}`
+
+등록된 주소를 삭제합니다.
+
+==== 요청
+
+include::{snippets}/address-delete-address-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/address-delete-address-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/address-delete-address-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/address-delete-address-success/http-response.adoc[]
+
+[[preference]]
+== 음식 취향 관리
+
+=== 취향 정보 조회
+
+`GET /api/v1/members/me/preferences`
+
+현재 회원의 음식 취향 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/preference-get-preferences-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/preference-get-preferences-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/preference-get-preferences-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/preference-get-preferences-success/response-fields.adoc[]
+
+=== 카테고리 선호도 수정
+
+`PUT /api/v1/members/me/preferences/categories`
+
+음식 카테고리별 선호도를 수정합니다.
+
+==== 요청
+
+include::{snippets}/preference-update-category-preferences-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/preference-update-category-preferences-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/preference-update-category-preferences-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/preference-update-category-preferences-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/preference-update-category-preferences-success/response-fields.adoc[]
+
+=== 개별 음식 선호도 추가
+
+`POST /api/v1/members/me/preferences/foods`
+
+특정 음식에 대한 선호도를 추가합니다.
+
+==== 요청
+
+include::{snippets}/preference-add-food-preference-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/preference-add-food-preference-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/preference-add-food-preference-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/preference-add-food-preference-success/http-response.adoc[]
+
+=== 개별 음식 선호도 수정
+
+`PUT /api/v1/members/me/preferences/foods/{foodId}`
+
+특정 음식에 대한 선호도를 수정합니다.
+
+==== 요청
+
+include::{snippets}/preference-update-food-preference-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/preference-update-food-preference-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/preference-update-food-preference-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/preference-update-food-preference-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/preference-update-food-preference-success/http-response.adoc[]
+
+=== 개별 음식 선호도 삭제
+
+`DELETE /api/v1/members/me/preferences/foods/{foodId}`
+
+특정 음식에 대한 선호도를 삭제합니다.
+
+==== 요청
+
+include::{snippets}/preference-delete-food-preference-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/preference-delete-food-preference-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/preference-delete-food-preference-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/preference-delete-food-preference-success/http-response.adoc[]
+
+
+[[onboarding-auxiliary]]
+== 온보딩 보조 API
+
+=== 그룹 목록 조회
+
+`GET /api/v1/groups`
+
+사용자가 선택할 수 있는 그룹(소속) 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/group/search-groups-all/http-request.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/group/search-groups-all/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/group/search-groups-all/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/group/search-groups-all/response-fields.adoc[]
+
+==== 예제
+
+===== 모든 그룹 조회
+
+include::{snippets}/group/search-groups-all/http-request.adoc[]
+
+===== 타입별 조회
+
+include::{snippets}/group/search-groups-by-type/http-request.adoc[]
+
+===== 이름 검색
+
+include::{snippets}/group/search-groups-by-name/http-request.adoc[]
+
+=== 카테고리 목록 조회
+
+`GET /api/v1/categories`
+
+음식 카테고리 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/category/get-categories-success/http-request.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/category/get-categories-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/category/get-categories-success/response-fields.adoc[]
+
+=== 약관 목록 조회
+
+`GET /api/v1/policies`
+
+서비스 약관 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/policy/get-policies-success/http-request.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/policy/get-policies-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/policy/get-policies-success/response-fields.adoc[]
+
+=== 약관 상세 조회
+
+`GET /api/v1/policies/{policyId}`
+
+특정 약관의 상세 내용을 조회합니다.
+
+==== 요청
+
+include::{snippets}/policy/get-policy-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/policy/get-policy-success/path-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/policy/get-policy-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/policy/get-policy-success/response-fields.adoc[]
+
+=== 온보딩용 음식 목록 조회
+
+`GET /api/v1/onboarding/foods`
+
+온보딩 과정에서 사용자에게 보여줄 음식 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/onboarding-foods-get/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/onboarding-foods-get/success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/onboarding-foods-get/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/onboarding-foods-get/success/response-fields.adoc[]
+
+=== 개별 음식 선호도 저장
+
+`POST /api/v1/onboarding/food-preferences`
+
+온보딩 과정에서 선택한 음식 선호도를 저장합니다.
+
+==== 요청
+
+include::{snippets}/onboarding-food-preferences-post/success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/onboarding-food-preferences-post/success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/onboarding-food-preferences-post/success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/onboarding-food-preferences-post/success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/onboarding-food-preferences-post/success/response-fields.adoc[]
+
+[[budget]]
+= 예산 관리 (Budget)
+
+월별/일별 예산 조회 및 수정 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 예산 관리 API는 JWT 인증이 필요합니다.
+
+[[budget-monthly]]
+== 월별 예산
+
+=== 월별 예산 조회
+
+`GET /api/v1/budgets/monthly`
+
+특정 월의 예산 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/budget/get-monthly-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/budget/get-monthly-success/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/budget/get-monthly-success/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/budget/get-monthly-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/budget/get-monthly-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 인증 실패 (401 Unauthorized)
+
+include::{snippets}/budget/get-monthly-unauthorized/http-response.adoc[]
+
+include::{snippets}/budget/get-monthly-unauthorized/response-fields.adoc[]
+
+===== 유효하지 않은 파라미터 (400 Bad Request)
+
+include::{snippets}/budget/get-monthly-invalid-params/http-response.adoc[]
+
+include::{snippets}/budget/get-monthly-invalid-params/response-fields.adoc[]
+
+=== 월별 예산 수정
+
+`PUT /api/v1/budgets/monthly`
+
+월별 예산을 수정합니다.
+
+==== 요청
+
+include::{snippets}/budget/update-monthly-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/budget/update-monthly-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/budget/update-monthly-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/budget/update-monthly-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/budget/update-monthly-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 유효성 검증 실패 (422 Unprocessable Entity)
+
+include::{snippets}/budget/update-monthly-validation/http-response.adoc[]
+
+include::{snippets}/budget/update-monthly-validation/response-fields.adoc[]
+
+[[budget-daily]]
+== 일별 예산
+
+=== 일별 예산 조회
+
+`GET /api/v1/budgets/daily`
+
+특정 날짜의 예산 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/budget/get-daily-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/budget/get-daily-success/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/budget/get-daily-success/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/budget/get-daily-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/budget/get-daily-success/response-fields.adoc[]
+
+=== 일별 예산 수정
+
+`PUT /api/v1/budgets/daily`
+
+특정 날짜의 예산을 수정합니다.
+
+==== 요청
+
+include::{snippets}/budget/update-daily-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/budget/update-daily-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/budget/update-daily-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/budget/update-daily-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/budget/update-daily-success/response-fields.adoc[]
+
+[[expenditure]]
+= 지출 내역 (Expenditure)
+
+SMS 파싱, 지출 내역 CRUD, 통계 조회 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 지출 내역 API는 JWT 인증이 필요합니다.
+
+[[expenditure-parse]]
+== SMS 파싱
+
+=== SMS 지출 내역 파싱
+
+`POST /api/v1/expenditures/parse-sms`
+
+카드 결제 SMS 메시지를 파싱하여 지출 내역 정보를 추출합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/parse-sms-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/parse-sms-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/expenditure/parse-sms-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/parse-sms-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/parse-sms-success/response-fields.adoc[]
+
+==== 지원 카드사
+
+===== NH농협카드
+
+include::{snippets}/expenditure/parse-sms-nh-card-success/http-request.adoc[]
+
+==== 에러 응답
+
+===== 잘못된 SMS 형식 (400 Bad Request)
+
+include::{snippets}/expenditure/parse-sms-invalid-format-failed/http-response.adoc[]
+
+include::{snippets}/expenditure/parse-sms-invalid-format-failed/response-fields.adoc[]
+
+[[expenditure-crud]]
+== 지출 내역 관리
+
+=== 지출 내역 등록
+
+`POST /api/v1/expenditures`
+
+새로운 지출 내역을 등록합니다.
+
+==== 요청 (항목 포함)
+
+include::{snippets}/expenditure/create-expenditure-with-items-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/create-expenditure-with-items-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/expenditure/create-expenditure-with-items-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/expenditure/create-expenditure-with-items-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/create-expenditure-with-items-success/response-fields.adoc[]
+
+==== 요청 (항목 없음)
+
+include::{snippets}/expenditure/create-expenditure-without-items-success/http-request.adoc[]
+
+==== 에러 응답
+
+===== 유효성 검증 실패 (422 Unprocessable Entity)
+
+include::{snippets}/expenditure/create-expenditure-validation-failed/http-response.adoc[]
+
+include::{snippets}/expenditure/create-expenditure-validation-failed/response-fields.adoc[]
+
+=== 지출 내역 목록 조회
+
+`GET /api/v1/expenditures`
+
+지출 내역 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/get-list-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/get-list-success/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/expenditure/get-list-success/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/get-list-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/get-list-success/response-fields.adoc[]
+
+==== 필터링
+
+===== 끼니별 조회
+
+include::{snippets}/expenditure/get-list-with-meal-type-filter/http-request.adoc[]
+
+=== 지출 내역 상세 조회
+
+`GET /api/v1/expenditures/{expenditureId}`
+
+특정 지출 내역의 상세 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/get-detail-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/expenditure/get-detail-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/get-detail-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/get-detail-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/get-detail-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 지출 내역 미존재 (404 Not Found)
+
+include::{snippets}/expenditure/get-detail-not-found/http-response.adoc[]
+
+include::{snippets}/expenditure/get-detail-not-found/response-fields.adoc[]
+
+=== 지출 내역 수정
+
+`PUT /api/v1/expenditures/{expenditureId}`
+
+지출 내역을 수정합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/update-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/expenditure/update-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/update-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/expenditure/update-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/update-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/update-success/response-fields.adoc[]
+
+=== 지출 내역 삭제
+
+`DELETE /api/v1/expenditures/{expenditureId}`
+
+지출 내역을 삭제합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/delete-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/expenditure/delete-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/delete-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/delete-success/http-response.adoc[]
+
+[[expenditure-statistics]]
+== 지출 통계
+
+=== 일별 지출 통계 조회
+
+`GET /api/v1/expenditures/statistics/daily`
+
+일별 지출 통계를 조회합니다.
+
+==== 요청
+
+include::{snippets}/expenditure/get-statistics-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/expenditure/get-statistics-success/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/expenditure/get-statistics-success/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/expenditure/get-statistics-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/expenditure/get-statistics-success/response-fields.adoc[]
+
+
+[[recommendation]]
+= 추천 시스템 (Recommendation)
+
+개인화된 식당 추천 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 추천 API는 JWT 인증이 필요합니다.
+
+[[recommendation-list]]
+== 추천 목록 조회
+
+=== 기본 추천
+
+`GET /api/v1/recommendations`
+
+사용자 위치 기반으로 개인화된 식당을 추천합니다.
+
+==== 요청
+
+include::{snippets}/recommendation-list-success-default/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/recommendation-list-success-default/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/recommendation-list-success-default/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/recommendation-list-success-default/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/recommendation-list-success-default/response-fields.adoc[]
+
+=== 필터링 및 정렬
+
+==== 요청
+
+include::{snippets}/recommendation-list-success-with-filters/http-request.adoc[]
+
+==== 응답
+
+include::{snippets}/recommendation-list-success-with-filters/http-response.adoc[]
+
+==== 정렬 옵션
+
+* `SCORE`: 추천 점수순
+* `DISTANCE`: 거리순
+* `REVIEW`: 리뷰 많은 순
+* `PRICE_LOW`: 가격 낮은 순
+* `PRICE_HIGH`: 가격 높은 순
+* `FAVORITE`: 즐겨찾기 우선
+* `INTEREST_HIGH`: 관심도 높은 순
+* `INTEREST_LOW`: 관심도 낮은 순
+
+==== 에러 응답
+
+===== 필수 파라미터 누락 (400 Bad Request)
+
+include::{snippets}/recommendation-list-fail-missing-latitude/http-response.adoc[]
+
+include::{snippets}/recommendation-list-fail-missing-latitude/response-fields.adoc[]
+
+===== 유효하지 않은 좌표 (400 Bad Request)
+
+include::{snippets}/recommendation-list-fail-invalid-latitude/http-response.adoc[]
+
+include::{snippets}/recommendation-list-fail-invalid-latitude/response-fields.adoc[]
+
+[[recommendation-score]]
+== 추천 점수 상세
+
+=== 추천 점수 상세 조회
+
+`GET /api/v1/recommendations/{storeId}/score-detail`
+
+특정 식당의 추천 점수 상세 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/recommendation-score-detail-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/recommendation-score-detail-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/recommendation-score-detail-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/recommendation-score-detail-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/recommendation-score-detail-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 식당 미존재 (404 Not Found)
+
+include::{snippets}/recommendation-score-detail-fail-not-found/http-response.adoc[]
+
+include::{snippets}/recommendation-score-detail-fail-not-found/response-fields.adoc[]
+
+[[recommendation-type]]
+== 추천 유형 변경
+
+=== 추천 유형 변경
+
+`PUT /api/v1/recommendations/type`
+
+사용자의 추천 유형을 변경합니다.
+
+==== 요청
+
+include::{snippets}/recommendation-type-update-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/recommendation-type-update-success/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/recommendation-type-update-success/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/recommendation-type-update-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/recommendation-type-update-success/response-fields.adoc[]
+
+==== 추천 유형
+
+* `SAVER`: 절약형 - 가성비 중심
+* `BALANCED`: 균형형 - 가격과 품질의 균형
+* `ADVENTURER`: 탐험형 - 새로운 경험 중시
+
+==== 에러 응답
+
+===== 유효하지 않은 유형 (400 Bad Request)
+
+include::{snippets}/recommendation-type-update-fail-invalid-type/http-response.adoc[]
+
+include::{snippets}/recommendation-type-update-fail-invalid-type/response-fields.adoc[]
+
+[[favorite]]
+= 즐겨찾기 (Favorite)
+
+식당 즐겨찾기 관리 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 즐겨찾기 API는 JWT 인증이 필요합니다.
+
+[[favorite-add]]
+== 즐겨찾기 추가
+
+=== 즐겨찾기 추가
+
+`POST /api/v1/favorites`
+
+식당을 즐겨찾기에 추가합니다.
+
+==== 요청
+
+include::{snippets}/favorite-add-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/favorite-add-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/favorite-add-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/favorite-add-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/favorite-add-success/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 이미 즐겨찾기된 식당 (409 Conflict)
+
+include::{snippets}/favorite-add-conflict/http-response.adoc[]
+
+include::{snippets}/favorite-add-conflict/response-fields.adoc[]
+
+===== 식당 미존재 (404 Not Found)
+
+include::{snippets}/favorite-add-not-found/http-response.adoc[]
+
+include::{snippets}/favorite-add-not-found/response-fields.adoc[]
+
+[[favorite-list]]
+== 즐겨찾기 목록
+
+=== 즐겨찾기 목록 조회
+
+`GET /api/v1/favorites`
+
+즐겨찾기 목록을 조회합니다.
+
+==== 요청
+
+include::{snippets}/favorite-get-list-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/favorite-get-list-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/favorite-get-list-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/favorite-get-list-success/response-fields.adoc[]
+
+[[favorite-reorder]]
+== 즐겨찾기 순서 변경
+
+=== 즐겨찾기 순서 변경
+
+`PUT /api/v1/favorites/reorder`
+
+즐겨찾기 목록의 순서를 변경합니다.
+
+==== 요청
+
+include::{snippets}/favorite-reorder-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/favorite-reorder-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/favorite-reorder-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/favorite-reorder-success/http-response.adoc[]
+
+[[favorite-delete]]
+== 즐겨찾기 삭제
+
+=== 즐겨찾기 삭제
+
+`DELETE /api/v1/favorites/{favoriteId}`
+
+즐겨찾기를 삭제합니다.
+
+==== 요청
+
+include::{snippets}/favorite-delete-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/favorite-delete-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/favorite-delete-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/favorite-delete-success/http-response.adoc[]
+
+==== 에러 응답
+
+===== 즐겨찾기 미존재 (404 Not Found)
+
+include::{snippets}/favorite-delete-not-found/http-response.adoc[]
+
+include::{snippets}/favorite-delete-not-found/response-fields.adoc[]
+
+[[home]]
+= 홈 화면 (Home)
+
+홈 대시보드, 온보딩 상태 조회 등의 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 홈 화면 API는 JWT 인증이 필요합니다.
+
+[[home-dashboard]]
+== 홈 대시보드
+
+=== 홈 대시보드 조회
+
+`GET /api/v1/home/dashboard`
+
+홈 화면 대시보드 정보를 조회합니다.
+
+==== 요청
+
+include::{snippets}/home/dashboard-get-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/home/dashboard-get-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/home/dashboard-get-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/home/dashboard-get-success/response-fields.adoc[]
+
+[[home-onboarding-status]]
+== 온보딩 상태
+
+=== 온보딩 상태 조회
+
+`GET /api/v1/members/me/onboarding-status`
+
+현재 회원의 온보딩 완료 상태를 조회합니다.
+
+==== 요청
+
+include::{snippets}/home/onboarding-status-get-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/home/onboarding-status-get-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/home/onboarding-status-get-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/home/onboarding-status-get-success/response-fields.adoc[]
+
+[[home-budget-confirm]]
+== 월간 예산 확인
+
+=== 월간 예산 확인
+
+`POST /api/v1/members/me/monthly-budget-confirmed`
+
+월간 예산을 확인했음을 기록합니다.
+
+==== 요청
+
+include::{snippets}/home/monthly-budget-confirm-post-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/home/monthly-budget-confirm-post-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/home/monthly-budget-confirm-post-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/home/monthly-budget-confirm-post-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/home/monthly-budget-confirm-post-success/response-fields.adoc[]
+
+[[cart]]
+= 장바구니 (Cart)
+
+장바구니 CRUD 및 관리 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 장바구니 API는 JWT 인증이 필요합니다.
+
+[[cart-add]]
+== 장바구니 추가
+
+=== 장바구니에 항목 추가
+
+`POST /api/v1/carts/items`
+
+장바구니에 음식을 추가합니다.
+
+==== 요청
+
+include::{snippets}/cart-add-item-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-add-item-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/cart-add-item-success/request-fields.adoc[]
+
+==== 성공 응답 (201 Created)
+
+include::{snippets}/cart-add-item-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/cart-add-item-success/response-fields.adoc[]
+
+[[cart-list]]
+== 장바구니 조회
+
+=== 전체 장바구니 조회
+
+`GET /api/v1/carts`
+
+현재 회원의 전체 장바구니를 조회합니다.
+
+==== 요청
+
+include::{snippets}/cart-get-all-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-get-all-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/cart-get-all-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/cart-get-all-success/response-fields.adoc[]
+
+=== 식당별 장바구니 조회
+
+`GET /api/v1/carts/stores/{storeId}`
+
+특정 식당의 장바구니를 조회합니다.
+
+==== 요청
+
+include::{snippets}/cart-get-by-store-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/cart-get-by-store-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-get-by-store-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/cart-get-by-store-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/cart-get-by-store-success/response-fields.adoc[]
+
+[[cart-update]]
+== 장바구니 수정
+
+=== 수량 변경
+
+`PUT /api/v1/carts/items/{cartItemId}`
+
+장바구니 항목의 수량을 변경합니다.
+
+==== 요청
+
+include::{snippets}/cart-update-item-quantity-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/cart-update-item-quantity-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-update-item-quantity-success/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/cart-update-item-quantity-success/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/cart-update-item-quantity-success/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/cart-update-item-quantity-success/response-fields.adoc[]
+
+[[cart-delete]]
+== 장바구니 삭제
+
+=== 항목 삭제
+
+`DELETE /api/v1/carts/items/{cartItemId}`
+
+장바구니에서 특정 항목을 삭제합니다.
+
+==== 요청
+
+include::{snippets}/cart-remove-item-success/http-request.adoc[]
+
+===== 경로 파라미터
+
+include::{snippets}/cart-remove-item-success/path-parameters.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-remove-item-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/cart-remove-item-success/http-response.adoc[]
+
+=== 전체 삭제
+
+`DELETE /api/v1/carts`
+
+장바구니를 전체 비웁니다.
+
+==== 요청
+
+include::{snippets}/cart-clear-success/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/cart-clear-success/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/cart-clear-success/http-response.adoc[]
+
+[[map]]
+= 지도 및 위치 (Map & Location)
+
+주소 검색 및 좌표 변환 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 지도 API는 JWT 인증이 필요합니다.
+
+[[map-geocoding]]
+== 주소 검색 (Geocoding)
+
+=== 주소 검색
+
+`GET /api/v1/maps/search-address`
+
+주소를 검색하여 좌표를 조회합니다.
+
+==== 요청
+
+include::{snippets}/map/search-address/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/map/search-address/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/map/search-address/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/map/search-address/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/map/search-address/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 키워드 누락 (400 Bad Request)
+
+include::{snippets}/map/search-address-fail-missing-keyword/http-response.adoc[]
+
+include::{snippets}/map/search-address-fail-missing-keyword/response-fields.adoc[]
+
+[[map-reverse-geocoding]]
+== 좌표→주소 변환 (Reverse Geocoding)
+
+=== 좌표로 주소 조회
+
+`GET /api/v1/maps/reverse-geocode`
+
+좌표를 주소로 변환합니다.
+
+==== 요청
+
+include::{snippets}/map/reverse-geocode/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/map/reverse-geocode/request-headers.adoc[]
+
+===== 요청 파라미터
+
+include::{snippets}/map/reverse-geocode/query-parameters.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/map/reverse-geocode/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/map/reverse-geocode/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 유효하지 않은 좌표 (400 Bad Request)
+
+include::{snippets}/map/reverse-geocode-fail-invalid-latitude/http-response.adoc[]
+
+include::{snippets}/map/reverse-geocode-fail-invalid-latitude/response-fields.adoc[]
+
+[[notification]]
+= 알림 및 설정 (Notification & Settings)
+
+알림 설정 및 앱 설정 관리 기능을 제공합니다.
+
+== 인증 요구사항
+
+모든 설정 API는 JWT 인증이 필요합니다.
+
+[[notification-settings]]
+== 알림 설정
+
+=== 알림 설정 조회
+
+`GET /api/v1/members/me/notification-settings`
+
+현재 회원의 알림 설정을 조회합니다.
+
+==== 요청
+
+include::{snippets}/notification-settings/get/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/notification-settings/get/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/notification-settings/get/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/notification-settings/get/response-fields.adoc[]
+
+=== 알림 설정 변경
+
+`PUT /api/v1/members/me/notification-settings`
+
+알림 설정을 변경합니다.
+
+==== 요청
+
+include::{snippets}/notification-settings/update/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/notification-settings/update/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/notification-settings/update/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/notification-settings/update/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/notification-settings/update/response-fields.adoc[]
+
+[[app-settings]]
+== 앱 설정
+
+=== 앱 설정 조회
+
+`GET /api/v1/settings/app`
+
+앱 설정을 조회합니다.
+
+==== 요청
+
+include::{snippets}/app-settings/get/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/app-settings/get/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/app-settings/get/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/app-settings/get/response-fields.adoc[]
+
+=== 사용자 추적 설정
+
+`PUT /api/v1/settings/app/tracking`
+
+사용자 추적(분석) 설정을 변경합니다.
+
+==== 요청
+
+include::{snippets}/app-settings/update-tracking/http-request.adoc[]
+
+===== 요청 헤더
+
+include::{snippets}/app-settings/update-tracking/request-headers.adoc[]
+
+===== 요청 필드
+
+include::{snippets}/app-settings/update-tracking/request-fields.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/app-settings/update-tracking/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/app-settings/update-tracking/response-fields.adoc[]
+
