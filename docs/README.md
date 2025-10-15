@@ -4,9 +4,24 @@
 
 ## 📚 문서 바로가기
 
+### 메인 문서
 - **[API 전체 문서](./api-docs.html)** - Spring REST Docs로 생성된 전체 API 문서
-- **[API 명세서](../API_SPECIFICATION.md)** - Markdown 형식의 API 명세서
-- **[구현 진행상황](../IMPLEMENTATION_PROGRESS.md)** - 현재 구현 진행 상태
+- **[API 명세서](./API_SPECIFICATION.md)** - Markdown 형식의 API 명세서
+- **[구현 진행상황](./IMPLEMENTATION_PROGRESS.md)** - 현재 구현 진행 상태
+
+### 기획/요구사항 문서
+- **[PRD (Product Requirements Document)](./plan/PRD.md)** - 제품 요구사항 문서
+- **[SRS (Software Requirements Specification)](./plan/SRS.md)** - 소프트웨어 요구사항 명세서
+- **[SRD (Software Requirements Document)](./plan/SRD.md)** - 기능 요구사항 문서
+- **[추천 시스템 요구사항](./plan/recommendation_requirement_docs.md)** - 추천 시스템 상세 요구사항
+
+### 아키텍처 문서
+- **[Aggregate 설계](./architecture/aggregate.md)** - DDD Aggregate 경계 설계
+- **[Gradle 멀티모듈 설정](./architecture/GRADLE_SETUP.md)** - Gradle 멀티모듈 구조 가이드
+
+### 배포 문서
+- **[분산 배포 가이드](./deploy/DISTRIBUTED_DEPLOYMENT.md)** - 분산 환경 배포 방법
+- **[빠른 시작 가이드](./deploy/QUICK_START.md)** - 로컬 개발 환경 빠른 시작
 
 ## 🚀 빠른 시작
 
@@ -269,8 +284,9 @@ git push origin main
 
 - [GitHub Repository](https://github.com/Picance/SmartMealTable-springboot-backend-V2)
 - [Issue Tracker](https://github.com/Picance/SmartMealTable-springboot-backend-V2/issues)
-- [SRS (소프트웨어 요구사항 명세서)](../SRS.md)
-- [SRD (기능 요구사항 문서)](../SRD.md)
+- [PRD (제품 요구사항 문서)](./plan/PRD.md)
+- [SRS (소프트웨어 요구사항 명세서)](./plan/SRS.md)
+- [SRD (기능 요구사항 문서)](./plan/SRD.md)
 
 ## 📞 문의
 
