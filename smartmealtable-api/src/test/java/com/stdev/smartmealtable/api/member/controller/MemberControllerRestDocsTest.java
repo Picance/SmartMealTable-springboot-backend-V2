@@ -135,7 +135,11 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("비밀번호 만료일"),
                                 fieldWithPath("data.createdAt")
                                         .type(JsonFieldType.STRING)
-                                        .description("회원 가입일")
+                                        .description("회원 가입일"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -242,7 +246,11 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                         .optional(),
                                 fieldWithPath("data.updatedAt")
                                         .type(JsonFieldType.STRING)
-                                        .description("수정일시")
+                                        .description("수정일시"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -340,7 +348,11 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 데이터"),
                                 fieldWithPath("data.message")
                                         .type(JsonFieldType.STRING)
-                                        .description("결과 메시지")
+                                        .description("결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

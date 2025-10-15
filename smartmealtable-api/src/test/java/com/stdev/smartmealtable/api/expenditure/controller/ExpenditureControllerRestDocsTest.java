@@ -195,7 +195,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.items[].price").type(JsonFieldType.NUMBER)
                                         .description("가격"),
                                 fieldWithPath("data.createdAt").type(JsonFieldType.STRING)
-                                        .description("생성 시각")
+                                        .description("생성 시각"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -275,7 +278,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.items").type(JsonFieldType.ARRAY)
                                         .description("지출 항목 목록 (빈 배열)"),
                                 fieldWithPath("data.createdAt").type(JsonFieldType.STRING)
-                                        .description("생성 시각")
+                                        .description("생성 시각"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -455,7 +461,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.time").type(JsonFieldType.STRING)
                                         .description("결제 시간 (HH:mm:ss)"),
                                 fieldWithPath("data.isParsed").type(JsonFieldType.BOOLEAN)
-                                        .description("파싱 성공 여부")
+                                        .description("파싱 성공 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -506,7 +515,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.time").type(JsonFieldType.STRING)
                                         .description("결제 시간 (HH:mm:ss)"),
                                 fieldWithPath("data.isParsed").type(JsonFieldType.BOOLEAN)
-                                        .description("파싱 성공 여부")
+                                        .description("파싱 성공 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -670,7 +682,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.mealTypeStatistics[].mealType").type(JsonFieldType.STRING)
                                         .description("식사 유형 (BREAKFAST, LUNCH, DINNER, OTHER)"),
                                 fieldWithPath("data.mealTypeStatistics[].amount").type(JsonFieldType.NUMBER)
-                                        .description("식사 유형별 지출 금액")
+                                        .description("식사 유형별 지출 금액"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -876,7 +891,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.expenditures.numberOfElements").type(JsonFieldType.NUMBER)
                                         .description("현재 페이지 요소 개수"),
                                 fieldWithPath("data.expenditures.empty").type(JsonFieldType.BOOLEAN)
-                                        .description("빈 페이지 여부")
+                                        .description("빈 페이지 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -1007,7 +1025,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.expenditures.numberOfElements").type(JsonFieldType.NUMBER)
                                         .description("현재 페이지 요소 개수"),
                                 fieldWithPath("data.expenditures.empty").type(JsonFieldType.BOOLEAN)
-                                        .description("빈 페이지 여부")
+                                        .description("빈 페이지 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -1105,7 +1126,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.memo").type(JsonFieldType.STRING)
                                         .description("메모"),
                                 fieldWithPath("data.items").type(JsonFieldType.ARRAY)
-                                        .description("지출 항목 목록")
+                                        .description("지출 항목 목록"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -1246,7 +1270,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.NULL)
-                                        .description("응답 데이터 (수정 시 null)").optional()
+                                        .description("응답 데이터 (수정 시 null)").optional(),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

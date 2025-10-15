@@ -180,7 +180,10 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favoriteId").type(JsonFieldType.NUMBER).description("생성된 즐겨찾기 ID"),
                                 fieldWithPath("data.storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
                                 fieldWithPath("data.priority").type(JsonFieldType.NUMBER).description("표시 순서 (자동 증가)"),
-                                fieldWithPath("data.favoritedAt").type(JsonFieldType.STRING).description("즐겨찾기 등록 시각")
+                                fieldWithPath("data.favoritedAt").type(JsonFieldType.STRING).description("즐겨찾기 등록 시각"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -281,7 +284,10 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favorites[].imageUrl").type(JsonFieldType.STRING).description("대표 이미지 URL").optional(),
                                 fieldWithPath("data.favorites[].priority").type(JsonFieldType.NUMBER).description("표시 순서"),
                                 fieldWithPath("data.favorites[].favoritedAt").type(JsonFieldType.STRING).description("즐겨찾기 등록 시각"),
-                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수")
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -310,7 +316,10 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.favorites").type(JsonFieldType.ARRAY).description("즐겨찾기 목록 (빈 배열)"),
-                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수 (0)")
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수 (0)"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -356,7 +365,10 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.updatedCount").type(JsonFieldType.NUMBER).description("변경된 즐겨찾기 개수"),
-                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지")
+                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -440,7 +452,10 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.favoriteId").type(JsonFieldType.NUMBER).description("삭제된 즐겨찾기 ID"),
-                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지")
+                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

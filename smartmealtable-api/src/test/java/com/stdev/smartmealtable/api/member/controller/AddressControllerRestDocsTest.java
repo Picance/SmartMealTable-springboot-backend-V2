@@ -127,7 +127,10 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data[].latitude").type(JsonFieldType.NUMBER).description("위도"),
                                 fieldWithPath("data[].longitude").type(JsonFieldType.NUMBER).description("경도"),
                                 fieldWithPath("data[].isPrimary").type(JsonFieldType.BOOLEAN).description("기본 주소 여부"),
-                                fieldWithPath("data[].registeredAt").type(JsonFieldType.STRING).description("등록 일시")
+                                fieldWithPath("data[].registeredAt").type(JsonFieldType.STRING).description("등록 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -180,7 +183,10 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
                                 fieldWithPath("data.longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
                                 fieldWithPath("data.isPrimary").type(JsonFieldType.BOOLEAN).description("기본 주소 여부"),
-                                fieldWithPath("data.registeredAt").type(JsonFieldType.STRING).description("등록 일시")
+                                fieldWithPath("data.registeredAt").type(JsonFieldType.STRING).description("등록 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

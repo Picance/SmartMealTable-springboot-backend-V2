@@ -247,7 +247,11 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("추천 유형 선택 모달 표시 여부"),
                                 fieldWithPath("data.showMonthlyBudgetModal")
                                         .type(JsonFieldType.BOOLEAN)
-                                        .description("월별 예산 확인 모달 표시 여부")
+                                        .description("월별 예산 확인 모달 표시 여부"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -311,7 +315,11 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("확인 시각 (ISO 8601)"),
                                 fieldWithPath("data.monthlyBudget")
                                         .type(JsonFieldType.NUMBER)
-                                        .description("월별 예산 금액")
+                                        .description("월별 예산 금액"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
