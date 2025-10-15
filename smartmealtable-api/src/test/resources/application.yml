@@ -19,6 +19,7 @@ spring:
     serialization:
       write-dates-as-timestamps: false
     time-zone: Asia/Seoul
+    default-property-inclusion: always  # null 값도 JSON에 포함
 
   # Spring AI 자동 설정 비활성화 (테스트 환경)
   autoconfigure:

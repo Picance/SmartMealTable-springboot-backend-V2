@@ -6,9 +6,11 @@ import com.stdev.smartmealtable.core.error.ErrorMessage;
 /**
  * API 공통 응답 구조
  * 
+ * <p>Note: null 값도 JSON 응답에 명시적으로 포함됩니다.</p>
+ * 
  * @param <T> 응답 데이터 타입
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.ALWAYS)  // null 값도 JSON에 포함
 public record ApiResponse<T>(
         ResultType result,
         T data,

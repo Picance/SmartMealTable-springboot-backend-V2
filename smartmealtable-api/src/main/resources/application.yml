@@ -41,6 +41,7 @@ spring:
     serialization:
       write-dates-as-timestamps: false
     time-zone: Asia/Seoul
+    default-property-inclusion: always  # null 값도 JSON에 포함
 
 # Logging 설정
 logging:
