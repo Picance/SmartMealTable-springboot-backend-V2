@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -72,7 +73,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.email").value("hong@example.com"))
                 .andExpect(jsonPath("$.data.name").value("홍길동"))
                 .andExpect(jsonPath("$.data.onboardingComplete").value(false))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -92,7 +93,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E401"))
                 .andExpect(jsonPath("$.error.message").value("이메일 또는 비밀번호가 일치하지 않습니다."))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -122,7 +123,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E401"))
                 .andExpect(jsonPath("$.error.message").value("이메일 또는 비밀번호가 일치하지 않습니다."))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -141,7 +142,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E422"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -160,7 +161,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E422"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -204,7 +205,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data").exists())
                 .andExpect(jsonPath("$.data.accessToken").exists())
                 .andExpect(jsonPath("$.data.refreshToken").exists())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -223,7 +224,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E401"))
                 .andExpect(jsonPath("$.error.message").value("유효하지 않은 Refresh Token입니다."))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     // NOTE: 현재 JWT 구현에서는 Access Token과 Refresh Token이 동일한 형식이므로 구분이 불가능합니다.
@@ -310,8 +311,8 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data").doesNotExist())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()))
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -324,7 +325,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E401"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -339,6 +340,6 @@ class LoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error.code").value("E401"))
                 .andExpect(jsonPath("$.error.message").value("유효하지 않은 토큰입니다."))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 }

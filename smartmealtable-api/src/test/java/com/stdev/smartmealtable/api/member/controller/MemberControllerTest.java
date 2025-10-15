@@ -24,8 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -105,7 +108,7 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.group.groupId").value(testGroupId))
                 .andExpect(jsonPath("$.data.group.name").value("서울대학교"))
                 .andExpect(jsonPath("$.data.recommendationType").exists())
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -146,7 +149,7 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.memberId").value(testMemberId))
                 .andExpect(jsonPath("$.data.nickname").value("변경된닉네임"))
                 .andExpect(jsonPath("$.data.group.groupId").value(testGroupId)) // 기존 그룹 유지
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -172,7 +175,7 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.memberId").value(testMemberId))
                 .andExpect(jsonPath("$.data.nickname").value("초기닉네임")) // 기존 닉네임 유지
                 .andExpect(jsonPath("$.data.group.groupId").value(newGroupId))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -198,7 +201,7 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.memberId").value(testMemberId))
                 .andExpect(jsonPath("$.data.nickname").value("새닉네임"))
                 .andExpect(jsonPath("$.data.group.groupId").value(newGroupId))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test

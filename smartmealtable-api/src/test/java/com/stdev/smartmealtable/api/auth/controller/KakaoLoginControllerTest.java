@@ -21,9 +21,13 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -87,7 +91,7 @@ class KakaoLoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.name").value("카카오유저"))
                 .andExpect(jsonPath("$.data.profileImageUrl").value("https://kakao.com/profile.jpg"))
                 .andExpect(jsonPath("$.data.isNewMember").value(true))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -148,7 +152,7 @@ class KakaoLoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.name").value("변경된이름"))
                 .andExpect(jsonPath("$.data.profileImageUrl").value("https://kakao.com/new-profile.jpg"))
                 .andExpect(jsonPath("$.data.isNewMember").value(false))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -168,7 +172,7 @@ class KakaoLoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.error.code").value("E422"))
                 .andExpect(jsonPath("$.error.message").exists())
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -188,7 +192,7 @@ class KakaoLoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.error.code").value("E422"))
                 .andExpect(jsonPath("$.error.message").exists())
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 
     @Test
@@ -208,6 +212,6 @@ class KakaoLoginControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.error.code").value("E422"))
-                .andExpect(jsonPath("$.data").doesNotExist());
+                .andExpect(jsonPath("$.data").value(nullValue()));
     }
 }

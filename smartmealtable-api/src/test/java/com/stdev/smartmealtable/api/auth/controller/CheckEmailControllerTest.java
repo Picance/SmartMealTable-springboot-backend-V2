@@ -11,8 +11,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -46,7 +49,7 @@ class CheckEmailControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.available").value(true))
                 .andExpect(jsonPath("$.data.message").value("사용 가능한 이메일입니다."))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -68,7 +71,7 @@ class CheckEmailControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.available").value(false))
                 .andExpect(jsonPath("$.data.message").value("이미 사용 중인 이메일입니다."))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test

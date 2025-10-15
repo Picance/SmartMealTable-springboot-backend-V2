@@ -15,7 +15,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -56,7 +58,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("12:30:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -79,7 +81,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("13:45:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -102,7 +104,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.date").exists())
                 .andExpect(jsonPath("$.data.time").value("18:30:00"))
                 .andExpect(jsonPath("$.data.isParsed").value(true))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
@@ -120,7 +122,7 @@ class ParseSmsControllerTest extends AbstractContainerTest {
         // then
         result.andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.data").doesNotExist())
+                .andExpect(jsonPath("$.data").value(nullValue()))
                 .andExpect(jsonPath("$.error.code").value("E422"))
                 .andExpect(jsonPath("$.error.message").value("SMS 메시지 파싱에 실패했습니다. 지원하지 않는 형식입니다."));
     }

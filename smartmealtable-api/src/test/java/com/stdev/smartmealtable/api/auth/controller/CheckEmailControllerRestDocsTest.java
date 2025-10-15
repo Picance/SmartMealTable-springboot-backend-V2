@@ -72,7 +72,11 @@ class CheckEmailControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("사용 가능 여부 (true: 사용 가능, false: 중복)"),
                                 fieldWithPath("data.message")
                                         .type(JsonFieldType.STRING)
-                                        .description("결과 메시지")
+                                        .description("결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }
@@ -105,7 +109,11 @@ class CheckEmailControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("사용 가능 여부 (false: 이미 사용 중)"),
                                 fieldWithPath("data.message")
                                         .type(JsonFieldType.STRING)
-                                        .description("결과 메시지")
+                                        .description("결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

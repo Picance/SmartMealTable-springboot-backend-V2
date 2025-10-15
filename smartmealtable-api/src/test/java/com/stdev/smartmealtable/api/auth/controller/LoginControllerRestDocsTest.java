@@ -94,7 +94,11 @@ class LoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("회원 이름"),
                                 fieldWithPath("data.onboardingComplete")
                                         .type(JsonFieldType.BOOLEAN)
-                                        .description("온보딩 완료 여부")
+                                        .description("온보딩 완료 여부"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
                         )
                 ));
     }

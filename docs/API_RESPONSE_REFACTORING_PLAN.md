@@ -130,60 +130,87 @@ public class ApiResponse<T> {
   - [x] `SignupControllerTest.java` 수정
   - [x] 테스트 통과 확인 (6/6 tests passed)
   
-- [ ] Login Controller 완료
-  - [ ] `LoginControllerTest.java` 수정
-  - [ ] `LoginControllerRestDocsTest.java` 수정 (존재 시)
-  - [ ] 테스트 통과 확인
+- [x] Login Controller 완료
+  - [x] `LoginControllerTest.java` 수정
+  - [x] `LoginControllerRestDocsTest.java` 수정
+  - [x] 테스트 통과 확인
   
-- [ ] Kakao Login Controller 완료
-  - [ ] `KakaoLoginControllerTest.java` 수정
-  - [ ] `KakaoLoginControllerRestDocsTest.java` 수정 (존재 시)
-  - [ ] 테스트 통과 확인
+- [x] Kakao Login Controller 완료
+  - [x] `KakaoLoginControllerTest.java` 수정
+  - [x] 테스트 통과 확인
   
-- [ ] Check Email Controller 완료
-  - [ ] `CheckEmailControllerTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [x] Check Email Controller 완료
+  - [x] `CheckEmailControllerTest.java` 수정
+  - [x] `CheckEmailControllerRestDocsTest.java` 수정 (부분)
+  - [x] 테스트 통과 확인
 
 #### Member Controllers
-- [ ] Member Controller 완료
-  - [ ] `MemberControllerTest.java` 수정
-  - [ ] `MemberControllerRestDocsTest.java` 수정 (존재 시)
-  - [ ] 테스트 통과 확인
+- [x] Member Controller 완료
+  - [x] `MemberControllerTest.java` 수정
+  - [x] 테스트 통과 확인
   
-- [ ] Change Password Controller 완료
-  - [ ] `ChangePasswordControllerTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [x] Change Password Controller 완료
+  - [x] `ChangePasswordControllerTest.java` 수정
+  - [x] 테스트 통과 확인
   
-- [ ] Update Category Preferences Controller 완료
-  - [ ] `UpdateCategoryPreferencesControllerTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [x] Update Category Preferences Controller 완료
+  - [x] `UpdateCategoryPreferencesControllerTest.java` 수정
+  - [x] 테스트 통과 확인
 
 #### Expenditure Controllers
-- [ ] Parse SMS Controller 완료
-  - [ ] `ParseSmsControllerTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [x] Parse SMS Controller 완료
+  - [x] `ParseSmsControllerTest.java` 수정
+  - [x] 테스트 통과 확인
   
-- [ ] Expenditure Controller 완료
-  - [ ] `ExpenditureControllerRestDocsTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [ ] Expenditure Controller RestDocs (진행 중)
+  - [ ] `ExpenditureControllerRestDocsTest.java` 수정 필요
+  - [ ] 성공 케이스에 error 필드 추가 필요
 
 #### Cart Controllers
-- [ ] Cart Controller 완료
-  - [ ] `CartControllerTest.java` 수정
-  - [ ] `CartControllerRestDocsTest.java` 수정 (존재 시)
-  - [ ] 테스트 통과 확인
+- [ ] Cart Controller (RestDocs 수정 필요)
+  - [x] `CartControllerTest.java` - 기본 테스트는 통과
+  - [ ] `CartControllerRestDocsTest.java` - error 필드 추가 필요
 
 #### Policy Controllers
-- [ ] Policy Controller 완료
-  - [ ] `PolicyControllerTest.java` 수정
-  - [ ] `PolicyControllerRestDocsTest.java` 수정 (존재 시)
-  - [ ] 테스트 통과 확인
+- [x] Policy Controller 완료
+  - [x] `PolicyControllerTest.java` 수정
+  - [x] 테스트 통과 확인 (content 필드는 .doesNotExist() 유지)
+  - [ ] `PolicyControllerRestDocsTest.java` - error 필드 추가 필요
 
 #### Store Controllers
-- [ ] Store Controller 완료
-  - [ ] `StoreControllerTest.java` 수정 (존재 시)
-  - [ ] `StoreControllerRestDocsTest.java` 수정
-  - [ ] 테스트 통과 확인
+- [ ] Store Controller (RestDocs 수정 필요)
+  - [x] 기본 테스트는 통과
+  - [ ] `StoreControllerRestDocsTest.java` - error 필드 추가 필요
+
+#### Favorite Controllers  
+- [ ] Favorite Controller (RestDocs 수정 필요)
+  - [ ] `FavoriteControllerRestDocsTest.java` - error 필드 추가 필요
+
+#### Home Controllers
+- [ ] Home Controller (RestDocs 수정 필요)
+  - [ ] `HomeControllerRestDocsTest.java` - error 필드 추가 필요
+
+### ⚠️ Phase 2.5: RestDocs 테스트 수정 (진행 중)
+**문제점**: RestDocs 테스트의 성공 케이스에 `error` 필드가 누락되어 91개 테스트 실패
+
+**해결 방법**: 모든 RestDocs 테스트의 성공 케이스 responseFields에 아래 필드 추가 필요
+```java
+fieldWithPath("error")
+    .type(JsonFieldType.NULL)
+    .description("에러 정보 (성공 시 null)")
+    .optional()
+```
+
+**진행 상황**:
+- [x] `LoginControllerRestDocsTest.java` 완료
+- [x] `CheckEmailControllerRestDocsTest.java` 완료 (부분)
+- [ ] 나머지 28개 RestDocs 테스트 파일 수정 필요
+
+**추가 작업 필요**:
+- ExpenditureControllerRestDocsTest.java (20개 테스트 실패)
+- FavoriteControllerRestDocsTest.java (14개 테스트 실패)
+- HomeControllerRestDocsTest.java (2개 테스트 실패)
+- 기타 RestDocs 테스트 파일들
 
 ### ⏳ Phase 3: 최종 검증
 - [ ] 전체 테스트 실행 성공
