@@ -153,7 +153,8 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favoriteId").description("생성된 즐겨찾기 ID"),
                                 fieldWithPath("data.storeId").description("가게 ID"),
                                 fieldWithPath("data.priority").description("즐겨찾기 순서"),
-                                fieldWithPath("data.favoritedAt").description("즐겨찾기 등록 시각")
+                                fieldWithPath("data.favoritedAt").description("즐겨찾기 등록 시각"),
+                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -234,7 +235,8 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favorites[].imageUrl").description("가게 이미지 URL"),
                                 fieldWithPath("data.favorites[].priority").description("즐겨찾기 순서"),
                                 fieldWithPath("data.favorites[].favoritedAt").description("즐겨찾기 등록 시각"),
-                                fieldWithPath("data.totalCount").description("전체 즐겨찾기 개수")
+                                fieldWithPath("data.totalCount").description("전체 즐겨찾기 개수"),
+                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -285,7 +287,8 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data.updatedCount").description("업데이트된 즐겨찾기 개수"),
-                                fieldWithPath("data.message").description("결과 메시지")
+                                fieldWithPath("data.message").description("결과 메시지"),
+                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -333,7 +336,8 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data.favoriteId").description("삭제된 즐겨찾기 ID"),
-                                fieldWithPath("data.message").description("결과 메시지")
+                                fieldWithPath("data.message").description("결과 메시지"),
+                                fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
