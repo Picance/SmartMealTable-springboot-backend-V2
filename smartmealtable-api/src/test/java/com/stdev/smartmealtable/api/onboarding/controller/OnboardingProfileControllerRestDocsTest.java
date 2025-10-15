@@ -122,7 +122,9 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.group.type").type(JsonFieldType.STRING)
                                         .description("그룹 유형 (UNIVERSITY, COMPANY, OTHER)"),
                                 fieldWithPath("data.group.address").type(JsonFieldType.STRING)
-                                        .description("그룹 주소")
+                                        .description("그룹 주소"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -149,6 +151,8 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -178,6 +182,8 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)

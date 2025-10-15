@@ -93,7 +93,9 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.termsOfServiceUrl").type(JsonFieldType.STRING).description("서비스 이용약관 URL"),
                                 fieldWithPath("data.contactEmail").type(JsonFieldType.STRING).description("문의 이메일"),
                                 fieldWithPath("data.appVersion").type(JsonFieldType.STRING).description("현재 앱 버전"),
-                                fieldWithPath("data.minSupportedVersion").type(JsonFieldType.STRING).description("최소 지원 버전")
+                                fieldWithPath("data.minSupportedVersion").type(JsonFieldType.STRING).description("최소 지원 버전"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -128,7 +130,9 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.allowTracking").type(JsonFieldType.BOOLEAN).description("사용자 추적 허용 여부"),
-                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("설정 변경 일시")
+                                fieldWithPath("data.updatedAt").type(JsonFieldType.STRING).description("설정 변경 일시"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -153,6 +157,8 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                         authorizationHeader(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -185,6 +191,8 @@ class AppSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),

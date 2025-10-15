@@ -95,7 +95,9 @@ class NotificationSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.storeNoticeEnabled").type(JsonFieldType.BOOLEAN).description("가게 공지 알림 활성화 여부"),
                                 fieldWithPath("data.recommendationEnabled").type(JsonFieldType.BOOLEAN).description("음식점 추천 알림 활성화 여부"),
                                 fieldWithPath("data.budgetAlertEnabled").type(JsonFieldType.BOOLEAN).description("예산 알림 활성화 여부"),
-                                fieldWithPath("data.passwordExpiryAlertEnabled").type(JsonFieldType.BOOLEAN).description("비밀번호 만료 알림 활성화 여부")
+                                fieldWithPath("data.passwordExpiryAlertEnabled").type(JsonFieldType.BOOLEAN).description("비밀번호 만료 알림 활성화 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -142,7 +144,9 @@ class NotificationSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.storeNoticeEnabled").type(JsonFieldType.BOOLEAN).description("가게 공지 알림 활성화 여부"),
                                 fieldWithPath("data.recommendationEnabled").type(JsonFieldType.BOOLEAN).description("음식점 추천 알림 활성화 여부"),
                                 fieldWithPath("data.budgetAlertEnabled").type(JsonFieldType.BOOLEAN).description("예산 알림 활성화 여부"),
-                                fieldWithPath("data.passwordExpiryAlertEnabled").type(JsonFieldType.BOOLEAN).description("비밀번호 만료 알림 활성화 여부")
+                                fieldWithPath("data.passwordExpiryAlertEnabled").type(JsonFieldType.BOOLEAN).description("비밀번호 만료 알림 활성화 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -172,6 +176,8 @@ class NotificationSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                         authorizationHeader(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -195,6 +201,8 @@ class NotificationSettingsControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).optional()
+                                        .description("응답 데이터 (에러 시 null)"),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),

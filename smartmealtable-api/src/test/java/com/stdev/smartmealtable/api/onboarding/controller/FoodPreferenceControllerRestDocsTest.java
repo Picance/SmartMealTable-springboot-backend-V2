@@ -147,7 +147,9 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.number").type(JsonFieldType.NUMBER).description("현재 페이지 번호"),
                                 fieldWithPath("data.first").type(JsonFieldType.BOOLEAN).description("첫 페이지 여부"),
                                 fieldWithPath("data.numberOfElements").type(JsonFieldType.NUMBER).description("현재 페이지 요소 개수"),
-                                fieldWithPath("data.empty").type(JsonFieldType.BOOLEAN).description("빈 페이지 여부")
+                                fieldWithPath("data.empty").type(JsonFieldType.BOOLEAN).description("빈 페이지 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -176,7 +178,9 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.preferredFoods[].foodName").type(JsonFieldType.STRING).description("음식 이름"),
                                 fieldWithPath("data.preferredFoods[].categoryName").type(JsonFieldType.STRING).description("카테고리 이름"),
                                 fieldWithPath("data.preferredFoods[].imageUrl").type(JsonFieldType.STRING).description("이미지 URL"),
-                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지")
+                                fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
