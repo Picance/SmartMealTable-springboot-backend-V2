@@ -335,6 +335,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -396,6 +399,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -547,6 +553,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -593,6 +602,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -713,6 +725,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1056,6 +1071,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1154,6 +1172,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1191,6 +1212,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1328,6 +1352,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1387,6 +1414,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
@@ -1424,6 +1454,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
                                         .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)

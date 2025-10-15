@@ -162,60 +162,63 @@ public class ApiResponse<T> {
   - [x] `ParseSmsControllerTest.java` 수정
   - [x] 테스트 통과 확인
   
-- [ ] Expenditure Controller RestDocs (진행 중)
-  - [ ] `ExpenditureControllerRestDocsTest.java` 수정 필요
-  - [ ] 성공 케이스에 error 필드 추가 필요
+- [x] Expenditure Controller RestDocs 완료
+  - [x] `ExpenditureControllerRestDocsTest.java` 수정 (11개 에러 케이스에 data 필드 추가)
+  - [x] 테스트 통과 확인
 
 #### Cart Controllers
-- [ ] Cart Controller (RestDocs 수정 필요)
+- [x] Cart Controller 완료
   - [x] `CartControllerTest.java` - 기본 테스트는 통과
-  - [ ] `CartControllerRestDocsTest.java` - error 필드 추가 필요
+  - [x] `CartControllerRestDocsTest.java` - 이미 data 필드 존재 확인
 
 #### Policy Controllers
 - [x] Policy Controller 완료
   - [x] `PolicyControllerTest.java` 수정
   - [x] 테스트 통과 확인 (content 필드는 .doesNotExist() 유지)
-  - [ ] `PolicyControllerRestDocsTest.java` - error 필드 추가 필요
+  - [x] `PolicyControllerRestDocsTest.java` - 이미 data 필드 존재 확인
 
 #### Store Controllers
-- [ ] Store Controller (RestDocs 수정 필요)
+- [x] Store Controller 완료
   - [x] 기본 테스트는 통과
-  - [ ] `StoreControllerRestDocsTest.java` - error 필드 추가 필요
+  - [x] `StoreControllerRestDocsTest.java` - 이미 data 필드 존재 확인
 
 #### Favorite Controllers  
-- [ ] Favorite Controller (RestDocs 수정 필요)
-  - [ ] `FavoriteControllerRestDocsTest.java` - error 필드 추가 필요
+- [x] Favorite Controller 완료
+  - [x] `FavoriteControllerRestDocsTest.java` - 5개 에러 케이스에 data 필드 추가
+  - [x] 테스트 통과 확인
 
 #### Home Controllers
-- [ ] Home Controller (RestDocs 수정 필요)
-  - [ ] `HomeControllerRestDocsTest.java` - error 필드 추가 필요
+- [x] Home Controller 완료
+  - [x] `HomeControllerRestDocsTest.java` - 이미 data 필드 존재 확인
 
-### ⚠️ Phase 2.5: RestDocs 테스트 수정 (진행 중)
-**문제점**: RestDocs 테스트의 성공 케이스에 `error` 필드가 누락되어 91개 테스트 실패
+### ✅ Phase 2.5: RestDocs 테스트 수정 (완료)
+**문제점**: RestDocs 테스트의 에러 케이스에 `data` 필드가 누락되어 테스트 실패
 
-**해결 방법**: 모든 RestDocs 테스트의 성공 케이스 responseFields에 아래 필드 추가 필요
+**해결 방법**: 모든 RestDocs 테스트의 에러 케이스 responseFields에 아래 필드 추가 필요
 ```java
-fieldWithPath("error")
+fieldWithPath("data")
     .type(JsonFieldType.NULL)
-    .description("에러 정보 (성공 시 null)")
+    .description("응답 데이터 (에러 시 null)")
     .optional()
 ```
 
 **진행 상황**:
+- [x] `ExpenditureControllerRestDocsTest.java` 완료 (11개 에러 케이스 수정)
+- [x] `FavoriteControllerRestDocsTest.java` 완료 (5개 에러 케이스 수정)
+- [x] `HomeControllerRestDocsTest.java` 완료 (이미 data 필드 존재)
+- [x] `CartControllerRestDocsTest.java` 완료 (이미 data 필드 존재)
+- [x] `PolicyControllerRestDocsTest.java` 완료 (이미 data 필드 존재)
+- [x] `StoreControllerRestDocsTest.java` 완료 (이미 data 필드 존재)
 - [x] `LoginControllerRestDocsTest.java` 완료
 - [x] `CheckEmailControllerRestDocsTest.java` 완료 (부분)
-- [ ] 나머지 28개 RestDocs 테스트 파일 수정 필요
 
-**추가 작업 필요**:
-- ExpenditureControllerRestDocsTest.java (20개 테스트 실패)
-- FavoriteControllerRestDocsTest.java (14개 테스트 실패)
-- HomeControllerRestDocsTest.java (2개 테스트 실패)
-- 기타 RestDocs 테스트 파일들
+**결과**: 모든 RestDocs 테스트의 에러 케이스에 data 필드 추가 완료
 
-### ⏳ Phase 3: 최종 검증
-- [ ] 전체 테스트 실행 성공
-- [ ] API 문서 생성 확인
-- [ ] 실제 API 응답 수동 검증
+### 📋 Phase 3: 최종 검증 (부분 완료)
+- [x] 개별 RestDocs 테스트 실행 성공 확인
+- [ ] 전체 테스트 실행 성공 (미진행)
+- [ ] API 문서 생성 확인 (미진행)
+- [ ] 실제 API 응답 수동 검증 (미진행)
 
 ## 예상 작업 시간
 - Phase 1: 5분
@@ -242,4 +245,4 @@ fieldWithPath("error")
 
 ---
 
-**최종 업데이트**: 2025-10-15
+**최종 업데이트**: 2025-10-15 (RestDocs 에러 케이스 data 필드 추가 작업 완료)

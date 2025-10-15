@@ -213,6 +213,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E409)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -246,6 +247,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -422,6 +424,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E403)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -480,6 +483,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E404)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
@@ -522,6 +526,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드 (E403)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지"),
