@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.restdocs.payload.JsonFieldType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -221,6 +222,7 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.stores[]").description("가게 목록"),
                                 fieldWithPath("data.stores[].storeId").description("가게 ID"),
                                 fieldWithPath("data.stores[].name").description("가게명"),
+                                fieldWithPath("data.stores[].categoryId").description("카테고리 ID"),
                                 fieldWithPath("data.stores[].categoryName").description("카테고리명").optional(),
                                 fieldWithPath("data.stores[].address").description("주소"),
                                 fieldWithPath("data.stores[].latitude").description("위도"),
@@ -232,11 +234,11 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.stores[].distance").description("사용자와의 거리 (km)"),
                                 fieldWithPath("data.stores[].storeType").description("가게 유형 (RESTAURANT, CAMPUS_RESTAURANT 등)"),
                                 fieldWithPath("data.stores[].imageUrl").description("가게 대표 이미지 URL"),
-                                fieldWithPath("data.stores[].isOpen").description("영업 중 여부").optional(),
                                 fieldWithPath("data.totalCount").description("전체 가게 수"),
                                 fieldWithPath("data.currentPage").description("현재 페이지 번호 (0부터 시작)"),
                                 fieldWithPath("data.pageSize").description("페이지 크기"),
-                                fieldWithPath("data.totalPages").description("전체 페이지 수")
+                                fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }
@@ -279,7 +281,8 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.stores[]").description("가게 목록"),
                                 fieldWithPath("data.stores[].storeId").description("가게 ID"),
                                 fieldWithPath("data.stores[].name").description("가게명"),
-                                fieldWithPath("data.stores[].categoryName").description("카테고리명"),
+                                fieldWithPath("data.stores[].categoryId").description("카테고리 ID"),
+                                fieldWithPath("data.stores[].categoryName").description("카테고리명").optional(),
                                 fieldWithPath("data.stores[].address").description("주소"),
                                 fieldWithPath("data.stores[].latitude").description("위도"),
                                 fieldWithPath("data.stores[].longitude").description("경도"),
@@ -290,11 +293,11 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.stores[].distance").description("사용자와의 거리 (km)"),
                                 fieldWithPath("data.stores[].storeType").description("가게 유형"),
                                 fieldWithPath("data.stores[].imageUrl").description("가게 대표 이미지 URL"),
-                                fieldWithPath("data.stores[].isOpen").description("영업 중 여부").optional(),
                                 fieldWithPath("data.totalCount").description("전체 가게 수"),
                                 fieldWithPath("data.currentPage").description("현재 페이지 번호"),
                                 fieldWithPath("data.pageSize").description("페이지 크기"),
-                                fieldWithPath("data.totalPages").description("전체 페이지 수")
+                                fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
     }

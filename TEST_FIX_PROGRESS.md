@@ -476,12 +476,57 @@ public ApiResponse<Xxx> createXxx(@Valid @RequestBody XxxRequest request) {
   - **상세 보고서:** `STORE_CONTROLLER_REST_DOCS_FIX_REPORT.md`
   - **테스트 결과:** 7/7 통과 ✅
 
-#### 다른 Controller REST Docs (⏳ 대기 중)
-- [ ] HomeController (3개 엔드포인트)
-- [ ] RecommendationController (3개 엔드포인트)
-- [ ] CartController (6개 엔드포인트)
-- [ ] CategoryController (1개 엔드포인트)
-- [ ] GroupController (1개 엔드포인트)
+#### 다른 Controller REST Docs
+- [x] **HomeController (3개 엔드포인트)** ✅ 완료
+  - 홈 대시보드 조회
+  - 온보딩 상태 조회
+  - 월간 예산 확인 처리
+  - **테스트 결과:** 6/6 통과 ✅
+
+- [x] **RecommendationController (3개 엔드포인트)** ✅ 완료
+  - 음식점 추천 목록 조회
+  - 추천 점수 상세 조회
+  - 추천 타입 변경
+  - **테스트 결과:** 전체 통과 ✅
+
+- [x] **CartController (6개 엔드포인트)** ✅ 완료 - **신규 작성**
+  - 장바구니 아이템 추가/수정/삭제
+  - 장바구니 조회 (전체/가게별)
+  - 장바구니 전체 삭제
+  - **상세 보고서:** `HOME_RECOMMENDATION_CART_REST_DOCS_COMPLETION.md`
+  - **테스트 결과:** 9/9 통과 ✅
+
+- [x] **CategoryController (1개 엔드포인트)** ✅ 완료
+  - 카테고리 목록 조회
+  - **테스트 결과:** 2/2 통과 ✅
+  - **보고서:** `CATEGORY_GROUP_REST_DOCS_COMPLETION_REPORT.md`
+
+- [x] **GroupController (1개 엔드포인트)** ✅ 완료 - **신규 작성**
+  - 그룹 검색 (검색 + 페이징)
+  - **테스트 결과:** 6/6 통과 ✅
+  - **보고서:** `CATEGORY_GROUP_REST_DOCS_COMPLETION_REPORT.md`
+
+---
+
+## 🎉 REST Docs 작업 완료!
+
+### 최종 통계
+- **총 Controller:** 21개
+- **REST Docs 완료:** 21개 ✅ (100%)
+- **REST Docs 누락:** 0개 ❌ (0%)
+- **완료된 엔드포인트:** 73개
+
+### 완료된 작업
+- [x] StoreController (3개 엔드포인트)
+- [x] HomeController (3개 엔드포인트)
+- [x] RecommendationController (3개 엔드포인트)
+- [x] CartController (6개 엔드포인트)
+- [x] CategoryController (1개 엔드포인트)
+- [x] GroupController (1개 엔드포인트)
+
+**최종 업데이트:** 2025-10-15 - 모든 REST Docs 작업 완료
+
+**REST Docs 완료율:** 19/21 Controller = **90.5%**
 
 ---
 

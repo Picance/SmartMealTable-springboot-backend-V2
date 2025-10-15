@@ -92,7 +92,7 @@ public class AuthController {
      * 이메일 중복 검증
      */
     @GetMapping("/check-email")
-    public ApiResponse<CheckEmailResponse> checkEmail(@RequestParam @Email String email) {
+    public ApiResponse<CheckEmailResponse> checkEmail(@RequestParam String email) {
         // 이메일 형식 검증
         if (!isValidEmail(email)) {
             throw new BusinessException(ErrorType.INVALID_EMAIL_FORMAT);
