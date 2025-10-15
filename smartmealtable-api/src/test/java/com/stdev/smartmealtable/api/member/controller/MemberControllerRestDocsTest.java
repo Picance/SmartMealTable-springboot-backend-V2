@@ -168,6 +168,10 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("결과 상태 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
@@ -286,6 +290,10 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("결과 상태 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
@@ -392,6 +400,10 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("결과 상태 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
@@ -440,6 +452,10 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("결과 상태 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
@@ -527,6 +543,10 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("결과 상태 (ERROR)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 정보"),
