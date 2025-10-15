@@ -22,6 +22,7 @@ import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.core.error.ErrorType;
+import jakarta.validation.constraints.Email;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +79,7 @@ public class AuthController {
     /**
      * 로그아웃
      * ArgumentResolver를 통해 JWT 토큰에서 인증 정보를 추출합니다.
+     * TODO: Access Token을 블랙리스트에 추가하는 System Requirement 추가 및 구현
      */
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@AuthUser AuthenticatedUser authenticatedUser) {
@@ -90,7 +92,7 @@ public class AuthController {
      * 이메일 중복 검증
      */
     @GetMapping("/check-email")
-    public ApiResponse<CheckEmailResponse> checkEmail(@RequestParam String email) {
+    public ApiResponse<CheckEmailResponse> checkEmail(@RequestParam @Email String email) {
         // 이메일 형식 검증
         if (!isValidEmail(email)) {
             throw new BusinessException(ErrorType.INVALID_EMAIL_FORMAT);

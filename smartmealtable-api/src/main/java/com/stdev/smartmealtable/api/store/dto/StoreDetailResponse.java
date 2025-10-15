@@ -17,6 +17,7 @@ import java.util.List;
 public record StoreDetailResponse(
         Long storeId,
         String name,
+        Long categoryId,
         String categoryName,
         String address,
         String lotNumberAddress,
@@ -42,6 +43,7 @@ public record StoreDetailResponse(
         return new StoreDetailResponse(
                 store.getStoreId(),
                 store.getName(),
+                store.getCategoryId(),
                 null, // TODO: Category 조인 필요
                 store.getAddress(),
                 store.getLotNumberAddress(),

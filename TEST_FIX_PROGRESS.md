@@ -454,6 +454,37 @@ public ApiResponse<Xxx> createXxx(@Valid @RequestBody XxxRequest request) {
 
 ---
 
+## 🎯 REST Docs 작업 현황
+
+### Phase 5: REST Docs 누락 엔드포인트 작성
+
+#### StoreController REST Docs (✅ 완료)
+- [x] `StoreServiceTest` 작성 완료 (11개 테스트) ✅
+  - 가게 목록 조회 (3개 테스트)
+  - 가게 상세 조회 (3개 테스트)
+  - 자동완성 검색 (5개 테스트)
+  - **상세 보고서:** `STORE_SERVICE_TEST_COMPLETION_REPORT.md`
+  - **테스트 결과:** 11/11 통과 ✅
+
+- [x] `StoreControllerRestDocsTest` 수정 완료 (7개 테스트) ✅
+  - **해결된 문제:**
+    - ✅ `categoryId` 필드 추가 (StoreListResponse, StoreDetailResponse)
+    - ✅ `isOpen` 필드 제거 (영업 중 여부 계산 로직 미구현)
+    - ✅ `favoriteCount` 필드 제거 (DTO에 없었음)
+    - ✅ `totalElements` → `totalCount` 변경
+    - ✅ `categoryName`, `error`, `data` 필드를 `.optional()`로 설정
+  - **상세 보고서:** `STORE_CONTROLLER_REST_DOCS_FIX_REPORT.md`
+  - **테스트 결과:** 7/7 통과 ✅
+
+#### 다른 Controller REST Docs (⏳ 대기 중)
+- [ ] HomeController (3개 엔드포인트)
+- [ ] RecommendationController (3개 엔드포인트)
+- [ ] CartController (6개 엔드포인트)
+- [ ] CategoryController (1개 엔드포인트)
+- [ ] GroupController (1개 엔드포인트)
+
+---
+
 ## 🔧 모듈별 테스트 실행 명령어
 
 ### 개별 테스트 클래스 실행

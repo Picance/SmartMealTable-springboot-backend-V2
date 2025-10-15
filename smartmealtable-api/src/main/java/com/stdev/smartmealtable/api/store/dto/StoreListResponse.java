@@ -39,6 +39,7 @@ public record StoreListResponse(
     public record StoreItem(
             Long storeId,
             String name,
+            Long categoryId,
             String categoryName,
             String address,
             BigDecimal latitude,
@@ -49,7 +50,6 @@ public record StoreListResponse(
             StoreType storeType,
             String imageUrl,
             BigDecimal distance,
-            Boolean isOpen,
             String phoneNumber
     ) {
         public static StoreItem from(StoreWithDistance storeWithDistance) {
@@ -57,6 +57,7 @@ public record StoreListResponse(
             return new StoreItem(
                     store.getStoreId(),
                     store.getName(),
+                    store.getCategoryId(),
                     null, // TODO: Category 조인 필요
                     store.getAddress(),
                     store.getLatitude(),
@@ -67,7 +68,6 @@ public record StoreListResponse(
                     store.getStoreType(),
                     store.getImageUrl(),
                     storeWithDistance.distance(),
-                    null, // TODO: 영업 중 여부 계산
                     store.getPhoneNumber()
             );
         }
