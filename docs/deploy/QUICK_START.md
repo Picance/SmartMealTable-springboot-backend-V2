@@ -111,7 +111,7 @@ docker-compose -f docker-compose.batch.yml --profile crawler up -d crawler
 
 ## 📋 상세 가이드
 
-전체 상세 가이드는 [DISTRIBUTED_DEPLOYMENT.md](./DISTRIBUTED_DEPLOYMENT.md)를 참고하세요.
+전체 상세 가이드는 [DISTRIBUTED_DEPLOYMENT.md](docs/deploy/DISTRIBUTED_DEPLOYMENT.md)를 참고하세요.
 
 ## ⚠️ 주의사항
 
