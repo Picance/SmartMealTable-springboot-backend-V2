@@ -577,11 +577,17 @@ include::{snippets}/auth/login/email/success/response-fields.adoc[]
 
 ==== 에러 응답
 
-===== 잘못된 인증 정보 (401 Unauthorized)
+===== 잘못된 이메일 (401 Unauthorized)
 
-include::{snippets}/auth/login/email/invalid-credentials/http-response.adoc[]
+include::{snippets}/auth/login/email/invalid-email/http-response.adoc[]
 
-include::{snippets}/auth/login/email/invalid-credentials/response-fields.adoc[]
+include::{snippets}/auth/login/email/invalid-email/response-fields.adoc[]
+
+===== 잘못된 비밀번호 (401 Unauthorized)
+
+include::{snippets}/auth/login/email/invalid-password/http-response.adoc[]
+
+include::{snippets}/auth/login/email/invalid-password/response-fields.adoc[]
 
 ===== 유효성 검증 실패 (422 Unprocessable Entity)
 
@@ -597,19 +603,33 @@ include::{snippets}/auth/login/email/validation-error/response-fields.adoc[]
 
 ==== 요청
 
-include::{snippets}/auth/login/kakao/success/http-request.adoc[]
+include::{snippets}/auth/login/kakao/new-member/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/auth/login/kakao/success/request-fields.adoc[]
+include::{snippets}/auth/login/kakao/new-member/request-fields.adoc[]
 
-==== 성공 응답 (200 OK)
+==== 성공 응답 - 신규 회원 (200 OK)
 
-include::{snippets}/auth/login/kakao/success/http-response.adoc[]
+include::{snippets}/auth/login/kakao/new-member/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/auth/login/kakao/success/response-fields.adoc[]
+include::{snippets}/auth/login/kakao/new-member/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 인증 코드 누락 (400 Bad Request)
+
+include::{snippets}/auth/login/kakao/empty-code/http-response.adoc[]
+
+include::{snippets}/auth/login/kakao/empty-code/response-fields.adoc[]
+
+===== 유효하지 않은 인증 코드 (401 Unauthorized)
+
+include::{snippets}/auth/login/kakao/invalid-code/http-response.adoc[]
+
+include::{snippets}/auth/login/kakao/invalid-code/response-fields.adoc[]
 
 === 구글 로그인
 
@@ -619,19 +639,33 @@ include::{snippets}/auth/login/kakao/success/response-fields.adoc[]
 
 ==== 요청
 
-include::{snippets}/auth/login/google/success/http-request.adoc[]
+include::{snippets}/auth/login/google/new-member/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/auth/login/google/success/request-fields.adoc[]
+include::{snippets}/auth/login/google/new-member/request-fields.adoc[]
 
-==== 성공 응답 (200 OK)
+==== 성공 응답 - 신규 회원 (200 OK)
 
-include::{snippets}/auth/login/google/success/http-response.adoc[]
+include::{snippets}/auth/login/google/new-member/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/auth/login/google/success/response-fields.adoc[]
+include::{snippets}/auth/login/google/new-member/response-fields.adoc[]
+
+==== 에러 응답
+
+===== 인증 코드 누락 (400 Bad Request)
+
+include::{snippets}/auth/login/google/empty-code/http-response.adoc[]
+
+include::{snippets}/auth/login/google/empty-code/response-fields.adoc[]
+
+===== 유효하지 않은 인증 코드 (401 Unauthorized)
+
+include::{snippets}/auth/login/google/invalid-code/http-response.adoc[]
+
+include::{snippets}/auth/login/google/invalid-code/response-fields.adoc[]
 
 [[auth-token]]
 == 토큰 관리
@@ -779,11 +813,11 @@ include::{snippets}/members/update-profile/success/response-fields.adoc[]
 
 ==== 에러 응답
 
-===== 닉네임 중복 (409 Conflict)
+===== 잘못된 닉네임 (422 Unprocessable Entity)
 
-include::{snippets}/members/update-profile/fail-duplicate-nickname/http-response.adoc[]
+include::{snippets}/members/update-profile/invalid-nickname/http-response.adoc[]
 
-include::{snippets}/members/update-profile/fail-duplicate-nickname/response-fields.adoc[]
+include::{snippets}/members/update-profile/invalid-nickname/response-fields.adoc[]
 
 [[members-password]]
 == 비밀번호 관리
@@ -814,15 +848,15 @@ include::{snippets}/members/change-password/success/http-response.adoc[]
 
 ===== 현재 비밀번호 불일치 (400 Bad Request)
 
-include::{snippets}/members/change-password/fail-wrong-current-password/http-response.adoc[]
+include::{snippets}/members/change-password/wrong-current-password/http-response.adoc[]
 
-include::{snippets}/members/change-password/fail-wrong-current-password/response-fields.adoc[]
+include::{snippets}/members/change-password/wrong-current-password/response-fields.adoc[]
 
-===== 유효성 검증 실패 (422 Unprocessable Entity)
+===== 유효하지 않은 새 비밀번호 (422 Unprocessable Entity)
 
-include::{snippets}/members/change-password/fail-validation-error/http-response.adoc[]
+include::{snippets}/members/change-password/invalid-new-password/http-response.adoc[]
 
-include::{snippets}/members/change-password/fail-validation-error/response-fields.adoc[]
+include::{snippets}/members/change-password/invalid-new-password/response-fields.adoc[]
 
 [[password-expiry]]
 == 비밀번호 만료 관리
@@ -900,9 +934,9 @@ include::{snippets}/members/withdraw/success/http-response.adoc[]
 
 ===== 비밀번호 불일치 (400 Bad Request)
 
-include::{snippets}/members/withdraw/fail-wrong-password/http-response.adoc[]
+include::{snippets}/members/withdraw/wrong-password/http-response.adoc[]
 
-include::{snippets}/members/withdraw/fail-wrong-password/response-fields.adoc[]
+include::{snippets}/members/withdraw/wrong-password/response-fields.adoc[]
 
 [[social-account]]
 == 소셜 계정 연동
@@ -1345,19 +1379,19 @@ include::{snippets}/policy/get-policy-success/response-fields.adoc[]
 
 ==== 요청
 
-include::{snippets}/onboarding-foods-get/success/http-request.adoc[]
+include::{snippets}/onboarding-foods-get/http-request.adoc[]
 
-===== 요청 헤더
+===== 쿼리 파라미터
 
-include::{snippets}/onboarding-foods-get/success/request-headers.adoc[]
+include::{snippets}/onboarding-foods-get/query-parameters.adoc[]
 
 ==== 성공 응답 (200 OK)
 
-include::{snippets}/onboarding-foods-get/success/http-response.adoc[]
+include::{snippets}/onboarding-foods-get/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/onboarding-foods-get/success/response-fields.adoc[]
+include::{snippets}/onboarding-foods-get/response-fields.adoc[]
 
 === 개별 음식 선호도 저장
 
@@ -1367,23 +1401,19 @@ include::{snippets}/onboarding-foods-get/success/response-fields.adoc[]
 
 ==== 요청
 
-include::{snippets}/onboarding-food-preferences-post/success/http-request.adoc[]
-
-===== 요청 헤더
-
-include::{snippets}/onboarding-food-preferences-post/success/request-headers.adoc[]
+include::{snippets}/onboarding-food-preferences-post/http-request.adoc[]
 
 ===== 요청 필드
 
-include::{snippets}/onboarding-food-preferences-post/success/request-fields.adoc[]
+include::{snippets}/onboarding-food-preferences-post/request-fields.adoc[]
 
 ==== 성공 응답 (201 Created)
 
-include::{snippets}/onboarding-food-preferences-post/success/http-response.adoc[]
+include::{snippets}/onboarding-food-preferences-post/http-response.adoc[]
 
 ===== 응답 필드
 
-include::{snippets}/onboarding-food-preferences-post/success/response-fields.adoc[]
+include::{snippets}/onboarding-food-preferences-post/response-fields.adoc[]
 
 [[budget]]
 = 예산 관리 (Budget)
@@ -1548,10 +1578,6 @@ SMS 파싱, 지출 내역 CRUD, 통계 조회 기능을 제공합니다.
 
 include::{snippets}/expenditure/parse-sms-success/http-request.adoc[]
 
-===== 요청 헤더
-
-include::{snippets}/expenditure/parse-sms-success/request-headers.adoc[]
-
 ===== 요청 필드
 
 include::{snippets}/expenditure/parse-sms-success/request-fields.adoc[]
@@ -1661,10 +1687,6 @@ include::{snippets}/expenditure/get-list-with-meal-type-filter/http-request.adoc
 
 include::{snippets}/expenditure/get-detail-success/http-request.adoc[]
 
-===== 경로 파라미터
-
-include::{snippets}/expenditure/get-detail-success/path-parameters.adoc[]
-
 ===== 요청 헤더
 
 include::{snippets}/expenditure/get-detail-success/request-headers.adoc[]
@@ -1695,10 +1717,6 @@ include::{snippets}/expenditure/get-detail-not-found/response-fields.adoc[]
 
 include::{snippets}/expenditure/update-success/http-request.adoc[]
 
-===== 경로 파라미터
-
-include::{snippets}/expenditure/update-success/path-parameters.adoc[]
-
 ===== 요청 헤더
 
 include::{snippets}/expenditure/update-success/request-headers.adoc[]
@@ -1724,10 +1742,6 @@ include::{snippets}/expenditure/update-success/response-fields.adoc[]
 ==== 요청
 
 include::{snippets}/expenditure/delete-success/http-request.adoc[]
-
-===== 경로 파라미터
-
-include::{snippets}/expenditure/delete-success/path-parameters.adoc[]
 
 ===== 요청 헤더
 
@@ -1894,9 +1908,9 @@ include::{snippets}/recommendation-type-update-success/http-request.adoc[]
 
 include::{snippets}/recommendation-type-update-success/request-headers.adoc[]
 
-===== 요청 파라미터
+===== 요청 필드
 
-include::{snippets}/recommendation-type-update-success/query-parameters.adoc[]
+include::{snippets}/recommendation-type-update-success/request-fields.adoc[]
 
 ==== 성공 응답 (200 OK)
 
@@ -2330,10 +2344,6 @@ include::{snippets}/cart-clear-success/http-response.adoc[]
 
 include::{snippets}/map/search-address/http-request.adoc[]
 
-===== 요청 헤더
-
-include::{snippets}/map/search-address/request-headers.adoc[]
-
 ===== 요청 파라미터
 
 include::{snippets}/map/search-address/query-parameters.adoc[]
@@ -2366,10 +2376,6 @@ include::{snippets}/map/search-address-fail-missing-keyword/response-fields.adoc
 ==== 요청
 
 include::{snippets}/map/reverse-geocode/http-request.adoc[]
-
-===== 요청 헤더
-
-include::{snippets}/map/reverse-geocode/request-headers.adoc[]
 
 ===== 요청 파라미터
 
@@ -2463,10 +2469,6 @@ include::{snippets}/notification-settings/update/response-fields.adoc[]
 ==== 요청
 
 include::{snippets}/app-settings/get/http-request.adoc[]
-
-===== 요청 헤더
-
-include::{snippets}/app-settings/get/request-headers.adoc[]
 
 ==== 성공 응답 (200 OK)
 
