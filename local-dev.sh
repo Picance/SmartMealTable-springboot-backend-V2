@@ -21,7 +21,7 @@ show_help() {
     echo "  start     모든 서비스 시작 (기본값)"
     echo "  stop      모든 서비스 중지"
     echo "  restart   모든 서비스 재시작"
-    echo "  build     Docker 이미지 다시 빌드"
+    echo "  build     Gradle 빌드 및 Docker 이미지 다시 빌드"
     echo "  logs      서비스 로그 확인"
     echo "  status    서비스 상태 확인"
     echo "  crawler   크롤러 실행"
@@ -101,6 +101,29 @@ restart_services() {
 # 이미지 빌드
 build_images() {
     echo -e "${YELLOW}🔨 Docker 이미지 빌드 중...${NC}"
+    # 먼저 Gradle 빌드 실행 (테스트는 기본적으로 건너뜀)
+    # RUN_TESTS=true 환경변수 설정 시 테스트를 실행합니다.
+    if [ -x "./gradlew" ]; then
+        echo -e "${YELLOW}⚙️  Gradle wrapper로 빌드 실행 (테스트 ${GREEN}${RUN_TESTS:+실행}${RUN_TESTS:+'가능'}${NC}${YELLOW})...${NC}"
+        if [ "${RUN_TESTS}" = "true" ]; then
+            ./gradlew build
+        else
+            ./gradlew build -x test
+        fi
+    else
+        echo -e "${YELLOW}⚙️  gradlew가 없거나 실행 불가. 전역 gradle을 사용하여 빌드 시도합니다...${NC}"
+        if command -v gradle >/dev/null 2>&1; then
+            if [ "${RUN_TESTS}" = "true" ]; then
+                gradle build
+            else
+                gradle build -x test
+            fi
+        else
+            echo -e "${RED}❌ gradlew 또는 gradle을 찾을 수 없습니다. Gradle 빌드를 건너뜁니다.${NC}"
+        fi
+    fi
+
+    # Docker 이미지 빌드
     docker-compose -f docker-compose.local.yml build --no-cache
     echo -e "${GREEN}✅ 이미지 빌드가 완료되었습니다.${NC}"
 }
