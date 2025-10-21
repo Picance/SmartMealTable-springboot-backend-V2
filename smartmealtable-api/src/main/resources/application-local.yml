@@ -1,6 +1,5 @@
 spring:
-  profiles:
-    active: local
+  profiles: local
 
   jpa:
     hibernate:
