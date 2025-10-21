@@ -50,6 +50,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root123
+      DB_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      DB_USERNAME: root
+      DB_PASSWORD: root123
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       JAVA_OPTS: "-Xms256m -Xmx512m"
@@ -81,6 +84,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root123
+      DB_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      DB_USERNAME: root
+      DB_PASSWORD: root123
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
@@ -103,6 +109,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root123
+      DB_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
+      DB_USERNAME: root
+      DB_PASSWORD: root123
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:

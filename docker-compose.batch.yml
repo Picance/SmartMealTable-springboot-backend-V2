@@ -9,9 +9,9 @@ services:
       - "8082:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - DATABASE_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable
-      - DATABASE_USERNAME=smartmeal_user
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - DB_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - DB_USERNAME=smartmeal_user
+      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=${ADMIN_PRIVATE_IP}
       - REDIS_PORT=6379
       - JVM_OPTS=-Xms150m -Xmx300m
@@ -41,9 +41,9 @@ services:
       dockerfile: Dockerfile.crawler
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - DATABASE_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable
-      - DATABASE_USERNAME=smartmeal_user
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - DB_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - DB_USERNAME=smartmeal_user
+      - DB_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=${ADMIN_PRIVATE_IP}
       - REDIS_PORT=6379
       - JVM_OPTS=-Xms200m -Xmx400m

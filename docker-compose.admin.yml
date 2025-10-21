@@ -9,9 +9,9 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - DATABASE_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable
-      - DATABASE_USERNAME=smartmeal_user
-      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - DB_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - DB_USERNAME=smartmeal_user
+      - DB_PASSWORD=${DB_PASSWORD}
       - JVM_OPTS=-Xms200m -Xmx400m
     deploy:
       resources:
