@@ -43,6 +43,12 @@ spring:
     time-zone: Asia/Seoul
     default-property-inclusion: always  # null 값도 JSON에 포함
 
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThatShouldBeLongEnough}
+  access-token-expiry: 3600000  # 1시간 (밀리초)
+  refresh-token-expiry: 86400000  # 24시간 (밀리초)
+
 # Logging 설정
 logging:
   level:
