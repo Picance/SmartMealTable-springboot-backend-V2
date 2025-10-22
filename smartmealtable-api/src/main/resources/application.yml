@@ -22,7 +22,7 @@ spring:
   # JPA 설정
   jpa:
     database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    # Hibernate가 자동으로 MySQL 방언 선택하도록 함 (MySQL8Dialect는 deprecated)
     hibernate:
       ddl-auto: validate  # 운영: validate, 개발: update
     properties:
@@ -53,10 +53,10 @@ jwt:
 logging:
   level:
     root: INFO
-    com.stdev.smartmealtable: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.stdev.smartmealtable: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
     # Tomcat HTTP 프로세서 로그 제어 (EOFException 등 불필요한 연결 에러 필터링)
     org.apache.coyote.http11.Http11Processor: WARN
     org.apache.catalina.connector.CoyoteAdapter: WARN
@@ -64,6 +64,8 @@ logging:
     org.springframework.data.jpa.repository.query.NamedQuery: WARN
     # Hibernate 리소스 트랜잭션 로깅 억제 (NamedQuery 조회 시 의도적 예외)
     org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl: WARN
+    # Tomcat 클래스 로더 ClassNotFoundException 억제 (Java 22 호환성 클래스, Java 21에서는 무해함)
+    org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader: ERROR
 
 # Server 설정
 server:
