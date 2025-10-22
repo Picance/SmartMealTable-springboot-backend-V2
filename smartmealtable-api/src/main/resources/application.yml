@@ -57,6 +57,13 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    # Tomcat HTTP 프로세서 로그 제어 (EOFException 등 불필요한 연결 에러 필터링)
+    org.apache.coyote.http11.Http11Processor: WARN
+    org.apache.catalina.connector.CoyoteAdapter: WARN
+    # Spring Data JPA NamedQuery 조회 경고 억제
+    org.springframework.data.jpa.repository.query.NamedQuery: WARN
+    # Hibernate 리소스 트랜잭션 로깅 억제 (NamedQuery 조회 시 의도적 예외)
+    org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl: WARN
 
 # Server 설정
 server:
@@ -64,6 +71,16 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+
+# Actuator 설정 (모니터링 엔드포인트)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: always
 
 ---
 spring:
