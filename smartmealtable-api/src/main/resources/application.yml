@@ -64,3 +64,15 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+logging:
+  level:
+    root: DEBUG
