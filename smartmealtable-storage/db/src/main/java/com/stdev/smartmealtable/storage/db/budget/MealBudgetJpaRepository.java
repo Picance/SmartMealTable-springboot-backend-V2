@@ -17,12 +17,17 @@ public interface MealBudgetJpaRepository extends JpaRepository<MealBudgetJpaEnti
     /**
      * 일일 예산 ID로 식사 예산 목록 조회
      */
-    List<MealBudgetJpaEntity> findByDailyBudgetId(Long dailyBudgetId);
+    @Query("SELECT m FROM MealBudgetJpaEntity m WHERE m.dailyBudgetId = :dailyBudgetId")
+    List<MealBudgetJpaEntity> findByDailyBudgetId(@Param("dailyBudgetId") Long dailyBudgetId);
 
     /**
      * 일일 예산 ID와 식사 유형으로 식사 예산 조회
      */
-    Optional<MealBudgetJpaEntity> findByDailyBudgetIdAndMealType(Long dailyBudgetId, MealType mealType);
+    @Query("SELECT m FROM MealBudgetJpaEntity m WHERE m.dailyBudgetId = :dailyBudgetId AND m.mealType = :mealType")
+    Optional<MealBudgetJpaEntity> findByDailyBudgetIdAndMealType(
+            @Param("dailyBudgetId") Long dailyBudgetId,
+            @Param("mealType") MealType mealType
+    );
 
     /**
      * 회원의 특정 날짜 식사 예산 목록 조회

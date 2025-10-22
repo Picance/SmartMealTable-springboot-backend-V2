@@ -18,12 +18,14 @@ public interface GroupJpaRepository extends JpaRepository<GroupJpaEntity, Long> 
     /**
      * Type으로 조회
      */
-    List<GroupJpaEntity> findByType(GroupType type);
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.type = :type")
+    List<GroupJpaEntity> findByType(@Param("type") GroupType type);
 
     /**
      * 이름으로 검색
      */
-    List<GroupJpaEntity> findByNameContaining(String name);
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.name LIKE %:name%")
+    List<GroupJpaEntity> findByNameContaining(@Param("name") String name);
 
     /**
      * 타입과 이름으로 검색 (페이징)

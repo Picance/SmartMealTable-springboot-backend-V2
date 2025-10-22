@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.storage.db.settings.repository;
 
 import com.stdev.smartmealtable.storage.db.settings.entity.AppSettingsJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -16,5 +18,6 @@ public interface AppSettingsJpaRepository extends JpaRepository<AppSettingsJpaEn
      * @param memberId 회원 ID
      * @return 앱 설정 JPA Entity (Optional)
      */
-    Optional<AppSettingsJpaEntity> findByMemberId(Long memberId);
+    @Query("SELECT a FROM AppSettingsJpaEntity a WHERE a.memberId = :memberId")
+    Optional<AppSettingsJpaEntity> findByMemberId(@Param("memberId") Long memberId);
 }

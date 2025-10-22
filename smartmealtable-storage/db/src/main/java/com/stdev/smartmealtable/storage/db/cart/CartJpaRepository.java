@@ -29,7 +29,8 @@ public interface CartJpaRepository extends JpaRepository<CartEntity, Long> {
     /**
      * 회원 ID와 가게 ID로 장바구니 존재 여부 확인
      */
-    boolean existsByMemberIdAndStoreId(Long memberId, Long storeId);
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END FROM CartEntity c WHERE c.memberId = :memberId AND c.storeId = :storeId")
+    boolean existsByMemberIdAndStoreId(@Param("memberId") Long memberId, @Param("storeId") Long storeId);
     
     /**
      * 회원의 특정 가게를 제외한 다른 장바구니 삭제

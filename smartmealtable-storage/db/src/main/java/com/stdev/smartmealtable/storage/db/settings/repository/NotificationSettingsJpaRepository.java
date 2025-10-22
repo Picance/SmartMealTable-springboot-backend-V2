@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.storage.db.settings.repository;
 
 import com.stdev.smartmealtable.storage.db.settings.entity.NotificationSettingsJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -16,5 +18,6 @@ public interface NotificationSettingsJpaRepository extends JpaRepository<Notific
      * @param memberId 회원 ID
      * @return 알림 설정 JPA Entity (Optional)
      */
-    Optional<NotificationSettingsJpaEntity> findByMemberId(Long memberId);
+    @Query("SELECT n FROM NotificationSettingsJpaEntity n WHERE n.memberId = :memberId")
+    Optional<NotificationSettingsJpaEntity> findByMemberId(@Param("memberId") Long memberId);
 }

@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.storage.db.member.repository;
 
 import com.stdev.smartmealtable.storage.db.member.entity.MonthlyBudgetConfirmationJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -18,7 +20,12 @@ public interface MonthlyBudgetConfirmationJpaRepository extends JpaRepository<Mo
      * @param month    월 (1-12)
      * @return 확인 이력 (존재하지 않으면 empty)
      */
-    Optional<MonthlyBudgetConfirmationJpaEntity> findByMemberIdAndYearAndMonth(Long memberId, Integer year, Integer month);
+    @Query("SELECT m FROM MonthlyBudgetConfirmationJpaEntity m WHERE m.memberId = :memberId AND m.year = :year AND m.month = :month")
+    Optional<MonthlyBudgetConfirmationJpaEntity> findByMemberIdAndYearAndMonth(
+            @Param("memberId") Long memberId,
+            @Param("year") Integer year,
+            @Param("month") Integer month
+    );
 
     /**
      * 회원의 특정 연월 예산 확인 여부 확인
@@ -28,5 +35,10 @@ public interface MonthlyBudgetConfirmationJpaRepository extends JpaRepository<Mo
      * @param month    월 (1-12)
      * @return 확인 이력이 존재하면 true
      */
-    boolean existsByMemberIdAndYearAndMonth(Long memberId, Integer year, Integer month);
+    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END FROM MonthlyBudgetConfirmationJpaEntity m WHERE m.memberId = :memberId AND m.year = :year AND m.month = :month")
+    boolean existsByMemberIdAndYearAndMonth(
+            @Param("memberId") Long memberId,
+            @Param("year") Integer year,
+            @Param("month") Integer month
+    );
 }

@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.storage.db.store;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -12,5 +14,6 @@ public interface StoreOpeningHourJpaRepository extends JpaRepository<StoreOpenin
     /**
      * 가게 ID로 영업시간 목록 조회
      */
-    List<StoreOpeningHourJpaEntity> findByStoreId(Long storeId);
+    @Query("SELECT s FROM StoreOpeningHourJpaEntity s WHERE s.storeId = :storeId")
+    List<StoreOpeningHourJpaEntity> findByStoreId(@Param("storeId") Long storeId);
 }

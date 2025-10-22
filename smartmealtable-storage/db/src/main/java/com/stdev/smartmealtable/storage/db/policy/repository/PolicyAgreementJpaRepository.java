@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.storage.db.policy.repository;
 
 import com.stdev.smartmealtable.storage.db.policy.PolicyAgreementJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -13,10 +15,15 @@ public interface PolicyAgreementJpaRepository extends JpaRepository<PolicyAgreem
     /**
      * 회원의 모든 약관 동의 내역 조회
      */
-    List<PolicyAgreementJpaEntity> findByMemberAuthenticationId(Long memberAuthenticationId);
+    @Query("SELECT p FROM PolicyAgreementJpaEntity p WHERE p.memberAuthenticationId = :memberAuthenticationId")
+    List<PolicyAgreementJpaEntity> findByMemberAuthenticationId(@Param("memberAuthenticationId") Long memberAuthenticationId);
 
     /**
      * 특정 회원의 특정 약관 동의 여부 확인
      */
-    boolean existsByMemberAuthenticationIdAndPolicyId(Long memberAuthenticationId, Long policyId);
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END FROM PolicyAgreementJpaEntity p WHERE p.memberAuthenticationId = :memberAuthenticationId AND p.policyId = :policyId")
+    boolean existsByMemberAuthenticationIdAndPolicyId(
+            @Param("memberAuthenticationId") Long memberAuthenticationId,
+            @Param("policyId") Long policyId
+    );
 }

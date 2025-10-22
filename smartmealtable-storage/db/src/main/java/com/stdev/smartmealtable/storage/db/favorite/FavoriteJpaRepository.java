@@ -18,7 +18,8 @@ public interface FavoriteJpaRepository extends JpaRepository<FavoriteEntity, Lon
      * @param memberId 회원 ID
      * @return 즐겨찾기 엔티티 목록
      */
-    List<FavoriteEntity> findByMemberIdOrderByPriorityAsc(Long memberId);
+    @Query("SELECT f FROM FavoriteEntity f WHERE f.memberId = :memberId ORDER BY f.priority ASC")
+    List<FavoriteEntity> findByMemberIdOrderByPriorityAsc(@Param("memberId") Long memberId);
     
     /**
      * 회원과 가게로 즐겨찾기 조회
@@ -27,7 +28,8 @@ public interface FavoriteJpaRepository extends JpaRepository<FavoriteEntity, Lon
      * @param storeId 가게 ID
      * @return Optional FavoriteEntity
      */
-    Optional<FavoriteEntity> findByMemberIdAndStoreId(Long memberId, Long storeId);
+    @Query("SELECT f FROM FavoriteEntity f WHERE f.memberId = :memberId AND f.storeId = :storeId")
+    Optional<FavoriteEntity> findByMemberIdAndStoreId(@Param("memberId") Long memberId, @Param("storeId") Long storeId);
     
     /**
      * 회원의 즐겨찾기 개수 조회
@@ -35,7 +37,8 @@ public interface FavoriteJpaRepository extends JpaRepository<FavoriteEntity, Lon
      * @param memberId 회원 ID
      * @return 즐겨찾기 개수
      */
-    long countByMemberId(Long memberId);
+    @Query("SELECT COUNT(f) FROM FavoriteEntity f WHERE f.memberId = :memberId")
+    long countByMemberId(@Param("memberId") Long memberId);
     
     /**
      * 회원의 최대 우선순위 값 조회
@@ -53,5 +56,6 @@ public interface FavoriteJpaRepository extends JpaRepository<FavoriteEntity, Lon
      * @param storeId 가게 ID
      * @return 존재 여부
      */
-    boolean existsByMemberIdAndStoreId(Long memberId, Long storeId);
+    @Query("SELECT CASE WHEN COUNT(f) > 0 THEN TRUE ELSE FALSE END FROM FavoriteEntity f WHERE f.memberId = :memberId AND f.storeId = :storeId")
+    boolean existsByMemberIdAndStoreId(@Param("memberId") Long memberId, @Param("storeId") Long storeId);
 }
