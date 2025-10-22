@@ -2,9 +2,9 @@ spring:
   application:
     name: smartmealtable-api
 
-  # Client 설정 포함
+  # 프로필 설정 (client, monitoring)
   profiles:
-    include: client
+    include: client,monitoring
 
   # Database 설정
   datasource:

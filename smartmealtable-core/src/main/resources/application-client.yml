@@ -4,18 +4,18 @@
 # OAuth 설정
 oauth:
   kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    redirect-uri: ${KAKAO_REDIRECT_URI}
+    client-id: ${KAKAO_CLIENT_ID:test-kakao-client-id}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:3000/auth/kakao/callback}
   google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
-    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    client-id: ${GOOGLE_CLIENT_ID:test-google-client-id}
+    client-secret: ${GOOGLE_CLIENT_SECRET:test-google-client-secret}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/auth/google/callback}
 
 # 네이버 지도 API 설정
 naver:
   map:
-    client-id: ${NAVER_MAP_CLIENT_ID}
-    client-secret: ${NAVER_MAP_CLIENT_SECRET}
+    client-id: ${NAVER_MAP_CLIENT_ID:test-naver-map-client-id}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET:test-naver-map-client-secret}
 
 # Spring AI 설정
 spring:

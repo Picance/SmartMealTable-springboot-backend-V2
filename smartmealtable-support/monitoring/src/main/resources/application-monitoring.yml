@@ -1,0 +1,14 @@
+# Actuator 및 Prometheus 모니터링 설정
+# smartmealtable-support:monitoring 모듈의 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus,health"
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
