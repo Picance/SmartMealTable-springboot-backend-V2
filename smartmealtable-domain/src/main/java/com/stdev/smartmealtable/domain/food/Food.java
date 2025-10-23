@@ -38,4 +38,23 @@ public class Food {
         food.averagePrice = averagePrice;
         return food;
     }
+
+    /**
+     * 새로운 음식 생성 (테스트 및 초기화 시 사용)
+     */
+    public static Food create(
+            String foodName,
+            Long categoryId,
+            String description,
+            String imageUrl,
+            Integer averagePrice
+    ) {
+        Food food = new Food();
+        food.foodName = foodName;
+        food.categoryId = categoryId;
+        food.description = description;
+        food.imageUrl = imageUrl;
+        food.averagePrice = averagePrice;
+        return food;
+    }
 }

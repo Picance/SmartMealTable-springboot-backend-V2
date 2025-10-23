@@ -23,4 +23,13 @@ public class Category {
         category.name = name;
         return category;
     }
+
+    /**
+     * 새로운 카테고리 생성 (테스트 및 초기화 시 사용)
+     */
+    public static Category create(String name) {
+        Category category = new Category();
+        category.name = name;
+        return category;
+    }
 }

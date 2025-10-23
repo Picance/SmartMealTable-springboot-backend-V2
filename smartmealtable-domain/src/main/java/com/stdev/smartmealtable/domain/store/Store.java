@@ -129,4 +129,40 @@ public class Store {
     public void incrementViewCount() {
         this.viewCount = (this.viewCount == null ? 0 : this.viewCount) + 1;
     }
+
+    /**
+     * 새로운 가게 생성 (테스트 및 초기화 시 사용)
+     */
+    public static Store create(
+            String name,
+            Long categoryId,
+            String address,
+            String lotNumberAddress,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            String phoneNumber,
+            String description,
+            Integer averagePrice,
+            Integer reviewCount,
+            Integer viewCount,
+            Integer favoriteCount,
+            StoreType storeType
+    ) {
+        return Store.builder()
+                .name(name)
+                .categoryId(categoryId)
+                .address(address)
+                .lotNumberAddress(lotNumberAddress)
+                .latitude(latitude)
+                .longitude(longitude)
+                .phoneNumber(phoneNumber)
+                .description(description)
+                .averagePrice(averagePrice)
+                .reviewCount(reviewCount != null ? reviewCount : 0)
+                .viewCount(viewCount != null ? viewCount : 0)
+                .favoriteCount(favoriteCount != null ? favoriteCount : 0)
+                .storeType(storeType)
+                .registeredAt(LocalDateTime.now())
+                .build();
+    }
 }
