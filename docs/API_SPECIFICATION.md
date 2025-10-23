@@ -14,13 +14,14 @@
 5. [예산 관리 API](#5-예산-관리-api)
 6. [지출 내역 API](#6-지출-내역-api)
 7. [가게 관리 API](#7-가게-관리-api)
-8. [추천 시스템 API](#8-추천-시스템-api)
-9. [즐겨찾기 API](#9-즐겨찾기-api)
-10. [프로필 및 설정 API](#10-프로필-및-설정-api)
-11. [홈 화면 API](#11-홈-화면-api)
-12. [장바구니 API](#12-장바구니-api)
-13. [지도 및 위치 API](#13-지도-및-위치-api)
-14. [알림 및 설정 API](#14-알림-및-설정-api)
+8. [음식 API](#8-음식-api)
+9. [추천 시스템 API](#9-추천-시스템-api)
+10. [즐겨찾기 API](#10-즐겨찾기-api)
+11. [프로필 및 설정 API](#11-프로필-및-설정-api)
+12. [홈 화면 API](#12-홈-화면-api)
+13. [장바구니 API](#13-장바구니-api)
+14. [지도 및 위치 API](#14-지도-및-위치-api)
+15. [알림 및 설정 API](#15-알림-및-설정-api)
 
 ---
 
@@ -2035,9 +2036,219 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 8. 추천 시스템 API
+## 8. 음식 API
 
-### 8.1 개인화 추천 (기본)
+본 섹션은 개별 메뉴 조회 및 음식 관련 기능을 제공합니다.
+
+### 8.1 메뉴 상세 조회
+
+**Endpoint:** `GET /api/v1/foods/{foodId}`
+
+**설명:**
+- 특정 메뉴의 상세 정보를 조회합니다.
+- 가게 정보, 메뉴 정보, 사용자의 현재 예산과의 비교 정보를 함께 반환합니다.
+- JWT 인증이 필요합니다.
+
+**Path Parameters:**
+- `foodId`: 조회할 메뉴의 ID (필수)
+
+**Query Parameters:**
+- 없음
+
+**Request Header:**
+```http
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "foodId": 201,
+    "foodName": "교촌 오리지널",
+    "description": "교촌의 시그니처 메뉴",
+    "price": 18000,
+    "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+    "store": {
+      "storeId": 101,
+      "storeName": "교촌치킨 강남점",
+      "categoryName": "치킨",
+      "address": "서울특별시 강남구 테헤란로 123",
+      "phoneNumber": "02-1234-5678",
+      "averagePrice": 18000,
+      "reviewCount": 1523,
+      "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
+    },
+    "isAvailable": true,
+    "budgetComparison": {
+      "userMealBudget": 20000,
+      "foodPrice": 18000,
+      "difference": 2000,
+      "isOverBudget": false,
+      "differenceText": "-2,000원"
+    }
+  },
+  "error": null
+}
+```
+
+**Response Fields:**
+- `foodId`: 메뉴 고유 식별자
+- `foodName`: 메뉴 이름
+- `description`: 메뉴 설명
+- `price`: 메뉴 가격 (정수, 원 단위)
+- `imageUrl`: 메뉴 이미지 URL
+- `store`: 이 메뉴를 판매하는 가게 정보
+  - `storeId`: 가게 고유 식별자
+  - `storeName`: 가게 이름
+  - `categoryName`: 음식 카테고리 이름 (예: 치킨, 피자, 한식)
+  - `address`: 가게 주소
+  - `phoneNumber`: 가게 전화번호
+  - `averagePrice`: 가게의 평균 메뉴 가격
+  - `reviewCount`: 리뷰 개수
+  - `imageUrl`: 가게 이미지 URL
+- `isAvailable`: 메뉴 판매 가능 여부 (boolean)
+- `budgetComparison`: 사용자 예산과의 비교 정보
+  - `userMealBudget`: 사용자의 현재 끼니 예산
+  - `foodPrice`: 메뉴 가격
+  - `difference`: 예산과의 차이 (음수면 남음, 양수면 초과)
+  - `isOverBudget`: 예산 초과 여부
+  - `differenceText`: 포맷팅된 차이 문자열 (예: "-2,000원", "+5,000원")
+
+**Error Cases:**
+
+**404 Not Found - 메뉴를 찾을 수 없음:**
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "FOOD_NOT_FOUND",
+    "message": "존재하지 않는 메뉴입니다.",
+    "data": null
+  }
+}
+```
+
+**401 Unauthorized - 인증 실패:**
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E401",
+    "message": "인증 토큰이 유효하지 않습니다.",
+    "data": null
+  }
+}
+```
+
+**인증 및 권한:**
+- JWT 토큰 필수 (Authorization Header에 Bearer 토큰)
+- 사용자의 현재 예산 정보를 기반으로 `budgetComparison` 계산
+
+**예제:**
+
+Request:
+```bash
+curl -X GET "https://api.smartmealtable.com/api/v1/foods/201" \
+  -H "Authorization: Bearer eyJhbGc..." \
+  -H "Content-Type: application/json"
+```
+
+Response:
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "foodId": 201,
+    "foodName": "교촌 오리지널",
+    "price": 18000,
+    ...
+  },
+  "error": null
+}
+```
+
+---
+
+### 8.2 가게의 메뉴 목록 (가게 상세 조회에 포함)
+
+**Endpoint:** `GET /api/v1/stores/{storeId}`
+
+**설명:**
+- 가게 상세 정보 조회 시 해당 가게의 모든 메뉴 목록이 포함됩니다.
+- `menus` 배열에 해당 가게에서 판매하는 모든 메뉴 정보가 포함됩니다.
+
+**Response (200) - 가게 상세 조회 응답 예시:**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "storeId": 101,
+    "storeName": "교촌치킨 강남점",
+    "categoryId": 5,
+    "categoryName": "치킨",
+    "address": "서울특별시 강남구 테헤란로 123",
+    "phoneNumber": "02-1234-5678",
+    "averagePrice": 18000,
+    "reviewCount": 1523,
+    "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
+    "menus": [
+      {
+        "foodId": 201,
+        "name": "교촌 오리지널",
+        "storeId": 101,
+        "categoryId": 5,
+        "description": "교촌의 시그니처 메뉴",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+        "averagePrice": 18000
+      },
+      {
+        "foodId": 202,
+        "name": "교촌 반반",
+        "storeId": 101,
+        "categoryId": 5,
+        "description": "순살과 뼈의 반반 구성",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/202.jpg",
+        "averagePrice": 20000
+      },
+      {
+        "foodId": 203,
+        "name": "교촌 순살",
+        "storeId": 101,
+        "categoryId": 5,
+        "description": "순살만 정성껏 튀겨낸 메뉴",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/203.jpg",
+        "averagePrice": 22000
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**메뉴 정보 필드:**
+- `foodId`: 메뉴 고유 식별자
+- `name`: 메뉴 이름
+- `storeId`: 판매 가게 ID
+- `categoryId`: 음식 카테고리 ID
+- `description`: 메뉴 설명
+- `imageUrl`: 메뉴 이미지 URL
+- `averagePrice`: 메뉴 평균 가격
+
+**주의사항:**
+- 메뉴 목록은 가게 상세 조회 응답에 자동으로 포함됩니다.
+- 별도의 메뉴 목록 조회 엔드포인트는 없습니다.
+- 개별 메뉴 상세 정보는 8.1의 메뉴 상세 조회를 사용하세요.
+
+---
+
+## 9. 추천 시스템 API
+
+### 9.1 개인화 추천 (기본)
 
 **Endpoint:** `POST /api/v1/recommendations`
 
@@ -2111,7 +2322,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 8.2 추천 점수 상세 조회
+### 9.2 추천 점수 상세 조회
 
 **Endpoint:** `GET /api/v1/recommendations/{storeId}/scores`
 
@@ -2160,7 +2371,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 8.3 추천 유형 변경
+### 9.3 추천 유형 변경
 
 **Endpoint:** `PUT /api/v1/members/me/recommendation-type`
 
@@ -2196,7 +2407,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 9. 즐겨찾기 API
+## 10. 즐겨찾기 API
 
 ### 9.1 즐겨찾기 추가
 
@@ -2338,7 +2549,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 10. 프로필 및 설정 API
+## 11. 프로필 및 설정 API
 
 ### 10.1 내 프로필 조회
 
@@ -2647,7 +2858,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 11. 홈 화면 API
+## 12. 홈 화면 API
 
 ### 11.1 홈 대시보드 조회
 
@@ -2830,7 +3041,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 12. 장바구니 API
+## 13. 장바구니 API
 
 ### 12.1 장바구니 조회
 
@@ -3081,7 +3292,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 13. 지도 및 위치 API
+## 14. 지도 및 위치 API
 
 ### 13.1 주소 검색 (Geocoding)
 
@@ -3229,7 +3440,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 14. 알림 및 설정 API
+## 15. 알림 및 설정 API
 
 ### 14.1 알림 설정 조회
 

@@ -3,11 +3,57 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-14 21:00
+**최종 업데이트**: 2025-10-23 14:00
 
 ---
 
-## 🎉 최신 업데이트 (2025-10-14 23:30)
+## 🎉 최신 업데이트 (2025-10-23 14:00)
+
+### API 명세 문서화 업데이트! 🎉
+- **완료 범위**: 음식(Food) API 섹션 추가 및 문서 구조 개선
+- **구현 내용**:
+  - ✅ 독립적인 "음식 API" 섹션 추가 (Section 8)
+  - ✅ 메뉴 상세 조회 엔드포인트 상세 명세 작성
+  - ✅ 가게 상세 조회 시 메뉴 목록 포함 명세 추가
+  - ✅ 모든 섹션 번호 업데이트 (9 → 10, 10 → 11, ... 14 → 15)
+  - ✅ 상세한 요청/응답 예시 및 필드 설명 추가
+  - ✅ 에러 케이스 상세 문서화
+  - ✅ 인증 및 권한 정보 추가
+
+- **API 섹션 현황**: ✅ **15개 섹션 구조화 완료**
+  1. 개요
+  2. 공통 사항
+  3. 인증 및 회원 관리 API
+  4. 온보딩 API
+  5. 예산 관리 API
+  6. 지출 내역 API
+  7. 가게 관리 API
+  8. **음식 API** ⭐ (NEW)
+  9. 추천 시스템 API
+  10. 즐겨찾기 API
+  11. 프로필 및 설정 API
+  12. 홈 화면 API
+  13. 장바구니 API
+  14. 지도 및 위치 API
+  15. 알림 및 설정 API
+
+- **음식 API 엔드포인트**:
+  - ✅ GET `/api/v1/foods/{foodId}` - 메뉴 상세 조회
+  - ✅ GET `/api/v1/stores/{storeId}` - 가게 상세 조회 (메뉴 목록 포함)
+
+**상세 문서**: API_SPECIFICATION.md 섹션 8
+
+**주요 개선사항**:
+- 음식 관련 API 구현 상황을 명확히 문서화
+- 메뉴 조회 시 예산 비교 기능 명시
+- 가게 상세 조회에서 메뉴 목록 포함 명시
+- 모든 응답 필드에 대한 상세 설명 추가
+- 에러 응답 형식 표준화
+- 실제 사용 예시 추가
+
+---
+
+## 🎉 이전 업데이트 (2025-10-14 23:30)
 
 ### 지도 및 위치 API, 알림 및 설정 API 100% 완료! 🎉🎉🎉
 - **완료 범위**: 지도 및 위치 API (2개) + 알림 및 설정 API (4개) 전체 구현
@@ -37,38 +83,6 @@
 - Query Parameter Validation (@DecimalMin, @DecimalMax)
 - 도메인 로직 캡슐화 (NotificationSettings.updateSettings)
 - DB Schema 확장 (2개 테이블 추가)
-
----
-
-## 🎉 이전 업데이트 (2025-10-14 21:00)
-
-### 홈 화면 API 테스트 100% 완료! 🎉🎉🎉
-- **완료 범위**: 홈 화면 API 전체 테스트 구현 및 검증
-- **구현 내용**:
-  - ✅ 끼니별 지출 금액 계산 기능 구현 (HomeDashboardQueryService)
-  - ✅ HomeDashboardQueryServiceTest: 8개 테스트 (100% 통과)
-  - ✅ MonthlyBudgetConfirmServiceTest: 9개 테스트 (100% 통과)
-  - ✅ OnboardingStatusQueryServiceTest: 8개 테스트 (100% 통과)
-  - ✅ HomeControllerRestDocsTest: 4개 테스트 (100% 통과)
-- **테스트 결과**: ✅ **총 29개 테스트 모두 통과** (100%)
-- **API 현황**: ✅ 3/3 API 구현 + 테스트 + REST Docs 완료
-  - GET `/api/v1/home/dashboard` - 홈 대시보드
-  - GET `/api/v1/members/me/onboarding-status` - 온보딩 상태 조회
-  - POST `/api/v1/members/me/monthly-budget-confirmed` - 월간 예산 확인
-- **주요 성과**:
-  - 끼니별 지출 계산 로직 완성 (아침/점심/저녁/기타)
-  - JWT 인증 토큰 처리 수정 ("Bearer " 중복 제거)
-  - API 응답 구조 정확성 검증 (location, budget, mealBudgets)
-  - REST Docs 문서 생성 완료 (4개 엔드포인트)
-  - 에러 응답 필드 문서화 (422 Validation 에러 포함)
-
-**상세 문서**: HOME_SCREEN_API_COMPLETION_REPORT.md
-
-**주요 수정사항**:
-- MonthlyBudget.reconstitute() 시그니처 정규화 (5개 파라미터)
-- RecommendationType enum 값 수정 (SAVER, ADVENTURER, BALANCED)
-- MealBudget 테스트 데이터 추가 (DailyBudget 연동)
-- HTTP 상태 코드 정확성 확보 (422 Unprocessable Entity)
 
 ---
 
