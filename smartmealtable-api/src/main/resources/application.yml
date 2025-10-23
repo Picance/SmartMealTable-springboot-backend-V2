@@ -52,20 +52,8 @@ jwt:
 # Logging 설정
 logging:
   level:
-    root: INFO
+    root: WARN
     com.stdev.smartmealtable: INFO
-    org.springframework.web: WARN
-    org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql.BasicBinder: WARN
-    # Tomcat HTTP 프로세서 로그 제어 (EOFException 등 불필요한 연결 에러 필터링)
-    org.apache.coyote.http11.Http11Processor: WARN
-    org.apache.catalina.connector.CoyoteAdapter: WARN
-    # Spring Data JPA NamedQuery 조회 경고 억제
-    org.springframework.data.jpa.repository.query.NamedQuery: WARN
-    # Hibernate 리소스 트랜잭션 로깅 억제 (NamedQuery 조회 시 의도적 예외)
-    org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl: WARN
-    # Tomcat 클래스 로더 ClassNotFoundException 억제 (Java 22 호환성 클래스, Java 21에서는 무해함)
-    org.springframework.boot.loader.net.protocol.jar.JarUrlClassLoader: ERROR
 
 # Server 설정
 server:
@@ -94,4 +82,5 @@ spring:
       ddl-auto: create
 logging:
   level:
-    root: DEBUG
+    root: WARN
+    com.stdev.smartmealtable: INFO
