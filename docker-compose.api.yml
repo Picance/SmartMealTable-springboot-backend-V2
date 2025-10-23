@@ -11,18 +11,19 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - DB_USERNAME=smartmeal_user
-      - DB_PASSWORD=${DB_PASSWORD}
-      - REDIS_HOST=${ADMIN_PRIVATE_IP}
-      - REDIS_PORT=6379
-      - JVM_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://${RDS_ENDPOINT}/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATA_REDIS_HOST=${REDIS_HOST}
+      - SPRING_DATA_REDIS_PORT=${REDIS_PORT:-6379}
+      - JAVA_OPTS=-Xms256m -Xmx512m
     deploy:
       resources:
         limits:
           memory: 512M
         reservations:
-          memory: 256M
+          memory: 300M
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]

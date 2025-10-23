@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # MySQL 데이터베이스 (로컬 개발용)
   mysql:
@@ -54,12 +56,13 @@ services:
       - .env
     environment:
       - SPRING_PROFILES_ACTIVE=local
-      - DB_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - DB_USERNAME=smartmeal_user
-      - DB_PASSWORD=smartmeal123
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JVM_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=smartmeal_user
+      - SPRING_DATASOURCE_PASSWORD=smartmeal123
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JAVA_OPTS=-Xms256m -Xmx512m
     depends_on:
       mysql:
         condition: service_healthy
@@ -75,6 +78,11 @@ services:
       - ./logs:/app/logs
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
 
   # Admin 서버
   admin:
@@ -85,15 +93,20 @@ services:
     ports:
       - "8081:8081"
     env_file:
-      - .env
+      - .env.local
     environment:
       - SPRING_PROFILES_ACTIVE=local
-      - DB_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - DB_USERNAME=smartmeal_user
-      - DB_PASSWORD=smartmeal123
-      - JVM_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=smartmeal_user
+      - SPRING_DATASOURCE_PASSWORD=smartmeal123
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JAVA_OPTS=-Xms200m -Xmx400m
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
@@ -105,6 +118,11 @@ services:
       - ./logs:/app/logs
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
 
   # 스케줄러
   scheduler:
@@ -115,15 +133,16 @@ services:
     ports:
       - "8082:8082"
     env_file:
-      - .env
+      - .env.local
     environment:
       - SPRING_PROFILES_ACTIVE=local
-      - DB_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - DB_USERNAME=smartmeal_user
-      - DB_PASSWORD=smartmeal123
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JVM_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=smartmeal_user
+      - SPRING_DATASOURCE_PASSWORD=smartmeal123
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JAVA_OPTS=-Xms150m -Xmx300m
     depends_on:
       mysql:
         condition: service_healthy
@@ -139,6 +158,11 @@ services:
       - ./logs:/app/logs
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
 
   # 크롤러 (필요시에만 실행)
   crawler:
@@ -147,15 +171,16 @@ services:
       dockerfile: Dockerfile.crawler
     container_name: smartmealtable-crawler
     env_file:
-      - .env
+      - .env.local
     environment:
       - SPRING_PROFILES_ACTIVE=local
-      - DB_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - DB_USERNAME=smartmeal_user
-      - DB_PASSWORD=smartmeal123
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - JVM_OPTS=-Xms256m -Xmx512m
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=smartmeal_user
+      - SPRING_DATASOURCE_PASSWORD=smartmeal123
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JAVA_OPTS=-Xms200m -Xmx400m
     depends_on:
       mysql:
         condition: service_healthy
@@ -167,6 +192,11 @@ services:
       - crawler
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "2"
 
   # Prometheus (모니터링)
   prometheus:
@@ -191,6 +221,11 @@ services:
       retries: 3
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
 
   # Grafana (대시보드)
   grafana:
@@ -215,6 +250,11 @@ services:
       retries: 3
     networks:
       - smartmeal-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "2"
 
 volumes:
   mysql_data:

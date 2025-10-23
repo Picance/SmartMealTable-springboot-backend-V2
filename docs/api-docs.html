@@ -569,7 +569,6 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_요청_기본_반경">요청 (기본 반경)</a>
 <ul class="sectlevel3">
 <li><a href="#_요청_헤더_4">요청 헤더</a></li>
-<li><a href="#_요청_파라미터">요청 파라미터</a></li>
 </ul>
 </li>
 <li><a href="#_성공_응답_200_ok_2">성공 응답 (200 OK)</a>
@@ -577,9 +576,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_응답_필드_5">응답 필드</a></li>
 </ul>
 </li>
-<li><a href="#_키워드_검색">키워드 검색</a>
+<li><a href="#_키워드_검색_및_필터링">키워드 검색 및 필터링</a>
 <ul class="sectlevel3">
 <li><a href="#_요청_4">요청</a></li>
+<li><a href="#_요청_파라미터">요청 파라미터</a></li>
 <li><a href="#_응답">응답</a></li>
 </ul>
 </li>
@@ -1730,7 +1730,7 @@ Content-Length: 253
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/onboarding/profile HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5ODc4LCJleHAiOjE3NjA1NDM0Nzh9.EXmXV6jJXcSE9r41nflYuOMbG1THMod_BepzqnHmhUE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNzAyLCJleHAiOjE3NjEyMTUzMDJ9.voGiWln-YSSEJ9v2u_5BJoA3r_yPcsen_YrCNHdeYV4
 Content-Length: 47
 Host: localhost:8080
 
@@ -2042,7 +2042,7 @@ Content-Length: 136
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/onboarding/address HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5ODY4LCJleHAiOjE3NjA1NDM0Njh9.yciv2iWAqgS26MOTlX9MjD17MZvHl8Z8r6Icl7Hkw08
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNjkwLCJleHAiOjE3NjEyMTUyOTB9.Wxa4XAVTgQZCH2Eir-lYO2LWjT6JCefKHX2KbDHVroo
 Content-Length: 311
 Host: localhost:8080
 
@@ -2581,7 +2581,7 @@ Content-Length: 136
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/onboarding/budget HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYwNTM5ODkwLCJleHAiOjE3NjA1NDM0OTB9.MxcDzC5ChWmGV5sk-EIYnzMNqld-SF6A7Tg_kwymYIk
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNzEzLCJleHAiOjE3NjEyMTUzMTN9.8cH7KQIXsuZ5mfcg6i0vq2HxXitcErpectK1EErPFBM
 Content-Length: 144
 Host: localhost:8080
 
@@ -2956,49 +2956,311 @@ Content-Length: 136
 </div>
 <div class="sect2">
 <h3 id="_요청_기본_반경"><a class="link" href="#_요청_기본_반경">요청 (기본 반경)</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-default/http-request.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/stores HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNzY4LCJleHAiOjE3NjEyMTUzNjh9.6oLmwkXhI16eo_Hm5BWp_rE4Arw7KGkMyj2m7swywSg
+Host: api.smartmealtable.com</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_요청_헤더_4"><a class="link" href="#_요청_헤더_4">요청 헤더</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-default/request-headers.adoc[]</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_요청_파라미터"><a class="link" href="#_요청_파라미터">요청 파라미터</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-default/query-parameters.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer {accessToken}</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_성공_응답_200_ok_2"><a class="link" href="#_성공_응답_200_ok_2">성공 응답 (200 OK)</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-default/http-response.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 1156
+
+{
+  "result" : "SUCCESS",
+  "data" : {
+    "stores" : [ {
+      "storeId" : 1,
+      "name" : "맛있는 한식당",
+      "categoryId" : 1,
+      "categoryName" : null,
+      "address" : "서울특별시 강남구 테헤란로 100",
+      "latitude" : 37.5015678,
+      "longitude" : 127.0395432,
+      "averagePrice" : 8000,
+      "reviewCount" : 150,
+      "viewCount" : 500,
+      "storeType" : "RESTAURANT",
+      "imageUrl" : "https://example.com/store1.jpg",
+      "distance" : 0.047307698320868716,
+      "phoneNumber" : "02-1234-5678"
+    }, {
+      "storeId" : 2,
+      "name" : "학생식당",
+      "categoryId" : 1,
+      "categoryName" : null,
+      "address" : "서울특별시 강남구 테헤란로 200",
+      "latitude" : 37.5025678,
+      "longitude" : 127.0405432,
+      "averagePrice" : 5000,
+      "reviewCount" : 80,
+      "viewCount" : 300,
+      "storeType" : "CAMPUS_RESTAURANT",
+      "imageUrl" : "https://example.com/store2.jpg",
+      "distance" : 0.15949556696748599,
+      "phoneNumber" : "02-2345-6789"
+    } ],
+    "totalCount" : 2,
+    "currentPage" : 0,
+    "pageSize" : 20,
+    "totalPages" : 1
+  },
+  "error" : null
+}</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_응답_필드_5"><a class="link" href="#_응답_필드_5">응답 필드</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-default/response-fields.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 결과 (SUCCESS)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 데이터</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 목록</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].storeId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].categoryId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].categoryName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].address</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">도로명 주소</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].latitude</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">위도</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].longitude</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">경도</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].phoneNumber</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">전화번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].averagePrice</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 가격</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].reviewCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리뷰 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].viewCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].storeType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 유형 (CAMPUS_RESTAURANT, GENERAL_RESTAURANT)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].imageUrl</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">대표 이미지 URL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].distance</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">거리 (km)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.totalCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">전체 가게 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.totalPages</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">전체 페이지 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.currentPage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">현재 페이지 번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.pageSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 크기</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">에러 정보 (성공 시 null)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_키워드_검색"><a class="link" href="#_키워드_검색">키워드 검색</a></h3>
+<h3 id="_키워드_검색_및_필터링"><a class="link" href="#_키워드_검색_및_필터링">키워드 검색 및 필터링</a></h3>
 <div class="paragraph">
-<p>식당 이름 또는 카테고리로 검색할 수 있습니다.</p>
+<p>식당 이름 또는 카테고리로 검색하고, 거리, 정렬 등으로 필터링할 수 있습니다.</p>
 </div>
 <div class="sect3">
 <h4 id="_요청_4"><a class="link" href="#_요청_4">요청</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-search/http-request.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/stores?keyword=%ED%95%9C%EC%8B%9D&amp;radius=5.0&amp;categoryId=1&amp;storeType=RESTAURANT&amp;sortBy=distance&amp;page=0&amp;size=20 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYxMjExNzY5LCJleHAiOjE3NjEyMTUzNjl9.BDh57fPn9IBFGF74MeTFIb3h5n-2xmXYBap23oZikDY
+Host: api.smartmealtable.com</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
+<h4 id="_요청_파라미터"><a class="link" href="#_요청_파라미터">요청 파라미터</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>keyword</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색어 (가게명, 카테고리명)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>radius</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색 반경 (km, 0-50, 기본값: 3.0)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>categoryId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리 ID 필터</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>storeType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 유형 필터 (CAMPUS_RESTAURANT, GENERAL_RESTAURANT)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sortBy</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 기준 (distance, reviewCount, viewCount, averagePrice)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>page</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 번호 (0부터 시작, 기본값: 0)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 크기 (1-100, 기본값: 20)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
 <h4 id="_응답"><a class="link" href="#_응답">응답</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-list-search/http-response.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 664
+
+{
+  "result" : "SUCCESS",
+  "data" : {
+    "stores" : [ {
+      "storeId" : 13,
+      "name" : "맛있는 한식당",
+      "categoryId" : 1,
+      "categoryName" : null,
+      "address" : "서울특별시 강남구 테헤란로 100",
+      "latitude" : 37.5015678,
+      "longitude" : 127.0395432,
+      "averagePrice" : 8000,
+      "reviewCount" : 150,
+      "viewCount" : 500,
+      "storeType" : "RESTAURANT",
+      "imageUrl" : "https://example.com/store1.jpg",
+      "distance" : 0.047307698320868716,
+      "phoneNumber" : "02-1234-5678"
+    } ],
+    "totalCount" : 1,
+    "currentPage" : 0,
+    "pageSize" : 20,
+    "totalPages" : 1
+  },
+  "error" : null
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -3058,32 +3320,270 @@ Content-Length: 136
 </div>
 <div class="sect2">
 <h3 id="_요청_5"><a class="link" href="#_요청_5">요청</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-detail-success/http-request.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/stores/3 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNzY4LCJleHAiOjE3NjEyMTUzNjh9.LRU2BxjBe8DXZlEewuaWGZDgo4Trj0PxXAGWqvmH0gw
+Host: api.smartmealtable.com</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_경로_파라미터"><a class="link" href="#_경로_파라미터">경로 파라미터</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-detail-success/path-parameters.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. /api/v1/stores/{storeId}</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>storeId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회할 가게 ID</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
 <h4 id="_요청_헤더_5"><a class="link" href="#_요청_헤더_5">요청 헤더</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-detail-success/request-headers.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer {accessToken}</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_성공_응답_200_ok_3"><a class="link" href="#_성공_응답_200_ok_3">성공 응답 (200 OK)</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-detail-success/http-response.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 731
+
+{
+  "result" : "SUCCESS",
+  "data" : {
+    "storeId" : 3,
+    "name" : "맛있는 한식당",
+    "categoryId" : 1,
+    "categoryName" : null,
+    "address" : "서울특별시 강남구 테헤란로 100",
+    "lotNumberAddress" : "서울특별시 강남구 역삼동 100-10",
+    "latitude" : 37.5015678,
+    "longitude" : 127.0395432,
+    "phoneNumber" : "02-1234-5678",
+    "description" : "신선한 재료로 만드는 한식 전문점",
+    "averagePrice" : 8000,
+    "reviewCount" : 150,
+    "viewCount" : 501,
+    "favoriteCount" : 30,
+    "storeType" : "RESTAURANT",
+    "imageUrl" : "https://example.com/store1.jpg",
+    "openingHours" : [ ],
+    "temporaryClosures" : [ ],
+    "isFavorite" : false
+  },
+  "error" : null
+}</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_응답_필드_6"><a class="link" href="#_응답_필드_6">응답 필드</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-detail-success/response-fields.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 결과 (SUCCESS)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 데이터</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.storeId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.categoryId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.categoryName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.address</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">도로명 주소</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.lotNumberAddress</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">지번 주소</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.latitude</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">위도</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.longitude</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">경도</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.phoneNumber</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">전화번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.description</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 설명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.averagePrice</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">평균 가격</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.reviewCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">리뷰 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.viewCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.favoriteCount</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">즐겨찾기 수</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.storeType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 유형 (CAMPUS_RESTAURANT, GENERAL_RESTAURANT)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.imageUrl</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">대표 이미지 URL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">영업시간 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].dayOfWeek</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">요일 (MONDAY-SUNDAY)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].openTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">영업 시작 시간 (HH:mm)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].closeTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">영업 종료 시간 (HH:mm)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].breakStartTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴게 시작 시간 (HH:mm)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].breakEndTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴게 종료 시간 (HH:mm)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.openingHours[].isHoliday</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴무일 여부</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.temporaryClosures</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">임시 휴무 정보</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.temporaryClosures[].closureDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴무 날짜 (yyyy-MM-dd)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.temporaryClosures[].startTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴무 시작 시간 (HH:mm:ss)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.temporaryClosures[].endTime</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴무 종료 시간 (HH:mm:ss)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.temporaryClosures[].reason</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">휴무 사유</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.isFavorite</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">즐겨찾기 여부</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">에러 정보 (성공 시 null)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -3130,26 +3630,118 @@ Content-Length: 136
 </div>
 <div class="sect2">
 <h3 id="_요청_6"><a class="link" href="#_요청_6">요청</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-autocomplete-success/http-request.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/stores/autocomplete?keyword=%ED%95%9C%EC%8B%9D&amp;limit=10 HTTP/1.1
+Host: api.smartmealtable.com</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_요청_파라미터_2"><a class="link" href="#_요청_파라미터_2">요청 파라미터</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-autocomplete-success/query-parameters.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>keyword</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색 키워드</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>limit</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회 개수 (1-20, 기본값: 10)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_성공_응답_200_ok_4"><a class="link" href="#_성공_응답_200_ok_4">성공 응답 (200 OK)</a></h3>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-autocomplete-success/http-response.adoc[]</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 241
+
+{
+  "result" : "SUCCESS",
+  "data" : {
+    "stores" : [ {
+      "storeId" : 11,
+      "name" : "맛있는 한식당",
+      "address" : "서울특별시 강남구 테헤란로 100",
+      "categoryName" : null
+    } ]
+  },
+  "error" : null
+}</code></pre>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_응답_필드_7"><a class="link" href="#_응답_필드_7">응답 필드</a></h4>
-<div class="paragraph">
-<p>Unresolved directive in index.adoc - include::/Users/luna/Desktop_nonsync/project/smartmealtableV2/SmartMealTable-springboot-backend-V2/smartmealtable-api/build/generated-snippets/store-autocomplete-success/response-fields.adoc[]</p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 결과 (SUCCESS)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 데이터</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">자동완성 검색 결과</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].storeId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].name</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].categoryName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">카테고리명</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.stores[].address</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">도로명 주소</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>error</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">에러 정보 (성공 시 null)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -3242,8 +3834,8 @@ Content-Length: 484
 {
   "result" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5NjU5LCJleHAiOjE3NjA1NDMyNTl9.b0G69QWTNr27CC4QJJCIfh3_7GV6nSdZYclNzSY6rJA",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5NjU5LCJleHAiOjE3NjA1NDMyNTl9.b0G69QWTNr27CC4QJJCIfh3_7GV6nSdZYclNzSY6rJA",
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNDUwLCJleHAiOjE3NjEyMTUwNTB9.NNo_C8EVMp3lI2TSBDcQGEnUY2-7vJ5REEH2zsinX34",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNDUwLCJleHAiOjE3NjEyMTUwNTB9.NNo_C8EVMp3lI2TSBDcQGEnUY2-7vJ5REEH2zsinX34",
     "memberId" : 2,
     "email" : "login@example.com",
     "name" : "테스트사용자",
@@ -4118,7 +4710,7 @@ Content-Length: 150
 Host: api.smartmealtable.com
 
 {
-  "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5Njg0LCJleHAiOjE3NjA1NDMyODR9.eGj5e_ejBnpe5-24c2IdCKKxOlNHvVm8KvJG_icIa5M"
+  "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNDgxLCJleHAiOjE3NjEyMTUwODF9.G-Dtv8L0b3Ck3ZAxfqmqyWezPcFBT0u8ktcXU2cE8dw"
 }</code></pre>
 </div>
 </div>
@@ -4158,8 +4750,8 @@ Content-Length: 360
 {
   "result" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5Njg0LCJleHAiOjE3NjA1NDMyODR9.eGj5e_ejBnpe5-24c2IdCKKxOlNHvVm8KvJG_icIa5M",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5Njg0LCJleHAiOjE3NjA1NDMyODR9.eGj5e_ejBnpe5-24c2IdCKKxOlNHvVm8KvJG_icIa5M"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNDgxLCJleHAiOjE3NjEyMTUwODF9.G-Dtv8L0b3Ck3ZAxfqmqyWezPcFBT0u8ktcXU2cE8dw",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNDgxLCJleHAiOjE3NjEyMTUwODF9.G-Dtv8L0b3Ck3ZAxfqmqyWezPcFBT0u8ktcXU2cE8dw"
   },
   "error" : null
 }</code></pre>
@@ -4292,7 +4884,7 @@ Content-Length: 143
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/auth/logout HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5NjczLCJleHAiOjE3NjA1NDMyNzN9.rVFYj4HfL1mi6l7Dsn10JVWfcjHOnmvUGFD2vz5KNRI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNDY1LCJleHAiOjE3NjEyMTUwNjV9.R9wC8juBumkPzKJLUA07kKjoKGM0oqDctywc63GFTnI
 Host: api.smartmealtable.com
 Content-Type: application/x-www-form-urlencoded</code></pre>
 </div>
@@ -4538,7 +5130,7 @@ Content-Length: 146
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5ODExLCJleHAiOjE3NjA1NDM0MTF9.wNKb_u2H2sEH6tjpfDIHmtwHvA6a5mRrvYUbXn1Y6EU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNjI2LCJleHAiOjE3NjEyMTUyMjZ9.4gNybzTrzYP5ql30GRMm8zPhig4wxgBJ2xnPYma8HRA
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -4582,8 +5174,8 @@ Content-Length: 382
     "recommendationType" : "BALANCED",
     "group" : null,
     "socialAccounts" : [ ],
-    "passwordExpiresAt" : "2026-01-13T23:50:11.939702",
-    "createdAt" : "2025-10-15T23:50:11.939707"
+    "passwordExpiresAt" : "2026-01-21T18:27:06.733591",
+    "createdAt" : "2025-10-23T18:27:06.733597"
   },
   "error" : null
 }</code></pre>
@@ -4699,7 +5291,7 @@ Content-Length: 382
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiaWF0IjoxNzYwNTM5ODE0LCJleHAiOjE3NjA1NDM0MTR9.suPI8tzUdgBmpfYIJJebgUhaeTj57Pf9WWqcyW3kWYI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiaWF0IjoxNzYxMjExNjI5LCJleHAiOjE3NjEyMTUyMjl9.pz6cDaIQbByBPf6cKaCIKnldOQrFuJmgU3xpzaLZUXk
 Content-Length: 50
 Host: api.smartmealtable.com
 
@@ -4778,7 +5370,7 @@ Content-Length: 259
       "name" : "학생",
       "type" : "UNIVERSITY"
     },
-    "updatedAt" : "2025-10-15T23:50:14.018962"
+    "updatedAt" : "2025-10-23T18:27:09.113899"
   },
   "error" : null
 }</code></pre>
@@ -4862,17 +5454,17 @@ Content-Length: 259
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/json
-Content-Length: 227
+Content-Length: 258
 
 {
   "result" : "ERROR",
   "data" : null,
   "error" : {
     "code" : "E422",
-    "message" : "그룹 ID는 필수입니다.",
+    "message" : "닉네임은 2-50자 사이여야 합니다.",
     "data" : {
-      "reason" : "그룹 ID는 필수입니다.",
-      "field" : "groupId"
+      "reason" : "닉네임은 2-50자 사이여야 합니다.",
+      "field" : "nickname"
     }
   }
 }</code></pre>
@@ -4956,7 +5548,7 @@ Content-Length: 227
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/password HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5ODEwLCJleHAiOjE3NjA1NDM0MTB9.UdDR3oW-T1qbshlKXupxUdRdzCTlEKA1cboPbmgNtt0
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNjI0LCJleHAiOjE3NjEyMTUyMjR9.dIWNeZjjwCgcIaiwKIi31EdFlkycQczMRysWtK9UbiA
 Content-Length: 71
 Host: api.smartmealtable.com
 
@@ -5103,16 +5695,16 @@ Content-Length: 149
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/json
-Content-Length: 315
+Content-Length: 253
 
 {
   "result" : "ERROR",
   "data" : null,
   "error" : {
     "code" : "E422",
-    "message" : "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.",
+    "message" : "비밀번호는 8-20자여야 합니다.",
     "data" : {
-      "reason" : "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.",
+      "reason" : "비밀번호는 8-20자여야 합니다.",
       "field" : "newPassword"
     }
   }
@@ -5196,7 +5788,7 @@ Content-Length: 315
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/password/expiry-status HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5ODI1LCJleHAiOjE3NjA1NDM0MjV9.4msWH3fwwX391myIHyLvHrAPSqBUqB4LHKq_nSgHyN4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNjQwLCJleHAiOjE3NjEyMTUyNDB9.vE3MTqxpROqnLN1bFJC4k9pkKqmSPUwsVHGlyj-K1lI
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -5233,8 +5825,8 @@ Content-Length: 254
 {
   "result" : "SUCCESS",
   "data" : {
-    "passwordChangedAt" : "2025-10-15T23:50:25.255265",
-    "passwordExpiresAt" : "2026-01-13T23:50:25.255282",
+    "passwordChangedAt" : "2025-10-23T18:27:20.310804",
+    "passwordExpiresAt" : "2026-01-21T18:27:20.310814",
     "daysRemaining" : 89,
     "isExpired" : false,
     "isExpiringSoon" : false
@@ -5317,7 +5909,7 @@ Content-Length: 254
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/members/me/password/extend-expiry HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYwNTM5ODI0LCJleHAiOjE3NjA1NDM0MjR9.kIZ3A5d5EkBIMfoD2Yqdbv_3zlj0FANcCAz-xefoXPQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNjM5LCJleHAiOjE3NjEyMTUyMzl9.vkAW00kTOjX6CqzgH1tvf85uh7EVutrk5r5w8UL_nFM
 Host: api.smartmealtable.com
 Content-Type: application/x-www-form-urlencoded</code></pre>
 </div>
@@ -5355,7 +5947,7 @@ Content-Length: 186
 {
   "result" : "SUCCESS",
   "data" : {
-    "newExpiresAt" : "2026-04-13T23:50:24.378752",
+    "newExpiresAt" : "2026-04-21T18:27:19.437493",
     "message" : "비밀번호 만료일이 90일 연장되었습니다."
   },
   "error" : null
@@ -5427,7 +6019,7 @@ Content-Length: 186
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/members/me HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYwNTM5ODA5LCJleHAiOjE3NjA1NDM0MDl9.a3nCrB02P10WhkHnVX7p7dyUQ503S9lgBPf6TPUjIfA
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNjIzLCJleHAiOjE3NjEyMTUyMjN9.PoSj7GsEnX5thfDNvVVB0soKLGbpu0e4SUmJBMh5-vA
 Content-Length: 79
 Host: api.smartmealtable.com
 
@@ -5578,7 +6170,7 @@ Content-Length: 149
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/social-accounts HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYwNTM5ODQ2LCJleHAiOjE3NjA1NDM0NDZ9.wjNt09MZH5hQ_Vumg9ntqNJ5b5P1dU6rOgtDwCXs_kw
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYxMjExNjYzLCJleHAiOjE3NjEyMTUyNjN9.wFSfM0oJdUKzrqQqYVzNnXOmKE7RyEc8smoUVhOdpx8
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -5619,7 +6211,7 @@ Content-Length: 278
       "socialAccountId" : 7,
       "provider" : "KAKAO",
       "providerEmail" : "test@example.com",
-      "connectedAt" : "2025-10-15T23:50:46.443836"
+      "connectedAt" : "2025-10-23T18:27:43.255174"
     } ],
     "hasPassword" : true
   },
@@ -5707,7 +6299,7 @@ Content-Length: 278
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/members/me/social-accounts HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5ODQ2LCJleHAiOjE3NjA1NDM0NDZ9.PUuz_KK2gTdNWdg6KkxW8sQn9Kr1eBHSw-X3jmhYQ5s
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNjYzLCJleHAiOjE3NjEyMTUyNjN9.KEVkOAv3rWH7NqN8JLVlJhltYx63lDyd0-y31k6KybQ
 Content-Length: 81
 Host: api.smartmealtable.com
 
@@ -5782,7 +6374,7 @@ Content-Length: 208
     "socialAccountId" : 5,
     "provider" : "GOOGLE",
     "providerEmail" : "newuser@gmail.com",
-    "connectedAt" : "2025-10-15T23:50:46.368898"
+    "connectedAt" : "2025-10-23T18:27:43.154942"
   },
   "error" : null
 }</code></pre>
@@ -5920,14 +6512,14 @@ Content-Length: 157
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/members/me/social-accounts/1 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYwNTM5ODQ1LCJleHAiOjE3NjA1NDM0NDV9.nFIbdJSDesOuAQ15iDkLIadIb7_GTnbGylmvZhPYpSI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNjYyLCJleHAiOjE3NjEyMTUyNjJ9.iSaP56wwqE8Q_0zFrQ20RTpbl_hZMkIsJpcZ58qXsds
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_2"><a class="link" href="#_경로_파라미터_2">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 1. /api/v1/members/me/social-accounts/{socialAccountId}</caption>
+<caption class="title">Table 2. /api/v1/members/me/social-accounts/{socialAccountId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -6059,7 +6651,7 @@ Content-Length: 202
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/addresses HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5Nzk3LCJleHAiOjE3NjA1NDMzOTd9.Wyuhhq0Qsz3Nkrqjnk-gzGOJ-oGji9bBqgNKJp_car8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNjA5LCJleHAiOjE3NjEyMTUyMDl9.Swkhi0Bllbd0FVRqS97pRNxICYVMty4s7wZFOS0THhM
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -6105,7 +6697,7 @@ Content-Length: 851
     "latitude" : 37.4783,
     "longitude" : 126.9516,
     "isPrimary" : true,
-    "registeredAt" : "2025-10-15T23:49:57.724068"
+    "registeredAt" : "2025-10-23T18:26:49.351953"
   }, {
     "addressHistoryId" : 6,
     "addressAlias" : "회사",
@@ -6116,7 +6708,7 @@ Content-Length: 851
     "latitude" : 37.4979,
     "longitude" : 127.0276,
     "isPrimary" : false,
-    "registeredAt" : "2025-10-15T23:49:57.726598"
+    "registeredAt" : "2025-10-23T18:26:49.354974"
   } ],
   "error" : null
 }</code></pre>
@@ -6222,7 +6814,7 @@ Content-Length: 851
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/members/me/addresses HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc2MDUzOTc5OCwiZXhwIjoxNzYwNTQzMzk4fQ.gaHmzAzjWpIZSycHJIMEwAy98iYw6yIcNk1t5smVuQk
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc2MTIxMTYwOSwiZXhwIjoxNzYxMjE1MjA5fQ.KznrNAzWH7ENDmGW2Tk-XW2acrnWWRoT7vUz0PoiDbs
 Content-Length: 311
 Host: api.smartmealtable.com
 
@@ -6339,7 +6931,7 @@ Content-Length: 466
     "latitude" : 37.5662,
     "longitude" : 126.9346,
     "isPrimary" : false,
-    "registeredAt" : "2025-10-15T23:49:58.040426"
+    "registeredAt" : "2025-10-23T18:26:49.675994"
   },
   "error" : null
 }</code></pre>
@@ -6445,7 +7037,7 @@ Content-Length: 466
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/addresses/7 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5Nzk3LCJleHAiOjE3NjA1NDMzOTd9.q9cozXqfMMPZ4bq6XJuUE7uA9huEJT7lz8f8ILdGlfI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNjA5LCJleHAiOjE3NjEyMTUyMDl9.z1jL6WSsEy2htW6BnsY5CMlT-VqiQjIWBzb13bQISNw
 Content-Length: 303
 Host: api.smartmealtable.com
 
@@ -6464,7 +7056,7 @@ Host: api.smartmealtable.com
 <div class="sect4">
 <h5 id="_경로_파라미터_3"><a class="link" href="#_경로_파라미터_3">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 2. /api/v1/members/me/addresses/{addressHistoryId}</caption>
+<caption class="title">Table 3. /api/v1/members/me/addresses/{addressHistoryId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -6570,7 +7162,7 @@ Host: api.smartmealtable.com
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 456
+Content-Length: 457
 
 {
   "result" : "SUCCESS",
@@ -6584,7 +7176,7 @@ Content-Length: 456
     "latitude" : 37.4783,
     "longitude" : 126.9516,
     "isPrimary" : true,
-    "registeredAt" : "2025-10-15T23:49:57.82345"
+    "registeredAt" : "2025-10-23T18:26:49.453154"
   },
   "error" : null
 }</code></pre>
@@ -6690,14 +7282,14 @@ Content-Length: 456
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/addresses/13/primary HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYwNTM5Nzk3LCJleHAiOjE3NjA1NDMzOTd9.MCWok1jgdhp0q0oQZWF8LnOSpoi7kiwvbNd3wzsz_9E
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYxMjExNjA5LCJleHAiOjE3NjEyMTUyMDl9.dqPpcf5d4CSQg1U5zyyxJ-d80o4fU6kVk81JHwrhEec
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_4"><a class="link" href="#_경로_파라미터_4">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. /api/v1/members/me/addresses/{addressHistoryId}/primary</caption>
+<caption class="title">Table 4. /api/v1/members/me/addresses/{addressHistoryId}/primary</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -6751,7 +7343,7 @@ Content-Length: 162
   "data" : {
     "addressHistoryId" : 13,
     "isPrimary" : true,
-    "updatedAt" : "2025-10-15T23:49:57.918193"
+    "updatedAt" : "2025-10-23T18:26:49.553924"
   },
   "error" : null
 }</code></pre>
@@ -6773,14 +7365,14 @@ Content-Length: 162
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/members/me/addresses/23 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MDUzOTc5OCwiZXhwIjoxNzYwNTQzMzk4fQ.kMXTQksdJodbPLztnA_2o9IitcPODE9UznWdxb_-Tns
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MTIxMTYwOSwiZXhwIjoxNzYxMjE1MjA5fQ.KJ2KUp_slCByTgY-0SytOt6xk7nWu6UDf6XMuIFXjT4
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_5"><a class="link" href="#_경로_파라미터_5">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 4. /api/v1/members/me/addresses/{addressHistoryId}</caption>
+<caption class="title">Table 5. /api/v1/members/me/addresses/{addressHistoryId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -6849,7 +7441,7 @@ Host: api.smartmealtable.com</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/preferences HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5ODM0LCJleHAiOjE3NjA1NDM0MzR9.8VKdH5u1Uzq27T9f7vxFTQoSQYfOSCyhQvZhVVGgwpE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNjUwLCJleHAiOjE3NjEyMTUyNTB9.xzk8oriALNKZIGgJDAQDtb0BnKh0Gr7dCdA-qhOO2ng
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -6904,14 +7496,14 @@ Content-Length: 803
         "foodId" : 10,
         "foodName" : "비빔밥",
         "categoryName" : "한식",
-        "createdAt" : "2025-10-15T23:50:34.928059"
+        "createdAt" : "2025-10-23T18:27:30.569944"
       } ],
       "disliked" : [ {
         "foodPreferenceId" : 8,
         "foodId" : 11,
         "foodName" : "짜장면",
         "categoryName" : "중식",
-        "createdAt" : "2025-10-15T23:50:34.930813"
+        "createdAt" : "2025-10-23T18:27:30.571749"
       } ]
     }
   },
@@ -7064,7 +7656,7 @@ Content-Length: 803
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/preferences/categories HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5ODM0LCJleHAiOjE3NjA1NDM0MzR9.CsJGXXXWQsPYlNHoYuwU7KCj0QMIFk_1FB-qL17g0ss
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNjUwLCJleHAiOjE3NjEyMTUyNTB9.hc6EktFXxsq_MyWsjzy-65qvu2rz_M-jx24SWI35xWY
 Content-Length: 121
 Host: api.smartmealtable.com
 
@@ -7147,7 +7739,7 @@ Content-Length: 133
   "result" : "SUCCESS",
   "data" : {
     "updatedCount" : 2,
-    "updatedAt" : "2025-10-15T23:50:34.838812"
+    "updatedAt" : "2025-10-23T18:27:30.473051"
   },
   "error" : null
 }</code></pre>
@@ -7213,7 +7805,7 @@ Content-Length: 133
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/members/me/preferences/foods HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYwNTM5ODM1LCJleHAiOjE3NjA1NDM0MzV9.NcKzVMqH9FG21II40AfOs9LlwsOKJxcPOFauETHg5Ts
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYxMjExNjUwLCJleHAiOjE3NjEyMTUyNTB9.9tb1AUBsfYiKvJnkwc1qTn15ZAuGnRihaAX-j3KmQKg
 Content-Length: 43
 Host: api.smartmealtable.com
 
@@ -7280,7 +7872,7 @@ Host: api.smartmealtable.com
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 201 Created
 Content-Type: application/json
-Content-Length: 247
+Content-Length: 246
 
 {
   "result" : "SUCCESS",
@@ -7290,7 +7882,7 @@ Content-Length: 247
     "foodName" : "김치찌개",
     "categoryName" : "한식",
     "isPreferred" : true,
-    "createdAt" : "2025-10-15T23:50:35.083997"
+    "createdAt" : "2025-10-23T18:27:30.73494"
   },
   "error" : null
 }</code></pre>
@@ -7312,7 +7904,7 @@ Content-Length: 247
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/preferences/foods/9 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYwNTM5ODM1LCJleHAiOjE3NjA1NDM0MzV9.fFHdhtviL4LKcuiDOz4hKT_Mbap4hiEenjn5QXoI4rM
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYxMjExNjUwLCJleHAiOjE3NjEyMTUyNTB9.5ETFODSx_fmK04h547nEiDE6vusoY2miR20iU3_a_j8
 Content-Length: 27
 Host: api.smartmealtable.com
 
@@ -7324,7 +7916,7 @@ Host: api.smartmealtable.com
 <div class="sect4">
 <h5 id="_경로_파라미터_6"><a class="link" href="#_경로_파라미터_6">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 5. /api/v1/members/me/preferences/foods/{foodPreferenceId}</caption>
+<caption class="title">Table 6. /api/v1/members/me/preferences/foods/{foodPreferenceId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -7405,7 +7997,7 @@ Content-Length: 244
     "foodName" : "비빔밥",
     "categoryName" : "한식",
     "isPreferred" : false,
-    "updatedAt" : "2025-10-15T23:50:35.027374"
+    "updatedAt" : "2025-10-23T18:27:30.680778"
   },
   "error" : null
 }</code></pre>
@@ -7427,14 +8019,14 @@ Content-Length: 244
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/members/me/preferences/foods/6 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5ODM0LCJleHAiOjE3NjA1NDM0MzR9.CUEWzSGFqfc6zYPfhfybIKIsWUJuvNlIoKEsI91-d_g
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNjUwLCJleHAiOjE3NjEyMTUyNTB9.KViUHE-8BdDYAuY6Kt-i3FGkL_myV9FacG1w9EJSq6U
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_7"><a class="link" href="#_경로_파라미터_7">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 6. /api/v1/members/me/preferences/foods/{foodPreferenceId}</caption>
+<caption class="title">Table 7. /api/v1/members/me/preferences/foods/{foodPreferenceId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -7893,7 +8485,7 @@ Host: localhost:8080</code></pre>
 <div class="sect4">
 <h5 id="_경로_파라미터_8"><a class="link" href="#_경로_파라미터_8">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 7. /api/v1/policies/{policyId}</caption>
+<caption class="title">Table 8. /api/v1/policies/{policyId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -8208,7 +8800,7 @@ Content-Length: 844
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/onboarding/food-preferences HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5ODU4LCJleHAiOjE3NjA1NDM0NTh9.qNJTf1-giiX5gJ1roFjilRGunLeZgQWys--st9wxkpw
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNjc5LCJleHAiOjE3NjEyMTUyNzl9.6hlDvq3uZSukEpwE-0asskK3F6OXyFeFw64Oj7zp9So
 Content-Length: 28
 Host: localhost:8080
 
@@ -8349,7 +8941,7 @@ Content-Length: 465
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/budgets/monthly?year=2025&amp;month=10 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYwNTM5NzA2LCJleHAiOjE3NjA1NDMzMDZ9.RJkjeQ_DJF7qsT9UepE4Z_3o5m4XUYcysuqrMR2QtRo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYxMjExNTA3LCJleHAiOjE3NjEyMTUxMDd9.2-3hFrXONS-KGBzVst4z8QocTfTBLW6o3C6vcs6AKps
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -8406,7 +8998,7 @@ Host: api.smartmealtable.com</code></pre>
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 235
+Content-Length: 234
 
 {
   "result" : "SUCCESS",
@@ -8417,7 +9009,7 @@ Content-Length: 235
     "totalSpent" : 0,
     "remainingBudget" : 300000,
     "utilizationRate" : 0.0,
-    "daysRemaining" : 16
+    "daysRemaining" : 8
   },
   "error" : null
 }</code></pre>
@@ -8566,14 +9158,14 @@ Content-Length: 136
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 400 Bad Request
 Content-Type: application/json
-Content-Length: 132
+Content-Length: 137
 
 {
   "result" : "ERROR",
   "data" : null,
   "error" : {
     "code" : "E400",
-    "message" : "must be less than or equal to 12"
+    "message" : "must be greater than or equal to 2000"
   }
 }</code></pre>
 </div>
@@ -8641,7 +9233,7 @@ Content-Length: 132
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/budgets HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5NzA2LCJleHAiOjE3NjA1NDMzMDZ9.bf0yPJ0-9SDwlNDBLfqeLYLkyAVvy5udfttmp5ukfL0
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNTA3LCJleHAiOjE3NjEyMTUxMDd9.jZhgN9XfNYvtdAh4TAUOeVCg8SVclhlYF4lFc1jkkbw
 Content-Length: 63
 Host: api.smartmealtable.com
 
@@ -8791,17 +9383,17 @@ Content-Length: 252
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/json
-Content-Length: 297
+Content-Length: 291
 
 {
   "result" : "ERROR",
   "data" : null,
   "error" : {
     "code" : "E422",
-    "message" : "월별 예산은 최소 1,000원 이상이어야 합니다.",
+    "message" : "일일 예산은 최소 100원 이상이어야 합니다.",
     "data" : {
-      "reason" : "월별 예산은 최소 1,000원 이상이어야 합니다.",
-      "field" : "monthlyFoodBudget"
+      "reason" : "일일 예산은 최소 100원 이상이어야 합니다.",
+      "field" : "dailyFoodBudget"
     }
   }
 }</code></pre>
@@ -8883,8 +9475,8 @@ Content-Length: 297
 <h4 id="_요청_40"><a class="link" href="#_요청_40">요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/budgets/daily?date=2025-10-15 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5NzA2LCJleHAiOjE3NjA1NDMzMDZ9.B7MdaD3Fu3q2WSVqR9xHn5CrWY9YuVf2SyDLZxjlxo8
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/budgets/daily?date=2025-10-23 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNTA3LCJleHAiOjE3NjEyMTUxMDd9.ePbEo4Ivya_X2WtAv1HjFUIibUo0ZH9yrGRTW3J4KQ0
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -8942,7 +9534,7 @@ Content-Length: 193
 {
   "result" : "SUCCESS",
   "data" : {
-    "date" : "2025-10-15",
+    "date" : "2025-10-23",
     "totalBudget" : 10000,
     "totalSpent" : 0,
     "remainingBudget" : 10000,
@@ -9025,9 +9617,9 @@ Content-Length: 193
 <h4 id="_요청_41"><a class="link" href="#_요청_41">요청</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/budgets/daily/2025-10-15 HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/budgets/daily/2025-10-23 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYwNTM5NzA2LCJleHAiOjE3NjA1NDMzMDZ9.RGXhowe71WpL9etPrx5iTqG4sb5gNiOos1nS0UvoctU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYxMjExNTA4LCJleHAiOjE3NjEyMTUxMDh9.9OrMA2i7CnL6grx43s36C3JdFgaFnbIIyVanDSRpR2I
 Content-Length: 57
 Host: api.smartmealtable.com
 
@@ -9101,10 +9693,10 @@ Content-Length: 263
   "data" : {
     "budgetId" : 22,
     "dailyFoodBudget" : 15000,
-    "budgetDate" : "2025-10-15",
+    "budgetDate" : "2025-10-23",
     "appliedForward" : false,
     "updatedCount" : 1,
-    "message" : "2025-10-15 예산이 수정되었습니다."
+    "message" : "2025-10-23 예산이 수정되었습니다."
   },
   "error" : null
 }</code></pre>
@@ -9403,7 +9995,7 @@ Content-Length: 100
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/expenditures HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MDUzOTc0MiwiZXhwIjoxNzYwNTQzMzQyfQ.r89KDX2tDyCQ95RRKw4kt96Gr4Ie0Imzgw2yHoBy638
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MTIxMTU0OSwiZXhwIjoxNzYxMjE1MTQ5fQ.XtvcQGEA_5p0FSopeRO51wFpmVMpheOO_oQSbcs4QGQ
 Content-Length: 243
 Host: localhost:8080
 
@@ -9514,7 +10106,7 @@ Host: localhost:8080
 Content-Type: application/json
 Content-Length: 443
 
-{"result":"SUCCESS","data":{"expenditureId":9,"storeName":"맛있는집","amount":15000,"expendedDate":"2025-10-12","expendedTime":"12:30:00","categoryId":11,"categoryName":"한식","mealType":"LUNCH","memo":"점심 식사","items":[{"expenditureItemId":1,"foodId":1,"foodName":null,"quantity":1,"price":8000},{"expenditureItemId":2,"foodId":2,"foodName":null,"quantity":1,"price":7000}],"createdAt":"2025-10-15T23:49:02.231297"},"error":null}</code></pre>
+{"result":"SUCCESS","data":{"expenditureId":9,"storeName":"맛있는집","amount":15000,"expendedDate":"2025-10-12","expendedTime":"12:30:00","categoryId":11,"categoryName":"한식","mealType":"LUNCH","memo":"점심 식사","items":[{"expenditureItemId":1,"foodId":1,"foodName":null,"quantity":1,"price":8000},{"expenditureItemId":2,"foodId":2,"foodName":null,"quantity":1,"price":7000}],"createdAt":"2025-10-23T18:25:49.243323"},"error":null}</code></pre>
 </div>
 </div>
 <div class="sect4">
@@ -9638,7 +10230,7 @@ Content-Length: 443
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/expenditures HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5NzQxLCJleHAiOjE3NjA1NDMzNDF9.TLCN7avh0vtqLQtvqGi3r2H_kjgjZF0Jf23_IyDlYZs
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNTQ4LCJleHAiOjE3NjEyMTUxNDh9.esSszj983mlTCZxMX7Shvgruk5Nk0wrsvCjmp8PgAyA
 Content-Length: 152
 Host: localhost:8080
 
@@ -9731,7 +10323,7 @@ Content-Length: 174
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/expenditures?startDate=2025-10-01&amp;endDate=2025-10-31&amp;page=0&amp;size=20 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYwNTM5NzQyLCJleHAiOjE3NjA1NDMzNDJ9.oBIejrcq1l9Pw5pM-vVFrI8CdDmmpLBCNwrZmTIONFo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYxMjExNTQ4LCJleHAiOjE3NjEyMTUxNDh9.wZWDXbf_BPO4zewpYdSTjvRrPjy-E3ZFP_NpsGEgbR0
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -9806,7 +10398,7 @@ Host: localhost:8080</code></pre>
 Content-Type: application/json
 Content-Length: 1171
 
-{"result":"SUCCESS","data":{"summary":{"totalAmount":55000,"totalCount":5,"averageAmount":11000},"expenditures":{"content":[{"expenditureId":8,"storeName":"테스트가게5","amount":13000,"expendedDate":"2025-10-05","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":7,"storeName":"테스트가게4","amount":12000,"expendedDate":"2025-10-04","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":6,"storeName":"테스트가게3","amount":11000,"expendedDate":"2025-10-03","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":5,"storeName":"테스트가게2","amount":10000,"expendedDate":"2025-10-02","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":4,"storeName":"테스트가게1","amount":9000,"expendedDate":"2025-10-01","categoryName":"카테고리명","mealType":"LUNCH"}],"pageable":{"pageNumber":0,"pageSize":20,"sort":{"sorted":false,"unsorted":true,"empty":true},"offset":0,"paged":true,"unpaged":false},"last":true,"totalElements":5,"totalPages":1,"first":true,"numberOfElements":5,"size":20,"number":0,"sort":{"sorted":false,"unsorted":true,"empty":true},"empty":false}},"error":null}</code></pre>
+{"result":"SUCCESS","data":{"summary":{"totalAmount":55000,"totalCount":5,"averageAmount":11000},"expenditures":{"content":[{"expenditureId":8,"storeName":"테스트가게5","amount":13000,"expendedDate":"2025-10-05","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":7,"storeName":"테스트가게4","amount":12000,"expendedDate":"2025-10-04","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":6,"storeName":"테스트가게3","amount":11000,"expendedDate":"2025-10-03","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":5,"storeName":"테스트가게2","amount":10000,"expendedDate":"2025-10-02","categoryName":"카테고리명","mealType":"LUNCH"},{"expenditureId":4,"storeName":"테스트가게1","amount":9000,"expendedDate":"2025-10-01","categoryName":"카테고리명","mealType":"LUNCH"}],"pageable":{"pageNumber":0,"pageSize":20,"sort":{"empty":true,"sorted":false,"unsorted":true},"offset":0,"paged":true,"unpaged":false},"last":true,"totalPages":1,"totalElements":5,"size":20,"number":0,"sort":{"empty":true,"sorted":false,"unsorted":true},"first":true,"numberOfElements":5,"empty":false}},"error":null}</code></pre>
 </div>
 </div>
 <div class="sect4">
@@ -10021,7 +10613,7 @@ Content-Length: 1171
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/expenditures?startDate=2025-10-01&amp;endDate=2025-10-31&amp;mealType=LUNCH&amp;page=0&amp;size=20 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxOCIsImlhdCI6MTc2MDUzOTc0MiwiZXhwIjoxNzYwNTQzMzQyfQ.SVpYgI2fIwZwjNlYnqbq-wmHZbSxRK4ZRiUN5tIK11Y
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxOCIsImlhdCI6MTc2MTIxMTU0OSwiZXhwIjoxNzYxMjE1MTQ5fQ.-DMEoGI5KRzkrWegWkDpZzGIJSEY3oHjeswrDbBTsgs
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -10041,7 +10633,7 @@ Host: localhost:8080</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/expenditures/3 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYwNTM5NzQyLCJleHAiOjE3NjA1NDMzNDJ9.HqIXJxMjF-XwG8R60Y5sEm4MM9I0V75p8Piz40fSB8M
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYxMjExNTQ4LCJleHAiOjE3NjEyMTUxNDh9.WpcNPsYIru9BnX0icj4Glkga7NwHvEfjDu8BwW35kJE
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -10234,7 +10826,7 @@ Content-Length: 110
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/expenditures/1 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5NzQxLCJleHAiOjE3NjA1NDMzNDF9.pqa_scpTa5JoYDDM92SnjxhKzy1E_kneY00bx6wYFaI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNTQ4LCJleHAiOjE3NjEyMTUxNDh9.uOv9hS18ILYyngQfdx45CQz8Gfvu6hVMAEyClIZvrXQ
 Content-Length: 172
 Host: localhost:8080
 
@@ -10382,7 +10974,7 @@ Content-Length: 45
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/expenditures/19 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxOSIsImlhdCI6MTc2MDUzOTc0MiwiZXhwIjoxNzYwNTQzMzQyfQ.CdUS-08nt5fqvPKDVZs_I4UarqBGUmHuRfXpJMzrq-4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxOSIsImlhdCI6MTc2MTIxMTU0OSwiZXhwIjoxNzYxMjE1MTQ5fQ.9CkLOamcoREq8hQW7lDPOZ_VNn7JUB_EKoVlv_pNqh4
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -10435,7 +11027,7 @@ Host: localhost:8080</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/expenditures/statistics?startDate=2025-10-01&amp;endDate=2025-10-31 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMiIsImlhdCI6MTc2MDUzOTc0MiwiZXhwIjoxNzYwNTQzMzQyfQ.hjGQvHtXizxfb4MIdbZrFYCFJV3PRoZ9IFPWJjAlpGI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMiIsImlhdCI6MTc2MTIxMTU0OSwiZXhwIjoxNzYxMjE1MTQ5fQ.nFNZVa-7UkwlaVUklBA74H20RW9s_5R3w2iKuVwrb1Y
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -10620,7 +11212,7 @@ Content-Length: 405
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/recommendations?latitude=37.4783&amp;longitude=126.9516&amp;radius=5.0 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc2MDUzOTkxMCwiZXhwIjoxNzYwNTQzNTEwfQ.mkeMrCvH0h3nqYWsgi5sWaMh_z9Fjr0l1T6WM-Jw6e8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc2MTIxMTczNCwiZXhwIjoxNzYxMjE1MzM0fQ.2Y5kKevIYYU14HzSz-NAbNMWsbuasoM6SUcRkR5J2ZI
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -10816,7 +11408,7 @@ Content-Length: 977
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/recommendations?latitude=37.4783&amp;longitude=126.9516&amp;radius=5.0&amp;sortBy=DISTANCE&amp;includeDisliked=false&amp;openNow=false&amp;storeType=ALL&amp;page=0&amp;size=10 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMyIsImlhdCI6MTc2MDUzOTkxMCwiZXhwIjoxNzYwNTQzNTEwfQ.PSrZPHqbPS4b_EnqsX47LHEBJNpFytw0q3tKE0ljCFk
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMyIsImlhdCI6MTc2MTIxMTczNSwiZXhwIjoxNzYxMjE1MzM1fQ.U1UibOFsvZAExCbz8lTNtOS9dvnTW7fP20sVY7_NKbk
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -11053,14 +11645,14 @@ Content-Length: 141
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/recommendations/13/score-detail?latitude=37.4783&amp;longitude=126.9516 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYwNTM5OTA5LCJleHAiOjE3NjA1NDM1MDl9.EQtM6wMy1waZp1gwabeVLhdxcSyzwLm4Q3jF-N6FeNU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1IiwiaWF0IjoxNzYxMjExNzM0LCJleHAiOjE3NjEyMTUzMzR9.kMT5khMPeS-RPoGzKKsx1ArtAXKGQHBufFFBFyBT-dU
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_9"><a class="link" href="#_경로_파라미터_9">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 8. /api/v1/recommendations/{storeId}/score-detail</caption>
+<caption class="title">Table 9. /api/v1/recommendations/{storeId}/score-detail</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -11318,7 +11910,7 @@ Content-Length: 150
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/recommendations/type HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MDUzOTkxMCwiZXhwIjoxNzYwNTQzNTEwfQ.w12MILlb3PQ4V5GHlSsuuOxEpr3xlDBL0jQlEDYWS74
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMSIsImlhdCI6MTc2MTIxMTczNSwiZXhwIjoxNzYxMjE1MzM1fQ.WTv2SAeQnWiJWPbysUrqwETDyPLnC2eaZmociuAvcNQ
 Content-Length: 36
 Host: api.smartmealtable.com
 
@@ -11560,7 +12152,7 @@ Content-Length: 143
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/favorites HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5NzU0LCJleHAiOjE3NjA1NDMzNTR9.BhIsbklih7T9in14jsxg1MunI4DeAmjfXsehEFPO-uE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNTYyLCJleHAiOjE3NjEyMTUxNjJ9.g1r_HOYRy7NK2W8cBdZiqA_d74eEKm6X8APgj2vGOPE
 Content-Length: 19
 Host: api.smartmealtable.com
 
@@ -11629,7 +12221,7 @@ Content-Length: 172
     "favoriteId" : 7,
     "storeId" : 7,
     "priority" : 3,
-    "favoritedAt" : "2025-10-15T23:49:14.194658"
+    "favoritedAt" : "2025-10-23T18:26:02.303817"
   },
   "error" : null
 }</code></pre>
@@ -11843,7 +12435,7 @@ Content-Length: 136
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/favorites HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYwNTM5NzUzLCJleHAiOjE3NjA1NDMzNTN9.gJ16-jEmuTO6pwtNzo6I0qWOWAIUI1csjtpvL8cE98o
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxMjExNTYxLCJleHAiOjE3NjEyMTUxNjF9.aatwd5jScuKlsmfIXpxDjMAYxf-AQAUiZ8s7O5tJ8PM
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -11890,7 +12482,7 @@ Content-Length: 865
       "address" : "서울특별시 관악구 봉천동 123",
       "imageUrl" : "https://example.com/korean-store.jpg",
       "priority" : 1,
-      "favoritedAt" : "2025-10-15T23:49:13.824665"
+      "favoritedAt" : "2025-10-23T18:26:01.895729"
     }, {
       "favoriteId" : 2,
       "storeId" : 2,
@@ -11901,7 +12493,7 @@ Content-Length: 865
       "address" : "서울특별시 관악구 신림동 456",
       "imageUrl" : "https://example.com/chinese-store.jpg",
       "priority" : 2,
-      "favoritedAt" : "2025-10-15T23:49:13.828328"
+      "favoritedAt" : "2025-10-23T18:26:01.899033"
     } ],
     "totalCount" : 2
   },
@@ -12024,7 +12616,7 @@ Content-Length: 865
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/favorites/reorder HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYwNTM5NzU0LCJleHAiOjE3NjA1NDMzNTR9.JqPDg_kzOe7lCbkkc1HD0rqb2oTBLzEL2r7eJ6p-g9k
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYxMjExNTYyLCJleHAiOjE3NjEyMTUxNjJ9._qkxOIQklMJOSmEAPqwTk_oAqJgettVsoZ2dCcbcL4s
 Content-Length: 125
 Host: api.smartmealtable.com
 
@@ -12134,14 +12726,14 @@ Content-Length: 166
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/favorites/8 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5NzU0LCJleHAiOjE3NjA1NDMzNTR9.FPyyQXY4_f_Hh38jfCowF1PUFrPul9ABFBOcMRM7YLU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNTYyLCJleHAiOjE3NjEyMTUxNjJ9.6Ef9fGLKQE-5VTIRrjM7cMkx2rqTchc3MIDXFc_lrng
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_10"><a class="link" href="#_경로_파라미터_10">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 9. /api/v1/favorites/{favoriteId}</caption>
+<caption class="title">Table 10. /api/v1/favorites/{favoriteId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -12302,7 +12894,7 @@ Content-Length: 142
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/home/dashboard HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5Nzc0LCJleHAiOjE3NjA1NDMzNzR9.-dV49uAaoXN0rPiRDaVJF_Hbw6pIXIgdkVGFzq3KSBw
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNTg1LCJleHAiOjE3NjEyMTUxODV9.oeR8kpWBv4az42xxHn8Z5ubmoegub6QkDPiKPJUp5Z0
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -12531,7 +13123,7 @@ Content-Length: 941
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/onboarding-status HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5Nzc0LCJleHAiOjE3NjA1NDMzNzR9.SInw5hpS2q73iRZcfX7Wa8Fu2UaNn_7sE4ziK3kuQDQ
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNTg1LCJleHAiOjE3NjEyMTUxODV9.L9nsHOacLvG3ys1zqBBb1hQh1F0K8wMb9wn6byjjM50
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -12664,7 +13256,7 @@ Content-Length: 293
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/members/me/monthly-budget-confirmed HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5Nzc0LCJleHAiOjE3NjA1NDMzNzR9.vZgwRgNWfrVL_eWNCLTKNu9pF82ZQyBNpZtQZDxd9r4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNTg1LCJleHAiOjE3NjEyMTUxODV9.ITVkvszPMBnNduXWsmLB_EQ31AgwOGMllueT1X6NaqY
 Content-Length: 56
 Host: api.smartmealtable.com
 
@@ -12744,7 +13336,7 @@ Content-Length: 176
   "data" : {
     "year" : 2025,
     "month" : 10,
-    "confirmedAt" : "2025-10-15T23:49:34.798Z",
+    "confirmedAt" : "2025-10-23T18:26:25.789Z",
     "monthlyBudget" : 500000
   },
   "error" : null
@@ -12840,7 +13432,7 @@ Content-Length: 176
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">POST /api/v1/cart/items HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.0H1GGF-y1ukLgP_j31twkOIBATTAO2cjd4UDIrR8EKo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0IiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.FT0wl48087WLz8JMuApKPae2RUfJKXrYNPD7B0e4T3U
 Content-Length: 53
 Host: localhost:8080
 
@@ -13005,7 +13597,7 @@ Content-Length: 139
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/cart HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.btkCgSUByk7dKfpciwaLXv5c_WGSmR8yb9nPuq0ZuuU
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.GGOmGzXEp7P_3mE10ayj6ESUD67wz6YVNHjCGMY4P-Y
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -13175,14 +13767,14 @@ Content-Length: 430
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/cart/store/3 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.GQh2QPIiyZOkqqzJvn3-gCeP0eeAya7EXqePxHiQNMc
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.wuKD63NZSblv9a7Z0gDwxqkl5VhKaEACRl-3Y2O9Ug0
 Host: localhost:8080</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_11"><a class="link" href="#_경로_파라미터_11">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 10. /api/v1/cart/store/{storeId}</caption>
+<caption class="title">Table 11. /api/v1/cart/store/{storeId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -13381,7 +13973,7 @@ Content-Length: 640
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/cart/items/5 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.2NrrO49diDLG0vgwhRTQCmO4WGwQWyGEWg7ZiPSxRNk
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI3IiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.7FbqVtD4M6Xn0ENnvmyShQtga4KtlDDzYd6yDm7E_d8
 Content-Length: 20
 Host: localhost:8080
 
@@ -13393,7 +13985,7 @@ Host: localhost:8080
 <div class="sect4">
 <h5 id="_경로_파라미터_12"><a class="link" href="#_경로_파라미터_12">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 11. /api/v1/cart/items/{cartItemId}</caption>
+<caption class="title">Table 12. /api/v1/cart/items/{cartItemId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -13531,14 +14123,14 @@ Content-Length: 61
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/cart/items/4 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.siT5y-FQtCs7BsM7ei5Vaqrltxsxx3jzuURloM3iYX4
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2IiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.uXGsQdwAtHLGBN52jk2VJvECE0ztvwZm1I9S1V-uw8E
 Host: localhost:8080</code></pre>
 </div>
 </div>
 <div class="sect4">
 <h5 id="_경로_파라미터_13"><a class="link" href="#_경로_파라미터_13">경로 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 12. /api/v1/cart/items/{cartItemId}</caption>
+<caption class="title">Table 13. /api/v1/cart/items/{cartItemId}</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -13609,7 +14201,7 @@ Content-Length: 61
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">DELETE /api/v1/cart/store/9 HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiaWF0IjoxNzYwNTM5NzE3LCJleHAiOjE3NjA1NDMzMTd9.dLdsCjJOpF_DpTtp3NsvRFXbqdJP2_zCkwTYnRg8bAw
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiaWF0IjoxNzYxMjExNTIzLCJleHAiOjE3NjEyMTUxMjN9.s3oeiOZJ40oKtDI42e3WM3IvVFL_wHS8ewVwB1r7bSU
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -14176,7 +14768,7 @@ Content-Length: 142
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">GET /api/v1/members/me/notification-settings HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5OTMwLCJleHAiOjE3NjA1NDM1MzB9.BtZ5nvwK96rxZJrNdSgcoSFKSIpCmCN0MyJFlY0fmPg
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNzU1LCJleHAiOjE3NjEyMTUzNTV9.HUxMXRJ4z84IWs-awDh82aCPIsKsL4mnFO1jL927EsA
 Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
@@ -14298,7 +14890,7 @@ Content-Length: 230
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/members/me/notification-settings HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYwNTM5OTMwLCJleHAiOjE3NjA1NDM1MzB9.crL8_VMpL9jOcvjM1RQwiaBFORt78tH67taMPvgk75E
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYxMjExNzU1LCJleHAiOjE3NjEyMTUzNTV9.VTF___yPBzI9pnXCKaCMghWJJa-NDqtrUrxp7j_A7Kk
 Content-Length: 164
 Host: api.smartmealtable.com
 
@@ -14577,7 +15169,7 @@ Content-Length: 320
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code data-lang="http" class="language-http hljs">PUT /api/v1/settings/app/tracking HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYwNTM5OTIwLCJleHAiOjE3NjA1NDM1MjB9.9I4TRWDNiA2XgdlVDpPHy_hMvJJjVaKituYHPWwqdr8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWF0IjoxNzYxMjExNzQ1LCJleHAiOjE3NjEyMTUzNDV9.PFSRY0xlK9DrZjgEqVUdDCb_cPMjmBx5gxzMt38vOEE
 Content-Length: 28
 Host: api.smartmealtable.com
 
@@ -14644,7 +15236,7 @@ Content-Length: 137
   "result" : "SUCCESS",
   "data" : {
     "allowTracking" : true,
-    "updatedAt" : "2025-10-15T23:52:00.817083"
+    "updatedAt" : "2025-10-23T18:29:05.292693"
   },
   "error" : null
 }</code></pre>
@@ -14702,7 +15294,7 @@ Content-Length: 137
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-10-15 23:46:28 +0900
+Last updated 2025-10-23 18:22:36 +0900
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">
