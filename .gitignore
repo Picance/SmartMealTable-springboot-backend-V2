@@ -284,6 +284,7 @@ legacy/
 
 # AWS
 portfolio-key
+portfolio-key.pem
 portfolio-key.pub
 
 # End of https://www.toptal.com/developers/gitignore/api/java,react,gradle,maven,intellij
