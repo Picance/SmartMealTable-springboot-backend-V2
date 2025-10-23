@@ -524,6 +524,38 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("휴무 사유")
                                         .optional(),
+                                fieldWithPath("data.menus")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("음식/메뉴 목록")
+                                        .optional(),
+                                fieldWithPath("data.menus[].foodId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("음식 ID")
+                                        .optional(),
+                                fieldWithPath("data.menus[].name")
+                                        .type(JsonFieldType.STRING)
+                                        .description("음식명")
+                                        .optional(),
+                                fieldWithPath("data.menus[].storeId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 ID")
+                                        .optional(),
+                                fieldWithPath("data.menus[].categoryId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("음식 카테고리 ID")
+                                        .optional(),
+                                fieldWithPath("data.menus[].description")
+                                        .type(JsonFieldType.STRING)
+                                        .description("음식 설명")
+                                        .optional(),
+                                fieldWithPath("data.menus[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("음식 이미지 URL")
+                                        .optional(),
+                                fieldWithPath("data.menus[].averagePrice")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("평균 가격")
+                                        .optional(),
                                 fieldWithPath("data.isFavorite")
                                         .type(JsonFieldType.BOOLEAN)
                                         .description("즐겨찾기 여부"),
