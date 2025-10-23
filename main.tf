@@ -219,12 +219,15 @@ resource "aws_instance" "api" {
   ami           = "ami-0e9bfdb247cc8de84"  # Ubuntu 22.04 LTS AMI
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public_1.id
+  
+  # 명시적 공개 IP 할당
+  associate_public_ip_address = true
 
   # 세부 모니터링 활성화
   monitoring = true
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
-  key_name              = "smartmealtable-key"
+  key_name              = aws_key_pair.smartmealtable.key_name
   iam_instance_profile  = aws_iam_instance_profile.ec2_profile.name
 
   root_block_device {
@@ -316,12 +319,15 @@ resource "aws_instance" "admin" {
   ami           = "ami-0e9bfdb247cc8de84"  # Ubuntu 22.04 LTS AMI
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public_2.id
+  
+  # 명시적 공개 IP 할당
+  associate_public_ip_address = true
 
   # 세부 모니터링 활성화
   monitoring = true
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
-  key_name              = "smartmealtable-key"
+  key_name              = aws_key_pair.smartmealtable.key_name
   iam_instance_profile  = aws_iam_instance_profile.ec2_profile.name
 
   root_block_device {
@@ -413,12 +419,15 @@ resource "aws_instance" "batch" {
   ami           = "ami-0e9bfdb247cc8de84"  # Ubuntu 22.04 LTS AMI
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public_1.id
+  
+  # 명시적 공개 IP 할당
+  associate_public_ip_address = true
 
   # 세부 모니터링 활성화
   monitoring = true
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
-  key_name              = "smartmealtable-key"
+  key_name              = aws_key_pair.smartmealtable.key_name
   iam_instance_profile  = aws_iam_instance_profile.ec2_profile.name
 
   root_block_device {
@@ -505,28 +514,7 @@ resource "aws_instance" "batch" {
   }
 }
 
-# 탄력적 IP
-resource "aws_eip" "app" {
-  instance = aws_instance.app.id
-
-  tags = {
-    Name = "smartmealtable-app-eip"
-  }
-}
-
-# 출력값
-output "public_ip" {
-  value = aws_eip.app.public_ip
-}
-
-output "ssh_command" {
-  value = "ssh -i smartmealtable-key.pem ubuntu@${aws_eip.app.public_ip}"
-}
-
-output "instance_id" {
-  value = aws_instance.app.id
-  description = "EC2 인스턴스 ID"
-}
+# 더 이상 사용되지 않음 - 아래 api, admin, batch EIP로 대체됨
 
 # ECR 저장소 생성 - API
 resource "aws_ecr_repository" "api" {
@@ -709,10 +697,21 @@ output "ecr_crawler_repository_url" {
   value = aws_ecr_repository.crawler.repository_url
 }
 
-# 키 페어 생성
+# 키 페어 생성 (사전에 smartmealtable-key.pub이 준비되어 있어야 함)
+# SSH 키 생성 방법:
+# ssh-keygen -t rsa -b 2048 -f smartmealtable-key -N ""
+#
+# 주의: Terraform validate/plan을 실행하기 전에 반드시 아래 파일이 있어야 함:
+# - smartmealtable-key (private key)
+# - smartmealtable-key.pub (public key)
+
 resource "aws_key_pair" "smartmealtable" {
   key_name   = "smartmealtable-key"
   public_key = file("${path.module}/smartmealtable-key.pub")
+
+  tags = {
+    Name = "smartmealtable-key-pair"
+  }
 }
 
 # RDS 보안 그룹
@@ -799,7 +798,13 @@ resource "aws_db_instance" "smartmealtable" {
 
 # RDS 엔드포인트 출력
 output "rds_endpoint" {
-  value = aws_db_instance.smartmealtable.endpoint
+  value       = "${aws_db_instance.smartmealtable.address}:${aws_db_instance.smartmealtable.port}"
+  description = "RDS database endpoint (host:port format)"
+}
+
+output "rds_host" {
+  value       = aws_db_instance.smartmealtable.address
+  description = "RDS database hostname only"
 }
 
 # CloudWatch 대시보드 생성
@@ -885,11 +890,11 @@ resource "aws_cloudwatch_dashboard" "main" {
           view    = "timeSeries"
           stacked = false
           metrics = [
-            ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", aws_lb.app.arn_suffix],
-            ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", aws_lb.app.arn_suffix]
+            ["AWS/EC2", "NetworkIn", "InstanceId", aws_instance.api.id],
+            ["AWS/EC2", "NetworkOut", "InstanceId", aws_instance.api.id]
           ]
           region = "ap-northeast-2"
-          title  = "ALB 성능"
+          title  = "EC2 네트워크 트래픽"
           period = 300
           stat   = "Average"
         }

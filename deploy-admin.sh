@@ -34,15 +34,21 @@ echo "서비스 상태 확인 중..."
 # Redis 체크
 echo "Redis 상태 확인..."
 sleep 10
-for i in {1..5}; do
-    if docker exec smartmealtableV2_redis_1 redis-cli ping | grep -q PONG; then
-        echo "✅ Redis가 성공적으로 시작되었습니다!"
-        break
+# 동적으로 Redis 컨테이너 찾기
+REDIS_CONTAINER=$(docker ps --filter "name=redis" -q | head -1)
+if [ -n "$REDIS_CONTAINER" ]; then
+  for i in {1..5}; do
+    if docker exec $REDIS_CONTAINER redis-cli ping | grep -q PONG; then
+      echo "✅ Redis가 성공적으로 시작되었습니다!"
+      break
     else
-        echo "⏳ Redis 시작 대기 중... ($i/5)"
-        sleep 5
+      echo "⏳ Redis 시작 대기 중... ($i/5)"
+      sleep 5
     fi
-done
+  done
+else
+  echo "⚠️  Redis 컨테이너를 찾을 수 없습니다."
+fi
 
 # Admin 서버 체크
 echo "Admin 서버 상태 확인..."
