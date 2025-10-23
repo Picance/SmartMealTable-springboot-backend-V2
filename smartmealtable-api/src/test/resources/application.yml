@@ -34,6 +34,12 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
+# JWT 설정 (테스트용)
+jwt:
+  secret: testSecretKeyForJWTTokenGenerationThatShouldBeLongEnough
+  access-token-expiry: 3600000  # 1시간 (밀리초)
+  refresh-token-expiry: 86400000  # 24시간 (밀리초)
+
 # OAuth 설정 (테스트용 더미 값)
 oauth:
   kakao:
