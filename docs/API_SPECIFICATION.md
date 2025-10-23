@@ -820,7 +820,8 @@ Authorization: Bearer {access_token}
   "mealBudgets": {
     "BREAKFAST": 3000,
     "LUNCH": 4000,
-    "DINNER": 3000
+    "DINNER": 3000,
+    "OTHER": 3000
   }
 }
 ```
@@ -843,6 +844,10 @@ Authorization: Bearer {access_token}
       },
       {
         "mealType": "DINNER",
+        "budget": 3000
+      },
+      {
+        "mealType": "OTHER",
         "budget": 3000
       }
     ]
@@ -1323,7 +1328,7 @@ Authorization: Bearer {access_token}
         "remaining": 1000
       },
       {
-        "mealType": "ETC",
+        "mealType": "OTHER",
         "budget": 3000,
         "spent": 2000,
         "remaining": 1000
@@ -1349,7 +1354,7 @@ Authorization: Bearer {access_token}
     "BREAKFAST": 3500,
     "LUNCH": 5000,
     "DINNER": 3500,
-    "ETC": 2000
+    "OTHER": 2000
   }
 }
 ```
@@ -1407,7 +1412,7 @@ Authorization: Bearer {access_token}
     "BREAKFAST": 3500,
     "LUNCH": 5000,
     "DINNER": 3500,
-    "ETC": 2000
+    "OTHER": 2000
   },
   "applyForward": true
 }
@@ -1444,7 +1449,7 @@ Authorization: Bearer {access_token}
         "budget": 3500
       },
       {
-        "mealType": "ETC",
+        "mealType": "OTHER",
         "budget": 3500
       }
     ],
@@ -3312,6 +3317,7 @@ Authorization: Bearer {access_token}
 - `BREAKFAST`: 아침
 - `LUNCH`: 점심
 - `DINNER`: 저녁
+- `OTHER`: 기타
 
 #### GroupType
 - `UNIVERSITY`: 대학교
