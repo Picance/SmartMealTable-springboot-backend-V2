@@ -286,5 +286,7 @@ legacy/
 portfolio-key
 portfolio-key.pem
 portfolio-key.pub
+smartmealtable-key
+smartmealtable-key.pub
 
 # End of https://www.toptal.com/developers/gitignore/api/java,react,gradle,maven,intellij
