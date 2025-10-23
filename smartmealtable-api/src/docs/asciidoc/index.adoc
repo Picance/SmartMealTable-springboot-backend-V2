@@ -551,6 +551,74 @@ http GET 'https://api.smartmealtable.com/api/v1/stores/autocomplete?keyword=강�
   Authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ----
 
+[[food]]
+= 음식 (Food)
+
+음식(메뉴) 관련 API입니다. 개별 메뉴의 상세 정보를 조회할 수 있습니다.
+
+== 인증 요구사항
+
+모든 음식 API는 JWT 인증이 필요합니다.
+
+[source,http]
+----
+Authorization: Bearer {access_token}
+----
+
+[[food-detail]]
+== 메뉴 상세 조회
+
+`GET /api/v1/foods/{foodId}`
+
+특정 메뉴의 상세 정보를 조회합니다. 메뉴 기본 정보와 함께 판매 가게 정보, 사용자 예산과의 비교 정보를 반환합니다.
+
+=== 요청
+
+include::{snippets}/food/get-food-detail/http-request.adoc[]
+
+==== 요청 헤더
+
+include::{snippets}/food/get-food-detail/request-headers.adoc[]
+
+==== 경로 파라미터
+
+include::{snippets}/food/get-food-detail/path-parameters.adoc[]
+
+=== 성공 응답 (200 OK)
+
+include::{snippets}/food/get-food-detail/http-response.adoc[]
+
+==== 응답 필드
+
+include::{snippets}/food/get-food-detail/response-fields.adoc[]
+
+=== 에러 응답
+
+==== 메뉴 미존재 (404 Not Found)
+
+include::{snippets}/food/get-food-detail-not-found/http-response.adoc[]
+
+include::{snippets}/food/get-food-detail-not-found/response-fields.adoc[]
+
+=== 예제
+
+==== cURL
+
+[source,bash]
+----
+curl -X GET 'https://api.smartmealtable.com/api/v1/foods/201' \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+----
+
+==== HTTPie
+
+[source,bash]
+----
+http GET 'https://api.smartmealtable.com/api/v1/foods/201' \
+  Authorization:"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+----
+
 [[auth-login]]
 == 로그인
 
