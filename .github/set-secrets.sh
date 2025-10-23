@@ -49,15 +49,38 @@ read -p "EC2_BATCH_INSTANCE_ID: " EC2_BATCH_INSTANCE_ID
 echo ""
 
 # 데이터베이스 정보 입력
-echo -e "${YELLOW}[3/3] 데이터베이스 정보 입력${NC}"
+echo -e "${YELLOW}[3/5] 데이터베이스 정보 입력${NC}"
 read -p "RDS_ENDPOINT (예: db.xxxxx.ap-northeast-2.rds.amazonaws.com): " RDS_ENDPOINT
-read -sp "RDS_PASSWORD: " RDS_PASSWORD
+read -p "DB_USERNAME (기본값: admin): " DB_USERNAME
+read -sp "RDS_PASSWORD (DB_PASSWORD): " RDS_PASSWORD
 echo ""
-read -p "REDIS_HOST (예: redis.xxxxx.ng.0001.apn2.cache.amazonaws.com): " REDIS_HOST
+read -p "REDIS_HOST: " REDIS_HOST
+read -p "REDIS_PORT (기본값: 6379): " REDIS_PORT
+read -p "ADMIN_PUBLIC_IP: " ADMIN_PUBLIC_IP
+read -p "ADMIN_PRIVATE_IP: " ADMIN_PRIVATE_IP
 echo ""
 
-# Slack Webhook (선택사항)
-read -p "SLACK_WEBHOOK (선택사항, Enter 스킵): " SLACK_WEBHOOK
+# OAuth 및 외부 API 정보 입력
+echo -e "${YELLOW}[4/5] OAuth & 외부 API 정보 입력 (선택사항)${NC}"
+read -p "KAKAO_CLIENT_ID (Enter 스킵): " KAKAO_CLIENT_ID
+read -p "KAKAO_REDIRECT_URI (기본값: http://localhost:5173/oauth/kakao/callback): " KAKAO_REDIRECT_URI
+read -p "GOOGLE_CLIENT_ID (Enter 스킵): " GOOGLE_CLIENT_ID
+read -sp "GOOGLE_CLIENT_SECRET (Enter 스킵): " GOOGLE_CLIENT_SECRET
+echo ""
+read -p "GOOGLE_REDIRECT_URI (기본값: http://localhost:5173/oauth/google/callback): " GOOGLE_REDIRECT_URI
+read -p "NAVER_MAP_CLIENT_ID (Enter 스킵): " NAVER_MAP_CLIENT_ID
+read -sp "NAVER_MAP_CLIENT_SECRET (Enter 스킵): " NAVER_MAP_CLIENT_SECRET
+echo ""
+echo ""
+
+# Vertex AI 및 JWT 정보 입력
+echo -e "${YELLOW}[5/5] Vertex AI & JWT 정보 입력 (선택사항)${NC}"
+read -p "VERTEX_AI_PROJECT_ID (Enter 스킵): " VERTEX_AI_PROJECT_ID
+read -p "VERTEX_AI_MODEL (기본값: gemini-2.5-flash): " VERTEX_AI_MODEL
+read -p "VERTEX_AI_TEMPERATURE (기본값: 0.1): " VERTEX_AI_TEMPERATURE
+read -p "VERTEX_AI_LOCATION (기본값: asia-northeast3): " VERTEX_AI_LOCATION
+read -sp "JWT_SECRET (Enter 스킵): " JWT_SECRET
+echo ""
 echo ""
 
 echo -e "${YELLOW}========== Secrets 설정 시작 ==========${NC}"
@@ -88,12 +111,31 @@ set_secret "EC2_API_INSTANCE_ID" "$EC2_API_INSTANCE_ID"
 set_secret "EC2_ADMIN_INSTANCE_ID" "$EC2_ADMIN_INSTANCE_ID"
 set_secret "EC2_SCHEDULER_INSTANCE_ID" "$EC2_SCHEDULER_INSTANCE_ID"
 set_secret "EC2_BATCH_INSTANCE_ID" "$EC2_BATCH_INSTANCE_ID"
+
+# DB 및 Redis
 set_secret "RDS_ENDPOINT" "$RDS_ENDPOINT"
+set_secret "DB_USERNAME" "$DB_USERNAME"
 set_secret "RDS_PASSWORD" "$RDS_PASSWORD"
 set_secret "REDIS_HOST" "$REDIS_HOST"
+set_secret "REDIS_PORT" "$REDIS_PORT"
+set_secret "ADMIN_PUBLIC_IP" "$ADMIN_PUBLIC_IP"
+set_secret "ADMIN_PRIVATE_IP" "$ADMIN_PRIVATE_IP"
 
-# 선택 Secrets
-set_secret "SLACK_WEBHOOK" "$SLACK_WEBHOOK"
+# OAuth 및 외부 API (선택사항)
+set_secret "KAKAO_CLIENT_ID" "$KAKAO_CLIENT_ID"
+set_secret "KAKAO_REDIRECT_URI" "$KAKAO_REDIRECT_URI"
+set_secret "GOOGLE_CLIENT_ID" "$GOOGLE_CLIENT_ID"
+set_secret "GOOGLE_CLIENT_SECRET" "$GOOGLE_CLIENT_SECRET"
+set_secret "GOOGLE_REDIRECT_URI" "$GOOGLE_REDIRECT_URI"
+set_secret "NAVER_MAP_CLIENT_ID" "$NAVER_MAP_CLIENT_ID"
+set_secret "NAVER_MAP_CLIENT_SECRET" "$NAVER_MAP_CLIENT_SECRET"
+
+# Vertex AI 및 JWT (선택사항)
+set_secret "VERTEX_AI_PROJECT_ID" "$VERTEX_AI_PROJECT_ID"
+set_secret "VERTEX_AI_MODEL" "$VERTEX_AI_MODEL"
+set_secret "VERTEX_AI_TEMPERATURE" "$VERTEX_AI_TEMPERATURE"
+set_secret "VERTEX_AI_LOCATION" "$VERTEX_AI_LOCATION"
+set_secret "JWT_SECRET" "$JWT_SECRET"
 
 echo ""
 echo -e "${GREEN}========== Secrets 설정 완료! ==========${NC}"
