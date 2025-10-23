@@ -83,7 +83,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         Category category = Category.reconstitute(null, "한식");
         Category savedCategory = categoryRepository.save(category);
 
-        Food food = Food.reconstitute(null, "김치찌개", savedCategory.getCategoryId(), 
+        Food food = Food.reconstitute(null, "김치찌개", 1L, savedCategory.getCategoryId(), 
                 "맛있는 김치찌개", null, 8000);
         Food savedFood = foodRepository.save(food);
         this.foodId = savedFood.getFoodId();

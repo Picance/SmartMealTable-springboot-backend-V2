@@ -67,4 +67,11 @@ public class FoodRepositoryImpl implements FoodRepository {
     public long countByCategoryId(Long categoryId) {
         return foodJpaRepository.countByCategoryId(categoryId);
     }
+
+    @Override
+    public List<Food> findByStoreId(Long storeId) {
+        return foodJpaRepository.findByStoreId(storeId).stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

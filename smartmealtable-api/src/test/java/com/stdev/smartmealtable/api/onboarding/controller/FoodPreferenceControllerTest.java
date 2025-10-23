@@ -106,16 +106,16 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         categoryId2 = savedCategory2.getCategoryId();
 
         // 테스트용 음식 생성 (15개)
-        Food food1 = Food.reconstitute(null, "김치찌개", categoryId1, "얼큰한 김치찌개", "https://example.com/kimchi.jpg", 8000);
-        Food food2 = Food.reconstitute(null, "된장찌개", categoryId1, "구수한 된장찌개", "https://example.com/doenjang.jpg", 7500);
-        Food food3 = Food.reconstitute(null, "불고기", categoryId1, "고소한 불고기", "https://example.com/bulgogi.jpg", 12000);
-        Food food4 = Food.reconstitute(null, "비빔밥", categoryId1, "영양만점 비빔밥", "https://example.com/bibimbap.jpg", 9000);
-        Food food5 = Food.reconstitute(null, "짜장면", categoryId2, "달콤한 짜장면", "https://example.com/jjajang.jpg", 6000);
-        Food food6 = Food.reconstitute(null, "짬뽕", categoryId2, "얼큰한 짬뽕", "https://example.com/jjamppong.jpg", 7000);
-        Food food7 = Food.reconstitute(null, "탕수육", categoryId2, "바삭한 탕수육", "https://example.com/tangsuyuk.jpg", 18000);
-        Food food8 = Food.reconstitute(null, "삼겹살", categoryId1, "고소한 삼겹살", "https://example.com/samgyeopsal.jpg", 15000);
-        Food food9 = Food.reconstitute(null, "김밥", categoryId1, "간편한 김밥", "https://example.com/gimbap.jpg", 3000);
-        Food food10 = Food.reconstitute(null, "라면", categoryId1, "매운 라면", "https://example.com/ramyeon.jpg", 4000);
+        Food food1 = Food.reconstitute(null, "김치찌개", 1L, categoryId1, "얼큰한 김치찌개", "https://example.com/kimchi.jpg", 8000);
+        Food food2 = Food.reconstitute(null, "된장찌개", 1L, categoryId1, "구수한 된장찌개", "https://example.com/doenjang.jpg", 7500);
+        Food food3 = Food.reconstitute(null, "불고기", 1L, categoryId1, "고소한 불고기", "https://example.com/bulgogi.jpg", 12000);
+        Food food4 = Food.reconstitute(null, "비빔밥", 1L, categoryId1, "영양만점 비빔밥", "https://example.com/bibimbap.jpg", 9000);
+        Food food5 = Food.reconstitute(null, "짜장면", 1L, categoryId2, "달콤한 짜장면", "https://example.com/jjajang.jpg", 6000);
+        Food food6 = Food.reconstitute(null, "짬뽕", 1L, categoryId2, "얼큰한 짬뽕", "https://example.com/jjamppong.jpg", 7000);
+        Food food7 = Food.reconstitute(null, "탕수육", 1L, categoryId2, "바삭한 탕수육", "https://example.com/tangsuyuk.jpg", 18000);
+        Food food8 = Food.reconstitute(null, "삼겹살", 1L, categoryId1, "고소한 삼겹살", "https://example.com/samgyeopsal.jpg", 15000);
+        Food food9 = Food.reconstitute(null, "김밥", 1L, categoryId1, "간편한 김밥", "https://example.com/gimbap.jpg", 3000);
+        Food food10 = Food.reconstitute(null, "라면", 1L, categoryId1, "매운 라면", "https://example.com/ramyeon.jpg", 4000);
 
         Food savedFood1 = foodRepository.save(food1);
         Food savedFood2 = foodRepository.save(food2);

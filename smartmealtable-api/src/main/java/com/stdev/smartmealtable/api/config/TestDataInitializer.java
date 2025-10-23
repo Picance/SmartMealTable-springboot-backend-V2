@@ -245,6 +245,11 @@ public class TestDataInitializer {
     private void initializeFoods() {
         log.info("📌 음식(메뉴) 데이터 초기화 중...");
         
+        if (createdStores.isEmpty()) {
+            log.warn("⚠ 가게가 없어 음식 초기화를 건너뜁니다.");
+            return;
+        }
+        
         List<Category> allCategories = categoryRepository.findAll();
         if (allCategories.isEmpty()) {
             log.warn("⚠ 카테고리가 없어 음식 초기화를 건너뜁니다.");
@@ -308,13 +313,17 @@ public class TestDataInitializer {
                     continue;
                 }
                 
-                Food food = Food.create(
-                    foodData.foodName, category.getCategoryId(), foodData.description,
-                    foodData.imageUrl, foodData.averagePrice
-                );
-                
-                Food savedFood = foodRepository.save(food);
-                log.debug("✓ 음식 생성: {} (ID: {})", foodData.foodName, savedFood.getFoodId());
+                // 가게를 순환하면서 음식 추가
+                for (Store store : createdStores) {
+                    Food food = Food.create(
+                        foodData.foodName, store.getStoreId(), category.getCategoryId(), 
+                        foodData.description, foodData.imageUrl, foodData.averagePrice
+                    );
+                    
+                    Food savedFood = foodRepository.save(food);
+                    log.debug("✓ 음식 생성: {} (Store: {}, ID: {})", 
+                        foodData.foodName, store.getStoreId(), savedFood.getFoodId());
+                }
             } catch (Exception e) {
                 log.warn("⚠ 음식 생성 실패 ({}): {}", foodData.foodName, e.getMessage());
             }

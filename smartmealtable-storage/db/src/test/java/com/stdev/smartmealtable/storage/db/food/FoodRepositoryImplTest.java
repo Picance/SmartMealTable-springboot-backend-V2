@@ -33,10 +33,10 @@ class FoodRepositoryImplTest {
     void save_converts_domain_and_returns_saved_domain() {
 
         // input domain simulates a new entity (no id)
-        Food domain = Food.reconstitute(null, "Pizza", 10L, "desc", "url", 12000);
+        Food domain = Food.reconstitute(null, "Pizza", 1L, 10L, "desc", "url", 12000);
 
         // saved entity returned from JPA would have an id assigned
-        FoodJpaEntity savedEntity = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "Pizza", 10L, "desc", "url", 12000));
+        FoodJpaEntity savedEntity = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "Pizza", 1L, 10L, "desc", "url", 12000));
         when(foodJpaRepository.save(any(FoodJpaEntity.class))).thenReturn(savedEntity);
 
         Food result = foodRepository.save(domain);

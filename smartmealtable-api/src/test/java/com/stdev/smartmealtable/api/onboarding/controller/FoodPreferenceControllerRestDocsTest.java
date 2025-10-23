@@ -95,9 +95,9 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
         Category savedCategory1 = categoryRepository.save(category1);
         categoryId1 = savedCategory1.getCategoryId();
 
-        Food food1 = Food.reconstitute(null, "김치찌개", categoryId1, "얼큰한 김치찌개", "https://example.com/kimchi.jpg", 8000);
-        Food food2 = Food.reconstitute(null, "된장찌개", categoryId1, "구수한 된장찌개", "https://example.com/doenjang.jpg", 7500);
-        Food food3 = Food.reconstitute(null, "불고기", categoryId1, "고소한 불고기", "https://example.com/bulgogi.jpg", 12000);
+        Food food1 = Food.reconstitute(null, "김치찌개", 1L, categoryId1, "얼큰한 김치찌개", "https://example.com/kimchi.jpg", 8000);
+        Food food2 = Food.reconstitute(null, "된장찌개", 1L, categoryId1, "구수한 된장찌개", "https://example.com/doenjang.jpg", 7500);
+        Food food3 = Food.reconstitute(null, "불고기", 1L, categoryId1, "고소한 불고기", "https://example.com/bulgogi.jpg", 12000);
 
         Food savedFood1 = foodRepository.save(food1);
         Food savedFood2 = foodRepository.save(food2);

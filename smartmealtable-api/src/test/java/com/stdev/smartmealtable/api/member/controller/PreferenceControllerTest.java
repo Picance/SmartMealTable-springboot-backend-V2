@@ -78,8 +78,8 @@ class PreferenceControllerTest extends AbstractContainerTest {
         japaneseCategory = categoryRepository.save(japaneseCategory);
 
         // 음식 생성 (Storage 레이어를 통해 직접 삽입)
-        kimchiJjigae = Food.reconstitute(null, "김치찌개", koreanCategory.getCategoryId(), "얼큰한 김치찌개", "kimchi.jpg", 7000);
-        sushi = Food.reconstitute(null, "생굴", japaneseCategory.getCategoryId(), "신선한 생굴", "sushi.jpg", 15000);
+        kimchiJjigae = Food.reconstitute(null, "김치찌개", 1L, koreanCategory.getCategoryId(), "얼큰한 김치찌개", "kimchi.jpg", 7000);
+        sushi = Food.reconstitute(null, "생굴", 1L, japaneseCategory.getCategoryId(), "신선한 생굴", "sushi.jpg", 15000);
         kimchiJjigae = foodRepository.save(kimchiJjigae);
         sushi = foodRepository.save(sushi);
     }

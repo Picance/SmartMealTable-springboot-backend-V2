@@ -113,7 +113,8 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         food1 = Food.reconstitute(
                 null,  // foodId는 save 후 자동 생성
                 "김치찌개",
-                1L,
+                1L,  // storeId
+                1L,  // categoryId
                 "맛있는 김치찌개",
                 "https://example.com/food1.jpg",
                 8000
@@ -124,7 +125,8 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         food2 = Food.reconstitute(
                 null,  // foodId는 save 후 자동 생성
                 "된장찌개",
-                1L,
+                1L,  // storeId
+                1L,  // categoryId
                 "맛있는 된장찌개",
                 "https://example.com/food2.jpg",
                 7000

@@ -92,15 +92,15 @@ class PreferenceControllerRestDocsTest extends AbstractRestDocsTest {
         categoryId2 = savedCategory2.getCategoryId();
 
         // 음식 생성
-        Food food1 = Food.reconstitute(null, "비빔밥", categoryId1, "맛있는 비빔밥", "bibimbap.jpg", 8000);
+        Food food1 = Food.reconstitute(null, "비빔밥", 1L, categoryId1, "맛있는 비빔밥", "bibimbap.jpg", 8000);
         Food savedFood1 = foodRepository.save(food1);
         foodId1 = savedFood1.getFoodId();
 
-        Food food2 = Food.reconstitute(null, "짜장면", categoryId2, "맛있는 짜장면", "jjajangmyeon.jpg", 6000);
+        Food food2 = Food.reconstitute(null, "짜장면", 1L, categoryId2, "맛있는 짜장면", "jjajangmyeon.jpg", 6000);
         Food savedFood2 = foodRepository.save(food2);
         foodId2 = savedFood2.getFoodId();
 
-        Food food3 = Food.reconstitute(null, "김치찌개", categoryId1, "맛있는 김치찌개", "kimchi-jjigae.jpg", 7000);
+        Food food3 = Food.reconstitute(null, "김치찌개", 1L, categoryId1, "맛있는 김치찌개", "kimchi-jjigae.jpg", 7000);
         Food savedFood3 = foodRepository.save(food3);
         foodId3 = savedFood3.getFoodId();
 

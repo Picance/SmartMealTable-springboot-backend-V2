@@ -25,4 +25,9 @@ public interface FoodJpaRepository extends JpaRepository<FoodJpaEntity, Long> {
      * 카테고리별 음식 개수 조회
      */
     long countByCategoryId(Long categoryId);
+
+    /**
+     * 가게별 음식 조회
+     */
+    List<FoodJpaEntity> findByStoreId(Long storeId);
 }

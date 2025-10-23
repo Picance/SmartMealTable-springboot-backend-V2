@@ -99,11 +99,11 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
         categoryId = savedCategory.getCategoryId();
         
         // 음식 생성
-        Food food1 = Food.reconstitute(null, "김치찌개", categoryId, "얼큰한 김치찌개", "images/food1.jpg", 8000);
+        Food food1 = Food.reconstitute(null, "김치찌개", 1L, categoryId, "얼큰한 김치찌개", "images/food1.jpg", 8000);
         Food savedFood1 = foodRepository.save(food1);
         foodId1 = savedFood1.getFoodId();
         
-        Food food2 = Food.reconstitute(null, "불고기", categoryId, "달콤한 불고기", "images/food2.jpg", 9000);
+        Food food2 = Food.reconstitute(null, "불고기", 1L, categoryId, "달콤한 불고기", "images/food2.jpg", 9000);
         Food savedFood2 = foodRepository.save(food2);
         foodId2 = savedFood2.getFoodId();
     }

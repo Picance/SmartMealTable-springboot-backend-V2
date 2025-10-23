@@ -13,6 +13,7 @@ public class Food {
 
     private Long foodId;
     private String foodName;
+    private Long storeId;
     private Long categoryId;
     private String description;
     private String imageUrl;
@@ -24,6 +25,7 @@ public class Food {
     public static Food reconstitute(
             Long foodId,
             String foodName,
+            Long storeId,
             Long categoryId,
             String description,
             String imageUrl,
@@ -32,6 +34,7 @@ public class Food {
         Food food = new Food();
         food.foodId = foodId;
         food.foodName = foodName;
+        food.storeId = storeId;
         food.categoryId = categoryId;
         food.description = description;
         food.imageUrl = imageUrl;
@@ -44,6 +47,7 @@ public class Food {
      */
     public static Food create(
             String foodName,
+            Long storeId,
             Long categoryId,
             String description,
             String imageUrl,
@@ -51,6 +55,7 @@ public class Food {
     ) {
         Food food = new Food();
         food.foodName = foodName;
+        food.storeId = storeId;
         food.categoryId = categoryId;
         food.description = description;
         food.imageUrl = imageUrl;

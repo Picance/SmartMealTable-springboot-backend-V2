@@ -22,8 +22,14 @@ public class FoodJpaEntity {
     @Column(name = "food_id")
     private Long foodId;
 
+    @Column(name = "store_id", nullable = false)
+    private Long storeId;
+
     @Column(name = "food_name", nullable = false, length = 100)
     private String foodName;
+
+    @Column(name = "price", nullable = false)
+    private Integer price;
 
     @Column(name = "category_id", nullable = false)
     private Long categoryId;
@@ -34,15 +40,8 @@ public class FoodJpaEntity {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
-    @Column(name = "average_price")
-    private Integer averagePrice;
-
-    @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable;
-
-    // registered_at은 DB DEFAULT CURRENT_TIMESTAMP로 관리 (도메인에 노출 안 함)
-    @Column(name = "registered_at", insertable = false, updatable = false)
-    private LocalDateTime registeredAt;
+    @Column(name = "registered_dt", insertable = false, updatable = false)
+    private LocalDateTime registeredDt;
 
     // created_at, updated_at은 DB DEFAULT CURRENT_TIMESTAMP로 관리 (도메인에 노출 안 함)
     @Column(name = "created_at", insertable = false, updatable = false)
@@ -58,10 +57,11 @@ public class FoodJpaEntity {
         return Food.reconstitute(
                 this.foodId,
                 this.foodName,
+                this.storeId,
                 this.categoryId,
                 this.description,
                 this.imageUrl,
-                this.averagePrice
+                this.price
         );
     }
 
@@ -72,11 +72,11 @@ public class FoodJpaEntity {
         FoodJpaEntity entity = new FoodJpaEntity();
         entity.foodId = food.getFoodId();
         entity.foodName = food.getFoodName();
+        entity.storeId = food.getStoreId();
         entity.categoryId = food.getCategoryId();
         entity.description = food.getDescription();
         entity.imageUrl = food.getImageUrl();
-        entity.averagePrice = food.getAveragePrice();
-        entity.isAvailable = true; // 기본값
+        entity.price = food.getAveragePrice();
         return entity;
     }
 }

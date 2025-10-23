@@ -19,8 +19,6 @@ public class QFoodJpaEntity extends EntityPathBase<FoodJpaEntity> {
 
     public static final QFoodJpaEntity foodJpaEntity = new QFoodJpaEntity("foodJpaEntity");
 
-    public final NumberPath<Integer> averagePrice = createNumber("averagePrice", Integer.class);
-
     public final NumberPath<Long> categoryId = createNumber("categoryId", Long.class);
 
     public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
@@ -33,9 +31,11 @@ public class QFoodJpaEntity extends EntityPathBase<FoodJpaEntity> {
 
     public final StringPath imageUrl = createString("imageUrl");
 
-    public final BooleanPath isAvailable = createBoolean("isAvailable");
+    public final NumberPath<Integer> price = createNumber("price", Integer.class);
 
-    public final DateTimePath<java.time.LocalDateTime> registeredAt = createDateTime("registeredAt", java.time.LocalDateTime.class);
+    public final DateTimePath<java.time.LocalDateTime> registeredDt = createDateTime("registeredDt", java.time.LocalDateTime.class);
+
+    public final NumberPath<Long> storeId = createNumber("storeId", Long.class);
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 

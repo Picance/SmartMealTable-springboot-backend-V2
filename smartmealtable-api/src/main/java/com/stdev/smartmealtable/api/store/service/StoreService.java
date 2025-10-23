@@ -6,6 +6,7 @@ import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
 import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.store.*;
@@ -32,6 +33,7 @@ public class StoreService {
     private final StoreTemporaryClosureRepository storeTemporaryClosureRepository;
     private final StoreViewHistoryRepository storeViewHistoryRepository;
     private final AddressHistoryRepository addressHistoryRepository;
+    private final FoodRepository foodRepository;
     
     /**
      * 가게 목록 조회
@@ -64,6 +66,7 @@ public class StoreService {
      * 가게 상세 조회
      * - 조회 이력 기록
      * - 조회수 증가
+     * - 메뉴 정보 포함
      */
     @Transactional
     public StoreDetailResponse getStoreDetail(Long memberId, Long storeId) {
@@ -85,10 +88,12 @@ public class StoreService {
         // 임시 휴무 조회
         List<StoreTemporaryClosure> temporaryClosures = storeTemporaryClosureRepository.findByStoreId(storeId);
         
-        // TODO: 메뉴 정보 조회 추가 필요
+        // 메뉴(음식) 조회
+        var foods = foodRepository.findByStoreId(storeId);
+        
         // TODO: 즐겨찾기 여부 조회 추가 필요
         
-        return StoreDetailResponse.from(store, openingHours, temporaryClosures);
+        return StoreDetailResponse.from(store, openingHours, temporaryClosures, foods);
     }
     
     /**

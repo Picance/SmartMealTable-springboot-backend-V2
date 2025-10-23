@@ -7,6 +7,8 @@ import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.food.Food;
+import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.store.*;
@@ -53,6 +55,9 @@ class StoreServiceTest {
 
     @Mock
     private AddressHistoryRepository addressHistoryRepository;
+
+    @Mock
+    private FoodRepository foodRepository;
 
     @InjectMocks
     private StoreService storeService;
@@ -262,6 +267,11 @@ class StoreServiceTest {
 
         List<StoreTemporaryClosure> temporaryClosures = List.of();
 
+        List<Food> foods = List.of(
+                Food.reconstitute(1L, "비빔밥", testStoreId, 1L, "신선한 야채로 만든 비빔밥", "https://example.com/bibimbap.jpg", 8000),
+                Food.reconstitute(2L, "된장찌개", testStoreId, 1L, "집된장으로 만든 따뜻한 된장찌개", "https://example.com/doenjang.jpg", 6000)
+        );
+
         StoreViewHistory viewHistory = new StoreViewHistory(
                 null,
                 testStoreId,
@@ -277,6 +287,8 @@ class StoreServiceTest {
                 .willReturn(openingHours);
         given(storeTemporaryClosureRepository.findByStoreId(testStoreId))
                 .willReturn(temporaryClosures);
+        given(foodRepository.findByStoreId(testStoreId))
+                .willReturn(foods);
 
         // when
         StoreDetailResponse response = storeService.getStoreDetail(testMemberId, testStoreId);
@@ -292,6 +304,9 @@ class StoreServiceTest {
         assertThat(response.viewCount()).isEqualTo(501); // 조회수 증가 확인
         assertThat(response.openingHours()).hasSize(1);
         assertThat(response.temporaryClosures()).isEmpty();
+        assertThat(response.menus()).hasSize(2); // 메뉴 개수 확인
+        assertThat(response.menus()).extracting("foodName")
+                .containsExactly("비빔밥", "된장찌개");
 
         verify(storeRepository).findByIdAndDeletedAtIsNull(testStoreId);
         verify(storeViewHistoryRepository).createViewHistory(testStoreId, testMemberId);
@@ -299,6 +314,7 @@ class StoreServiceTest {
         verify(storeRepository).save(testStore);
         verify(storeOpeningHourRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
+        verify(foodRepository).findByStoreId(testStoreId);
     }
 
     @Test
@@ -345,6 +361,8 @@ class StoreServiceTest {
                 )
         );
 
+        List<Food> foods = List.of();
+
         StoreViewHistory viewHistory = new StoreViewHistory(
                 null,
                 testStoreId,
@@ -360,6 +378,8 @@ class StoreServiceTest {
                 .willReturn(openingHours);
         given(storeTemporaryClosureRepository.findByStoreId(testStoreId))
                 .willReturn(temporaryClosures);
+        given(foodRepository.findByStoreId(testStoreId))
+                .willReturn(foods);
 
         // when
         StoreDetailResponse response = storeService.getStoreDetail(testMemberId, testStoreId);
@@ -372,8 +392,10 @@ class StoreServiceTest {
         assertThat(response.temporaryClosures().get(0).closureDate()).isEqualTo(today);
         assertThat(response.temporaryClosures().get(0).startTime()).isEqualTo(LocalTime.of(0, 0));
         assertThat(response.temporaryClosures().get(0).endTime()).isEqualTo(LocalTime.of(23, 59));
+        assertThat(response.menus()).isEmpty(); // 메뉴 없음 확인
 
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
+        verify(foodRepository).findByStoreId(testStoreId);
     }
 
     @Test

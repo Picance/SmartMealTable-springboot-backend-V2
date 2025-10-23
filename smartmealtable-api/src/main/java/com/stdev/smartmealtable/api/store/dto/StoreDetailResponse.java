@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.api.store.dto;
 
+import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreOpeningHour;
 import com.stdev.smartmealtable.domain.store.StoreTemporaryClosure;
@@ -33,12 +34,14 @@ public record StoreDetailResponse(
         String imageUrl,
         List<OpeningHourInfo> openingHours,
         List<TemporaryClosureInfo> temporaryClosures,
+        List<MenuInfo> menus,
         Boolean isFavorite
 ) {
     public static StoreDetailResponse from(
             Store store,
             List<StoreOpeningHour> openingHours,
-            List<StoreTemporaryClosure> temporaryClosures
+            List<StoreTemporaryClosure> temporaryClosures,
+            List<Food> foods
     ) {
         return new StoreDetailResponse(
                 store.getStoreId(),
@@ -59,6 +62,7 @@ public record StoreDetailResponse(
                 store.getImageUrl(),
                 openingHours.stream().map(OpeningHourInfo::from).toList(),
                 temporaryClosures.stream().map(TemporaryClosureInfo::from).toList(),
+                foods.stream().map(MenuInfo::from).toList(),
                 false // TODO: 즐겨찾기 여부 조회 필요
         );
     }
@@ -101,6 +105,27 @@ public record StoreDetailResponse(
                     closure.startTime(),
                     closure.endTime(),
                     closure.reason()
+            );
+        }
+    }
+
+    /**
+     * 메뉴(음식) 정보
+     */
+    public record MenuInfo(
+            Long foodId,
+            String foodName,
+            Integer price,
+            String description,
+            String imageUrl
+    ) {
+        public static MenuInfo from(Food food) {
+            return new MenuInfo(
+                    food.getFoodId(),
+                    food.getFoodName(),
+                    food.getAveragePrice(),
+                    food.getDescription(),
+                    food.getImageUrl()
             );
         }
     }
