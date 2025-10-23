@@ -1,4 +1,25 @@
+# Batch Crawler Dockerfile
+# 빌드: docker build -f Dockerfile.crawler -t smartmealtable-crawler:latest .
+# 실행: docker run -e SPRING_PROFILES_ACTIVE=prod smartmealtable-crawler:latest
+
 FROM openjdk:21-jdk-slim
+
 WORKDIR /app
-COPY smartmealtable-batch/crawler/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 보안: 루트가 아닌 사용자로 실행
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+# Crawler JAR 복사 (명시적으로 crawler 모듈 지정)
+COPY --chown=appuser:appuser smartmealtable-batch/crawler/build/libs/crawler-*.jar app.jar
+
+# JVM 메모리 설정 (t3.micro: 배치용 400MB 할당)
+ENV JAVA_OPTS="-Xms200m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Spring 프로필 기본값
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# 배치 작업은 포트 노출 안 함 (필요시 관리용 8082 추가 가능)
+# EXPOSE 8082
+
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]

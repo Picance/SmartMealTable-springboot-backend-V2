@@ -1,4 +1,28 @@
+# API 서버 Dockerfile
+# 빌드: docker build -f Dockerfile.api -t smartmealtable-api:latest .
+# 실행: docker run -e SPRING_PROFILES_ACTIVE=prod -p 8080:8080 smartmealtable-api:latest
+
 FROM openjdk:21-jdk-slim
+
 WORKDIR /app
-COPY smartmealtable-api/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 헬스체크 (Spring Actuator 사용)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# 보안: 루트가 아닌 사용자로 실행
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+# API JAR 복사 (명시적으로 api 모듈 지정)
+COPY --chown=appuser:appuser smartmealtable-api/build/libs/smartmealtable-api-*.jar app.jar
+
+# JVM 메모리 설정 (t3.micro: 512MB 할당)
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Spring 프로필 기본값
+ENV SPRING_PROFILES_ACTIVE=prod
+
+EXPOSE 8080
+
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]

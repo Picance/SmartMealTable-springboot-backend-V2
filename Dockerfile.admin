@@ -1,4 +1,28 @@
+# Admin 서버 Dockerfile
+# 빌드: docker build -f Dockerfile.admin -t smartmealtable-admin:latest .
+# 실행: docker run -e SPRING_PROFILES_ACTIVE=prod -p 8081:8081 smartmealtable-admin:latest
+
 FROM openjdk:21-jdk-slim
+
 WORKDIR /app
-COPY smartmealtable-admin/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 헬스체크 (Spring Actuator 사용)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8081/actuator/health || exit 1
+
+# 보안: 루트가 아닌 사용자로 실행
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+# Admin JAR 복사 (명시적으로 admin 모듈 지정)
+COPY --chown=appuser:appuser smartmealtable-admin/build/libs/smartmealtable-admin-*.jar app.jar
+
+# JVM 메모리 설정 (t3.micro: 400MB 할당)
+ENV JAVA_OPTS="-Xms200m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Spring 프로필 기본값
+ENV SPRING_PROFILES_ACTIVE=prod
+
+EXPOSE 8081
+
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]

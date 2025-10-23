@@ -1,4 +1,29 @@
+# Scheduler Dockerfile
+# 빌드: docker build -f Dockerfile.scheduler -t smartmealtable-scheduler:latest .
+# 실행: docker run -e SPRING_PROFILES_ACTIVE=prod smartmealtable-scheduler:latest
+
 FROM openjdk:21-jdk-slim
+
 WORKDIR /app
-COPY smartmealtable-scheduler/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 헬스체크 (Spring Actuator 사용)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8082/actuator/health || exit 1
+
+# 보안: 루트가 아닌 사용자로 실행
+RUN useradd -m -u 1000 appuser
+USER appuser
+
+# Scheduler JAR 복사 (명시적으로 scheduler 모듈 지정)
+COPY --chown=appuser:appuser smartmealtable-scheduler/build/libs/smartmealtable-scheduler-*.jar app.jar
+
+# JVM 메모리 설정 (t3.micro: 300MB 할당)
+ENV JAVA_OPTS="-Xms150m -Xmx300m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Spring 프로필 기본값
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# 스케줄러 관리용 포트
+EXPOSE 8082
+
+ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
