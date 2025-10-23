@@ -410,35 +410,35 @@ Authorization: Bearer {access_token}
 
 === 요청 (기본 반경)
 
-include::{snippets}/store-list-default/http-request.adoc[]
+include::{snippets}/store/get-list-basic/http-request.adoc[]
 
 ==== 요청 헤더
 
-include::{snippets}/store-list-default/request-headers.adoc[]
-
-==== 요청 파라미터
-
-include::{snippets}/store-list-default/query-parameters.adoc[]
+include::{snippets}/store/get-list-basic/request-headers.adoc[]
 
 === 성공 응답 (200 OK)
 
-include::{snippets}/store-list-default/http-response.adoc[]
+include::{snippets}/store/get-list-basic/http-response.adoc[]
 
 ==== 응답 필드
 
-include::{snippets}/store-list-default/response-fields.adoc[]
+include::{snippets}/store/get-list-basic/response-fields.adoc[]
 
-=== 키워드 검색
+=== 키워드 검색 및 필터링
 
-식당 이름 또는 카테고리로 검색할 수 있습니다.
+식당 이름 또는 카테고리로 검색하고, 거리, 정렬 등으로 필터링할 수 있습니다.
 
 ==== 요청
 
-include::{snippets}/store-list-search/http-request.adoc[]
+include::{snippets}/store/get-list-with-filters/http-request.adoc[]
+
+==== 요청 파라미터
+
+include::{snippets}/store/get-list-with-filters/query-parameters.adoc[]
 
 ==== 응답
 
-include::{snippets}/store-list-search/http-response.adoc[]
+include::{snippets}/store/get-list-with-filters/http-response.adoc[]
 
 === 정렬 옵션
 
@@ -475,23 +475,23 @@ curl -X GET 'https://api.smartmealtable.com/api/v1/stores?latitude=37.5081&longi
 
 === 요청
 
-include::{snippets}/store-detail-success/http-request.adoc[]
+include::{snippets}/store/get-detail-success/http-request.adoc[]
 
 ==== 경로 파라미터
 
-include::{snippets}/store-detail-success/path-parameters.adoc[]
+include::{snippets}/store/get-detail-success/path-parameters.adoc[]
 
 ==== 요청 헤더
 
-include::{snippets}/store-detail-success/request-headers.adoc[]
+include::{snippets}/store/get-detail-success/request-headers.adoc[]
 
 === 성공 응답 (200 OK)
 
-include::{snippets}/store-detail-success/http-response.adoc[]
+include::{snippets}/store/get-detail-success/http-response.adoc[]
 
 ==== 응답 필드
 
-include::{snippets}/store-detail-success/response-fields.adoc[]
+include::{snippets}/store/get-detail-success/response-fields.adoc[]
 
 === 영업시간 정보
 
@@ -519,19 +519,19 @@ curl -X GET https://api.smartmealtable.com/api/v1/stores/1 \
 
 === 요청
 
-include::{snippets}/store-autocomplete-success/http-request.adoc[]
+include::{snippets}/store/autocomplete-success/http-request.adoc[]
 
 ==== 요청 파라미터
 
-include::{snippets}/store-autocomplete-success/query-parameters.adoc[]
+include::{snippets}/store/autocomplete-success/query-parameters.adoc[]
 
 === 성공 응답 (200 OK)
 
-include::{snippets}/store-autocomplete-success/http-response.adoc[]
+include::{snippets}/store/autocomplete-success/http-response.adoc[]
 
 ==== 응답 필드
 
-include::{snippets}/store-autocomplete-success/response-fields.adoc[]
+include::{snippets}/store/autocomplete-success/response-fields.adoc[]
 
 === 예제
 
