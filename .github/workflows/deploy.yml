@@ -1,0 +1,155 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ] # main 브랜치에 코드가 푸시될 때 실행
+
+env:
+  AWS_REGION: ap-northeast-2 # AWS 리전 (서울)
+  ECR_REPOSITORY: smartmealtable # ECR 저장소 이름
+
+jobs:
+  deploy:
+    name: Build & Deploy to EC2
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1단계: 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2단계: JDK 21 설정
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3단계: Gradle로 프로젝트 빌드
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test --parallel
+        
+      # 4단계: AWS 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 5단계: AWS ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 6단계: Docker 이미지 빌드 및 ECR 업로드
+      - name: Build and push Docker image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # API 서비스 빌드 및 업로드
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-api:$IMAGE_TAG -f Dockerfile.api .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-api:$IMAGE_TAG
+          
+          # Admin 서비스 빌드 및 업로드
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-admin:$IMAGE_TAG -f Dockerfile.admin .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-admin:$IMAGE_TAG
+          
+          # Scheduler 서비스 빌드 및 업로드
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-scheduler:$IMAGE_TAG -f Dockerfile.scheduler .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-scheduler:$IMAGE_TAG
+          
+          # Crawler 서비스 빌드 및 업로드
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY-crawler:$IMAGE_TAG -f Dockerfile.crawler .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY-crawler:$IMAGE_TAG
+
+      # 7단계: EC2에서 새로운 Docker 컨테이너 실행
+      - name: Deploy to EC2 using SSM
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # API 서비스 배포
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_API_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{
+              "commands": [
+                "docker stop smartmealtable-api || true",
+                "docker rm smartmealtable-api || true",
+                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
+                "docker run -d --name smartmealtable-api -p 8080:8080 \
+                  -e SPRING_APPLICATION_NAME=smartmealtable-api \
+                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
+                  -e SPRING_DATASOURCE_USERNAME=admin \
+                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+                  -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
+                  -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \
+                  -e SPRING_REDIS_PORT=6379 \
+                  -e JAVA_OPTS=-Xmx512m \
+                  $REGISTRY/$ECR_REPOSITORY-api:$IMAGE_TAG"
+              ]
+            }'
+          
+          # Admin 서비스 배포
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_ADMIN_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{
+              "commands": [
+                "docker stop smartmealtable-admin || true",
+                "docker rm smartmealtable-admin || true",
+                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
+                "docker run -d --name smartmealtable-admin -p 8081:8081 \
+                  -e SPRING_APPLICATION_NAME=smartmealtable-admin \
+                  -e SERVER_PORT=8081 \
+                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
+                  -e SPRING_DATASOURCE_USERNAME=admin \
+                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+                  -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
+                  -e JAVA_OPTS=-Xmx256m \
+                  $REGISTRY/$ECR_REPOSITORY-admin:$IMAGE_TAG"
+              ]
+            }'
+          
+          # Scheduler 서비스 배포
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_SCHEDULER_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{
+              "commands": [
+                "docker stop smartmealtable-scheduler || true",
+                "docker rm smartmealtable-scheduler || true",
+                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
+                "docker run -d --name smartmealtable-scheduler \
+                  -e SPRING_APPLICATION_NAME=smartmealtable-scheduler \
+                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
+                  -e SPRING_DATASOURCE_USERNAME=admin \
+                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+                  -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \
+                  -e SPRING_REDIS_PORT=6379 \
+                  -e JAVA_OPTS=-Xmx256m \
+                  $REGISTRY/$ECR_REPOSITORY-scheduler:$IMAGE_TAG"
+              ]
+            }'
+          
+          # Crawler 서비스 배포 (필요시)
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_BATCH_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters '{
+              "commands": [
+                "docker stop smartmealtable-crawler || true",
+                "docker rm smartmealtable-crawler || true",
+                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
+                "docker run -d --name smartmealtable-crawler \
+                  -e SPRING_APPLICATION_NAME=smartmealtable-crawler \
+                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
+                  -e SPRING_DATASOURCE_USERNAME=admin \
+                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
+                  -e JAVA_OPTS=-Xmx256m \
+                  $REGISTRY/$ECR_REPOSITORY-crawler:$IMAGE_TAG"
+              ]
+            }'
