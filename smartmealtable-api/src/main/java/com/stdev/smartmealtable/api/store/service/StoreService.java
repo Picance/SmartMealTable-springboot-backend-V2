@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.store.service;
 
+import com.stdev.smartmealtable.api.store.dto.BudgetComparison;
+import com.stdev.smartmealtable.api.store.dto.GetFoodDetailResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreDetailResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
@@ -94,6 +96,26 @@ public class StoreService {
         // TODO: 즐겨찾기 여부 조회 추가 필요
         
         return StoreDetailResponse.from(store, openingHours, temporaryClosures, foods);
+    }
+    
+    /**
+     * 메뉴 상세 조회
+     * - 메뉴 정보, 판매 가게 정보, 사용자 예산 비교 정보 반환
+     */
+    public GetFoodDetailResponse getFoodDetail(Long memberId, Long foodId) {
+        // 음식 조회
+        var food = foodRepository.findById(foodId)
+                .orElseThrow(() -> new BusinessException(ErrorType.FOOD_NOT_FOUND));
+        
+        // 가게 조회
+        var store = storeRepository.findById(food.getStoreId())
+                .orElseThrow(() -> new BusinessException(ErrorType.STORE_NOT_FOUND));
+        
+        // TODO: 사용자의 현재 끼니별 예산 정보 조회
+        // 현재는 null로 처리 (나중에 DailyBudgetRepository 활용)
+        Integer userMealBudget = null;
+        
+        return GetFoodDetailResponse.from(food, store, userMealBudget);
     }
     
     /**

@@ -1976,6 +1976,65 @@ Authorization: Bearer {access_token}
 
 ---
 
+### 7.4 메뉴 상세 조회
+
+**Endpoint:** `GET /api/v1/foods/{foodId}`
+
+**설명:**
+- 특정 메뉴의 상세 정보를 조회합니다.
+- 가게 정보, 메뉴 정보, 사용자의 현재 예산과의 비교 정보를 함께 반환합니다.
+
+**Path Parameters:**
+- `foodId`: 조회할 메뉴의 ID
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "foodId": 201,
+    "foodName": "교촌 오리지널",
+    "description": "교촌의 시그니처 메뉴",
+    "price": 18000,
+    "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+    "store": {
+      "storeId": 101,
+      "storeName": "교촌치킨 강남점",
+      "categoryName": "치킨",
+      "address": "서울특별시 강남구 테헤란로 123",
+      "phoneNumber": "02-1234-5678",
+      "averagePrice": 18000,
+      "reviewCount": 1523,
+      "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
+    },
+    "isAvailable": true,
+    "budgetComparison": {
+      "userMealBudget": 20000,
+      "foodPrice": 18000,
+      "difference": 2000,
+      "isOverBudget": false,
+      "differenceText": "-2,000원"
+    }
+  },
+  "error": null
+}
+```
+
+**Response Fields:**
+- `foodId`: 메뉴 고유 식별자
+- `foodName`: 메뉴 이름
+- `description`: 메뉴 설명
+- `price`: 메뉴 가격
+- `imageUrl`: 메뉴 이미지 URL
+- `store`: 이 메뉴를 판매하는 가게 정보
+- `isAvailable`: 메뉴 판매 가능 여부
+- `budgetComparison`: 사용자 예산과의 비교 정보
+
+**Error Cases:**
+- `404`: 메뉴를 찾을 수 없음
+
+---
+
 ## 8. 추천 시스템 API
 
 ### 8.1 개인화 추천 (기본)
