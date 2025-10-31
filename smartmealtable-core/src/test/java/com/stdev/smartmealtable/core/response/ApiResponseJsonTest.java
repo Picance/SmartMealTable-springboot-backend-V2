@@ -1,6 +1,9 @@
 package com.stdev.smartmealtable.core.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import com.stdev.smartmealtable.core.error.ErrorCode;
+import com.stdev.smartmealtable.core.error.ErrorMessage;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +32,9 @@ class ApiResponseJsonTest {
     @Test
     void error_response_should_include_null_data() throws Exception {
         // given
-        ApiResponse<String> response = ApiResponse.error("E400", "Bad Request");
+        ApiResponse<String> response = ApiResponse.error(
+                ErrorMessage.of(ErrorCode.E400, "Bad Request")
+        );
 
         // when
         String json = objectMapper.writeValueAsString(response);
