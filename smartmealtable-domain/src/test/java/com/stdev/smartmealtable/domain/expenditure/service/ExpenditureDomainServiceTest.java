@@ -74,6 +74,7 @@ class ExpenditureDomainServiceTest {
                 Expenditure savedExpenditure = Expenditure.reconstruct(
                         1L,
                         memberId,
+                        null,
                         storeName,
                         amount,
                         expendedDate,
@@ -128,6 +129,7 @@ class ExpenditureDomainServiceTest {
                 Expenditure savedExpenditure = Expenditure.reconstruct(
                         1L,
                         memberId,
+                        null,
                         storeName,
                         amount,
                         expendedDate,
@@ -179,6 +181,7 @@ class ExpenditureDomainServiceTest {
                 Expenditure savedExpenditure = Expenditure.reconstruct(
                         1L,
                         memberId,
+                        null,
                         storeName,
                         amount,
                         expendedDate,
@@ -274,6 +277,7 @@ class ExpenditureDomainServiceTest {
                 Expenditure savedExpenditure = Expenditure.reconstruct(
                         1L,
                         memberId,
+                        null,
                         storeName,
                         totalAmount,
                         expendedDate,
