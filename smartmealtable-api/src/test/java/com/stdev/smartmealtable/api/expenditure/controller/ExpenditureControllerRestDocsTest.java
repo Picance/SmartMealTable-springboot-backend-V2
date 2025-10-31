@@ -166,6 +166,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 데이터"),
                                 fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER)
                                         .description("생성된 지출 내역 ID"),
+                                fieldWithPath("data.storeId").type(JsonFieldType.NULL)
+                                        .description("가게 ID (연계 시 설정, 없을 경우 null)").optional(),
+                                fieldWithPath("data.hasStoreLink").type(JsonFieldType.BOOLEAN)
+                                        .description("가게 연계 여부"),
                                 fieldWithPath("data.storeName").type(JsonFieldType.STRING)
                                         .description("가게 이름"),
                                 fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
@@ -181,13 +185,15 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.mealType").type(JsonFieldType.STRING)
                                         .description("식사 유형"),
                                 fieldWithPath("data.memo").type(JsonFieldType.STRING)
-                                        .description("메모"),
+                                        .description("메모").optional(),
                                 fieldWithPath("data.items").type(JsonFieldType.ARRAY)
                                         .description("지출 항목 목록"),
                                 fieldWithPath("data.items[].expenditureItemId").type(JsonFieldType.NUMBER)
                                         .description("지출 항목 ID"),
                                 fieldWithPath("data.items[].foodId").type(JsonFieldType.NUMBER)
                                         .description("음식 ID"),
+                                fieldWithPath("data.items[].hasFoodLink").type(JsonFieldType.BOOLEAN)
+                                        .description("음식 연계 여부"),
                                 fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING)
                                         .description("음식 이름").optional(),
                                 fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER)
@@ -259,6 +265,10 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 데이터"),
                                 fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER)
                                         .description("생성된 지출 내역 ID"),
+                                fieldWithPath("data.storeId").type(JsonFieldType.NULL)
+                                        .description("가게 ID (연계 시 설정, 없을 경우 null)").optional(),
+                                fieldWithPath("data.hasStoreLink").type(JsonFieldType.BOOLEAN)
+                                        .description("가게 연계 여부"),
                                 fieldWithPath("data.storeName").type(JsonFieldType.STRING)
                                         .description("가게 이름"),
                                 fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
@@ -274,7 +284,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.mealType").type(JsonFieldType.STRING)
                                         .description("식사 유형"),
                                 fieldWithPath("data.memo").type(JsonFieldType.NULL)
-                                        .description("메모 (없음)"),
+                                        .description("메모 (없음)").optional(),
                                 fieldWithPath("data.items").type(JsonFieldType.ARRAY)
                                         .description("지출 항목 목록 (빈 배열)"),
                                 fieldWithPath("data.createdAt").type(JsonFieldType.STRING)
