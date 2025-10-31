@@ -3,11 +3,56 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-23 14:00
+**최종 업데이트**: 2025-10-31 18:45
 
 ---
 
-## 🎉 최신 업데이트 (2025-10-23 14:00)
+## 🎉 최신 업데이트 (2025-10-31 18:45)
+
+### 지출 내역 API 이원화 구현 완료! 🎉🎉🎉
+- **완료 범위**: 장바구니 시나리오 + 수기 입력 시나리오 모두 지원하는 API 구조 변경
+- **구현 내용**:
+  - ✅ Domain Layer: Expenditure/ExpenditureItem 팩토리 메서드 추가 (2개씩)
+  - ✅ Domain Layer: storeId 필드 추가 (Expenditure), foodName 필드 추가 (ExpenditureItem)
+  - ✅ Storage Layer: JPA Entity 스키마 변경 (2개 칼럼 추가)
+  - ✅ Database Migration: Flyway 마이그레이션 스크립트 생성
+  - ✅ API Layer: POST `/api/v1/expenditures/from-cart` 새 엔드포인트 추가
+  - ✅ DTO Layer: CreateExpenditureFromCartRequest 및 Response DTO 작성
+  - ✅ Service Layer: 이원화된 서비스 로직 구현
+  - ✅ Integration Tests: 양 시나리오 통합 테스트 추가
+
+- **API 엔드포인트 현황**: ✅ **2/2 엔드포인트 구현 완료**
+  - ✅ POST `/api/v1/expenditures` - 수기 입력 (기존, 호환성 유지)
+  - ✅ POST `/api/v1/expenditures/from-cart` - 장바구니 시나리오 (NEW)
+  - Response 필드 확장:
+    - `storeId` (nullable) - 가게 FK
+    - `hasStoreLink` (boolean) - 가게 상세 페이지 링크 가능 여부
+    - items[].`foodName` - 음식명 (비정규화)
+    - items[].`hasFoodLink` (boolean) - 음식 상세 페이지 링크 가능 여부
+
+- **스키마 변경**:
+  - expenditure 테이블: store_id 칼럼 추가 (nullable)
+  - expenditure_item 테이블: food_name 칼럼 추가 (500자, nullable)
+  - expenditure_item 테이블: food_id를 nullable로 변경
+
+- **주요 특징**:
+  - ✅ Dual Factory Pattern: createFromCart() vs createFromManualInput()
+  - ✅ Nullable Logical FK: storeId/foodId 모두 NULL 허용
+  - ✅ Denormalization: foodName 저장으로 기사 파싱 시나리오 지원
+  - ✅ Boolean Flags: hasStoreLink/hasFoodLink로 프론트엔드 조건부 렌더링
+  - ✅ 100% Backward Compatible: 기존 API 완전 호환
+
+- **빌드 결과**: ✅ **BUILD SUCCESSFUL** (0 errors, 61 tasks)
+- **문서 업데이트**: 
+  - ✅ API_SPECIFICATION.md 섹션 6.3 추가 (새 엔드포인트 명세)
+  - ✅ API_REDESIGN_EXPENDITURE.md (설계 문서)
+  - ✅ IMPLEMENTATION_COMPLETION_REPORT.md (구현 완료 보고서)
+
+**상세 문서**: API_SPECIFICATION.md 섹션 6.2~6.3, IMPLEMENTATION_COMPLETION_REPORT.md
+
+---
+
+## 🎉 이전 업데이트 (2025-10-23 14:00)
 
 ### API 명세 문서화 업데이트! 🎉
 - **완료 범위**: 음식(Food) API 섹션 추가 및 문서 구조 개선

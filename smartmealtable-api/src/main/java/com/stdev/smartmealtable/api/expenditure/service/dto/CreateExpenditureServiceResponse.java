@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
  */
 public record CreateExpenditureServiceResponse(
         Long expenditureId,
+        Long storeId,                       // ◆ 새로 추가
         String storeName,
         Integer amount,
         LocalDate expendedDate,
@@ -30,7 +31,7 @@ public record CreateExpenditureServiceResponse(
                 .map(item -> ExpenditureItemServiceResponse.builder()
                         .expenditureItemId(item.getExpenditureItemId())
                         .foodId(item.getFoodId())
-                        .foodName(null) // 등록 시에는 음식 이름을 조회하지 않음
+                        .foodName(item.getFoodName())   // ◆ 이제 foodName도 저장됨
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .build())
@@ -38,6 +39,7 @@ public record CreateExpenditureServiceResponse(
         
         return new CreateExpenditureServiceResponse(
                 expenditure.getExpenditureId(),
+                expenditure.getStoreId(),               // ◆ 추가
                 expenditure.getStoreName(),
                 expenditure.getAmount(),
                 expenditure.getExpendedDate(),

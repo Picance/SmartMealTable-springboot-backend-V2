@@ -42,6 +42,8 @@ public class QExpenditureJpaEntity extends EntityPathBase<ExpenditureJpaEntity> 
 
     public final StringPath memo = createString("memo");
 
+    public final NumberPath<Long> storeId = createNumber("storeId", Long.class);
+
     public final StringPath storeName = createString("storeName");
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);

@@ -26,8 +26,11 @@ public class ExpenditureItemJpaEntity {
     @JoinColumn(name = "expenditure_id", nullable = false)
     private ExpenditureJpaEntity expenditure;
     
-    @Column(name = "food_id", nullable = false)
+    @Column(name = "food_id")                       // ◆ NOT NULL 제거
     private Long foodId;
+    
+    @Column(name = "food_name", length = 500)      // ◆ 새로 추가 (비정규화, nullable)
+    private String foodName;
     
     @Column(name = "order_quantity", nullable = false)
     private Integer quantity;
@@ -60,6 +63,7 @@ public class ExpenditureItemJpaEntity {
         entity.id = domain.getExpenditureItemId();
         entity.expenditure = expenditure;
         entity.foodId = domain.getFoodId();
+        entity.foodName = domain.getFoodName();     // ◆ 추가
         entity.quantity = domain.getQuantity();
         entity.price = domain.getPrice();
         return entity;
@@ -73,6 +77,7 @@ public class ExpenditureItemJpaEntity {
                 this.id,
                 this.expenditure != null ? this.expenditure.getId() : null,
                 this.foodId,
+                this.foodName,          // ◆ 추가
                 this.quantity,
                 this.price
         );

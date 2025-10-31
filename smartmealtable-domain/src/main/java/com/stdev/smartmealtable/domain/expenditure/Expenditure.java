@@ -20,6 +20,7 @@ public class Expenditure {
     
     private Long expenditureId;
     private Long memberId;
+    private Long storeId;           // ◆ 새로 추가 (논리 FK, nullable)
     private String storeName;
     private Integer amount;
     private LocalDate expendedDate;
@@ -47,6 +48,76 @@ public class Expenditure {
     ) {
         Expenditure expenditure = new Expenditure();
         expenditure.memberId = memberId;
+        expenditure.storeId = null;  // 기존 메서드는 storeId = NULL (호환성)
+        expenditure.storeName = storeName;
+        expenditure.amount = amount;
+        expenditure.expendedDate = expendedDate;
+        expenditure.expendedTime = expendedTime;
+        expenditure.categoryId = categoryId;
+        expenditure.mealType = mealType;
+        expenditure.memo = memo;
+        expenditure.items = new ArrayList<>(items);
+        expenditure.deleted = false;
+        
+        // 비즈니스 규칙 검증
+        expenditure.validateAmount();
+        expenditure.validateItemsTotalAmount();
+        
+        return expenditure;
+    }
+    
+    /**
+     * 팩토리 메서드: 장바구니 → 지출 등록 (storeId 포함)
+     */
+    public static Expenditure createFromCart(
+            Long memberId,
+            Long storeId,           // ◆ store FK 포함
+            String storeName,
+            Integer amount,
+            LocalDate expendedDate,
+            LocalTime expendedTime,
+            Long categoryId,
+            MealType mealType,
+            String memo,
+            List<ExpenditureItem> items
+    ) {
+        Expenditure expenditure = new Expenditure();
+        expenditure.memberId = memberId;
+        expenditure.storeId = storeId;      // ◆ 장바구니에서 넘어온 storeId
+        expenditure.storeName = storeName;
+        expenditure.amount = amount;
+        expenditure.expendedDate = expendedDate;
+        expenditure.expendedTime = expendedTime;
+        expenditure.categoryId = categoryId;
+        expenditure.mealType = mealType;
+        expenditure.memo = memo;
+        expenditure.items = new ArrayList<>(items);
+        expenditure.deleted = false;
+        
+        // 비즈니스 규칙 검증
+        expenditure.validateAmount();
+        expenditure.validateItemsTotalAmount();
+        
+        return expenditure;
+    }
+    
+    /**
+     * 팩토리 메서드: 수기 입력 → 지출 등록 (storeId = NULL)
+     */
+    public static Expenditure createFromManualInput(
+            Long memberId,
+            String storeName,
+            Integer amount,
+            LocalDate expendedDate,
+            LocalTime expendedTime,
+            Long categoryId,
+            MealType mealType,
+            String memo,
+            List<ExpenditureItem> items
+    ) {
+        Expenditure expenditure = new Expenditure();
+        expenditure.memberId = memberId;
+        expenditure.storeId = null;         // ◆ 수기 입력은 storeId = NULL
         expenditure.storeName = storeName;
         expenditure.amount = amount;
         expenditure.expendedDate = expendedDate;
@@ -70,6 +141,7 @@ public class Expenditure {
     public static Expenditure reconstruct(
             Long expenditureId,
             Long memberId,
+            Long storeId,           // ◆ 새로 추가
             String storeName,
             Integer amount,
             LocalDate expendedDate,
@@ -84,6 +156,7 @@ public class Expenditure {
         Expenditure expenditure = new Expenditure();
         expenditure.expenditureId = expenditureId;
         expenditure.memberId = memberId;
+        expenditure.storeId = storeId;      // ◆ 복원
         expenditure.storeName = storeName;
         expenditure.amount = amount;
         expenditure.expendedDate = expendedDate;

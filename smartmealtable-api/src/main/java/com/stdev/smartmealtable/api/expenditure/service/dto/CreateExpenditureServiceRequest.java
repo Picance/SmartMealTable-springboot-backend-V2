@@ -11,6 +11,7 @@ import java.util.List;
  */
 public record CreateExpenditureServiceRequest(
         Long memberId,
+        Long storeId,                       // ◆ 새로 추가 (nullable)
         String storeName,
         Integer amount,
         LocalDate expendedDate,
@@ -24,7 +25,8 @@ public record CreateExpenditureServiceRequest(
      * 지출 항목 서비스 요청 DTO
      */
     public record ExpenditureItemServiceRequest(
-            Long foodId,
+            Long foodId,                    // ◆ nullable
+            String foodName,                // ◆ 새로 추가
             Integer quantity,
             Integer price
     ) {}

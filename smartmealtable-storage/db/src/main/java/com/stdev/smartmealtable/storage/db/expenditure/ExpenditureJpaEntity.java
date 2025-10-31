@@ -32,6 +32,9 @@ public class ExpenditureJpaEntity {
     @Column(name = "member_id", nullable = false)
     private Long memberId;
     
+    @Column(name = "store_id")                      // ◆ nullable
+    private Long storeId;
+    
     @Column(name = "store_name", nullable = false, length = 200)
     private String storeName;
     
@@ -84,6 +87,7 @@ public class ExpenditureJpaEntity {
         ExpenditureJpaEntity entity = new ExpenditureJpaEntity();
         entity.id = domain.getExpenditureId();
         entity.memberId = domain.getMemberId();
+        entity.storeId = domain.getStoreId();        // ◆ 추가
         entity.storeName = domain.getStoreName();
         entity.amount = domain.getAmount();
         entity.expendedDate = domain.getExpendedDate();
@@ -115,6 +119,7 @@ public class ExpenditureJpaEntity {
         return Expenditure.reconstruct(
                 this.id,
                 this.memberId,
+                this.storeId,           // ◆ 추가
                 this.storeName,
                 this.amount,
                 this.expendedDate,

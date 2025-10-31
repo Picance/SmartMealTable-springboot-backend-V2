@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.api.expenditure.controller;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
+import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureFromCartRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.ParseSmsRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.response.CreateExpenditureResponse;
@@ -67,6 +68,29 @@ public class ExpenditureController {
     ) {
         // DTO 변환
         CreateExpenditureServiceRequest serviceRequest = convertToServiceRequest(request, user.memberId());
+        
+        // Service 호출
+        CreateExpenditureServiceResponse serviceResponse = createExpenditureService.createExpenditure(serviceRequest);
+        
+        // Response 변환
+        CreateExpenditureResponse response = CreateExpenditureResponse.from(serviceResponse);
+        
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * 장바구니에서 지출 내역 등록
+     * POST /api/v1/expenditures/from-cart
+     * - storeId와 foodId를 명시적으로 포함하여 상세 페이지 링크 제공
+     */
+    @PostMapping("/from-cart")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<CreateExpenditureResponse> createExpenditureFromCart(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody CreateExpenditureFromCartRequest request
+    ) {
+        // DTO 변환
+        CreateExpenditureServiceRequest serviceRequest = convertCartToServiceRequest(request, user.memberId());
         
         // Service 호출
         CreateExpenditureServiceResponse serviceResponse = createExpenditureService.createExpenditure(serviceRequest);
@@ -214,6 +238,7 @@ public class ExpenditureController {
                         ? request.items().stream()
                         .map(item -> new CreateExpenditureServiceRequest.ExpenditureItemServiceRequest(
                                 item.foodId(),
+                                null,               // ◆ 수기 입력은 foodName = NULL
                                 item.quantity(),
                                 item.price()
                         ))
@@ -222,6 +247,40 @@ public class ExpenditureController {
         
         return new CreateExpenditureServiceRequest(
                 memberId,
+                null,                           // ◆ 수기 입력은 storeId = NULL
+                request.storeName(),
+                request.amount(),
+                request.expendedDate(),
+                request.expendedTime(),
+                request.categoryId(),
+                request.mealType(),
+                request.memo(),
+                items
+        );
+    }
+    
+    /**
+     * CartRequest DTO → Service Request DTO 변환
+     */
+    private CreateExpenditureServiceRequest convertCartToServiceRequest(
+            CreateExpenditureFromCartRequest request,
+            Long memberId
+    ) {
+        List<CreateExpenditureServiceRequest.ExpenditureItemServiceRequest> items = 
+                request.items() != null
+                        ? request.items().stream()
+                        .map(item -> new CreateExpenditureServiceRequest.ExpenditureItemServiceRequest(
+                                item.foodId(),
+                                item.foodName(),    // ◆ 장바구니는 foodName 포함
+                                item.quantity(),
+                                item.price()
+                        ))
+                        .collect(Collectors.toList())
+                        : null;
+        
+        return new CreateExpenditureServiceRequest(
+                memberId,
+                request.storeId(),              // ◆ 장바구니는 storeId 포함
                 request.storeName(),
                 request.amount(),
                 request.expendedDate(),

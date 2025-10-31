@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
  */
 public record CreateExpenditureResponse(
         Long expenditureId,
+        Long storeId,                       // ◆ 새로 추가
+        Boolean hasStoreLink,               // ◆ 새로 추가 (storeId 존재 여부)
         String storeName,
         Integer amount,
         LocalDate expendedDate,
@@ -37,6 +39,8 @@ public record CreateExpenditureResponse(
         
         return new CreateExpenditureResponse(
                 serviceResponse.expenditureId(),
+                serviceResponse.storeId(),                      // ◆ record의 필드 직접 접근
+                serviceResponse.storeId() != null,             // ◆ storeId 존재 여부
                 serviceResponse.storeName(),
                 serviceResponse.amount(),
                 serviceResponse.expendedDate(),
@@ -56,6 +60,7 @@ public record CreateExpenditureResponse(
     public record ExpenditureItemResponse(
             Long expenditureItemId,
             Long foodId,
+            Boolean hasFoodLink,               // ◆ 새로 추가 (foodId 존재 여부)
             String foodName,
             Integer quantity,
             Integer price
@@ -64,6 +69,7 @@ public record CreateExpenditureResponse(
             return new ExpenditureItemResponse(
                     serviceItem.getExpenditureItemId(),
                     serviceItem.getFoodId(),
+                    serviceItem.getFoodId() != null,            // ◆ 추가: foodId 존재 여부
                     serviceItem.getFoodName(),
                     serviceItem.getQuantity(),
                     serviceItem.getPrice()

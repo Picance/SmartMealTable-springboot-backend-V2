@@ -15,6 +15,7 @@ public class ExpenditureItem {
     private Long expenditureItemId;
     private Long expenditureId;
     private Long foodId;
+    private String foodName;        // ◆ 새로 추가 (비정규화, nullable)
     private Integer quantity;
     private Integer price;
     
@@ -28,6 +29,50 @@ public class ExpenditureItem {
     ) {
         ExpenditureItem item = new ExpenditureItem();
         item.foodId = foodId;
+        item.foodName = null;  // 기존 메서드는 foodName = NULL (호환성)
+        item.quantity = quantity;
+        item.price = price;
+        
+        // 비즈니스 규칙 검증
+        item.validateQuantity();
+        item.validatePrice();
+        
+        return item;
+    }
+    
+    /**
+     * 팩토리 메서드: 음식 선택 → 항목 생성 (foodId + foodName)
+     */
+    public static ExpenditureItem createFromFood(
+            Long foodId,
+            String foodName,        // ◆ 음식명 포함
+            Integer quantity,
+            Integer price
+    ) {
+        ExpenditureItem item = new ExpenditureItem();
+        item.foodId = foodId;
+        item.foodName = foodName;   // ◆ 장바구니에서 넘어온 음식명
+        item.quantity = quantity;
+        item.price = price;
+        
+        // 비즈니스 규칙 검증
+        item.validateQuantity();
+        item.validatePrice();
+        
+        return item;
+    }
+    
+    /**
+     * 팩토리 메서드: 수기 입력 → 항목 생성 (foodName만)
+     */
+    public static ExpenditureItem createFromManualInput(
+            String foodName,        // ◆ 음식명만
+            Integer quantity,
+            Integer price
+    ) {
+        ExpenditureItem item = new ExpenditureItem();
+        item.foodId = null;         // ◆ 수기 입력은 foodId = NULL
+        item.foodName = foodName;   // ◆ 음식명만 저장
         item.quantity = quantity;
         item.price = price;
         
@@ -45,6 +90,7 @@ public class ExpenditureItem {
             Long expenditureItemId,
             Long expenditureId,
             Long foodId,
+            String foodName,        // ◆ 새로 추가
             Integer quantity,
             Integer price
     ) {
@@ -52,6 +98,7 @@ public class ExpenditureItem {
         item.expenditureItemId = expenditureItemId;
         item.expenditureId = expenditureId;
         item.foodId = foodId;
+        item.foodName = foodName;   // ◆ 복원
         item.quantity = quantity;
         item.price = price;
         

@@ -28,6 +28,8 @@ public class QExpenditureItemJpaEntity extends EntityPathBase<ExpenditureItemJpa
 
     public final NumberPath<Long> foodId = createNumber("foodId", Long.class);
 
+    public final StringPath foodName = createString("foodName");
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final NumberPath<Integer> price = createNumber("price", Integer.class);
