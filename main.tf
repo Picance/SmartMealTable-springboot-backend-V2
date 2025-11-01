@@ -807,6 +807,18 @@ output "rds_host" {
   description = "RDS database hostname only"
 }
 
+output "db_username" {
+  value       = aws_db_instance.smartmealtable.username
+  description = "RDS database master username"
+  sensitive   = false
+}
+
+output "db_password" {
+  value       = aws_db_instance.smartmealtable.password
+  description = "RDS database master password"
+  sensitive   = true
+}
+
 # CloudWatch 대시보드 생성
 resource "aws_cloudwatch_dashboard" "main" {
   dashboard_name = "smartmealtable-dashboard"

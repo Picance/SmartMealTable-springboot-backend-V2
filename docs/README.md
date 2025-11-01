@@ -22,6 +22,7 @@
 ### 배포 문서
 - **[분산 배포 가이드](./deploy/DISTRIBUTED_DEPLOYMENT.md)** - 분산 환경 배포 방법
 - **[빠른 시작 가이드](./deploy/QUICK_START.md)** - 로컬 개발 환경 빠른 시작
+- **[GitHub Actions + Terraform 자동 배포](./GITHUB-ACTIONS-TERRAFORM-AUTOMATION.md)** - CI/CD 파이프라인 (권장)
 
 ## 🚀 빠른 시작
 

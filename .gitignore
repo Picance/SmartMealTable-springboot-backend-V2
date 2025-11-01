@@ -283,6 +283,7 @@ legacy/
 .git.backup/
 
 # AWS
+*.pem
 portfolio-key
 portfolio-key.pem
 portfolio-key.pub
