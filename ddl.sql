@@ -230,7 +230,7 @@ CREATE TABLE store_temporary_closure (
 CREATE TABLE expenditure (
                              expenditure_id    BIGINT        NOT NULL AUTO_INCREMENT COMMENT '지출 내역의 고유 식별자',
                              member_id         BIGINT        NOT NULL COMMENT '지출을 기록한 회원의 식별자',
-                             store_id          BIGINT        NOT NULL COMMENT '지출이 발생한 음식점의 식별자',
+                             store_id          BIGINT        NULL     COMMENT '지출이 발생한 음식점의 식별자 (논리 FK, 장바구니 또는 수기 입력 지원)',
                              expended_dt       DATETIME      NOT NULL COMMENT '지출이 발생한 날짜와 시간 (비즈니스 필드)',
                              food_category     VARCHAR(50)   NULL     COMMENT '지출한 음식의 주된 카테고리',
                              meal_time         VARCHAR(20)   NULL     COMMENT '식사 시간대 (예: 아침, 점심, 저녁)',
@@ -246,15 +246,17 @@ CREATE TABLE expenditure (
 
 -- 지출 항목 테이블
 CREATE TABLE expenditure_item (
-                                  expenditure_item_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '지출 항목의 고유 식별자',
-                                  expenditure_id      BIGINT   NOT NULL COMMENT '이 항목이 속한 지출 내역의 식별자',
-                                  food_id             BIGINT   NOT NULL COMMENT '주문한 음식의 식별자',
-                                  order_price         INT      NOT NULL COMMENT '주문 시점의 음식 가격',
-                                  order_quantity      INT      NOT NULL COMMENT '주문한 음식의 수량',
-                                  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
-                                  updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  expenditure_item_id BIGINT        NOT NULL AUTO_INCREMENT COMMENT '지출 항목의 고유 식별자',
+                                  expenditure_id      BIGINT        NOT NULL COMMENT '이 항목이 속한 지출 내역의 식별자',
+                                  food_id             BIGINT        NULL     COMMENT '주문한 음식의 식별자 (수기 입력 시 NULL 가능)',
+                                  food_name           VARCHAR(500)  NULL     COMMENT '음식 이름 (비정규화, 수기 입력 지원)',
+                                  order_price         INT           NOT NULL COMMENT '주문 시점의 음식 가격',
+                                  order_quantity      INT           NOT NULL COMMENT '주문한 음식의 수량',
+                                  created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                   PRIMARY KEY (expenditure_item_id),
-                                  UNIQUE KEY uq_expenditure_food (expenditure_id, food_id)
+                                  INDEX idx_expenditure_id (expenditure_id),
+                                  INDEX idx_food_id (food_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='하나의 지출 내역에 포함된 개별 음식 정보를 저장하는 테이블';
 
 -- 장바구니 테이블
