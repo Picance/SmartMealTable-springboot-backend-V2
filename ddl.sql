@@ -35,6 +35,7 @@ CREATE TABLE member_authentication (
                                        password_expires_at      DATETIME      NULL     COMMENT '비밀번호 만료 시각 (정책에 의해 지정, 비즈니스 필드)',
                                        name                     VARCHAR(50)   NULL     COMMENT '회원의 실명',
                                        deleted_at               DATETIME      NULL     COMMENT '회원 탈퇴 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                       registered_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '회원 가입 시각 (시스템 자동 기록, 비즈니스 필드)',
                                        created_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                        updated_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                        PRIMARY KEY (member_authentication_id),
@@ -53,6 +54,7 @@ CREATE TABLE social_account (
                                 access_token             VARCHAR(255)  NOT NULL COMMENT 'API 접근을 위한 액세스 토큰',
                                 refresh_token            VARCHAR(255)  NULL     COMMENT '액세스 토큰 재발급을 위한 리프레시 토큰',
                                 expires_at               DATETIME      NULL     COMMENT '액세스 토큰의 만료 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                connected_at             DATETIME      NOT NULL COMMENT '소셜 계정 연동 시각 (비즈니스 필드)',
                                 created_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                 updated_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                 PRIMARY KEY (social_account_id),
@@ -66,8 +68,8 @@ CREATE TABLE address_history (
                                  lot_number_address    VARCHAR(255)   NULL     COMMENT '지번 기준 주소',
                                  street_name_address   VARCHAR(255)   NOT NULL COMMENT '도로명 기준 주소',
                                  detailed_address      VARCHAR(255)   NULL     COMMENT '건물 호수 등 상세 주소',
-                                 latitude              DECIMAL(9,6)   NULL     COMMENT '주소의 위도 정보',
-                                 longitude             DECIMAL(9,6)   NULL     COMMENT '주소의 경도 정보',
+                                 latitude              DOUBLE         NULL     COMMENT '주소의 위도 정보',
+                                 longitude             DOUBLE         NULL     COMMENT '주소의 경도 정보',
                                  is_primary            BOOLEAN        NOT NULL COMMENT '기본 배송지 등 메인 주소인지 여부',
                                  address_type          VARCHAR(20)    NULL     COMMENT '주소의 유형 (예: 집, 회사)',
                                  alias                 VARCHAR(50)    NOT NULL COMMENT '주소에 대한 별칭 (예: 우리집)',
@@ -81,10 +83,12 @@ CREATE TABLE address_history (
 -- 약관 테이블
 CREATE TABLE policy (
                         policy_id      BIGINT        NOT NULL AUTO_INCREMENT COMMENT '약관의 고유 식별자',
+                        title          VARCHAR(255)  NOT NULL COMMENT '약관의 제목',
+                        content        TEXT          NOT NULL COMMENT '약관의 상세 내용',
+                        type           VARCHAR(20)   NOT NULL COMMENT '약관 유형 (예: TERMS_OF_SERVICE, PRIVACY_POLICY)',
                         version        VARCHAR(20)   NOT NULL COMMENT '약관의 버전 정보',
-                        title          VARCHAR(100)  NOT NULL COMMENT '약관의 제목',
-                        description    TEXT          NOT NULL COMMENT '약관의 상세 내용',
                         is_mandatory   BOOLEAN       NOT NULL COMMENT '동의가 필수적인 약관인지 여부',
+                        is_active      BOOLEAN       NOT NULL COMMENT '활성화된 약관인지 여부',
                         created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         PRIMARY KEY (policy_id)
@@ -179,7 +183,7 @@ CREATE TABLE seller (
                         INDEX idx_login_id (login_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점(가게)을 관리하는 판매자의 계정 정보를 저장하는 테이블';
 
--- 가게 조회 이력 테이블
+-- 음식 테이블
 CREATE TABLE food (
                       food_id       BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식의 고유 식별자',
                       store_id      BIGINT         NOT NULL COMMENT '이 음식을 판매하는 가게의 식별자',
@@ -195,7 +199,7 @@ CREATE TABLE food (
                       INDEX idx_store_id (store_id),
                       INDEX idx_category_id (category_id),
                       INDEX idx_food_name (food_name),
-                      INDEX idx_registered_at (registered_at)
+                      INDEX idx_registered_dt (registered_dt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식의 정보를 저장하는 테이블';
 
 -- 가게 조회 이력 테이블
@@ -241,17 +245,21 @@ CREATE TABLE expenditure (
                              expenditure_id    BIGINT        NOT NULL AUTO_INCREMENT COMMENT '지출 내역의 고유 식별자',
                              member_id         BIGINT        NOT NULL COMMENT '지출을 기록한 회원의 식별자',
                              store_id          BIGINT        NULL     COMMENT '지출이 발생한 음식점의 식별자 (논리 FK, 장바구니 또는 수기 입력 지원)',
-                             expended_dt       DATETIME      NOT NULL COMMENT '지출이 발생한 날짜와 시간 (비즈니스 필드)',
-                             food_category     VARCHAR(50)   NULL     COMMENT '지출한 음식의 주된 카테고리',
-                             meal_time         VARCHAR(20)   NULL     COMMENT '식사 시간대 (예: 아침, 점심, 저녁)',
-                             discount_price    INT           NOT NULL DEFAULT 0 COMMENT '할인받은 금액',
-                             total_expenditure INT           NOT NULL COMMENT '할인을 포함한 최종 지출 금액',
+                             store_name        VARCHAR(200)  NOT NULL COMMENT '가게 이름',
+                             amount            INT           NOT NULL COMMENT '지출 금액',
+                             expended_date     DATE          NOT NULL COMMENT '지출이 발생한 날짜 (비즈니스 필드)',
+                             expended_time     TIME          NULL     COMMENT '지출이 발생한 시간 (비즈니스 필드)',
+                             category_id       BIGINT        NULL     COMMENT '음식 카테고리 식별자',
+                             meal_type         VARCHAR(20)   NULL     COMMENT '식사 시간대 (예: BREAKFAST, LUNCH, DINNER, SNACK)',
+                             memo              VARCHAR(500)  NULL     COMMENT '메모',
+                             deleted           BOOLEAN       NOT NULL DEFAULT FALSE COMMENT '삭제 여부 (소프트 삭제)',
                              created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                              updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                              PRIMARY KEY (expenditure_id),
                              INDEX idx_member_id (member_id),
                              INDEX idx_store_id (store_id),
-                             INDEX idx_expended_dt (expended_dt)
+                             INDEX idx_expended_date (expended_date),
+                             INDEX idx_category_id (category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 음식 관련 지출 내역을 기록하는 테이블';
 
 -- 지출 항목 테이블
@@ -346,7 +354,7 @@ CREATE TABLE preference (
                             preference_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '선호 정보의 고유 식별자',
                             member_id     BIGINT   NOT NULL COMMENT '선호 정보를 설정한 회원의 식별자',
                             category_id   BIGINT   NOT NULL COMMENT '선호/불호하는 음식 카테고리의 식별자',
-                            weight        SMALLINT NOT NULL COMMENT '선호 가중치 (좋아요: 100, 보통: 0, 싫어요: -100)',
+                            weight        INT NOT NULL COMMENT '선호 가중치 (좋아요: 100, 보통: 0, 싫어요: -100)',
                             created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                             updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                             PRIMARY KEY (preference_id),
@@ -361,6 +369,7 @@ CREATE TABLE food_preference (
                                  member_id          BIGINT   NOT NULL COMMENT '선호 정보를 설정한 회원의 식별자',
                                  food_id            BIGINT   NOT NULL COMMENT '선호하는 개별 음식의 식별자',
                                  is_preferred       BOOLEAN  NOT NULL DEFAULT TRUE COMMENT '선호 여부 (TRUE: 선호, FALSE: 미사용)',
+                                 preferred_at       DATETIME NULL     COMMENT '선호 설정 시각 (비즈니스 필드)',
                                  created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                  updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                  PRIMARY KEY (food_preference_id),
