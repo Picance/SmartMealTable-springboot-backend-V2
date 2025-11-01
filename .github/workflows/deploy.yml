@@ -75,81 +75,22 @@ jobs:
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_API_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --parameters '{
-              "commands": [
-                "docker stop smartmealtable-api || true",
-                "docker rm smartmealtable-api || true",
-                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
-                "docker run -d --name smartmealtable-api -p 8080:8080 \
-                  -e SPRING_APPLICATION_NAME=smartmealtable-api \
-                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
-                  -e SPRING_DATASOURCE_USERNAME=admin \
-                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-                  -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
-                  -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \
-                  -e SPRING_REDIS_PORT=6379 \
-                  -e JAVA_OPTS=-Xmx512m \
-                  $REGISTRY/$ECR_REPOSITORY-api:$IMAGE_TAG"
-              ]
-            }'
+            --parameters '{"commands":["docker stop smartmealtable-api || true","docker rm smartmealtable-api || true","aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin '"$REGISTRY"'","docker run -d --name smartmealtable-api -p 8080:8080 -e SPRING_APPLICATION_NAME=smartmealtable-api -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\&serverTimezone=Asia/Seoul\&allowPublicKeyRetrieval=true -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} -e SPRING_REDIS_PORT=6379 -e JAVA_OPTS=-Xmx512m '"$REGISTRY"'/'"$ECR_REPOSITORY"'-api:'"$IMAGE_TAG"'"]}'
           
           # Admin 서비스 배포
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_ADMIN_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --parameters '{
-              "commands": [
-                "docker stop smartmealtable-admin || true",
-                "docker rm smartmealtable-admin || true",
-                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
-                "docker run -d --name smartmealtable-admin -p 8081:8081 \
-                  -e SPRING_APPLICATION_NAME=smartmealtable-admin \
-                  -e SERVER_PORT=8081 \
-                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
-                  -e SPRING_DATASOURCE_USERNAME=admin \
-                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-                  -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
-                  -e JAVA_OPTS=-Xmx256m \
-                  $REGISTRY/$ECR_REPOSITORY-admin:$IMAGE_TAG"
-              ]
-            }'
+            --parameters '{"commands":["docker stop smartmealtable-admin || true","docker rm smartmealtable-admin || true","aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin '"$REGISTRY"'","docker run -d --name smartmealtable-admin -p 8081:8081 -e SPRING_APPLICATION_NAME=smartmealtable-admin -e SERVER_PORT=8081 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\&serverTimezone=Asia/Seoul\&allowPublicKeyRetrieval=true -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate -e JAVA_OPTS=-Xmx256m '"$REGISTRY"'/'"$ECR_REPOSITORY"'-admin:'"$IMAGE_TAG"'"]}'
           
           # Scheduler 서비스 배포
           aws ssm send-command \
-            --instance-ids ${{ secrets.EC2_SCHEDULER_INSTANCE_ID }} \
+            --instance-ids ${{ secrets.EC2_ADMIN_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --parameters '{
-              "commands": [
-                "docker stop smartmealtable-scheduler || true",
-                "docker rm smartmealtable-scheduler || true",
-                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
-                "docker run -d --name smartmealtable-scheduler \
-                  -e SPRING_APPLICATION_NAME=smartmealtable-scheduler \
-                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
-                  -e SPRING_DATASOURCE_USERNAME=admin \
-                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-                  -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \
-                  -e SPRING_REDIS_PORT=6379 \
-                  -e JAVA_OPTS=-Xmx256m \
-                  $REGISTRY/$ECR_REPOSITORY-scheduler:$IMAGE_TAG"
-              ]
-            }'
+            --parameters '{"commands":["docker stop smartmealtable-scheduler || true","docker rm smartmealtable-scheduler || true","aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin '"$REGISTRY"'","docker run -d --name smartmealtable-scheduler -e SPRING_APPLICATION_NAME=smartmealtable-scheduler -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\&serverTimezone=Asia/Seoul\&allowPublicKeyRetrieval=true -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} -e SPRING_REDIS_PORT=6379 -e JAVA_OPTS=-Xmx256m '"$REGISTRY"'/'"$ECR_REPOSITORY"'-scheduler:'"$IMAGE_TAG"'"]}'
           
           # Crawler 서비스 배포 (필요시)
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_BATCH_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --parameters '{
-              "commands": [
-                "docker stop smartmealtable-crawler || true",
-                "docker rm smartmealtable-crawler || true",
-                "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin $REGISTRY",
-                "docker run -d --name smartmealtable-crawler \
-                  -e SPRING_APPLICATION_NAME=smartmealtable-crawler \
-                  -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \
-                  -e SPRING_DATASOURCE_USERNAME=admin \
-                  -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-                  -e JAVA_OPTS=-Xmx256m \
-                  $REGISTRY/$ECR_REPOSITORY-crawler:$IMAGE_TAG"
-              ]
-            }'
+            --parameters '{"commands":["docker stop smartmealtable-crawler || true","docker rm smartmealtable-crawler || true","aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin '"$REGISTRY"'","docker run -d --name smartmealtable-crawler -e SPRING_APPLICATION_NAME=smartmealtable-crawler -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\&serverTimezone=Asia/Seoul\&allowPublicKeyRetrieval=true -e SPRING_DATASOURCE_USERNAME=admin -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} -e JAVA_OPTS=-Xmx256m '"$REGISTRY"'/'"$ECR_REPOSITORY"'-crawler:'"$IMAGE_TAG"'"]}'
