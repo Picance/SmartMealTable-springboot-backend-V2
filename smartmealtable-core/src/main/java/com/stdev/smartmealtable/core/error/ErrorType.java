@@ -352,6 +352,81 @@ public enum ErrorType {
             ErrorCode.E422,
             "유효하지 않은 예산 확인 액션입니다. KEEP 또는 CHANGE만 가능합니다.",
             LogLevel.WARN
+    ),
+    
+    // ==================== ADMIN - 카테고리 관리 에러 ====================
+    DUPLICATE_CATEGORY_NAME(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 존재하는 카테고리 이름입니다.",
+            LogLevel.WARN
+    ),
+    
+    CATEGORY_IN_USE(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "해당 카테고리를 사용하는 음식점이나 음식이 존재하여 삭제할 수 없습니다.",
+            LogLevel.WARN
+    ),
+    
+    // ==================== ADMIN - 음식점 관리 에러 ====================
+    STORE_OPENING_HOUR_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 영업시간 정보입니다.",
+            LogLevel.WARN
+    ),
+    
+    STORE_TEMPORARY_CLOSURE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 임시 휴무 정보입니다.",
+            LogLevel.WARN
+    ),
+    
+    DUPLICATE_OPENING_HOUR(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "해당 요일의 영업시간이 이미 등록되어 있습니다.",
+            LogLevel.WARN
+    ),
+    
+    // ==================== ADMIN - 메뉴 관리 에러 ====================
+    FOOD_IN_USE(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "해당 메뉴를 사용하는 데이터(즐겨찾기, 장바구니, 지출 내역)가 존재하여 삭제할 수 없습니다.",
+            LogLevel.WARN
+    ),
+    
+    // ==================== ADMIN - 그룹 관리 에러 ====================
+    DUPLICATE_GROUP_NAME(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 존재하는 그룹 이름입니다.",
+            LogLevel.WARN
+    ),
+    
+    GROUP_HAS_MEMBERS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "해당 그룹에 속한 회원이 존재하여 삭제할 수 없습니다.",
+            LogLevel.WARN
+    ),
+    
+    // ==================== ADMIN - 약관 관리 에러 ====================
+    DUPLICATE_POLICY_TITLE(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 존재하는 약관 제목입니다.",
+            LogLevel.WARN
+    ),
+    
+    POLICY_HAS_AGREEMENTS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "해당 약관에 동의한 사용자가 존재하여 삭제할 수 없습니다.",
+            LogLevel.WARN
     );
 
     private final HttpStatus httpStatus;
