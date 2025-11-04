@@ -1,7 +1,7 @@
 ---
 
 description: 'Generate a comprehensive Software Requirements Specification (SRS) document in Markdown, detailing system architecture, functional and non-functional requirements, interfaces, and constraints. Optionally create GitHub issues upon user confirmation.'
-tools: ['codebase', 'editFiles', 'fetch', 'findTestFiles', 'list_issues', 'githubRepo', 'search', 'add_issue_comment', 'create_issue', 'update_issue', 'get_issue', 'search_issues']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos', 'runTests']
 ---
 
 # Create SRS Chat Mode
