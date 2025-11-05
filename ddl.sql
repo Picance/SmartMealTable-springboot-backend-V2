@@ -10,8 +10,7 @@ CREATE TABLE member_group (
                           type          VARCHAR(20)   NOT NULL COMMENT '그룹의 유형 (예: 학교, 회사)',
                           created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                           updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
-                          PRIMARY KEY (group_id),
-                          FULLTEXT INDEX ft_group_name (name) WITH PARSER ngram
+                          PRIMARY KEY (group_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블';
 
 -- 회원 테이블
@@ -153,8 +152,7 @@ CREATE TABLE store (
     INDEX idx_average_price (average_price),
     INDEX idx_view_count (view_count),
     INDEX idx_store_type (store_type),
-    INDEX idx_registered_at (registered_at),
-    FULLTEXT INDEX ft_store_search (name, description) WITH PARSER ngram
+    INDEX idx_registered_at (registered_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
 
 -- 가게 영업시간 테이블
@@ -200,12 +198,13 @@ CREATE TABLE food (
                       created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                       updated_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                       PRIMARY KEY (food_id),
-    INDEX idx_store_id (store_id),
-    INDEX idx_category_id (category_id),
-    INDEX idx_food_name (food_name),
-    INDEX idx_registered_dt (registered_dt),
-    FULLTEXT INDEX ft_food_search (food_name, description) WITH PARSER ngram
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식의 정보를 저장하는 테이블';-- 가게 조회 이력 테이블
+                      INDEX idx_store_id (store_id),
+                      INDEX idx_category_id (category_id),
+                      INDEX idx_food_name (food_name),
+                      INDEX idx_registered_dt (registered_dt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식의 정보를 저장하는 테이블';
+
+-- 가게 조회 이력 테이블
 CREATE TABLE store_view_history (
                                     store_view_history_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '가게 조회 이력의 고유 식별자',
                                     member_id             BIGINT   NOT NULL COMMENT '조회한 회원의 식별자 (논리 FK)',

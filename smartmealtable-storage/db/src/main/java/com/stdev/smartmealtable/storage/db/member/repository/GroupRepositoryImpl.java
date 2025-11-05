@@ -57,9 +57,8 @@ public class GroupRepositoryImpl implements GroupRepository {
     public List<Group> searchGroups(GroupType type, String name) {
         // 페이징 없이 모든 결과를 반환하도록 임시 구현
         // Application 레이어에서 페이징 처리
-        String typeParam = (type != null) ? type.name() : null;
         Page<GroupJpaEntity> page = jpaRepository.searchGroups(
-                typeParam, 
+                type, 
                 name, 
                 Pageable.unpaged()
         );
@@ -73,8 +72,7 @@ public class GroupRepositoryImpl implements GroupRepository {
     @Override
     public GroupPageResult searchByTypeAndName(GroupType type, String name, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
-        String typeParam = (type != null) ? type.name() : null;
-        Page<GroupJpaEntity> jpaPage = jpaRepository.searchGroups(typeParam, name, pageRequest);
+        Page<GroupJpaEntity> jpaPage = jpaRepository.searchGroups(type, name, pageRequest);
         
         List<Group> groups = jpaPage.getContent().stream()
                 .map(GroupJpaEntity::toDomain)

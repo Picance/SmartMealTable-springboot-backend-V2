@@ -22,46 +22,19 @@ public interface GroupJpaRepository extends JpaRepository<GroupJpaEntity, Long> 
     List<GroupJpaEntity> findByType(@Param("type") GroupType type);
 
     /**
-     * Full-Text Search를 사용한 그룹 이름 검색
-     * MySQL의 FULLTEXT INDEX와 ngram parser를 활용하여 한국어 검색 성능을 최적화합니다.
-     * 
-     * @param name 검색 키워드
-     * @return 관련성 점수가 높은 순서로 정렬된 그룹 목록
+     * 이름으로 검색
      */
-    @Query(value = """
-            SELECT g.* 
-            FROM member_group g
-            WHERE MATCH(g.name) AGAINST(:name IN NATURAL LANGUAGE MODE)
-            ORDER BY MATCH(g.name) AGAINST(:name IN NATURAL LANGUAGE MODE) DESC
-            """,
-            nativeQuery = true)
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.name LIKE %:name%")
     List<GroupJpaEntity> findByNameContaining(@Param("name") String name);
 
     /**
-     * 타입과 이름으로 검색 (Full-Text Search, 페이징)
-     * Full-Text Search를 활용하여 한국어 그룹명 검색 성능을 향상시킵니다.
+     * 타입과 이름으로 검색 (페이징)
      */
-    @Query(value = """
-            SELECT g.* 
-            FROM member_group g
-            WHERE (:type IS NULL OR g.type = :type)
-              AND (:name IS NULL OR MATCH(g.name) AGAINST(:name IN NATURAL LANGUAGE MODE))
-            ORDER BY 
-                CASE WHEN :name IS NOT NULL 
-                     THEN MATCH(g.name) AGAINST(:name IN NATURAL LANGUAGE MODE) 
-                     ELSE 0 
-                END DESC,
-                g.name ASC
-            """,
-            countQuery = """
-            SELECT COUNT(*)
-            FROM member_group g
-            WHERE (:type IS NULL OR g.type = :type)
-              AND (:name IS NULL OR MATCH(g.name) AGAINST(:name IN NATURAL LANGUAGE MODE))
-            """,
-            nativeQuery = true)
+    @Query("SELECT g FROM GroupJpaEntity g " +
+            "WHERE (:type IS NULL OR g.type = :type) " +
+            "AND (:name IS NULL OR g.name LIKE %:name%)")
     Page<GroupJpaEntity> searchGroups(
-            @Param("type") String type,
+            @Param("type") GroupType type,
             @Param("name") String name,
             Pageable pageable
     );
