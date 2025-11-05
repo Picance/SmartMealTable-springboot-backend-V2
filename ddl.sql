@@ -193,6 +193,7 @@ CREATE TABLE food (
                       description   VARCHAR(500)   NULL     COMMENT '음식에 대한 상세 설명',
                       image_url     VARCHAR(500)   NULL     COMMENT '음식 이미지 주소',
                       registered_dt DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '음식 등록 시각 (시스템 자동 기록, 신메뉴 표시용, 비즈니스 필드)',
+                      deleted_at    DATETIME       NULL     COMMENT '삭제 시각 (소프트 삭제용)',
                       created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                       updated_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                       PRIMARY KEY (food_id),
