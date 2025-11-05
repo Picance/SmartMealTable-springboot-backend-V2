@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: smartmealtable-crawler-test
+  
+  # 테스트용 H2 인메모리 데이터베이스
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create  # 테스트 시 자동으로 테이블 생성
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+    
+  # 배치 설정
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.stdev.smartmealtable: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.batch: DEBUG
+

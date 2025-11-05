@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: smartmealtable-crawler
+  
+  # 데이터베이스 설정
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/smartmealtable?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: none  # DDL 자동 생성 비활성화 (수동 관리)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+    
+  # 배치 설정
+  batch:
+    jdbc:
+      initialize-schema: always  # 배치 메타 테이블 자동 생성
+    job:
+      enabled: false  # 자동 실행 비활성화 (스케줄러로 제어)
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.stdev.smartmealtable: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.batch: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/crawler.log
+    max-size: 10MB
+    max-history: 30
+
+# 크롤러 설정
+crawler:
+  # 노션 페이지 URL
+  notion-url: https://fern-magic-bde.notion.site/21e45244ac0a80fdb02ad064ce75d674
+  # 타임아웃 (밀리초)
+  timeout: 10000
+  # 재시도 횟수
+  retry-count: 3
+

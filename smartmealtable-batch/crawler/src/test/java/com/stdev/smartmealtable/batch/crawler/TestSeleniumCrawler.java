@@ -1,0 +1,149 @@
+package com.stdev.smartmealtable.batch.crawler;
+
+import com.stdev.smartmealtable.batch.crawler.domain.CampusCafeteriaData;
+import com.stdev.smartmealtable.batch.crawler.domain.CampusCafeteriaData.MenuData;
+import com.stdev.smartmealtable.batch.crawler.domain.CampusCafeteriaData.RestaurantData;
+import com.stdev.smartmealtable.batch.crawler.service.SeleniumCrawlerService;
+
+import java.util.List;
+
+/**
+ * Selenium 크롤러 실제 테스트
+ */
+public class TestSeleniumCrawler {
+    
+    public static void main(String[] args) {
+        System.out.println("========================================");
+        System.out.println("Selenium 크롤링 테스트");
+        System.out.println("========================================");
+        System.out.println();
+        
+        try {
+            SeleniumCrawlerService crawler = new SeleniumCrawlerService();
+            List<CampusCafeteriaData> result = crawler.crawlCafeteriaData();
+            
+            if (result.isEmpty()) {
+                System.out.println("❌ 크롤링 실패: 데이터가 비어있습니다.");
+                return;
+            }
+            
+            System.out.println("✅ 크롤링 성공!");
+            System.out.println("총 " + result.size() + "개 건물 발견");
+            System.out.println();
+            
+            // 각 건물별 데이터 출력
+            for (CampusCafeteriaData data : result) {
+                printCafeteriaData(data);
+            }
+            
+            // 통계 출력
+            printStatistics(result);
+            
+        } catch (Exception e) {
+            System.out.println();
+            System.out.println("❌ 크롤링 중 오류 발생!");
+            System.out.println("오류 메시지: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private static void printCafeteriaData(CampusCafeteriaData data) {
+        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("🏢 건물: " + data.getBuildingName());
+        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("📍 주소: " + data.getAddress());
+        System.out.println("🌍 위치: " + data.getLatitude() + ", " + data.getLongitude());
+        System.out.println("🏪 가게 수: " + data.getRestaurants().size());
+        System.out.println();
+        
+        if (data.getRestaurants().isEmpty()) {
+            System.out.println("  ⚠️ 가게 정보가 없습니다.");
+            System.out.println();
+            return;
+        }
+        
+        for (RestaurantData restaurant : data.getRestaurants()) {
+            printRestaurantData(restaurant);
+        }
+    }
+    
+    private static void printRestaurantData(RestaurantData restaurant) {
+        System.out.println("  ┌─────────────────────────────────────");
+        System.out.println("  │ 🍽️  가게: " + restaurant.getName());
+        System.out.println("  │ 🏷️  카테고리: " + restaurant.getCategoryName());
+        System.out.println("  │ 📋 메뉴 수: " + restaurant.getMenus().size());
+        System.out.println("  └─────────────────────────────────────");
+        
+        if (restaurant.getMenus().isEmpty()) {
+            System.out.println("      ⚠️ 메뉴 정보가 없습니다.");
+        } else {
+            // 평균 가격 계산
+            int totalPrice = restaurant.getMenus().stream()
+                    .mapToInt(MenuData::getPrice)
+                    .sum();
+            int avgPrice = totalPrice / restaurant.getMenus().size();
+            
+            System.out.println("      💰 평균 가격: " + String.format("%,d", avgPrice) + "원");
+            System.out.println();
+            System.out.println("      메뉴 목록:");
+            
+            for (MenuData menu : restaurant.getMenus()) {
+                System.out.printf("        • %-30s %,6d원%n", 
+                        menu.getName(), menu.getPrice());
+            }
+        }
+        System.out.println();
+    }
+    
+    private static void printStatistics(List<CampusCafeteriaData> result) {
+        System.out.println("========================================");
+        System.out.println("📊 크롤링 통계");
+        System.out.println("========================================");
+        
+        int totalRestaurants = result.stream()
+                .mapToInt(data -> data.getRestaurants().size())
+                .sum();
+        
+        int totalMenus = result.stream()
+                .flatMap(data -> data.getRestaurants().stream())
+                .mapToInt(restaurant -> restaurant.getMenus().size())
+                .sum();
+        
+        int minPrice = result.stream()
+                .flatMap(data -> data.getRestaurants().stream())
+                .flatMap(restaurant -> restaurant.getMenus().stream())
+                .mapToInt(MenuData::getPrice)
+                .min()
+                .orElse(0);
+        
+        int maxPrice = result.stream()
+                .flatMap(data -> data.getRestaurants().stream())
+                .flatMap(restaurant -> restaurant.getMenus().stream())
+                .mapToInt(MenuData::getPrice)
+                .max()
+                .orElse(0);
+        
+        double avgPrice = result.stream()
+                .flatMap(data -> data.getRestaurants().stream())
+                .flatMap(restaurant -> restaurant.getMenus().stream())
+                .mapToInt(MenuData::getPrice)
+                .average()
+                .orElse(0.0);
+        
+        System.out.println("총 건물 수: " + result.size());
+        System.out.println("총 가게 수: " + totalRestaurants);
+        System.out.println("총 메뉴 수: " + totalMenus);
+        System.out.println();
+        System.out.println("최저 가격: " + String.format("%,d", minPrice) + "원");
+        System.out.println("최고 가격: " + String.format("%,d", maxPrice) + "원");
+        System.out.println("평균 가격: " + String.format("%,.0f", avgPrice) + "원");
+        System.out.println("========================================");
+        
+        if (totalMenus == 0) {
+            System.out.println();
+            System.out.println("⚠️ 메뉴가 하나도 파싱되지 않았습니다.");
+            System.out.println("   파싱 로직을 확인해야 합니다.");
+        }
+    }
+}
+

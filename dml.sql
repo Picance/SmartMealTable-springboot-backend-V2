@@ -40,6 +40,8 @@ INSERT INTO category (name) VALUES ('일식');
 SET @category_id_japanese = LAST_INSERT_ID();
 INSERT INTO category (name) VALUES ('카페');
 SET @category_id_cafe = LAST_INSERT_ID();
+INSERT INTO category (name) VALUES ('아시안');
+SET @category_id_asian = LAST_INSERT_ID();
 
 -- 약관 데이터 추가
 INSERT INTO policy (version, title, description, is_mandatory) VALUES ('1.0.0', '서비스 이용 약관', '알뜰식탁 서비스 이용에 관한 약관입니다...', 1);
