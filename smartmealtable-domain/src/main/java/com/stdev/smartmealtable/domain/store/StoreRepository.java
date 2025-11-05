@@ -74,4 +74,72 @@ public interface StoreRepository {
             long totalCount
     ) {
     }
+
+    // ===== ADMIN 전용 메서드 =====
+
+    /**
+     * 관리자용 음식점 검색 (페이징, 삭제되지 않은 것만)
+     * 
+     * @param categoryId 카테고리 ID (선택)
+     * @param name 검색할 이름 (부분 일치, 선택)
+     * @param storeType 음식점 유형 (선택)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 페이징된 음식점 결과 (삭제되지 않은 것만)
+     */
+    StorePageResult adminSearch(Long categoryId, String name, StoreType storeType, int page, int size);
+
+    /**
+     * 음식점 삭제 (논리적 삭제 - deleted_at 설정)
+     */
+    void softDelete(Long storeId);
+
+    /**
+     * 카테고리가 음식점에서 사용 중인지 확인 (삭제되지 않은 것만)
+     */
+    boolean existsByCategoryIdAndNotDeleted(Long categoryId);
+
+    // ===== StoreOpeningHour 관련 =====
+
+    /**
+     * 영업시간 저장
+     */
+    StoreOpeningHour saveOpeningHour(StoreOpeningHour openingHour);
+
+    /**
+     * 특정 음식점의 모든 영업시간 조회
+     */
+    List<StoreOpeningHour> findOpeningHoursByStoreId(Long storeId);
+
+    /**
+     * 영업시간 ID로 조회
+     */
+    Optional<StoreOpeningHour> findOpeningHourById(Long storeOpeningHourId);
+
+    /**
+     * 영업시간 삭제 (물리적)
+     */
+    void deleteOpeningHourById(Long storeOpeningHourId);
+
+    // ===== StoreTemporaryClosure 관련 =====
+
+    /**
+     * 임시 휴무 저장
+     */
+    StoreTemporaryClosure saveTemporaryClosure(StoreTemporaryClosure temporaryClosure);
+
+    /**
+     * 특정 음식점의 모든 임시 휴무 조회
+     */
+    List<StoreTemporaryClosure> findTemporaryClosuresByStoreId(Long storeId);
+
+    /**
+     * 임시 휴무 ID로 조회
+     */
+    Optional<StoreTemporaryClosure> findTemporaryClosureById(Long storeTemporaryClosureId);
+
+    /**
+     * 임시 휴무 삭제 (물리적)
+     */
+    void deleteTemporaryClosureById(Long storeTemporaryClosureId);
 }

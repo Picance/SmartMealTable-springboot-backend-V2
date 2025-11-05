@@ -1,12 +1,11 @@
 package com.stdev.smartmealtable.storage.db.store;
 
-import com.stdev.smartmealtable.domain.store.Store;
-import com.stdev.smartmealtable.domain.store.StoreRepository;
-import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.domain.store.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +20,8 @@ public class StoreRepositoryImpl implements StoreRepository {
     
     private final StoreJpaRepository jpaRepository;
     private final StoreQueryDslRepository queryDslRepository;
+    private final StoreOpeningHourJpaRepository openingHourJpaRepository;
+    private final StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
     
     @Override
     public Optional<Store> findById(Long storeId) {
@@ -82,5 +83,98 @@ public class StoreRepositoryImpl implements StoreRepository {
                 page,
                 size
         );
+    }
+
+    // ===== ADMIN 전용 메서드 =====
+
+    @Override
+    public StorePageResult adminSearch(Long categoryId, String name, StoreType storeType, int page, int size) {
+        return queryDslRepository.adminSearch(categoryId, name, storeType, page, size);
+    }
+
+    @Override
+    public void softDelete(Long storeId) {
+        jpaRepository.findById(storeId).ifPresent(store -> {
+            StoreJpaEntity updated = StoreJpaEntity.builder()
+                    .storeId(store.getStoreId())
+                    .name(store.getName())
+                    .categoryId(store.getCategoryId())
+                    .sellerId(store.getSellerId())
+                    .address(store.getAddress())
+                    .lotNumberAddress(store.getLotNumberAddress())
+                    .latitude(store.getLatitude())
+                    .longitude(store.getLongitude())
+                    .phoneNumber(store.getPhoneNumber())
+                    .description(store.getDescription())
+                    .averagePrice(store.getAveragePrice())
+                    .reviewCount(store.getReviewCount())
+                    .viewCount(store.getViewCount())
+                    .favoriteCount(store.getFavoriteCount())
+                    .storeType(store.getStoreType())
+                    .imageUrl(store.getImageUrl())
+                    .registeredAt(store.getRegisteredAt())
+                    .deletedAt(LocalDateTime.now()) // 논리적 삭제
+                    .build();
+            jpaRepository.save(updated);
+        });
+    }
+
+    @Override
+    public boolean existsByCategoryIdAndNotDeleted(Long categoryId) {
+        return queryDslRepository.existsByCategoryIdAndNotDeleted(categoryId);
+    }
+
+    // ===== StoreOpeningHour 관련 =====
+
+    @Override
+    public StoreOpeningHour saveOpeningHour(StoreOpeningHour openingHour) {
+        StoreOpeningHourJpaEntity entity = StoreEntityMapper.toJpaEntity(openingHour);
+        StoreOpeningHourJpaEntity saved = openingHourJpaRepository.save(entity);
+        return StoreEntityMapper.toDomain(saved);
+    }
+
+    @Override
+    public List<StoreOpeningHour> findOpeningHoursByStoreId(Long storeId) {
+        return openingHourJpaRepository.findByStoreId(storeId).stream()
+                .map(StoreEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<StoreOpeningHour> findOpeningHourById(Long storeOpeningHourId) {
+        return openingHourJpaRepository.findById(storeOpeningHourId)
+                .map(StoreEntityMapper::toDomain);
+    }
+
+    @Override
+    public void deleteOpeningHourById(Long storeOpeningHourId) {
+        openingHourJpaRepository.deleteById(storeOpeningHourId);
+    }
+
+    // ===== StoreTemporaryClosure 관련 =====
+
+    @Override
+    public StoreTemporaryClosure saveTemporaryClosure(StoreTemporaryClosure temporaryClosure) {
+        StoreTemporaryClosureJpaEntity entity = StoreEntityMapper.toJpaEntity(temporaryClosure);
+        StoreTemporaryClosureJpaEntity saved = temporaryClosureJpaRepository.save(entity);
+        return StoreEntityMapper.toDomain(saved);
+    }
+
+    @Override
+    public List<StoreTemporaryClosure> findTemporaryClosuresByStoreId(Long storeId) {
+        return temporaryClosureJpaRepository.findByStoreId(storeId).stream()
+                .map(StoreEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<StoreTemporaryClosure> findTemporaryClosureById(Long storeTemporaryClosureId) {
+        return temporaryClosureJpaRepository.findById(storeTemporaryClosureId)
+                .map(StoreEntityMapper::toDomain);
+    }
+
+    @Override
+    public void deleteTemporaryClosureById(Long storeTemporaryClosureId) {
+        temporaryClosureJpaRepository.deleteById(storeTemporaryClosureId);
     }
 }

@@ -370,10 +370,31 @@ public enum ErrorType {
     ),
     
     // ==================== ADMIN - 음식점 관리 에러 ====================
+    STORE_ALREADY_DELETED(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 삭제된 음식점입니다.",
+            LogLevel.WARN
+    ),
+
     STORE_OPENING_HOUR_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,
             "존재하지 않는 영업시간 정보입니다.",
+            LogLevel.WARN
+    ),
+
+    OPENING_HOUR_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 영업시간 정보입니다.",
+            LogLevel.WARN
+    ),
+
+    OPENING_HOUR_NOT_BELONG_TO_STORE(
+            HttpStatus.BAD_REQUEST,
+            ErrorCode.E400,
+            "해당 영업시간 정보가 지정된 음식점에 속하지 않습니다.",
             LogLevel.WARN
     ),
     
@@ -381,6 +402,20 @@ public enum ErrorType {
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,
             "존재하지 않는 임시 휴무 정보입니다.",
+            LogLevel.WARN
+    ),
+
+    TEMPORARY_CLOSURE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            ErrorCode.E404,
+            "존재하지 않는 임시 휴무 정보입니다.",
+            LogLevel.WARN
+    ),
+
+    TEMPORARY_CLOSURE_NOT_BELONG_TO_STORE(
+            HttpStatus.BAD_REQUEST,
+            ErrorCode.E400,
+            "해당 임시 휴무 정보가 지정된 음식점에 속하지 않습니다.",
             LogLevel.WARN
     ),
     

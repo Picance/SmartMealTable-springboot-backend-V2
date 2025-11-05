@@ -7,11 +7,13 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StorePageResult;
 import com.stdev.smartmealtable.domain.store.StoreRepository.StoreSearchResult;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.store.StoreWithDistance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -156,5 +158,65 @@ public class StoreQueryDslRepository {
             case "viewcount" -> storeJpaEntity.viewCount.desc();
             default -> distanceExpression.asc(); // distance (기본값)
         };
+    }
+
+    // ===== ADMIN 전용 메서드 =====
+
+    /**
+     * 관리자용 음식점 검색 (페이징, 삭제되지 않은 것만)
+     */
+    public StorePageResult adminSearch(Long categoryId, String name, StoreType storeType, int page, int size) {
+        BooleanExpression condition = storeJpaEntity.deletedAt.isNull();
+
+        if (categoryId != null) {
+            condition = condition.and(storeJpaEntity.categoryId.eq(categoryId));
+        }
+
+        if (name != null && !name.isBlank()) {
+            condition = condition.and(storeJpaEntity.name.containsIgnoreCase(name));
+        }
+
+        if (storeType != null) {
+            condition = condition.and(storeJpaEntity.storeType.eq(storeType));
+        }
+
+        // 전체 개수 조회
+        Long total = queryFactory
+                .select(storeJpaEntity.count())
+                .from(storeJpaEntity)
+                .where(condition)
+                .fetchOne();
+
+        long totalElements = (total != null) ? total : 0;
+
+        // 페이징 데이터 조회
+        List<StoreJpaEntity> entities = queryFactory
+                .selectFrom(storeJpaEntity)
+                .where(condition)
+                .orderBy(storeJpaEntity.registeredAt.desc()) // 최신 등록 순
+                .offset((long) page * size)
+                .limit(size)
+                .fetch();
+
+        List<Store> content = entities.stream()
+                .map(StoreEntityMapper::toDomain)
+                .collect(Collectors.toList());
+
+        return StorePageResult.of(content, page, size, totalElements);
+    }
+
+    /**
+     * 카테고리가 음식점에서 사용 중인지 확인 (삭제되지 않은 것만)
+     */
+    public boolean existsByCategoryIdAndNotDeleted(Long categoryId) {
+        Integer count = queryFactory
+                .selectOne()
+                .from(storeJpaEntity)
+                .where(
+                        storeJpaEntity.categoryId.eq(categoryId)
+                                .and(storeJpaEntity.deletedAt.isNull())
+                )
+                .fetchFirst();
+        return count != null;
     }
 }

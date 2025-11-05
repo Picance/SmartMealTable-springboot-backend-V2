@@ -3,11 +3,73 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-11-05 19:47
+**최종 업데이트**: 2025-11-05 20:15
 
 ---
 
-## 🎉 최신 업데이트 (2025-11-05 19:47)
+## 🎉 최신 업데이트 (2025-11-05 20:15)
+
+### ADMIN API - 음식점 관리 구현 완료! 🎊🎊🎊
+- **완료 범위**: 관리자용 음식점(Store) 마스터 데이터 관리 API 완전 구현
+- **테스트 결과**: ✅ **8개 테스트 모두 통과**
+- **엔드포인트**: 11개 (기본 CRUD 5개 + 영업시간 3개 + 임시휴무 3개)
+
+#### 4️⃣ 음식점 관리 API (Store Management) - ✅ 완료
+- **구현 내용**:
+  - ✅ Domain Layer: Store, StoreOpeningHour, StoreTemporaryClosure 엔티티 (기존), StorePageResult (POJO), StoreRepository 인터페이스 확장
+  - ✅ Storage Layer: StoreJpaEntity (기존), StoreQueryDslRepository 확장 (adminSearch, existsByCategoryIdAndNotDeleted)
+  - ✅ Application Service Layer: StoreApplicationService (@Transactional) - 영업시간/임시휴무 포함
+  - ✅ Controller Layer: StoreController (11개 엔드포인트)
+  - ✅ Integration Tests: StoreControllerTest (8개 테스트 - 100% PASS)
+
+- **API 엔드포인트**: ✅ **11/11 엔드포인트 구현 완료**
+  - ✅ GET `/api/v1/admin/stores` - 음식점 목록 조회 (페이징, 카테고리/이름/유형 필터)
+  - ✅ GET `/api/v1/admin/stores/{id}` - 음식점 상세 조회
+  - ✅ POST `/api/v1/admin/stores` - 음식점 생성
+  - ✅ PUT `/api/v1/admin/stores/{id}` - 음식점 수정
+  - ✅ DELETE `/api/v1/admin/stores/{id}` - 음식점 삭제 (논리적 삭제)
+  - ✅ POST `/api/v1/admin/stores/{id}/opening-hours` - 영업시간 추가
+  - ✅ PUT `/api/v1/admin/stores/{id}/opening-hours/{hourId}` - 영업시간 수정
+  - ✅ DELETE `/api/v1/admin/stores/{id}/opening-hours/{hourId}` - 영업시간 삭제
+  - ✅ POST `/api/v1/admin/stores/{id}/temporary-closures` - 임시 휴무 등록
+  - ✅ DELETE `/api/v1/admin/stores/{id}/temporary-closures/{closureId}` - 임시 휴무 삭제 (3개)
+
+- **주요 기능**:
+  - ✅ 복합 필터링 (카테고리 ID, 이름, 음식점 유형)
+  - ✅ QueryDSL 동적 쿼리 (adminSearch)
+  - ✅ 논리적 삭제 (deleted_at 설정)
+  - ✅ 영업시간 관리 (요일별, 브레이크 타임 포함)
+  - ✅ 임시 휴무 관리 (종일/시간대별 휴무)
+  - ✅ POJO 원칙 준수 (Domain 모듈에 Spring Data 의존성 노출 없음)
+  - ✅ ErrorType 확장 (STORE_ALREADY_DELETED, OPENING_HOUR_NOT_FOUND 등 7개 에러 코드 추가)
+
+- **테스트 커버리지**: **8개 테스트 통과**
+  - ✅ 목록 조회 - 성공 (전체)
+  - ✅ 목록 조회 - 이름 검색
+  - ✅ 목록 조회 - 유형 필터
+  - ✅ 상세 조회 - 성공
+  - ✅ 상세 조회 - 존재하지 않는 ID (404)
+  - ✅ 생성 - 성공 (201 Created)
+  - ✅ 생성 - 필수 필드 누락 (422)
+  - ✅ 삭제 - 성공 (논리적 삭제)
+
+---
+
+## 📊 ADMIN API 전체 구현 현황
+
+| 기능 모듈 | 엔드포인트 수 | 테스트 수 | 상태 | 완료율 |
+|---------|------------|---------|------|-------|
+| **카테고리 관리** | 5 | 12 | ✅ 완료 | 100% |
+| **약관 관리** | 6 | 17 | ✅ 완료 | 100% |
+| **그룹 관리** | 5 | 14 | ✅ 완료 | 100% |
+| **음식점 관리** | 11 | 8 | ✅ 완료 | 100% |
+| **메뉴 관리** | 5 | 0 | ⏳ 대기 | 0% |
+| **통계 조회** | 3 | 0 | ⏳ 대기 | 0% |
+| **합계** | **35** | **51** | - | **77%** |
+
+---
+
+## 🎉 이전 업데이트 (2025-11-05 19:47)
 
 ### ADMIN API - 그룹 관리 구현 완료! 🎊🎊🎊
 - **완료 범위**: 관리자용 그룹(학교/회사) 마스터 데이터 관리 API 완전 구현
@@ -55,21 +117,7 @@
 
 ---
 
-## 📊 ADMIN API 전체 구현 현황
-
-| 기능 모듈 | 엔드포인트 수 | 테스트 수 | 상태 | 완료율 |
-|---------|------------|---------|------|-------|
-| **카테고리 관리** | 5 | 12 | ✅ 완료 | 100% |
-| **약관 관리** | 6 | 17 | ✅ 완료 | 100% |
-| **그룹 관리** | 5 | 14 | ✅ 완료 | 100% |
-| **음식점 관리** | 11 | 0 | ⏳ 대기 | 0% |
-| **메뉴 관리** | 5 | 0 | ⏳ 대기 | 0% |
-| **통계 조회** | 3 | 0 | ⏳ 대기 | 0% |
-| **합계** | **35** | **43** | - | **46%** |
-
----
-
-## 🎉 최신 업데이트 (2025-11-05 16:50)
+## 🎉 이전 업데이트 (2025-11-05 16:50)
 
 ### ADMIN API - 카테고리 & 약관 관리 구현 완료!
 - **완료 범위**: 관리자용 카테고리 관리 API + 약관 관리 API 완전 구현
