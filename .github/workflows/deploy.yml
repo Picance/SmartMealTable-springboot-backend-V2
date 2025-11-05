@@ -88,6 +88,17 @@ jobs:
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
                 -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
                 -e SPRING_REDIS_PORT=6379 \\
+                -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \\
+                -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \\
+                -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \\
+                -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \\
+                -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \\
+                -e NAVER_MAP_CLIENT_ID=${{ secrets.NAVER_MAP_CLIENT_ID }} \\
+                -e NAVER_MAP_CLIENT_SECRET=${{ secrets.NAVER_MAP_CLIENT_SECRET }} \\
+                -e VERTEX_AI_PROJECT_ID=${{ secrets.VERTEX_AI_PROJECT_ID }} \\
+                -e VERTEX_AI_MODEL=${{ secrets.VERTEX_AI_MODEL }} \\
+                -e VERTEX_AI_TEMPERATURE=${{ secrets.VERTEX_AI_TEMPERATURE }} \\
+                -e VERTEX_AI_LOCATION=${{ secrets.VERTEX_AI_LOCATION }} \\
                 -e JAVA_OPTS=-Xmx512m \\
                 ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-api:${{ github.sha }}'
             ]"

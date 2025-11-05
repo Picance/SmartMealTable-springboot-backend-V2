@@ -6,6 +6,17 @@ set -e
 echo "🚀 SmartMealTable 로컬 개발 환경 시작"
 echo "======================================="
 
+# .env 파일 로드
+if [ -f .env ]; then
+    echo "📋 .env 파일 로드 중..."
+    set -a
+    source .env
+    set +a
+    echo "✅ 환경 변수 로드 완료"
+else
+    echo "⚠️  .env 파일을 찾을 수 없습니다. 기본 설정으로 실행됩니다."
+fi
+
 # 색상 정의
 RED='\033[0;31m'
 GREEN='\033[0;32m'
