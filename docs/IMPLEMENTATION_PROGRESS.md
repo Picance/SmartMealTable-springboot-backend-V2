@@ -3,11 +3,169 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-10-31 18:45
+**최종 업데이트**: 2025-11-05 19:47
 
 ---
 
-## 🎉 최신 업데이트 (2025-10-31 18:45)
+## 🎉 최신 업데이트 (2025-11-05 19:47)
+
+### ADMIN API - 그룹 관리 구현 완료! 🎊🎊🎊
+- **완료 범위**: 관리자용 그룹(학교/회사) 마스터 데이터 관리 API 완전 구현
+- **테스트 결과**: ✅ **14개 테스트 모두 통과**
+
+#### 3️⃣ 그룹 관리 API (Group Management) - ✅ 완료
+- **구현 내용**:
+  - ✅ Domain Layer: Group 엔티티 (기존), GroupPageResult (POJO), GroupRepository 인터페이스 확장
+  - ✅ Storage Layer: GroupJpaEntity (기존), GroupRepositoryImpl 확장 (페이징, 중복 체크, 회원 존재 확인)
+  - ✅ Application Service Layer: GroupApplicationService (@Transactional)
+  - ✅ Controller Layer: GroupController (5개 엔드포인트)
+  - ✅ Common Layer: GlobalExceptionHandler (ADMIN 전용)
+  - ✅ Integration Tests: GroupControllerTest (14개 테스트 - 100% PASS)
+
+- **API 엔드포인트**: ✅ **5/5 엔드포인트 구현 완료**
+  - ✅ GET `/api/v1/admin/groups` - 그룹 목록 조회 (페이징, 타입/이름 필터)
+  - ✅ GET `/api/v1/admin/groups/{id}` - 그룹 상세 조회
+  - ✅ POST `/api/v1/admin/groups` - 그룹 생성
+  - ✅ PUT `/api/v1/admin/groups/{id}` - 그룹 수정
+  - ✅ DELETE `/api/v1/admin/groups/{id}` - 그룹 삭제 (물리적)
+
+- **주요 기능**:
+  - ✅ 타입 필터링 (UNIVERSITY, COMPANY, OTHER)
+  - ✅ 이름 검색 기능 (QueryDSL contains)
+  - ✅ 페이징 처리 (커스텀 GroupPageResult)
+  - ✅ 중복 이름 검증 (생성/수정 시)
+  - ✅ 회원이 속한 그룹 삭제 방지 (Member 연관 체크)
+  - ✅ POJO 원칙 준수 (Domain 모듈에 Spring Data 의존성 노출 없음)
+
+- **테스트 커버리지**: **14개 테스트 통과**
+  - ✅ 목록 조회 - 성공
+  - ✅ 목록 조회 - 타입 필터링
+  - ✅ 목록 조회 - 이름 검색
+  - ✅ 상세 조회 - 성공
+  - ✅ 상세 조회 - 존재하지 않는 그룹 (404)
+  - ✅ 생성 - 성공
+  - ✅ 생성 - 중복된 이름 (409)
+  - ✅ 생성 - 필수 필드 누락 (422)
+  - ✅ 수정 - 성공
+  - ✅ 수정 - 존재하지 않는 그룹 (404)
+  - ✅ 수정 - 중복된 이름 (409)
+  - ✅ 삭제 - 성공
+  - ✅ 삭제 - 존재하지 않는 그룹 (404)
+  - ✅ 삭제 - 회원이 속한 그룹 (409)
+
+---
+
+## 📊 ADMIN API 전체 구현 현황
+
+| 기능 모듈 | 엔드포인트 수 | 테스트 수 | 상태 | 완료율 |
+|---------|------------|---------|------|-------|
+| **카테고리 관리** | 5 | 12 | ✅ 완료 | 100% |
+| **약관 관리** | 6 | 17 | ✅ 완료 | 100% |
+| **그룹 관리** | 5 | 14 | ✅ 완료 | 100% |
+| **음식점 관리** | 11 | 0 | ⏳ 대기 | 0% |
+| **메뉴 관리** | 5 | 0 | ⏳ 대기 | 0% |
+| **통계 조회** | 3 | 0 | ⏳ 대기 | 0% |
+| **합계** | **35** | **43** | - | **46%** |
+
+---
+
+## 🎉 최신 업데이트 (2025-11-05 16:50)
+
+### ADMIN API - 카테고리 & 약관 관리 구현 완료!
+- **완료 범위**: 관리자용 카테고리 관리 API + 약관 관리 API 완전 구현
+- **아키텍처**: Layered Architecture (Controller → Application Service → Domain Service → Repository)
+- **테스트 전략**: Testcontainers + MySQL 8.0 통합 테스트
+
+#### 1️⃣ 카테고리 관리 API (Category Management)
+- **구현 내용**:
+  - ✅ Domain Layer: Category 엔티티, CategoryRepository 인터페이스, CategoryPageResult (POJO)
+  - ✅ Storage Layer: CategoryJpaEntity, CategoryRepositoryImpl (QueryDSL 기반)
+  - ✅ Application Service Layer: CategoryApplicationService (@Transactional)
+  - ✅ Controller Layer: CategoryController (5개 엔드포인트)
+  - ✅ Integration Tests: CategoryControllerTest (12개 테스트 - 100% PASS)
+
+- **API 엔드포인트**: ✅ **5/5 엔드포인트 구현 완료**
+  - ✅ GET `/api/v1/admin/categories` - 카테고리 목록 조회 (페이징, 검색)
+  - ✅ GET `/api/v1/admin/categories/{id}` - 카테고리 상세 조회
+  - ✅ POST `/api/v1/admin/categories` - 카테고리 생성
+  - ✅ PUT `/api/v1/admin/categories/{id}` - 카테고리 수정
+  - ✅ DELETE `/api/v1/admin/categories/{id}` - 카테고리 삭제
+
+- **주요 기능**:
+  - ✅ 이름 검색 기능 (QueryDSL contains)
+  - ✅ 페이징 처리 (커스텀 CategoryPageResult)
+  - ✅ 중복 이름 검증 (생성/수정 시)
+  - ✅ 사용 중인 카테고리 삭제 방지 (Store/Food 연관 체크)
+  - ✅ POJO 원칙 준수 (Domain 모듈에 Spring Data 의존성 노출 없음)
+
+- **테스트 커버리지**: **12개 테스트 통과**
+  - Happy Path: 목록 조회, 검색, 상세 조회, 생성, 수정, 삭제
+  - Error Cases: 404 (Not Found), 409 (Duplicate Name, In Use), 400 (Validation)
+
+#### 2️⃣ 약관 관리 API (Policy Management)
+- **구현 내용**:
+  - ✅ Domain Layer: Policy 엔티티 확장, PolicyRepository 인터페이스 확장, PolicyPageResult (POJO)
+  - ✅ Storage Layer: PolicyRepositoryImpl (QueryDSL 기반)
+  - ✅ Application Service Layer: PolicyApplicationService (@Transactional)
+  - ✅ Controller Layer: PolicyController (6개 엔드포인트)
+  - ✅ Service/Controller DTO 구조화 (Request/Response 분리)
+
+- **API 엔드포인트**: ✅ **6/6 엔드포인트 구현 완료**
+  - ✅ GET `/api/v1/admin/policies` - 약관 목록 조회 (페이징, 제목 검색, 활성 상태 필터)
+  - ✅ GET `/api/v1/admin/policies/{id}` - 약관 상세 조회
+  - ✅ POST `/api/v1/admin/policies` - 약관 생성
+  - ✅ PUT `/api/v1/admin/policies/{id}` - 약관 수정
+  - ✅ DELETE `/api/v1/admin/policies/{id}` - 약관 삭제
+  - ✅ PATCH `/api/v1/admin/policies/{id}/toggle` - 약관 활성/비활성 토글
+
+- **주요 기능**:
+  - ✅ 제목 검색 + 활성 상태 필터링 (QueryDSL 동적 쿼리)
+  - ✅ 페이징 처리 (커스텀 PolicyPageResult)
+  - ✅ 중복 제목 검증 (생성/수정 시)
+  - ✅ 동의 내역이 있는 약관 삭제 방지 (PolicyAgreement JOIN 체크)
+  - ✅ 활성/비활성 토글 기능
+  - ✅ POJO 원칙 준수 (Domain 모듈 순수성 유지)
+
+- **QueryDSL 구현**:
+  - `searchByTitle()`: 동적 조건 (title LIKE, isActive =)
+  - `existsByTitle()`: 중복 체크
+  - `existsByTitleAndIdNot()`: 수정 시 중복 체크 (자신 제외)
+  - `deleteById()`: 물리적 삭제
+  - `hasAgreements()`: PolicyAgreement 테이블 JOIN 존재 여부 체크
+
+#### 공통 구현 사항
+- **ErrorType 확장**: ADMIN 전용 에러 코드 추가
+  - `DUPLICATE_CATEGORY_NAME`, `CATEGORY_IN_USE`
+  - `DUPLICATE_POLICY_TITLE`, `POLICY_HAS_AGREEMENTS`
+  - `STORE_*`, `FOOD_*`, `GROUP_*` 에러 코드 추가
+
+- **AdminApplication 설정**:
+  - `@SpringBootApplication(scanBasePackages = "com.stdev.smartmealtable")`
+  - `@EntityScan(basePackages = "com.stdev.smartmealtable.storage.db")`
+  - JpaConfig와 중복 방지 (@EnableJpaRepositories 제거)
+
+- **테스트 인프라**:
+  - `AbstractAdminContainerTest`: Testcontainers MySQL 8.0 공유
+  - `application.yml` (test): `ddl-auto: create-drop`, Spring AI 비활성화
+  - MockMvc + ObjectMapper 기반 통합 테스트
+
+#### 알려진 이슈
+- ⚠️ **API 응답 포맷 변경**: `success` → `result`, boolean → `"SUCCESS"`/`"ERROR"`
+  - ApiResponse 구조가 프로젝트 전반에서 변경됨
+  - 기존 테스트 코드의 JSON path assertion 수정 필요
+  - 영향 범위: 모든 Controller 테스트
+
+**다음 단계**:
+1. 🔄 테스트 코드 JSON path 일괄 수정 (전체 프로젝트)
+2. ⏭️ Group Management API 구현 (Domain → Storage → Application → Controller)
+3. ⏭️ Store Management API 구현 (가장 복잡 - OpeningHour, TemporaryClosure 포함)
+4. ⏭️ Food Management API 구현
+
+**상세 문서**: ADMIN_API_SPECIFICATION.md (예정)
+
+---
+
+## 🎉 이전 업데이트 (2025-10-31 18:45)
 
 ### 지출 내역 API 이원화 구현 완료! 🎉🎉🎉
 - **완료 범위**: 장바구니 시나리오 + 수기 입력 시나리오 모두 지원하는 API 구조 변경

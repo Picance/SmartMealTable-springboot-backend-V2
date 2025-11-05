@@ -38,4 +38,20 @@ public interface GroupJpaRepository extends JpaRepository<GroupJpaEntity, Long> 
             @Param("name") String name,
             Pageable pageable
     );
+    
+    /**
+     * 그룹 이름 중복 체크
+     */
+    boolean existsByName(String name);
+    
+    /**
+     * 그룹 이름 중복 체크 (자기 자신 제외)
+     */
+    boolean existsByNameAndGroupIdNot(String name, Long groupId);
+    
+    /**
+     * 그룹에 속한 회원 수 조회
+     */
+    @Query("SELECT COUNT(m) FROM MemberJpaEntity m WHERE m.groupId = :groupId")
+    long countMembersByGroupId(@Param("groupId") Long groupId);
 }
