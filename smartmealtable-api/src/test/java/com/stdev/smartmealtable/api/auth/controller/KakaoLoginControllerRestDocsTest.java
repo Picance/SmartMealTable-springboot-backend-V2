@@ -86,6 +86,12 @@ class KakaoLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data")
                                         .type(JsonFieldType.OBJECT)
                                         .description("응답 데이터"),
+                                fieldWithPath("data.accessToken")
+                                        .type(JsonFieldType.STRING)
+                                        .description("JWT 액세스 토큰"),
+                                fieldWithPath("data.refreshToken")
+                                        .type(JsonFieldType.STRING)
+                                        .description("JWT 리프레시 토큰"),
                                 fieldWithPath("data.memberId")
                                         .type(JsonFieldType.NUMBER)
                                         .description("회원 ID"),

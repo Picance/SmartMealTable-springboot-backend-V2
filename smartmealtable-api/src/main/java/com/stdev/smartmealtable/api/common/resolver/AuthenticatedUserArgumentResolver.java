@@ -61,11 +61,13 @@ public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentR
         log.debug("Authorization header: {}", authorizationHeader);
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.warn("Authorization 헤더가 없거나 Bearer 스킴이 아님: {}", authorizationHeader);
             throw new AuthenticationException(ErrorType.INVALID_TOKEN);
         }
 
         String token = jwtTokenProvider.extractTokenFromHeader(authorizationHeader);
-        if (token == null) {
+        if (token == null || token.isBlank()) {
+            log.warn("토큰 추출 실패 또는 빈 토큰. Authorization header: {}", authorizationHeader);
             throw new AuthenticationException(ErrorType.INVALID_TOKEN);
         }
 

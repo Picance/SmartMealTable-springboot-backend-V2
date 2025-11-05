@@ -14,6 +14,7 @@ import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRep
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.member.repository.SocialAccountRepository;
 import com.stdev.smartmealtable.domain.member.service.SocialAuthDomainService;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,9 @@ class KakaoLoginServiceTest {
     @Mock
     private SocialAccountRepository socialAccountRepository;
 
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
     @InjectMocks
     private KakaoLoginService kakaoLoginService;
 
@@ -79,7 +83,7 @@ class KakaoLoginServiceTest {
                 null
         );
 
-        var member = Member.create(null, "카카오유저", null, RecommendationType.BALANCED);
+        var member = Member.reconstitute(1L, null, "카카오유저", null, RecommendationType.BALANCED);
 
         given(kakaoAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);
@@ -98,12 +102,17 @@ class KakaoLoginServiceTest {
                 anyString(),
                 any(LocalDateTime.class)
         )).willReturn(member);
+        given(jwtTokenProvider.createToken(1L))
+                .willReturn("mock-jwt-access-token")
+                .willReturn("mock-jwt-refresh-token");
 
         // when
         var response = kakaoLoginService.login(request);
 
         // then
         assertThat(response).isNotNull();
+        assertThat(response.accessToken()).isEqualTo("mock-jwt-access-token");
+        assertThat(response.refreshToken()).isEqualTo("mock-jwt-refresh-token");
         assertThat(response.email()).isEqualTo("[email protected]");
         assertThat(response.name()).isEqualTo("카카오유저");
         assertThat(response.isNewMember()).isTrue();
@@ -122,6 +131,7 @@ class KakaoLoginServiceTest {
                 anyString(),
                 any(LocalDateTime.class)
         );
+        verify(jwtTokenProvider, times(2)).createToken(1L);
     }
 
     @Test
@@ -158,8 +168,19 @@ class KakaoLoginServiceTest {
                 LocalDateTime.now().plusSeconds(3600)
         );
 
-        var memberAuth = MemberAuthentication.createSocialAuth(1L, "[email protected]", "카카오유저");
-        var member = Member.create(null, "카카오유저", null, RecommendationType.BALANCED);
+        var memberAuth = MemberAuthentication.reconstitute(
+                1L, // memberAuthenticationId
+                1L, // memberId
+                "[email protected]",
+                null, // hashedPassword (소셜 로그인이므로 null)
+                0, // failureCount
+                null, // passwordChangedAt
+                null, // passwordExpiresAt
+                "카카오유저",
+                null, // deletedAt
+                LocalDateTime.now()
+        );
+        var member = Member.reconstitute(1L, null, "카카오유저", null, RecommendationType.BALANCED);
 
         given(kakaoAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);
@@ -171,12 +192,17 @@ class KakaoLoginServiceTest {
                 .willReturn(Optional.of(memberAuth));
         given(memberRepository.findById(any()))
                 .willReturn(Optional.of(member));
+        given(jwtTokenProvider.createToken(1L))
+                .willReturn("mock-jwt-access-token")
+                .willReturn("mock-jwt-refresh-token");
 
         // when
         var response = kakaoLoginService.login(request);
 
         // then
         assertThat(response).isNotNull();
+        assertThat(response.accessToken()).isEqualTo("mock-jwt-access-token");
+        assertThat(response.refreshToken()).isEqualTo("mock-jwt-refresh-token");
         assertThat(response.email()).isEqualTo("[email protected]");
         assertThat(response.name()).isEqualTo("카카오유저");
         assertThat(response.isNewMember()).isFalse();
@@ -191,6 +217,7 @@ class KakaoLoginServiceTest {
                 anyString(),
                 any(LocalDateTime.class)
         );
+        verify(jwtTokenProvider, times(2)).createToken(1L);
     }
 
     @Test
@@ -245,12 +272,17 @@ class KakaoLoginServiceTest {
                 anyString(),
                 any(LocalDateTime.class)
         )).willReturn(existingMember);
+        given(jwtTokenProvider.createToken(100L))
+                .willReturn("mock-jwt-access-token")
+                .willReturn("mock-jwt-refresh-token");
 
         // when
         var response = kakaoLoginService.login(request);
 
         // then
         assertThat(response).isNotNull();
+        assertThat(response.accessToken()).isEqualTo("mock-jwt-access-token");
+        assertThat(response.refreshToken()).isEqualTo("mock-jwt-refresh-token");
         assertThat(response.memberId()).isEqualTo(100L);  // 기존 회원 ID
         assertThat(response.email()).isEqualTo("qwe123@example.com");
         assertThat(response.isNewMember()).isTrue();  // 소셜 계정은 신규
@@ -269,5 +301,6 @@ class KakaoLoginServiceTest {
                 anyString(),
                 any(LocalDateTime.class)
         );
+        verify(jwtTokenProvider, times(2)).createToken(100L);
     }
 }

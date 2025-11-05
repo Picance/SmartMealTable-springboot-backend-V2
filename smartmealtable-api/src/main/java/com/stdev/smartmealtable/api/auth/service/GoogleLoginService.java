@@ -13,6 +13,7 @@ import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRep
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.member.repository.SocialAccountRepository;
 import com.stdev.smartmealtable.domain.member.service.SocialAuthDomainService;
+import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class GoogleLoginService {
     private final MemberRepository memberRepository;
     private final MemberAuthenticationRepository memberAuthenticationRepository;
     private final SocialAccountRepository socialAccountRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 구글 로그인 처리
@@ -112,7 +114,15 @@ public class GoogleLoginService {
         log.debug("회원 정보 업데이트 완료: email={}, name={}, profileImageUrl={}", 
                 userInfo.getEmail(), userInfo.getName(), userInfo.getProfileImage());
 
+        // 5. JWT 토큰 생성
+        String accessToken = jwtTokenProvider.createToken(member.getMemberId());
+        String refreshToken = jwtTokenProvider.createToken(member.getMemberId());
+        
+        log.debug("JWT 토큰 생성 완료: memberId={}", member.getMemberId());
+
         return GoogleLoginServiceResponse.ofExistingMember(
+                accessToken,
+                refreshToken,
                 member.getMemberId(),
                 userInfo.getEmail(),
                 userInfo.getName(),
@@ -142,7 +152,15 @@ public class GoogleLoginService {
                 tokenResponse.calculateExpiresAt()
         );
 
+        // 2. JWT 토큰 생성
+        String accessToken = jwtTokenProvider.createToken(member.getMemberId());
+        String refreshToken = jwtTokenProvider.createToken(member.getMemberId());
+        
+        log.debug("JWT 토큰 생성 완료: memberId={}", member.getMemberId());
+
         return GoogleLoginServiceResponse.ofNewMember(
+                accessToken,
+                refreshToken,
                 member.getMemberId(),
                 userInfo.getEmail(),
                 userInfo.getName(),
