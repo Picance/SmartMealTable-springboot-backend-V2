@@ -68,11 +68,13 @@ public class JwtTokenProvider {
     /**
      * Authorization 헤더에서 Bearer 토큰 추출
      * @param authorizationHeader Authorization 헤더 값
-     * @return JWT 토큰 문자열 (Bearer 제외)
+     * @return JWT 토큰 문자열 (Bearer 제외), 유효하지 않으면 null
      */
     public String extractTokenFromHeader(String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
+            String token = authorizationHeader.substring(7).trim();
+            // 빈 문자열 체크
+            return token.isEmpty() ? null : token;
         }
         return null;
     }
