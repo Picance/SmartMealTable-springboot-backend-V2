@@ -56,8 +56,14 @@ public class PolicyRepositoryImpl implements PolicyRepository {
 
     @Override
     public PolicyPageResult searchByTitle(String title, Boolean isActive, int page, int size) {
-        BooleanExpression condition = titleContains(title)
-                .and(isActiveEquals(isActive));
+        // Null-safe 조건 조합
+        BooleanExpression titleCondition = titleContains(title);
+        BooleanExpression activeCondition = isActiveEquals(isActive);
+        
+        BooleanExpression condition = titleCondition;
+        if (activeCondition != null) {
+            condition = (condition != null) ? condition.and(activeCondition) : activeCondition;
+        }
 
         // 전체 개수 조회
         Long total = queryFactory
