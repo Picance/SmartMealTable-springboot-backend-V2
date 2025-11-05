@@ -2,9 +2,12 @@
 # 빌드: docker build -f Dockerfile.api -t smartmealtable-api:latest .
 # 실행: docker run -e SPRING_PROFILES_ACTIVE=prod -p 8080:8080 smartmealtable-api:latest
 
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
+
+# curl 설치 (헬스체크용)
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # 헬스체크 (Spring Actuator 사용)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

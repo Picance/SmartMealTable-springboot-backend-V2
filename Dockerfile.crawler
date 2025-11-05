@@ -2,7 +2,7 @@
 # 빌드: docker build -f Dockerfile.crawler -t smartmealtable-crawler:latest .
 # 실행: docker run -e SPRING_PROFILES_ACTIVE=prod smartmealtable-crawler:latest
 
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 

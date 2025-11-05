@@ -1,8 +1,8 @@
 # 빌드 스테이지 (선택사항: 멀티 스테이지 빌드 사용 가능)
-FROM openjdk:21-jdk-slim as base
+FROM eclipse-temurin:21-jre-jammy as base
 
 # 실행 스테이지
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
