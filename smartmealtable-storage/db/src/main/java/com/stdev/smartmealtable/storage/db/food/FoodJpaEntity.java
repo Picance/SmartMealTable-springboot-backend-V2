@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.storage.db.food;
 import com.stdev.smartmealtable.domain.food.Food;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -43,12 +44,29 @@ public class FoodJpaEntity {
     @Column(name = "registered_dt", insertable = false, updatable = false)
     private LocalDateTime registeredDt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     // created_at, updated_at은 DB DEFAULT CURRENT_TIMESTAMP로 관리 (도메인에 노출 안 함)
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
+
+    @Builder
+    private FoodJpaEntity(Long foodId, Long storeId, String foodName, Integer price, Long categoryId,
+                          String description, String imageUrl, LocalDateTime registeredDt, LocalDateTime deletedAt) {
+        this.foodId = foodId;
+        this.storeId = storeId;
+        this.foodName = foodName;
+        this.price = price;
+        this.categoryId = categoryId;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.registeredDt = registeredDt;
+        this.deletedAt = deletedAt;
+    }
 
     /**
      * JPA Entity → Domain 변환

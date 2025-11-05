@@ -5,11 +5,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Food Spring Data JPA Repository
  */
-public interface FoodJpaRepository extends JpaRepository<FoodJpaEntity, Long> {
+public interface FoodJpaRepository extends JpaRepository<FoodJpaEntity, Long>, FoodQueryDslRepository {
+
+    /**
+     * 음식 ID로 조회 (삭제되지 않은 것만)
+     */
+    Optional<FoodJpaEntity> findByFoodIdAndDeletedAtIsNull(Long foodId);
 
     /**
      * 카테고리별 음식 페이징 조회

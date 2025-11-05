@@ -23,6 +23,8 @@ public class QFoodJpaEntity extends EntityPathBase<FoodJpaEntity> {
 
     public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
 
+    public final DateTimePath<java.time.LocalDateTime> deletedAt = createDateTime("deletedAt", java.time.LocalDateTime.class);
+
     public final StringPath description = createString("description");
 
     public final NumberPath<Long> foodId = createNumber("foodId", Long.class);

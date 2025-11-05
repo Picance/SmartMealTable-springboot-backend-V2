@@ -1,12 +1,14 @@
 package com.stdev.smartmealtable.storage.db.food;
 
 import com.stdev.smartmealtable.domain.food.Food;
+import com.stdev.smartmealtable.domain.food.FoodPageResult;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -73,5 +75,46 @@ public class FoodRepositoryImpl implements FoodRepository {
         return foodJpaRepository.findByStoreId(storeId).stream()
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    // ===== ADMIN 전용 메서드 =====
+
+    @Override
+    public Optional<Food> findByIdAndDeletedAtIsNull(Long foodId) {
+        return foodJpaRepository.findByFoodIdAndDeletedAtIsNull(foodId)
+                .map(FoodJpaEntity::toDomain);
+    }
+
+    @Override
+    public FoodPageResult adminSearch(Long categoryId, Long storeId, String name, int page, int size) {
+        return foodJpaRepository.adminSearch(categoryId, storeId, name, page, size);
+    }
+
+    @Override
+    public void softDelete(Long foodId) {
+        foodJpaRepository.findById(foodId).ifPresent(food -> {
+            FoodJpaEntity updated = FoodJpaEntity.builder()
+                    .foodId(food.getFoodId())
+                    .storeId(food.getStoreId())
+                    .foodName(food.getFoodName())
+                    .price(food.getPrice())
+                    .categoryId(food.getCategoryId())
+                    .description(food.getDescription())
+                    .imageUrl(food.getImageUrl())
+                    .registeredDt(food.getRegisteredDt())
+                    .deletedAt(LocalDateTime.now()) // 논리적 삭제
+                    .build();
+            foodJpaRepository.save(updated);
+        });
+    }
+
+    @Override
+    public boolean existsByCategoryIdAndNotDeleted(Long categoryId) {
+        return foodJpaRepository.existsByCategoryIdAndNotDeleted(categoryId);
+    }
+
+    @Override
+    public boolean existsByStoreIdAndNotDeleted(Long storeId) {
+        return foodJpaRepository.existsByStoreIdAndNotDeleted(storeId);
     }
 }
