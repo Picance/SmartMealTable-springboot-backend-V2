@@ -123,7 +123,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.policies", hasSize(1)))
                 .andExpect(jsonPath("$.data.policies[0].title").value("활성 약관"))
-                .andExpect(jsonPath("$.data.policies[0].isActive").value("SUCCESS"));
+                .andExpect(jsonPath("$.data.policies[0].isActive").value(true));
     }
 
     @Test
@@ -143,8 +143,8 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.content").value("상세 내용"))
                 .andExpect(jsonPath("$.data.type").value("REQUIRED"))
                 .andExpect(jsonPath("$.data.version").value("1.0"))
-                .andExpect(jsonPath("$.data.isMandatory").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.isActive").value("SUCCESS"));
+                .andExpect(jsonPath("$.data.isMandatory").value(true))
+                .andExpect(jsonPath("$.data.isActive").value(true));
     }
 
     @Test
@@ -182,8 +182,8 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.content").value("상세 내용"))
                 .andExpect(jsonPath("$.data.type").value("REQUIRED"))
                 .andExpect(jsonPath("$.data.version").value("1.0"))
-                .andExpect(jsonPath("$.data.isMandatory").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.isActive").value("SUCCESS"));
+                .andExpect(jsonPath("$.data.isMandatory").value(true))
+                .andExpect(jsonPath("$.data.isActive").value(true));
     }
 
     @Test
@@ -212,7 +212,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     }
 
     @Test
-    @DisplayName("약관 생성 - 필수 필드 누락 (400)")
+    @DisplayName("약관 생성 - 필수 필드 누락 (422)")
     void createPolicy_MissingRequiredFields() throws Exception {
         // given
         CreatePolicyRequest request = new CreatePolicyRequest(
@@ -228,7 +228,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"));
     }
 
@@ -259,7 +259,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.content").value("수정된 내용"))
                 .andExpect(jsonPath("$.data.type").value("OPTIONAL"))
                 .andExpect(jsonPath("$.data.version").value("2.0"))
-                .andExpect(jsonPath("$.data.isMandatory").value("ERROR"));
+                .andExpect(jsonPath("$.data.isMandatory").value(false));
     }
 
     @Test
@@ -373,7 +373,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.policyId").value(saved.getPolicyId()))
-                .andExpect(jsonPath("$.data.isActive").value("ERROR"));
+                .andExpect(jsonPath("$.data.isActive").value(false));
     }
 
     @Test
@@ -389,7 +389,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.policyId").value(saved.getPolicyId()))
-                .andExpect(jsonPath("$.data.isActive").value("SUCCESS"));
+                .andExpect(jsonPath("$.data.isActive").value(true));
     }
 
     @Test

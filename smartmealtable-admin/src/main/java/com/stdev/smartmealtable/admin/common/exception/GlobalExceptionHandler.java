@@ -34,8 +34,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBaseException(BaseException ex) {
         log.warn("BaseException: {}", ex.getMessage(), ex);
         
+        // ErrorType 이름을 에러 코드로 사용
         ErrorMessage errorMessage = new ErrorMessage(
-                ex.getErrorType().getErrorCode(),
+                ex.getErrorType().name(),  // POLICY_NOT_FOUND, DUPLICATE_POLICY_TITLE 등
                 ex.getMessage() != null ? ex.getMessage() : ex.getErrorType().getMessage(),
                 ex.getErrorData()
         );

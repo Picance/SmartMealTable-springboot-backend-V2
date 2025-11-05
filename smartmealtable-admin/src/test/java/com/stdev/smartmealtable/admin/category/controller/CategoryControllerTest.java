@@ -163,7 +163,7 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
     }
 
     @Test
-    @DisplayName("[실패] 카테고리 생성 - 이름 누락 (400)")
+    @DisplayName("[실패] 카테고리 생성 - 이름 누락 (422)")
     void createCategory_BlankName() throws Exception {
         // Given
         CreateCategoryRequest request = new CreateCategoryRequest("");
@@ -173,7 +173,7 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
