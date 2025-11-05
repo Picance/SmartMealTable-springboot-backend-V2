@@ -3,7 +3,6 @@ package com.stdev.smartmealtable.admin;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * Smartmealtable Admin Application
@@ -11,7 +10,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  */
 @SpringBootApplication(scanBasePackages = "com.stdev.smartmealtable")
 @EntityScan(basePackages = "com.stdev.smartmealtable.storage.db")
-@EnableJpaRepositories(basePackages = "com.stdev.smartmealtable.storage.db")
 public class AdminApplication {
 
     public static void main(String[] args) {
