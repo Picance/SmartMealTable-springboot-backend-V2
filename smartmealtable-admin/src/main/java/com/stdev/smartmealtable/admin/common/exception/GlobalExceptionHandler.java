@@ -34,9 +34,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBaseException(BaseException ex) {
         log.warn("BaseException: {}", ex.getMessage(), ex);
         
-        // ErrorType 이름을 에러 코드로 사용
+        // ErrorType의 ErrorCode를 사용 (E404, E409 등)
         ErrorMessage errorMessage = new ErrorMessage(
-                ex.getErrorType().name(),  // POLICY_NOT_FOUND, DUPLICATE_POLICY_TITLE 등
+                ex.getErrorType().getErrorCode().name(),  // E404, E409 등
                 ex.getMessage() != null ? ex.getMessage() : ex.getErrorType().getMessage(),
                 ex.getErrorData()
         );

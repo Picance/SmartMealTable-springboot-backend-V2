@@ -155,7 +155,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("POLICY_NOT_FOUND"));
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 
     @Test
@@ -208,7 +208,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("DUPLICATE_POLICY_TITLE"));
+                .andExpect(jsonPath("$.error.code").value("E409"));
     }
 
     @Test
@@ -281,7 +281,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("POLICY_NOT_FOUND"));
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 
     @Test
@@ -308,7 +308,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("DUPLICATE_POLICY_TITLE"));
+                .andExpect(jsonPath("$.error.code").value("E409"));
     }
 
     @Test
@@ -400,7 +400,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("POLICY_NOT_FOUND"));
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 
     // Helper methods
