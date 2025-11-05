@@ -72,7 +72,7 @@ class DailyBudgetQueryControllerTest extends AbstractContainerTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트용 회원 생성
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(testMember);
         authenticatedMemberId = savedMember.getMemberId();
 

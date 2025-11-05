@@ -108,7 +108,7 @@ public class GoogleLoginService {
                 member.getMemberId(),
                 userInfo.getEmail(),
                 userInfo.getName(),
-                userInfo.getProfileImage()
+                member.getProfileImageUrl()
         );
     }
 
@@ -125,6 +125,7 @@ public class GoogleLoginService {
         Member member = socialAuthDomainService.createMemberWithSocialAccount(
                 userInfo.getEmail(),
                 userInfo.getName(),
+                userInfo.getProfileImage(),
                 SocialProvider.GOOGLE,
                 userInfo.getProviderId(),
                 tokenResponse.getAccessToken(),
@@ -137,7 +138,7 @@ public class GoogleLoginService {
                 member.getMemberId(),
                 userInfo.getEmail(),
                 userInfo.getName(),
-                userInfo.getProfileImage()
+                member.getProfileImageUrl()
         );
     }
 }

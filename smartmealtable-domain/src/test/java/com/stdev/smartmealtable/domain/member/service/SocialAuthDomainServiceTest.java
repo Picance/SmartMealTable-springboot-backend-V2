@@ -85,6 +85,7 @@ class SocialAuthDomainServiceTest {
                         1L,
                         null,
                         "홍길동",
+                        null,
                         RecommendationType.BALANCED
                 );
 
@@ -194,6 +195,7 @@ class SocialAuthDomainServiceTest {
                 // Given
                 String email = "social@example.com";
                 String name = "소셜유저";
+                String profileImageUrl = "https://example.com/profile.jpg";
                 SocialProvider provider = SocialProvider.KAKAO;
                 String providerId = "kakao123456";
                 String accessToken = "access_token_value";
@@ -205,6 +207,7 @@ class SocialAuthDomainServiceTest {
                         1L,
                         null,
                         name,
+                        profileImageUrl,
                         RecommendationType.BALANCED
                 );
 
@@ -239,17 +242,159 @@ class SocialAuthDomainServiceTest {
 
                 // When
                 Member result = socialAuthDomainService.createMemberWithSocialAccount(
-                        email, name, provider, providerId, accessToken, refreshToken, tokenType, expiresAt
+                        email, name, profileImageUrl, provider, providerId, accessToken, refreshToken, tokenType, expiresAt
                 );
 
                 // Then
                 assertThat(result).isNotNull();
                 assertThat(result.getMemberId()).isEqualTo(1L);
                 assertThat(result.getNickname()).isEqualTo(name);
+                assertThat(result.getProfileImageUrl()).isEqualTo(profileImageUrl);
                 
                 then(memberRepository).should(times(1)).save(any(Member.class));
                 then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
                 then(socialAccountRepository).should(times(1)).save(any(SocialAccount.class));
+            }
+        }
+
+        @Nested
+        @DisplayName("name이 null인 소셜 계정 정보가 주어지면")
+        class Context_with_null_name {
+
+            @Test
+            @DisplayName("이메일 기반 닉네임으로 회원을 생성한다")
+            void it_creates_member_with_email_based_nickname() {
+                // Given
+                String email = "testuser@example.com";
+                String name = null;  // name이 null
+                String profileImageUrl = null;
+                SocialProvider provider = SocialProvider.KAKAO;
+                String providerId = "kakao123456";
+                String accessToken = "access_token_value";
+                String refreshToken = "refresh_token_value";
+                String tokenType = "Bearer";
+                LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+
+                String expectedNickname = "testuser";  // 이메일 앞부분
+
+                Member savedMember = Member.reconstitute(
+                        1L,
+                        null,
+                        expectedNickname,
+                        profileImageUrl,
+                        RecommendationType.BALANCED
+                );
+
+                MemberAuthentication savedAuth = MemberAuthentication.reconstitute(
+                        1L,
+                        1L,
+                        email,
+                        null,
+                        0,
+                        null,
+                        null,
+                        name,
+                        null,
+                        LocalDateTime.now()
+                );
+
+                SocialAccount savedSocialAccount = SocialAccount.reconstitute(
+                        1L,
+                        1L,
+                        provider,
+                        providerId,
+                        accessToken,
+                        refreshToken,
+                        tokenType,
+                        expiresAt,
+                        LocalDateTime.now()
+                );
+
+                given(memberRepository.save(any(Member.class))).willReturn(savedMember);
+                given(memberAuthenticationRepository.save(any(MemberAuthentication.class))).willReturn(savedAuth);
+                given(socialAccountRepository.save(any(SocialAccount.class))).willReturn(savedSocialAccount);
+
+                // When
+                Member result = socialAuthDomainService.createMemberWithSocialAccount(
+                        email, name, profileImageUrl, provider, providerId, accessToken, refreshToken, tokenType, expiresAt
+                );
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getMemberId()).isEqualTo(1L);
+                assertThat(result.getNickname()).isEqualTo(expectedNickname);
+                
+                then(memberRepository).should(times(1)).save(any(Member.class));
+                then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
+                then(socialAccountRepository).should(times(1)).save(any(SocialAccount.class));
+            }
+        }
+
+        @Nested
+        @DisplayName("특수문자가 포함된 이메일이 주어지면")
+        class Context_with_special_characters_in_email {
+
+            @Test
+            @DisplayName("특수문자를 제거한 닉네임으로 회원을 생성한다")
+            void it_creates_member_with_sanitized_nickname() {
+                // Given
+                String email = "test.user-123@example.com";
+                String name = null;
+                String profileImageUrl = null;
+                SocialProvider provider = SocialProvider.KAKAO;
+                String providerId = "kakao123456";
+                String accessToken = "access_token_value";
+                String refreshToken = "refresh_token_value";
+                String tokenType = "Bearer";
+                LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+
+                String expectedNickname = "testuser123";  // 특수문자 제거됨
+
+                Member savedMember = Member.reconstitute(
+                        1L,
+                        null,
+                        expectedNickname,
+                        profileImageUrl,
+                        RecommendationType.BALANCED
+                );
+
+                MemberAuthentication savedAuth = MemberAuthentication.reconstitute(
+                        1L,
+                        1L,
+                        email,
+                        null,
+                        0,
+                        null,
+                        null,
+                        name,
+                        null,
+                        LocalDateTime.now()
+                );
+
+                SocialAccount savedSocialAccount = SocialAccount.reconstitute(
+                        1L,
+                        1L,
+                        provider,
+                        providerId,
+                        accessToken,
+                        refreshToken,
+                        tokenType,
+                        expiresAt,
+                        LocalDateTime.now()
+                );
+
+                given(memberRepository.save(any(Member.class))).willReturn(savedMember);
+                given(memberAuthenticationRepository.save(any(MemberAuthentication.class))).willReturn(savedAuth);
+                given(socialAccountRepository.save(any(SocialAccount.class))).willReturn(savedSocialAccount);
+
+                // When
+                Member result = socialAuthDomainService.createMemberWithSocialAccount(
+                        email, name, profileImageUrl, provider, providerId, accessToken, refreshToken, tokenType, expiresAt
+                );
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getNickname()).isEqualTo(expectedNickname);
             }
         }
     }

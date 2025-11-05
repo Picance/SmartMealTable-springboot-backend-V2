@@ -9,7 +9,7 @@ class FoodEntityMappingTest {
 
     @Test
     void roundtrip_fromDomain_toDomain() {
-        Food original = Food.reconstitute(10L, "Sushi", 3L, "d", "i", 7000);
+        Food original = Food.reconstitute(10L, "Sushi", 3L, 1L, "d", "i", 7000);
         FoodJpaEntity entity = FoodJpaEntity.fromDomain(original);
         Food mapped = entity.toDomain();
 

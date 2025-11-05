@@ -65,7 +65,7 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
         Category savedCategory = categoryRepository.save(category);
 
         // 2. 회원 생성 (먼저 생성)
-        Member member = Member.create(null, "테스트유저", RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(member);
         memberId = member.getMemberId();
 

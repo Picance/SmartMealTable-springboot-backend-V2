@@ -77,7 +77,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트 회원 생성
-        member = Member.create(savedGroup.getGroupId(), "장바구니테스트회원", RecommendationType.BALANCED);
+        member = Member.create(savedGroup.getGroupId(), "장바구니테스트회원", null, RecommendationType.BALANCED);
         member = memberRepository.save(member);
 
         MemberAuthentication auth = MemberAuthentication.createEmailAuth(

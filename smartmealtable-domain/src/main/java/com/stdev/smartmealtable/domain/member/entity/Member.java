@@ -15,13 +15,15 @@ public class Member {
     private Long memberId;
     private Long groupId;  // 논리 FK
     private String nickname;
+    private String profileImageUrl;
     private RecommendationType recommendationType;
 
     // 생성 팩토리 메서드
-    public static Member create(Long groupId, String nickname, RecommendationType recommendationType) {
+    public static Member create(Long groupId, String nickname, String profileImageUrl, RecommendationType recommendationType) {
         Member member = new Member();
         member.groupId = groupId;
         member.nickname = nickname;
+        member.profileImageUrl = profileImageUrl;
         member.recommendationType = recommendationType;
         return member;
     }
@@ -30,13 +32,15 @@ public class Member {
     public static Member reconstitute(
             Long memberId, 
             Long groupId, 
-            String nickname, 
+            String nickname,
+            String profileImageUrl,
             RecommendationType recommendationType
     ) {
         Member member = new Member();
         member.memberId = memberId;
         member.groupId = groupId;
         member.nickname = nickname;
+        member.profileImageUrl = profileImageUrl;
         member.recommendationType = recommendationType;
         return member;
     }
@@ -45,6 +49,11 @@ public class Member {
     public void changeNickname(String newNickname) {
         validateNickname(newNickname);
         this.nickname = newNickname;
+    }
+
+    // 도메인 로직: 프로필 이미지 변경
+    public void changeProfileImage(String newProfileImageUrl) {
+        this.profileImageUrl = newProfileImageUrl;
     }
 
     // 도메인 로직: 추천 유형 변경

@@ -65,7 +65,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
         
         // 회원 생성
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(testMember);
         
         // 회원 인증 정보 생성
@@ -379,7 +379,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("즐겨찾기 순서 변경 실패 - 다른 사용자의 즐겨찾기 (403)")
     void reorderFavorites_Forbidden() throws Exception {
         // 다른 사용자 생성
-        Member otherMember = Member.create(member.getGroupId(), "다른사용자", RecommendationType.SAVER);
+        Member otherMember = Member.create(member.getGroupId(), "다른사용자", null, RecommendationType.SAVER);
         otherMember = memberRepository.save(otherMember);
         
         MemberAuthentication otherAuth = MemberAuthentication.createEmailAuth(
@@ -496,7 +496,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("즐겨찾기 삭제 실패 - 다른 사용자의 즐겨찾기 (403)")
     void deleteFavorite_Forbidden() throws Exception {
         // 다른 사용자 생성
-        Member otherMember = Member.create(member.getGroupId(), "다른사용자", RecommendationType.SAVER);
+        Member otherMember = Member.create(member.getGroupId(), "다른사용자", null, RecommendationType.SAVER);
         otherMember = memberRepository.save(otherMember);
         
         MemberAuthentication otherAuth = MemberAuthentication.createEmailAuth(

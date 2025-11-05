@@ -355,6 +355,7 @@ public class TestDataInitializer {
             Member testMember = Member.create(
                 selectedGroup.getGroupId(),
                 "테스트유저",
+                null,
                 RecommendationType.BALANCED
             );
             

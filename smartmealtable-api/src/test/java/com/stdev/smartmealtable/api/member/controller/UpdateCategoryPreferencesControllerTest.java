@@ -70,7 +70,7 @@ class UpdateCategoryPreferencesControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // Given: 테스트용 회원 및 인증 정보 생성
-        Member member = Member.create(null, "테스트회원", com.stdev.smartmealtable.domain.member.entity.RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스트회원", null, com.stdev.smartmealtable.domain.member.entity.RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(member);
         this.memberId = savedMember.getMemberId();
 

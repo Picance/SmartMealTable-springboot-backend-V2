@@ -77,7 +77,7 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
         Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
         Group savedGroup = groupRepository.save(testGroup);
 
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(testMember);
         authenticatedMemberId = savedMember.getMemberId();
 

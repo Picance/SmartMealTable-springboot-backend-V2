@@ -53,6 +53,7 @@ public class SocialAuthDomainService {
      *
      * @param email 이메일
      * @param name 이름
+     * @param profileImageUrl 프로필 이미지 URL
      * @param provider 소셜 제공자
      * @param providerId 제공자의 사용자 고유 ID
      * @param accessToken Access Token
@@ -64,6 +65,7 @@ public class SocialAuthDomainService {
     public Member createMemberWithSocialAccount(
             String email,
             String name,
+            String profileImageUrl,
             SocialProvider provider,
             String providerId,
             String accessToken,
@@ -72,7 +74,9 @@ public class SocialAuthDomainService {
             LocalDateTime expiresAt
     ) {
     // 1. 회원 생성 (기본 추천 유형: BALANCED)
-    Member member = Member.create(null, name, RecommendationType.BALANCED);
+    // 닉네임이 없는 경우 이메일 기반 기본 닉네임 생성
+    String nickname = generateNickname(email, name);
+    Member member = Member.create(null, nickname, profileImageUrl, RecommendationType.BALANCED);
     member = memberRepository.save(member);
 
     // 2. 회원 인증 정보 생성 (소셜 로그인은 비밀번호 없음)
@@ -128,4 +132,41 @@ public class SocialAuthDomainService {
         return socialAccountRepository.findByProviderAndProviderId(provider, providerId)
                 .flatMap(socialAccount -> memberAuthenticationRepository.findById(socialAccount.getMemberAuthenticationId()));
     }
+
+    /**
+     * 닉네임 생성 헬퍼 메서드
+     * 소셜 로그인 시 name이 null인 경우 이메일 기반 닉네임 생성
+     *
+     * @param email 이메일
+     * @param name 소셜 제공자로부터 받은 이름 (nullable)
+     * @return 유효한 닉네임
+     */
+    private String generateNickname(String email, String name) {
+        // name이 있으면 그대로 사용
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+
+        // name이 없으면 이메일 기반 닉네임 생성
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("이메일과 이름이 모두 없습니다.");
+        }
+
+        // 이메일 앞부분 추출 (@ 이전)
+        String emailPrefix = email.split("@")[0];
+        
+        // 특수문자 제거 및 길이 제한 (최대 20자)
+        String baseNickname = emailPrefix.replaceAll("[^a-zA-Z0-9가-힣]", "");
+        if (baseNickname.length() > 20) {
+            baseNickname = baseNickname.substring(0, 20);
+        }
+
+        // 빈 문자열인 경우 기본값
+        if (baseNickname.isBlank()) {
+            baseNickname = "user";
+        }
+
+        return baseNickname;
+    }
+
 }

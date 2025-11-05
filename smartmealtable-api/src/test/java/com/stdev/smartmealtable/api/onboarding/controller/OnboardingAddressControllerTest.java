@@ -267,6 +267,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
         Member member = Member.create(
                 null,  // authenticationId는 나중에 설정
                 "테스트닉네임",  // nickname required
+                null,  // profileImageUrl
                 com.stdev.smartmealtable.domain.member.entity.RecommendationType.BALANCED  // recommendationType required
         );
         Member savedMember = memberRepository.save(member);

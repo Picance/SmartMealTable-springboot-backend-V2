@@ -65,7 +65,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
         testGroupId = savedGroup.getGroupId();
 
         // 테스트용 회원 생성 (온보딩 미완료 상태: 그룹 미설정, 닉네임은 임시값)
-        Member testMember = Member.create(null, "임시닉네임_" + System.currentTimeMillis(), RecommendationType.BALANCED);
+        Member testMember = Member.create(null, "임시닉네임_" + System.currentTimeMillis(), null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(testMember);
         authenticatedMemberId = savedMember.getMemberId();
 
@@ -105,7 +105,7 @@ class OnboardingProfileControllerTest extends AbstractContainerTest {
     @DisplayName("온보딩 프로필 설정 실패 - 닉네임 중복")
     void onboardingProfile_Fail_DuplicateNickname() throws Exception {
         // given - 이미 사용 중인 닉네임으로 회원 생성
-        Member existingMember = Member.create(testGroupId, "중복닉네임", RecommendationType.BALANCED);
+        Member existingMember = Member.create(testGroupId, "중복닉네임", null, RecommendationType.BALANCED);
         memberRepository.save(existingMember);
 
         OnboardingProfileRequest request = new OnboardingProfileRequest("중복닉네임", testGroupId);

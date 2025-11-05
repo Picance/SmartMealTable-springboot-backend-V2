@@ -89,6 +89,7 @@ class ExpenditureControllerDualScenarioTest extends AbstractContainerTest {
         member = Member.create(
                 testGroup.getGroupId(),
                 "테스트회원",
+                null,
                 RecommendationType.BALANCED
         );
         member = memberRepository.save(member);

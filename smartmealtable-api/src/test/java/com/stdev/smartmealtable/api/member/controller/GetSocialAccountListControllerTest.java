@@ -53,7 +53,7 @@ class GetSocialAccountListControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 1. 회원 생성
-        testMember = Member.create(null, "테스트닉네임", RecommendationType.BALANCED);
+        testMember = Member.create(null, "테스트닉네임", null, RecommendationType.BALANCED);
         testMember = memberRepository.save(testMember);
 
         // 2. 회원 인증 정보 생성 (소셜 로그인)

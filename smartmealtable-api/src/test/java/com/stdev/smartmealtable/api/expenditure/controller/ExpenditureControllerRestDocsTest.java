@@ -77,7 +77,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(testMember);
 
         // 회원 인증 정보 생성

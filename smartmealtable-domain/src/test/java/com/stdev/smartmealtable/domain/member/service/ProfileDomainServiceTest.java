@@ -206,7 +206,7 @@ class ProfileDomainServiceTest {
                 String nickname = "새닉네임";
                 Long groupId = 2L;
 
-                Member member = Member.create(groupId, "구닉네임", RecommendationType.BALANCED);
+                Member member = Member.create(groupId, "구닉네임", null, RecommendationType.BALANCED);
                 Group group = Group.create("대학생", GroupType.UNIVERSITY, "서울");
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
@@ -266,7 +266,7 @@ class ProfileDomainServiceTest {
                 String nickname = "중복닉네임";
                 Long groupId = 2L;
 
-                Member member = Member.create(groupId, "구닉네임", RecommendationType.SAVER);
+                Member member = Member.create(groupId, "구닉네임", null, RecommendationType.SAVER);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNicknameExcludingMemberId(nickname, memberId))
@@ -297,7 +297,7 @@ class ProfileDomainServiceTest {
                 String nickname = "새닉네임";
                 Long groupId = 999L;
 
-                Member member = Member.create(2L, "구닉네임", RecommendationType.ADVENTURER);
+                Member member = Member.create(2L, "구닉네임", null, RecommendationType.ADVENTURER);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNicknameExcludingMemberId(nickname, memberId))
@@ -334,7 +334,7 @@ class ProfileDomainServiceTest {
                 String nickname = "온보딩닉네임";
                 Long groupId = 2L;
 
-                Member member = Member.create(null, "임시닉네임", RecommendationType.BALANCED);
+                Member member = Member.create(null, "임시닉네임", null, RecommendationType.BALANCED);
                 Group group = Group.create("대학생", GroupType.UNIVERSITY, "서울");
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
@@ -366,7 +366,7 @@ class ProfileDomainServiceTest {
                 String nickname = "중복닉네임";
                 Long groupId = 2L;
 
-                Member member = Member.create(null, "임시닉네임", RecommendationType.SAVER);
+                Member member = Member.create(null, "임시닉네임", null, RecommendationType.SAVER);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNickname(nickname)).willReturn(true);
@@ -399,7 +399,7 @@ class ProfileDomainServiceTest {
                 Long memberId = 1L;
                 RecommendationType recommendationType = RecommendationType.ADVENTURER;
 
-                Member member = Member.create(null, "테스트유저", RecommendationType.BALANCED);
+                Member member = Member.create(null, "테스트유저", null, RecommendationType.BALANCED);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.save(any(Member.class))).willReturn(member);

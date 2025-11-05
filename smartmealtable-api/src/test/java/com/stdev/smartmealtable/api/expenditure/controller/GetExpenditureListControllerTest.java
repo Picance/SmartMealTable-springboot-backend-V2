@@ -63,7 +63,7 @@ class GetExpenditureListControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트 회원 생성
-        testMember = Member.create(null, "테스트유저", RecommendationType.BALANCED);
+        testMember = Member.create(null, "테스트유저", null, RecommendationType.BALANCED);
         testMember = memberRepository.save(testMember);
         
         // 테스트 카테고리 생성

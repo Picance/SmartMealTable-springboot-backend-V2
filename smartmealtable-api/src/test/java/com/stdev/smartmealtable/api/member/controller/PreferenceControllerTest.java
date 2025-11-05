@@ -65,7 +65,7 @@ class PreferenceControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트용 회원 생성
-        Member member = Member.create(null, "테스터", RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스터", null, RecommendationType.BALANCED);
         testMember = memberRepository.save(member);
 
         // JWT 토큰 생성

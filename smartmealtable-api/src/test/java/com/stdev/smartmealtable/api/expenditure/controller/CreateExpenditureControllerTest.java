@@ -67,7 +67,7 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트용 회원 생성
-        Member member = Member.create(null, "테스트사용자", RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스트사용자", null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(member);
         memberId = savedMember.getMemberId();
         

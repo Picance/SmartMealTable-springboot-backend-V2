@@ -64,7 +64,7 @@ class CartControllerTest extends AbstractRestDocsTest {
         Category savedCategory = categoryRepository.save(category);
 
         // 2. 회원 생성
-        Member member = Member.create(null, "테스트유저", RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(member);
         memberId = member.getMemberId();
 

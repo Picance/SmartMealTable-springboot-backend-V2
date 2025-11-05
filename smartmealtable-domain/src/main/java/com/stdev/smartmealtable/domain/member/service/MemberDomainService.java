@@ -52,6 +52,7 @@ public class MemberDomainService {
         Member member = Member.create(
                 null,  // groupId는 null (온보딩 미완료)
                 name,  // 초기 nickname은 name과 동일
+                null,  // profileImageUrl은 null (나중에 설정 가능)
                 RecommendationType.BALANCED  // 기본 추천 유형
         );
 

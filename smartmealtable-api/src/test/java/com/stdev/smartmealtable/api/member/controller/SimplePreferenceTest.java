@@ -36,7 +36,7 @@ class SimplePreferenceTest extends AbstractContainerTest {
     @DisplayName("간단한 선호도 조회 테스트")
     void simpleTest() throws Exception {
         // given
-        Member member = Member.create(null, "테스터", RecommendationType.BALANCED);
+        Member member = Member.create(null, "테스터", null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(member);
         String accessToken = jwtTokenProvider.createToken(savedMember.getMemberId());
 

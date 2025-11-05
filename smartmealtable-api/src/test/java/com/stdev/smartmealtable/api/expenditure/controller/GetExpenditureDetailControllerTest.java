@@ -82,13 +82,13 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
         Group savedGroup = groupRepository.save(group);
         
         // 회원 1 생성
-        Member member1 = Member.create(savedGroup.getGroupId(), "테스트유저1", RecommendationType.BALANCED);
+        Member member1 = Member.create(savedGroup.getGroupId(), "테스트유저1", null, RecommendationType.BALANCED);
         Member savedMember1 = memberRepository.save(member1);
         memberId = savedMember1.getMemberId();
         accessToken = jwtTokenProvider.createToken(memberId);
         
         // 회원 2 생성 (권한 테스트용)
-        Member member2 = Member.create(savedGroup.getGroupId(), "테스트유저2", RecommendationType.BALANCED);
+        Member member2 = Member.create(savedGroup.getGroupId(), "테스트유저2", null, RecommendationType.BALANCED);
         Member savedMember2 = memberRepository.save(member2);
         anotherMemberId = savedMember2.getMemberId();
         anotherAccessToken = jwtTokenProvider.createToken(anotherMemberId);

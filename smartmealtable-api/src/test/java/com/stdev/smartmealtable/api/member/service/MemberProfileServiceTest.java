@@ -70,7 +70,7 @@ class MemberProfileServiceTest {
                 Long memberId = 1L;
                 Long groupId = 2L;
 
-                Member member = Member.reconstitute(memberId, groupId, "테스트유저", RecommendationType.BALANCED);
+                Member member = Member.reconstitute(memberId, groupId, "테스트유저", null, RecommendationType.BALANCED);
 
                 MemberAuthentication auth = MemberAuthentication.reconstitute(
                         1L, // memberAuthenticationId
@@ -135,7 +135,7 @@ class MemberProfileServiceTest {
                 // Given
                 Long memberId = 1L;
 
-                Member member = Member.reconstitute(memberId, null, "테스트유저", RecommendationType.SAVER);
+                Member member = Member.reconstitute(memberId, null, "테스트유저", null, RecommendationType.SAVER);
 
                 MemberAuthentication auth = MemberAuthentication.reconstitute(
                         1L, // memberAuthenticationId
@@ -203,7 +203,7 @@ class MemberProfileServiceTest {
                 // Given
                 Long memberId = 1L;
 
-                Member member = Member.reconstitute(memberId, null, "테스트유저", RecommendationType.ADVENTURER);
+                Member member = Member.reconstitute(memberId, null, "테스트유저", null, RecommendationType.ADVENTURER);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberAuthenticationRepository.findByMemberId(memberId))
@@ -242,7 +242,7 @@ class MemberProfileServiceTest {
                         .groupId(groupId)
                         .build();
 
-                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, RecommendationType.BALANCED);
+                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.BALANCED);
 
                 Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY, "서울");
 
@@ -284,7 +284,7 @@ class MemberProfileServiceTest {
                         .groupId(groupId)
                         .build();
 
-                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, RecommendationType.SAVER);
+                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.SAVER);
 
                 given(profileDomainService.updateProfile(memberId, nickname, groupId))
                         .willReturn(updatedMember);

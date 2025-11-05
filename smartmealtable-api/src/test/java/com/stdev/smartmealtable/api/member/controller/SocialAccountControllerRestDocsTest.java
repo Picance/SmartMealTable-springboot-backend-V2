@@ -57,7 +57,7 @@ class SocialAccountControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(testMember);
 
         // 회원 인증 정보 생성 (이메일 + 비밀번호)
@@ -335,7 +335,7 @@ class SocialAccountControllerRestDocsTest extends AbstractRestDocsTest {
         Group anotherGroup = Group.create("다른대학교", GroupType.UNIVERSITY, "서울특별시 강남구");
         Group savedAnotherGroup = groupRepository.save(anotherGroup);
 
-        Member socialOnlyMember = Member.create(savedAnotherGroup.getGroupId(), "소셜전용유저", RecommendationType.SAVER);
+        Member socialOnlyMember = Member.create(savedAnotherGroup.getGroupId(), "소셜전용유저", null, RecommendationType.SAVER);
         Member savedSocialOnlyMember = memberRepository.save(socialOnlyMember);
 
         // 비밀번호 없는 인증 정보 (소셜 로그인만 가능)

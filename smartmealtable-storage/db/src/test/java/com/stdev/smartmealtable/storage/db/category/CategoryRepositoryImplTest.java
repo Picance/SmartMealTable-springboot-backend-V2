@@ -18,12 +18,15 @@ class CategoryRepositoryImplTest {
     @Mock
     private CategoryJpaRepository jpaRepository;
 
+    @Mock
+    private com.querydsl.jpa.impl.JPAQueryFactory queryFactory;
+
     private CategoryRepositoryImpl repository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repository = new CategoryRepositoryImpl(jpaRepository);
+        repository = new CategoryRepositoryImpl(jpaRepository, queryFactory);
     }
 
     @Test

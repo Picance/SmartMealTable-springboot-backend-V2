@@ -74,6 +74,7 @@ class PolicyAgreementControllerTest extends AbstractContainerTest {
                 com.stdev.smartmealtable.domain.member.entity.Member.create(
                         null,
                         "테스터",
+                        null,
                         RecommendationType.BALANCED
                 )
         );

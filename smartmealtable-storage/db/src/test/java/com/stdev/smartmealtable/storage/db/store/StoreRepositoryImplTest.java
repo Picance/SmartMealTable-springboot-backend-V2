@@ -24,12 +24,18 @@ class StoreRepositoryImplTest {
     @Mock
     private StoreQueryDslRepository queryDslRepository;
 
+    @Mock
+    private StoreOpeningHourJpaRepository openingHourJpaRepository;
+
+    @Mock
+    private StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
+
     private StoreRepositoryImpl repository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repository = new StoreRepositoryImpl(jpaRepository, queryDslRepository);
+        repository = new StoreRepositoryImpl(jpaRepository, queryDslRepository, openingHourJpaRepository, temporaryClosureJpaRepository);
     }
 
     @Test

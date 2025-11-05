@@ -69,7 +69,7 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트 회원 생성
-        member = Member.create(savedGroup.getGroupId(), "홈테스트회원", RecommendationType.SAVER);
+        member = Member.create(savedGroup.getGroupId(), "홈테스트회원", null, RecommendationType.SAVER);
         member = memberRepository.save(member);
 
         MemberAuthentication auth = MemberAuthentication.createEmailAuth(

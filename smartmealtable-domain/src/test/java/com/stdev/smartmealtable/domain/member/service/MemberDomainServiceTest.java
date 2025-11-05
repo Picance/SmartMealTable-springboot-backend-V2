@@ -107,6 +107,7 @@ class MemberDomainServiceTest {
                         1L,
                         null,
                         name,
+                        null,
                         RecommendationType.BALANCED
                 );
 
@@ -186,6 +187,7 @@ class MemberDomainServiceTest {
                         memberId,
                         1L,
                         "홍길동",
+                        null,
                         RecommendationType.BALANCED
                 );
 

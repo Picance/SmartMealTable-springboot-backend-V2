@@ -46,7 +46,7 @@ class OnboardingStatusQueryServiceTest {
         int currentMonth = now.getMonthValue();
         String expectedMonth = String.format("%d-%02d", currentYear, currentMonth);
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", RecommendationType.SAVER);
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, RecommendationType.SAVER);
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -79,7 +79,7 @@ class OnboardingStatusQueryServiceTest {
         int currentMonth = now.getMonthValue();
         String expectedMonth = String.format("%d-%02d", currentYear, currentMonth);
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", null);  // 추천 유형 미선택
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, null);  // 추천 유형 미선택
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -108,7 +108,7 @@ class OnboardingStatusQueryServiceTest {
         int currentMonth = now.getMonthValue();
         String expectedMonth = String.format("%d-%02d", currentYear, currentMonth);
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", RecommendationType.ADVENTURER);
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, RecommendationType.ADVENTURER);
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -137,7 +137,7 @@ class OnboardingStatusQueryServiceTest {
         int currentMonth = now.getMonthValue();
         String expectedMonth = String.format("%d-%02d", currentYear, currentMonth);
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", null);  // 추천 유형 미선택
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, null);  // 추천 유형 미선택
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -183,7 +183,7 @@ class OnboardingStatusQueryServiceTest {
         int currentYear = now.getYear();
         int currentMonth = now.getMonthValue();
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", RecommendationType.SAVER);
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, RecommendationType.SAVER);
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -207,7 +207,7 @@ class OnboardingStatusQueryServiceTest {
         int currentYear = now.getYear();
         int currentMonth = now.getMonthValue();
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", RecommendationType.ADVENTURER);
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, RecommendationType.ADVENTURER);
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))
@@ -232,7 +232,7 @@ class OnboardingStatusQueryServiceTest {
         int currentMonth = now.getMonthValue();
         String expectedMonth = String.format("%d-%02d", currentYear, currentMonth);
 
-        Member member = Member.reconstitute(memberId, 1L, "testUser", RecommendationType.SAVER);
+        Member member = Member.reconstitute(memberId, 1L, "testUser", null, RecommendationType.SAVER);
         given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
 
         given(monthlyBudgetConfirmationRepository.existsByMemberIdAndYearAndMonth(memberId, currentYear, currentMonth))

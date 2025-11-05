@@ -57,7 +57,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
         testGroupId = savedGroup.getGroupId();
 
         // 테스트용 회원 생성
-        Member testMember = Member.create(null, "임시닉네임_" + System.currentTimeMillis(), RecommendationType.BALANCED);
+        Member testMember = Member.create(null, "임시닉네임_" + System.currentTimeMillis(), null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(testMember);
         testMemberId = savedMember.getMemberId();
 
@@ -133,7 +133,7 @@ class OnboardingProfileControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("[Docs] 온보딩 - 프로필 설정 실패 (닉네임 중복)")
     void onboardingProfile_Fail_DuplicateNickname_Docs() throws Exception {
         // given - 이미 사용 중인 닉네임으로 회원 생성
-        Member existingMember = Member.create(testGroupId, "중복닉네임", RecommendationType.BALANCED);
+        Member existingMember = Member.create(testGroupId, "중복닉네임", null, RecommendationType.BALANCED);
         memberRepository.save(existingMember);
 
         OnboardingProfileRequest request = new OnboardingProfileRequest("중복닉네임", testGroupId);

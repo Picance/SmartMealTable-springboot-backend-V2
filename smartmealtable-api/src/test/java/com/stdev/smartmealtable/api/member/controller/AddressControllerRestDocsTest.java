@@ -49,7 +49,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
-        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", RecommendationType.BALANCED);
+        Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);
         member = memberRepository.save(testMember);
 
         // 회원 인증 정보 생성
@@ -487,7 +487,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("주소 목록 조회 - 주소가 없는 경우 빈 배열 반환 (200)")
     void getAddresses_EmptyList() throws Exception {
         // 주소가 없는 새로운 회원 생성
-        Member newMember = Member.create(member.getMemberId(), "주소없음회원", RecommendationType.BALANCED);
+        Member newMember = Member.create(member.getMemberId(), "주소없음회원", null, RecommendationType.BALANCED);
         Member saved = memberRepository.save(newMember);
         String newMemberToken = createAccessToken(saved.getMemberId());
 

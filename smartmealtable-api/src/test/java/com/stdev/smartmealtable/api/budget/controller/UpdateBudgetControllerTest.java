@@ -82,7 +82,7 @@ class UpdateBudgetControllerTest extends AbstractContainerTest {
         Group savedGroup = groupRepository.save(testGroup);
 
         // Given: 테스트 회원 생성
-        member = Member.create(savedGroup.getGroupId(), "테스트회원", RecommendationType.BALANCED);
+        member = Member.create(savedGroup.getGroupId(), "테스트회원", null, RecommendationType.BALANCED);
         member = memberRepository.save(member);  // 저장 후 반환값 받기
 
         MemberAuthentication auth = MemberAuthentication.createEmailAuth(
@@ -141,7 +141,7 @@ class UpdateBudgetControllerTest extends AbstractContainerTest {
         Group newGroup = Group.create("새대학", GroupType.UNIVERSITY, "부산광역시");
         newGroup = groupRepository.save(newGroup);  // 저장 후 반환값 받기
         
-        Member newMember = Member.create(newGroup.getGroupId(), "새회원", RecommendationType.BALANCED);
+        Member newMember = Member.create(newGroup.getGroupId(), "새회원", null, RecommendationType.BALANCED);
         newMember = memberRepository.save(newMember);  // 저장 후 반환값 받기
         
         MemberAuthentication newAuth = MemberAuthentication.createEmailAuth(

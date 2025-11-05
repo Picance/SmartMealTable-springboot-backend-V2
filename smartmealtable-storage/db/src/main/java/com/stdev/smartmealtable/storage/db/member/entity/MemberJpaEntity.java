@@ -28,6 +28,9 @@ public class MemberJpaEntity {
     @Column(name = "nickname", nullable = false, length = 50)
     private String nickname;
 
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "recommendation_type", nullable = false, length = 20)
     private RecommendationType recommendationType;
@@ -38,6 +41,7 @@ public class MemberJpaEntity {
         entity.memberId = member.getMemberId();
         entity.groupId = member.getGroupId();
         entity.nickname = member.getNickname();
+        entity.profileImageUrl = member.getProfileImageUrl();
         entity.recommendationType = member.getRecommendationType();
         return entity;
     }
@@ -48,6 +52,7 @@ public class MemberJpaEntity {
                 this.memberId,
                 this.groupId,
                 this.nickname,
+                this.profileImageUrl,
                 this.recommendationType
         );
     }

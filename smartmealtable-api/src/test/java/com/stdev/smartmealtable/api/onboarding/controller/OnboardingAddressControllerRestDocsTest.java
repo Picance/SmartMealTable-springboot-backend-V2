@@ -57,7 +57,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
         testGroupId = savedGroup.getGroupId();
 
         // 테스트용 회원 생성 (프로필 설정 완료 상태)
-        Member testMember = Member.create(testGroupId, "테스트닉네임", RecommendationType.BALANCED);
+        Member testMember = Member.create(testGroupId, "테스트닉네임", null, RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(testMember);
         testMemberId = savedMember.getMemberId();
 

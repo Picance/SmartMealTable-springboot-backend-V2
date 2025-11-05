@@ -79,7 +79,7 @@ class GoogleLoginServiceTest {
                 "https://example.com/profile.jpg"
         );
 
-        var member = Member.create(null, "구글유저", RecommendationType.BALANCED);
+        var member = Member.create(null, "구글유저", null, RecommendationType.BALANCED);
 
         given(googleAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);
@@ -88,6 +88,7 @@ class GoogleLoginServiceTest {
         given(socialAccountRepository.findByProviderAndProviderId(any(), anyString()))
                 .willReturn(Optional.empty());
         given(socialAuthDomainService.createMemberWithSocialAccount(
+                anyString(),
                 anyString(),
                 anyString(),
                 any(SocialProvider.class),
@@ -111,6 +112,7 @@ class GoogleLoginServiceTest {
         verify(googleAuthClient, times(1)).extractUserInfo(anyString());
         verify(socialAccountRepository, times(1)).findByProviderAndProviderId(any(), anyString());
         verify(socialAuthDomainService, times(1)).createMemberWithSocialAccount(
+                anyString(),
                 anyString(),
                 anyString(),
                 any(SocialProvider.class),
@@ -157,7 +159,7 @@ class GoogleLoginServiceTest {
         );
 
         var memberAuth = MemberAuthentication.createSocialAuth(1L, "[email protected]", "구글유저");
-        var member = Member.create(null, "구글유저", RecommendationType.BALANCED);
+        var member = Member.create(null, "구글유저", null, RecommendationType.BALANCED);
 
         given(googleAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);

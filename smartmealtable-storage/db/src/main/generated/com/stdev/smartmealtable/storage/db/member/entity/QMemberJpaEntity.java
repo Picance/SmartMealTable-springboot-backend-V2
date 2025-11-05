@@ -25,6 +25,8 @@ public class QMemberJpaEntity extends EntityPathBase<MemberJpaEntity> {
 
     public final StringPath nickname = createString("nickname");
 
+    public final StringPath profileImageUrl = createString("profileImageUrl");
+
     public final EnumPath<com.stdev.smartmealtable.domain.member.entity.RecommendationType> recommendationType = createEnum("recommendationType", com.stdev.smartmealtable.domain.member.entity.RecommendationType.class);
 
     public QMemberJpaEntity(String variable) {

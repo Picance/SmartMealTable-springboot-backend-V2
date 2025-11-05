@@ -60,7 +60,7 @@ class GetFoodDetailControllerTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트 회원 생성 및 저장
-        testMember = Member.create(null, "테스트유저", RecommendationType.BALANCED);
+        testMember = Member.create(null, "테스트유저", null, RecommendationType.BALANCED);
         testMember = memberRepository.save(testMember);
         
         MemberAuthentication auth = MemberAuthentication.createEmailAuth(

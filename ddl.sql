@@ -18,6 +18,7 @@ CREATE TABLE member (
                         member_id             BIGINT        NOT NULL AUTO_INCREMENT COMMENT '회원의 고유 식별자',
                         group_id              BIGINT        NULL     COMMENT '회원이 속한 그룹의 식별자 (논리 FK)',
                         nickname              VARCHAR(50)   NOT NULL COMMENT '서비스 내에서 사용하는 별명',
+                        profile_image_url     VARCHAR(500)  NULL     COMMENT '프로필 이미지 URL',
                         recommendation_type   VARCHAR(20)   NOT NULL COMMENT '사용자 맞춤 음식 추천 유형',
                         created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',

@@ -345,6 +345,7 @@ class GroupControllerTest extends AbstractAdminContainerTest {
                 com.stdev.smartmealtable.domain.member.entity.Member.create(
                         groupId,
                         nickname,
+                        null,
                         com.stdev.smartmealtable.domain.member.entity.RecommendationType.BALANCED
                 );
         

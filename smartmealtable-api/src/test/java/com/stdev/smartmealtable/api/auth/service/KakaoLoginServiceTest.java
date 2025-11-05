@@ -79,7 +79,7 @@ class KakaoLoginServiceTest {
                 null
         );
 
-        var member = Member.create(null, "카카오유저", RecommendationType.BALANCED);
+        var member = Member.create(null, "카카오유저", null, RecommendationType.BALANCED);
 
         given(kakaoAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);
@@ -90,6 +90,7 @@ class KakaoLoginServiceTest {
         given(socialAuthDomainService.createMemberWithSocialAccount(
                 anyString(),
                 anyString(),
+                any(),
                 any(SocialProvider.class),
                 anyString(),
                 anyString(),
@@ -113,6 +114,7 @@ class KakaoLoginServiceTest {
         verify(socialAuthDomainService, times(1)).createMemberWithSocialAccount(
                 anyString(),
                 anyString(),
+                any(),
                 any(SocialProvider.class),
                 anyString(),
                 anyString(),
@@ -157,7 +159,7 @@ class KakaoLoginServiceTest {
         );
 
         var memberAuth = MemberAuthentication.createSocialAuth(1L, "[email protected]", "카카오유저");
-        var member = Member.create(null, "카카오유저", RecommendationType.BALANCED);
+        var member = Member.create(null, "카카오유저", null, RecommendationType.BALANCED);
 
         given(kakaoAuthClient.getAccessToken(anyString()))
                 .willReturn(tokenResponse);

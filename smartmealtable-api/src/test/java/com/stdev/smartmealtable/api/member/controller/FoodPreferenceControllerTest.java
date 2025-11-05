@@ -63,7 +63,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // Given: 테스트용 회원 생성
-        Member member = Member.create(null, "테스트회원", 
+        Member member = Member.create(null, "테스트회원", null,
                 com.stdev.smartmealtable.domain.member.entity.RecommendationType.BALANCED);
         Member savedMember = memberRepository.save(member);
         this.memberId = savedMember.getMemberId();

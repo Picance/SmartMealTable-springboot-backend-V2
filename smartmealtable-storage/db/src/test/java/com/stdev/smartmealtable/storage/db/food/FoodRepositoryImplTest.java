@@ -54,7 +54,7 @@ class FoodRepositoryImplTest {
     @Test
     void findById_maps_entity_to_domain() {
         FoodJpaEntity entity = new FoodJpaEntity();
-        entity = FoodJpaEntity.fromDomain(Food.reconstitute(2L, "Pasta", 11L, "d", "u", 8000));
+        entity = FoodJpaEntity.fromDomain(Food.reconstitute(2L, "Pasta", 11L, 1L, "d", "u", 8000));
         when(foodJpaRepository.findById(2L)).thenReturn(Optional.of(entity));
 
         Optional<Food> found = foodRepository.findById(2L);
@@ -66,8 +66,8 @@ class FoodRepositoryImplTest {
 
     @Test
     void findByIdIn_maps_list_to_domain_list() {
-        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "A", 1L, null, null, 1000));
-        FoodJpaEntity e2 = FoodJpaEntity.fromDomain(Food.reconstitute(2L, "B", 1L, null, null, 2000));
+        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "A", 1L, 1L, null, null, 1000));
+        FoodJpaEntity e2 = FoodJpaEntity.fromDomain(Food.reconstitute(2L, "B", 1L, 1L, null, null, 2000));
         when(foodJpaRepository.findByFoodIdIn(List.of(1L,2L))).thenReturn(List.of(e1, e2));
 
         List<Food> result = foodRepository.findByIdIn(List.of(1L,2L));
@@ -78,7 +78,7 @@ class FoodRepositoryImplTest {
 
     @Test
     void findAll_uses_paging_and_maps() {
-        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "A", 1L, null, null, 1000));
+        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(1L, "A", 1L, 1L, null, null, 1000));
         when(foodJpaRepository.findAll(PageRequest.of(0,2))).thenReturn(new PageImpl<>(List.of(e1)));
 
         List<Food> result = foodRepository.findAll(0,2);
@@ -89,7 +89,7 @@ class FoodRepositoryImplTest {
 
     @Test
     void findByCategoryId_uses_paging_and_maps() {
-        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(5L, "X", 99L, null, null, 500));
+        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(5L, "X", 99L, 1L, null, null, 500));
         when(foodJpaRepository.findByCategoryId(99L, PageRequest.of(1,3))).thenReturn(new PageImpl<>(List.of(e1)));
 
         List<Food> result = foodRepository.findByCategoryId(99L,1,3);
