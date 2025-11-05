@@ -89,7 +89,7 @@ class FoodRepositoryImplTest {
 
     @Test
     void findByCategoryId_uses_paging_and_maps() {
-        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(5L, "X", 99L, 1L, null, null, 500));
+        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(5L, "X", 1L, 99L, null, null, 500));
         when(foodJpaRepository.findByCategoryId(99L, PageRequest.of(1,3))).thenReturn(new PageImpl<>(List.of(e1)));
 
         List<Food> result = foodRepository.findByCategoryId(99L,1,3);

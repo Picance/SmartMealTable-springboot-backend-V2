@@ -157,4 +157,20 @@ public class MemberAuthentication {
     public String getPassword() {
         return this.hashedPassword;
     }
+
+    // 도메인 로직: 이메일 업데이트
+    public void updateEmail(String newEmail) {
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new IllegalArgumentException("이메일은 필수입니다.");
+        }
+        this.email = newEmail;
+    }
+
+    // 도메인 로직: 이름 업데이트
+    public void updateName(String newName) {
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("이름은 필수입니다.");
+        }
+        this.name = newName;
+    }
 }

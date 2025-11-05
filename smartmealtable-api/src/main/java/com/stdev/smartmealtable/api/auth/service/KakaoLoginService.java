@@ -104,6 +104,14 @@ public class KakaoLoginService {
         Member member = memberRepository.findById(memberAuth.getMemberId())
                 .orElseThrow(() -> new IllegalStateException("회원 정보를 찾을 수 없습니다."));
 
+        // 4. 사용자 정보 업데이트 (이메일, 이름, 프로필 이미지)
+        memberAuth.updateEmail(userInfo.getEmail());
+        memberAuth.updateName(userInfo.getName());
+        member.changeProfileImage(userInfo.getProfileImage());
+        
+        log.debug("회원 정보 업데이트 완료: email={}, name={}, profileImageUrl={}", 
+                userInfo.getEmail(), userInfo.getName(), userInfo.getProfileImage());
+
         return KakaoLoginServiceResponse.ofExistingMember(
                 member.getMemberId(),
                 userInfo.getEmail(),
