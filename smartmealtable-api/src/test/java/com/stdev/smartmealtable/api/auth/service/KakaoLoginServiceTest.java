@@ -192,4 +192,82 @@ class KakaoLoginServiceTest {
                 any(LocalDateTime.class)
         );
     }
+
+    @Test
+    @DisplayName("이메일 회원가입 후 동일 이메일로 카카오 로그인 시 계정 연동")
+    void loginWithKakao_LinkToEmailAccount_Success() {
+        // given
+        var request = new KakaoLoginServiceRequest(
+                "test-authorization-code",
+                "http://localhost:3000/auth/callback"
+        );
+
+        var tokenResponse = new OAuthTokenResponse(
+                "kakao-access-token",
+                "kakao-refresh-token",
+                3600,
+                "Bearer",
+                "kakao-id-token"
+        );
+
+        var userInfo = new OAuthUserInfo(
+                "kakao-user-id-12345",
+                "qwe123@example.com",  // 기존 이메일 회원과 동일
+                "카카오유저",
+                "https://kakao.com/profile.jpg"
+        );
+
+        // 기존 이메일 회원
+        var existingMember = Member.reconstitute(
+                100L,
+                null,
+                "qwe123",
+                null,
+                RecommendationType.BALANCED
+        );
+
+        given(kakaoAuthClient.getAccessToken(anyString()))
+                .willReturn(tokenResponse);
+        given(kakaoAuthClient.extractUserInfo(anyString()))
+                .willReturn(userInfo);
+        // 소셜 계정은 존재하지 않음
+        given(socialAccountRepository.findByProviderAndProviderId(any(), anyString()))
+                .willReturn(Optional.empty());
+        // createMemberWithSocialAccount가 기존 회원과 연동
+        given(socialAuthDomainService.createMemberWithSocialAccount(
+                anyString(),
+                anyString(),
+                any(),
+                any(SocialProvider.class),
+                anyString(),
+                anyString(),
+                anyString(),
+                anyString(),
+                any(LocalDateTime.class)
+        )).willReturn(existingMember);
+
+        // when
+        var response = kakaoLoginService.login(request);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.memberId()).isEqualTo(100L);  // 기존 회원 ID
+        assertThat(response.email()).isEqualTo("qwe123@example.com");
+        assertThat(response.isNewMember()).isTrue();  // 소셜 계정은 신규
+
+        verify(kakaoAuthClient, times(1)).getAccessToken(anyString());
+        verify(kakaoAuthClient, times(1)).extractUserInfo(anyString());
+        verify(socialAccountRepository, times(1)).findByProviderAndProviderId(any(), anyString());
+        verify(socialAuthDomainService, times(1)).createMemberWithSocialAccount(
+                anyString(),
+                anyString(),
+                any(),
+                any(SocialProvider.class),
+                anyString(),
+                anyString(),
+                anyString(),
+                anyString(),
+                any(LocalDateTime.class)
+        );
+    }
 }

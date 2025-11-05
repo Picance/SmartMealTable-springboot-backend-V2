@@ -107,6 +107,15 @@ public class KakaoAuthClient {
                 throw new IllegalStateException("ID Token에서 사용자 ID(sub)를 찾을 수 없습니다.");
             }
 
+            // 이메일 필수 검증
+            if (email == null || email.isBlank()) {
+                log.error("카카오 ID Token에서 이메일을 찾을 수 없습니다. 동의항목 설정을 확인하세요.");
+                throw new IllegalStateException(
+                    "카카오 로그인 시 이메일 정보를 받을 수 없습니다. " +
+                    "카카오 개발자 콘솔에서 '카카오계정(이메일)' 동의항목이 활성화되어 있는지 확인해주세요."
+                );
+            }
+
             log.info("카카오 사용자 정보 추출 성공 - providerId: {}, email: {}", providerId, email);
             return OAuthUserInfo.of(providerId, email, nickname, picture);
 

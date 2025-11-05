@@ -186,6 +186,148 @@ class SocialAuthDomainServiceTest {
     class Describe_createMemberWithSocialAccount {
 
         @Nested
+        @DisplayName("동일 이메일의 기존 회원이 있으면")
+        class Context_with_existing_member_by_email {
+
+            @Test
+            @DisplayName("기존 회원에 소셜 계정을 연동한다")
+            void it_links_social_account_to_existing_member() {
+                // Given
+                String email = "qwe123@example.com";
+                String name = "카카오유저";
+                String profileImageUrl = "https://kakao.com/profile.jpg";
+                SocialProvider provider = SocialProvider.KAKAO;
+                String providerId = "kakao123456";
+                String accessToken = "access_token_value";
+                String refreshToken = "refresh_token_value";
+                String tokenType = "Bearer";
+                LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+
+                // 기존 이메일 회원 (비밀번호 방식)
+                Member existingMember = Member.reconstitute(
+                        100L,
+                        null,
+                        "qwe123",
+                        null,
+                        RecommendationType.BALANCED
+                );
+
+                MemberAuthentication existingAuth = MemberAuthentication.reconstitute(
+                        200L,
+                        100L,
+                        email,
+                        "hashed_password",
+                        0,
+                        null,
+                        null,
+                        "기존이름",
+                        null,
+                        LocalDateTime.now()
+                );
+
+                SocialAccount savedSocialAccount = SocialAccount.reconstitute(
+                        1L,
+                        200L,  // 기존 memberAuthenticationId와 연동
+                        provider,
+                        providerId,
+                        accessToken,
+                        refreshToken,
+                        tokenType,
+                        expiresAt,
+                        LocalDateTime.now()
+                );
+
+                given(memberAuthenticationRepository.findByEmail(email))
+                        .willReturn(Optional.of(existingAuth));
+                given(memberRepository.findById(100L))
+                        .willReturn(Optional.of(existingMember));
+                given(socialAccountRepository.save(any(SocialAccount.class)))
+                        .willReturn(savedSocialAccount);
+                given(memberAuthenticationRepository.save(any(MemberAuthentication.class)))
+                        .willReturn(existingAuth);
+                given(memberRepository.save(any(Member.class)))
+                        .willReturn(existingMember);
+
+                // When
+                Member result = socialAuthDomainService.createMemberWithSocialAccount(
+                        email, name, profileImageUrl, provider, providerId, 
+                        accessToken, refreshToken, tokenType, expiresAt
+                );
+
+                // Then
+                assertThat(result).isNotNull();
+                assertThat(result.getMemberId()).isEqualTo(100L);  // 기존 회원 ID
+                
+                // 기존 회원에 소셜 계정 연동 확인
+                then(memberAuthenticationRepository).should(times(1)).findByEmail(email);
+                then(socialAccountRepository).should(times(1)).save(any(SocialAccount.class));
+                
+                // 기존 회원 정보 업데이트 확인
+                then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
+                then(memberRepository).should(times(1)).save(any(Member.class));
+            }
+
+            @Test
+            @DisplayName("기존 회원 정보를 소셜 정보로 업데이트한다")
+            void it_updates_existing_member_info_with_social_info() {
+                // Given
+                String email = "qwe123@example.com";
+                String name = "카카오유저";
+                String profileImageUrl = "https://kakao.com/profile.jpg";
+                SocialProvider provider = SocialProvider.KAKAO;
+                String providerId = "kakao123456";
+                String accessToken = "access_token_value";
+                String refreshToken = "refresh_token_value";
+                String tokenType = "Bearer";
+                LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
+
+                // 기존 회원
+                Member existingMember = Member.reconstitute(
+                        100L,
+                        null,
+                        "qwe123",
+                        null,  // 프로필 이미지 없음
+                        RecommendationType.BALANCED
+                );
+
+                MemberAuthentication existingAuth = MemberAuthentication.reconstitute(
+                        200L,
+                        100L,
+                        email,
+                        "hashed_password",
+                        0,
+                        null,
+                        null,
+                        "기존이름",  // 기존 이름
+                        null,
+                        LocalDateTime.now()
+                );
+
+                given(memberAuthenticationRepository.findByEmail(email))
+                        .willReturn(Optional.of(existingAuth));
+                given(memberRepository.findById(100L))
+                        .willReturn(Optional.of(existingMember));
+                given(socialAccountRepository.save(any(SocialAccount.class)))
+                        .willAnswer(invocation -> invocation.getArgument(0));
+                given(memberAuthenticationRepository.save(any(MemberAuthentication.class)))
+                        .willAnswer(invocation -> invocation.getArgument(0));
+                given(memberRepository.save(any(Member.class)))
+                        .willAnswer(invocation -> invocation.getArgument(0));
+
+                // When
+                socialAuthDomainService.createMemberWithSocialAccount(
+                        email, name, profileImageUrl, provider, providerId,
+                        accessToken, refreshToken, tokenType, expiresAt
+                );
+
+                // Then
+                // 이름과 프로필 이미지 업데이트 확인
+                then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
+                then(memberRepository).should(times(1)).save(any(Member.class));
+            }
+        }
+
+        @Nested
         @DisplayName("유효한 소셜 계정 정보가 주어지면")
         class Context_with_valid_social_info {
 
@@ -236,6 +378,8 @@ class SocialAuthDomainServiceTest {
                         LocalDateTime.now()
                 );
 
+                given(memberAuthenticationRepository.findByEmail(email))
+                        .willReturn(Optional.empty());  // 기존 회원 없음
                 given(memberRepository.save(any(Member.class))).willReturn(savedMember);
                 given(memberAuthenticationRepository.save(any(MemberAuthentication.class))).willReturn(savedAuth);
                 given(socialAccountRepository.save(any(SocialAccount.class))).willReturn(savedSocialAccount);
@@ -251,6 +395,7 @@ class SocialAuthDomainServiceTest {
                 assertThat(result.getNickname()).isEqualTo(name);
                 assertThat(result.getProfileImageUrl()).isEqualTo(profileImageUrl);
                 
+                then(memberAuthenticationRepository).should(times(1)).findByEmail(email);
                 then(memberRepository).should(times(1)).save(any(Member.class));
                 then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
                 then(socialAccountRepository).should(times(1)).save(any(SocialAccount.class));
@@ -310,6 +455,8 @@ class SocialAuthDomainServiceTest {
                         LocalDateTime.now()
                 );
 
+                given(memberAuthenticationRepository.findByEmail(email))
+                        .willReturn(Optional.empty());  // 기존 회원 없음
                 given(memberRepository.save(any(Member.class))).willReturn(savedMember);
                 given(memberAuthenticationRepository.save(any(MemberAuthentication.class))).willReturn(savedAuth);
                 given(socialAccountRepository.save(any(SocialAccount.class))).willReturn(savedSocialAccount);
@@ -324,6 +471,7 @@ class SocialAuthDomainServiceTest {
                 assertThat(result.getMemberId()).isEqualTo(1L);
                 assertThat(result.getNickname()).isEqualTo(expectedNickname);
                 
+                then(memberAuthenticationRepository).should(times(1)).findByEmail(email);
                 then(memberRepository).should(times(1)).save(any(Member.class));
                 then(memberAuthenticationRepository).should(times(1)).save(any(MemberAuthentication.class));
                 then(socialAccountRepository).should(times(1)).save(any(SocialAccount.class));
@@ -383,6 +531,8 @@ class SocialAuthDomainServiceTest {
                         LocalDateTime.now()
                 );
 
+                given(memberAuthenticationRepository.findByEmail(email))
+                        .willReturn(Optional.empty());  // 기존 회원 없음
                 given(memberRepository.save(any(Member.class))).willReturn(savedMember);
                 given(memberAuthenticationRepository.save(any(MemberAuthentication.class))).willReturn(savedAuth);
                 given(socialAccountRepository.save(any(SocialAccount.class))).willReturn(savedSocialAccount);
