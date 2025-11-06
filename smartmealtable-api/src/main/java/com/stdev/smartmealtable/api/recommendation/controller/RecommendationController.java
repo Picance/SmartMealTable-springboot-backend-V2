@@ -38,6 +38,7 @@ public class RecommendationController {
      * 추천 목록 조회
      * 
      * <p>사용자 프로필과 현재 위치를 기반으로 개인화된 가게 추천을 제공합니다.</p>
+     * <p>검색어를 입력하면 음식점 이름 또는 음식 이름으로 검색할 수 있습니다.</p>
      * 
      * <p>커서 기반 페이징 (무한 스크롤) 또는 오프셋 기반 페이징을 지원합니다:
      * <ul>
@@ -49,6 +50,7 @@ public class RecommendationController {
      * @param authenticatedUser 인증된 사용자
      * @param latitude 현재 위도 (필수)
      * @param longitude 현재 경도 (필수)
+     * @param keyword 검색어 (음식점 이름 또는 음식 이름, 선택)
      * @param radius 검색 반경 (km, 기본값: 0.5)
      * @param sortBy 정렬 기준 (기본값: SCORE)
      * @param includeDisliked 불호 음식 포함 여부 (기본값: false)
@@ -73,6 +75,7 @@ public class RecommendationController {
             @DecimalMin(value = "-180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
             @DecimalMax(value = "180.0", message = "경도는 -180 ~ 180 범위여야 합니다")
             BigDecimal longitude,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false, defaultValue = "0.5")
             @DecimalMin(value = "0.1", message = "반경은 0.1km 이상이어야 합니다")
             @DecimalMax(value = "10.0", message = "반경은 10km 이하여야 합니다")
@@ -96,13 +99,14 @@ public class RecommendationController {
             @Max(value = 100, message = "페이지 크기는 100 이하여야 합니다")
             Integer size
     ) {
-        log.info("추천 목록 조회 API 호출 - memberId: {}, lat: {}, lng: {}, radius: {}, cursor: {}, limit: {}, page: {}, size: {}", 
-                authenticatedUser.memberId(), latitude, longitude, radius, lastId, limit, page, size);
+        log.info("추천 목록 조회 API 호출 - memberId: {}, keyword: {}, lat: {}, lng: {}, radius: {}, cursor: {}, limit: {}, page: {}, size: {}", 
+                authenticatedUser.memberId(), keyword, latitude, longitude, radius, lastId, limit, page, size);
 
         // DTO 생성
         RecommendationRequestDto request = RecommendationRequestDto.builder()
                 .latitude(latitude)
                 .longitude(longitude)
+                .keyword(keyword)
                 .radius(radius)
                 .sortBy(sortBy)
                 .includeDisliked(includeDisliked)

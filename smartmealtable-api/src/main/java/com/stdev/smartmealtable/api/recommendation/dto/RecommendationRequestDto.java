@@ -55,6 +55,9 @@ public class RecommendationRequestDto {
     @Builder.Default
     private StoreTypeFilter storeType = StoreTypeFilter.ALL;
 
+    @Schema(description = "검색어 (음식점 이름 또는 음식 이름)", example = "김치찌개")
+    private String keyword;
+
     @Schema(description = "페이지 번호 (0부터 시작)", example = "0", defaultValue = "0")
     @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다")
     @Builder.Default

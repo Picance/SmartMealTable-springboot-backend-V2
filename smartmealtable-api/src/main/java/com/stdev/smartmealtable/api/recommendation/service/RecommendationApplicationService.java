@@ -69,15 +69,31 @@ public class RecommendationApplicationService {
 
         // 3. 가게 목록 필터링 (위치, 반경, 불호 카테고리 등)
         List<Long> excludedCategoryIds = getExcludedCategoryIds(userProfile);
-        List<Store> filteredStores = recommendationDataRepository.findStoresInRadius(
-                userProfile.getCurrentLatitude(),
-                userProfile.getCurrentLongitude(),
-                request.getRadius(),
-                excludedCategoryIds,
-                false // isOpenOnly - 추후 request에서 받도록 확장 가능
-        );
-
-        log.debug("필터링된 가게 수: {}", filteredStores.size());
+        
+        // 검색어가 있는 경우와 없는 경우 분기
+        List<Store> filteredStores;
+        if (request.getKeyword() != null && !request.getKeyword().trim().isEmpty()) {
+            // 검색어가 있는 경우: 검색어를 포함하는 메서드 사용
+            filteredStores = recommendationDataRepository.findStoresInRadiusWithKeyword(
+                    userProfile.getCurrentLatitude(),
+                    userProfile.getCurrentLongitude(),
+                    request.getRadius(),
+                    request.getKeyword().trim(),
+                    excludedCategoryIds,
+                    request.getOpenNow() != null ? request.getOpenNow() : false
+            );
+            log.debug("검색어 '{}'로 필터링된 가게 수: {}", request.getKeyword(), filteredStores.size());
+        } else {
+            // 검색어가 없는 경우: 기존 메서드 사용
+            filteredStores = recommendationDataRepository.findStoresInRadius(
+                    userProfile.getCurrentLatitude(),
+                    userProfile.getCurrentLongitude(),
+                    request.getRadius(),
+                    excludedCategoryIds,
+                    request.getOpenNow() != null ? request.getOpenNow() : false
+            );
+            log.debug("필터링된 가게 수: {}", filteredStores.size());
+        }
 
         // 4. 추천 점수 계산
         List<RecommendationResult> results = recommendationDomainService.calculateRecommendations(

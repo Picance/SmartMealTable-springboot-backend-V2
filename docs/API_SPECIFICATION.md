@@ -2416,11 +2416,17 @@ Response:
 
 **Endpoint:** `GET /api/v1/recommendations`
 
+**설명:**
+- 사용자 프로필과 현재 위치를 기반으로 개인화된 가게 추천을 제공합니다.
+- 검색어를 입력하면 **음식점 이름** 또는 **음식 이름**으로 검색할 수 있습니다.
+- 검색 결과에도 필터링, 정렬, 페이징 등 모든 추천 기능이 적용됩니다.
+
 **Query Parameters:**
 커서 기반 페이징 (권장):
 ```
 ?latitude=37.497942
 &longitude=127.027621
+&keyword=김치찌개
 &radius=0.5
 &lastId=101
 &limit=20
@@ -2430,6 +2436,7 @@ Response:
 ```
 ?latitude=37.497942
 &longitude=127.027621
+&keyword=교촌치킨
 &radius=0.5
 &page=0
 &size=20
@@ -2438,6 +2445,7 @@ Response:
 **Parameters:**
 - `latitude` (required): 현재 위도 (-90 ~ 90)
 - `longitude` (required): 현재 경도 (-180 ~ 180)
+- `keyword` (optional): 검색어 (음식점 이름 또는 음식 이름)
 - `radius` (optional): 반경 (0.1 ~ 10 km, 기본값: 0.5)
 - `sortBy` (optional): `SCORE`, `reviewCount`, `distance` (기본값: SCORE)
 - `includeDisliked` (optional): 불호 음식 포함 여부 (기본값: false)
@@ -2488,6 +2496,26 @@ Response:
   "error": null
 }
 ```
+
+**검색어 사용 예시:**
+```
+# 음식점 이름으로 검색
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=교촌치킨
+
+# 음식 이름으로 검색
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=김치찌개
+
+# 검색 + 필터링 + 정렬
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=파스타&openNow=true&sortBy=PRICE_LOW
+
+# 검색 + 커서 페이징
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=50&limit=20
+```
+
+**Note:**
+- 검색어가 없으면 기존과 동일하게 모든 추천 결과를 반환합니다.
+- 검색어는 가게명(`store.name`)과 음식명(`food.name`)을 모두 검색합니다.
+- 검색 결과에도 추천 점수, 필터링, 정렬이 모두 적용됩니다.
 
 ---
 
