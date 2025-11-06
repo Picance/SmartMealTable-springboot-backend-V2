@@ -8,9 +8,15 @@ import java.util.List;
  * 네이버 지도 API Reverse Geocoding 응답 DTO
  */
 public record NaverReverseGeocodingResponse(
-        String status,
+        @JsonProperty("status") Status status,
         @JsonProperty("results") List<Result> results
 ) {
+    public record Status(
+            @JsonProperty("code") int code,
+            @JsonProperty("name") String name,
+            @JsonProperty("message") String message
+    ) {}
+    
     public record Result(
             @JsonProperty("name") String name,
             @JsonProperty("code") Code code,
