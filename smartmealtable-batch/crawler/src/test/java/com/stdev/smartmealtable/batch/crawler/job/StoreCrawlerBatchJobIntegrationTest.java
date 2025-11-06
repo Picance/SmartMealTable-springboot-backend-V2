@@ -48,7 +48,10 @@ class StoreCrawlerBatchJobIntegrationTest {
         registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
         registry.add("spring.datasource.username", mysqlContainer::getUsername);
         registry.add("spring.datasource.password", mysqlContainer::getPassword);
+        registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create");
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.MySQLDialect");
+        registry.add("spring.batch.jdbc.initialize-schema", () -> "always");
     }
 
     @Autowired
@@ -201,38 +204,33 @@ class StoreCrawlerBatchJobIntegrationTest {
                     "name": "테스트 음식점",
                     "category": "한식",
                     "address": "서울특별시 노원구 공릉동 123",
-                    "latitude": 37.6250,
-                    "longitude": 127.0757,
-                    "phone": "02-1234-5678",
-                    "averagePrice": 8000,
-                    "reviewCount": 100,
+                    "coordinates": {
+                      "latitude": 37.6250,
+                      "longitude": 127.0757
+                    },
+                    "phone_number": "02-1234-5678",
+                    "menu_average": 8000,
+                    "review_count": 100,
                     "images": [
-                      {
-                        "url": "https://example.com/main.jpg",
-                        "isMain": true,
-                        "order": 1
-                      }
+                      "https://example.com/main.jpg"
                     ],
                     "openingHours": [
                       {
-                        "day": "월요일",
-                        "openTime": "09:00",
-                        "closeTime": "21:00",
-                        "isHoliday": false
+                        "dayOfWeek": "월요일",
+                        "hours": {
+                          "openTime": "09:00",
+                          "closeTime": "21:00"
+                        }
                       }
                     ],
                     "menus": [
                       {
                         "name": "김치찌개",
-                        "price": 7000,
-                        "isMain": true,
-                        "order": 1
+                        "price": 7000
                       },
                       {
                         "name": "된장찌개",
-                        "price": 7000,
-                        "isMain": false,
-                        "order": 2
+                        "price": 7000
                       }
                     ]
                   }
@@ -255,38 +253,33 @@ class StoreCrawlerBatchJobIntegrationTest {
                     "name": "업데이트된 음식점",
                     "category": "한식",
                     "address": "서울특별시 노원구 공릉동 456",
-                    "latitude": 37.6250,
-                    "longitude": 127.0757,
-                    "phone": "02-1234-5678",
-                    "averagePrice": 9000,
-                    "reviewCount": 150,
+                    "coordinates": {
+                      "latitude": 37.6250,
+                      "longitude": 127.0757
+                    },
+                    "phone_number": "02-1234-5678",
+                    "menu_average": 9000,
+                    "review_count": 150,
                     "images": [
-                      {
-                        "url": "https://example.com/updated.jpg",
-                        "isMain": true,
-                        "order": 1
-                      }
+                      "https://example.com/updated.jpg"
                     ],
                     "openingHours": [
                       {
-                        "day": "월요일",
-                        "openTime": "09:00",
-                        "closeTime": "22:00",
-                        "isHoliday": false
+                        "dayOfWeek": "월요일",
+                        "hours": {
+                          "openTime": "09:00",
+                          "closeTime": "22:00"
+                        }
                       }
                     ],
                     "menus": [
                       {
                         "name": "김치찌개",
-                        "price": 8000,
-                        "isMain": true,
-                        "order": 1
+                        "price": 8000
                       },
                       {
                         "name": "제육볶음",
-                        "price": 9000,
-                        "isMain": false,
-                        "order": 2
+                        "price": 9000
                       }
                     ]
                   }
