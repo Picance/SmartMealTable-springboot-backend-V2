@@ -9,27 +9,60 @@ import java.util.List;
 
 /**
  * 가게 목록 조회 응답 DTO
+ * 
+ * <p>커서 기반 페이징과 오프셋 기반 페이징 모두 지원합니다.</p>
  */
 public record StoreListResponse(
         List<StoreItem> stores,
         int totalCount,
         int currentPage,
         int pageSize,
-        int totalPages
+        int totalPages,
+        boolean hasMore,
+        Long lastId
 ) {
+    /**
+     * 오프셋 기반 페이징 응답 생성 (기존 방식)
+     */
     public static StoreListResponse from(List<StoreWithDistance> stores, long totalCount, int page, int size) {
         List<StoreItem> storeItems = stores.stream()
                 .map(StoreItem::from)
                 .toList();
         
         int totalPages = (int) Math.ceil((double) totalCount / size);
+        boolean hasMore = page < totalPages - 1;
+        Long lastId = !storeItems.isEmpty() ? storeItems.get(storeItems.size() - 1).storeId : null;
         
         return new StoreListResponse(
                 storeItems,
                 (int) totalCount,
                 page,
                 size,
-                totalPages
+                totalPages,
+                hasMore,
+                lastId
+        );
+    }
+
+    /**
+     * 커서 기반 페이징 응답 생성
+     */
+    public static StoreListResponse ofCursor(List<StoreWithDistance> stores, long totalCount, int limit, int pageSize) {
+        List<StoreItem> storeItems = stores.stream()
+                .map(StoreItem::from)
+                .toList();
+        
+        boolean hasMore = storeItems.size() >= limit;
+        Long lastId = !storeItems.isEmpty() ? storeItems.get(storeItems.size() - 1).storeId : null;
+        
+        return new StoreListResponse(
+                storeItems,
+                (int) totalCount,
+                0,
+                pageSize,
+                1,
+                hasMore,
+                lastId
         );
     }
     

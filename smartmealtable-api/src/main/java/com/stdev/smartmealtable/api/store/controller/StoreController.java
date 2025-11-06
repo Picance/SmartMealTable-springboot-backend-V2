@@ -37,6 +37,18 @@ public class StoreController {
      * 가게 목록 조회
      * GET /api/v1/stores
      *
+     * <p>커서 기반 페이징 및 오프셋 기반 페이징을 모두 지원합니다.</p>
+     * <ul>
+     *   <li><strong>커서 기반 (무한 스크롤)</strong>: lastId + limit 사용
+     *     <ul>
+     *       <li>첫 요청: lastId 생략</li>
+     *       <li>다음 페이지: 이전 응답의 lastId 사용</li>
+     *       <li>응답에 hasMore=false면 더 이상 데이터 없음</li>
+     *     </ul>
+     *   </li>
+     *   <li><strong>오프셋 기반 (기존 방식)</strong>: page + size 사용 (하위 호환성)</li>
+     * </ul>
+     *
      * @param user 인증된 사용자 (기본 주소 조회용)
      * @param keyword 검색어 (가게명, 카테고리명)
      * @param radius 검색 반경 (km, 기본값: 3.0)
@@ -44,9 +56,11 @@ public class StoreController {
      * @param isOpen 영업 중인 가게만 조회 여부
      * @param storeType 가게 유형 필터 (STUDENT_CAFETERIA, GENERAL_RESTAURANT)
      * @param sortBy 정렬 기준 (distance, reviewCount, viewCount, averagePrice)
-     * @param page 페이지 번호 (0부터 시작, 기본값: 0)
-     * @param size 페이지 크기 (기본값: 20)
-     * @return 가게 목록 및 페이징 정보
+     * @param lastId 커서 (이전 응답의 마지막 가게 ID, null이면 처음부터 조회)
+     * @param limit 커서 조회 개수 (기본값: 20, 1-100)
+     * @param page 페이지 번호 (0부터 시작, 기본값: 0) - 오프셋 모드용
+     * @param size 페이지 크기 (기본값: 20) - 오프셋 모드용
+     * @return 가게 목록 및 페이징 정보 (hasMore, lastId 포함)
      */
     @GetMapping
     public ApiResponse<StoreListResponse> getStores(
@@ -57,11 +71,13 @@ public class StoreController {
             @RequestParam(required = false) Boolean isOpen,
             @RequestParam(required = false) StoreType storeType,
             @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer limit,
             @RequestParam(required = false) @Min(0) Integer page,
             @RequestParam(required = false) @Min(1) @Max(100) Integer size
     ) {
-        log.info("가게 목록 조회 API 호출 - memberId: {}, keyword: {}, radius: {}, categoryId: {}, isOpen: {}, storeType: {}, sortBy: {}, page: {}, size: {}",
-                user.memberId(), keyword, radius, categoryId, isOpen, storeType, sortBy, page, size);
+        log.info("가게 목록 조회 API 호출 - memberId: {}, keyword: {}, radius: {}, categoryId: {}, isOpen: {}, storeType: {}, sortBy: {}, lastId: {}, limit: {}, page: {}, size: {}",
+                user.memberId(), keyword, radius, categoryId, isOpen, storeType, sortBy, lastId, limit, page, size);
         
         StoreListRequest request = new StoreListRequest(
                 keyword,
@@ -70,6 +86,8 @@ public class StoreController {
                 isOpen,
                 storeType,
                 sortBy,
+                lastId,
+                limit,
                 page,
                 size
         );
@@ -78,6 +96,7 @@ public class StoreController {
         
         return ApiResponse.success(response);
     }
+
     
     /**
      * 가게 상세 조회

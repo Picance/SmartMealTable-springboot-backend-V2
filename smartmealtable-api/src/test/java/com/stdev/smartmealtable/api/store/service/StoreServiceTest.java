@@ -115,7 +115,7 @@ class StoreServiceTest {
     void getStores_success() {
         // given
         StoreListRequest request = new StoreListRequest(
-                null, null, null, null, null, null, 0, 20
+                null, null, null, null, null, null, null, 20, 0, 20
         );
 
         given(addressHistoryRepository.findPrimaryByMemberId(testMemberId))
@@ -175,7 +175,7 @@ class StoreServiceTest {
     void getStores_fail_noPrimaryAddress() {
         // given
         StoreListRequest request = new StoreListRequest(
-                null, null, null, null, null, null, 0, 20
+                null, null, null, null, null, null, null, 20, 0, 20
         );
 
         given(addressHistoryRepository.findPrimaryByMemberId(testMemberId))
@@ -200,6 +200,8 @@ class StoreServiceTest {
                 true,
                 StoreType.RESTAURANT,
                 "distance",
+                null,
+                20,
                 0,
                 10
         );

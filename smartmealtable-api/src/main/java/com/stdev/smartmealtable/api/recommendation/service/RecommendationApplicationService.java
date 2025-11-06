@@ -48,7 +48,8 @@ public class RecommendationApplicationService {
             Long memberId,
             RecommendationRequestDto request
     ) {
-        log.info("추천 목록 조회 시작 - memberId: {}, request: {}", memberId, request);
+        log.info("추천 목록 조회 시작 - memberId: {}, useCursor: {}, lastId: {}, limit: {}, page: {}, size: {}", 
+                memberId, request.useCursorPagination(), request.getLastId(), request.getLimit(), request.getPage(), request.getSize());
 
         // 1. 사용자 프로필 조회 (Repository 사용)
         UserProfile userProfile = recommendationDataRepository.loadUserProfile(memberId);
@@ -87,8 +88,12 @@ public class RecommendationApplicationService {
         // 5. 정렬
         List<RecommendationResult> sortedResults = sortResults(results, request.getSortBy());
 
-        // 6. 페이징
-        return paginateResults(sortedResults, request.getPage(), request.getSize());
+        // 6. 페이징 (커서 또는 오프셋)
+        if (request.useCursorPagination()) {
+            return paginateByCursor(sortedResults, request.getLastId(), request.getLimit());
+        } else {
+            return paginateByOffset(sortedResults, request.getPage(), request.getSize());
+        }
     }
 
     /**
@@ -128,9 +133,51 @@ public class RecommendationApplicationService {
     }
 
     /**
-     * 페이징 처리
+     * 커서 기반 페이징 처리
+     *
+     * <p>마지막 항목 ID를 기준으로 다음 데이터를 조회합니다 (무한 스크롤용).</p>
+     *
+     * @param results 정렬된 결과 목록
+     * @param lastId 마지막 항목의 ID (null이면 처음부터 시작)
+     * @param limit 조회할 항목 수
+     * @return 커서 기반 페이징된 결과 (limit + 1개를 조회하여 hasMore 판단)
      */
-    private List<RecommendationResult> paginateResults(
+    private List<RecommendationResult> paginateByCursor(
+            List<RecommendationResult> results,
+            Long lastId,
+            Integer limit
+    ) {
+        // lastId 이후의 항목들을 찾기 위해 시작 인덱스 결정
+        int startIndex = 0;
+        if (lastId != null) {
+            // lastId와 일치하는 항목을 찾고 그 다음부터 시작
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).getStoreId().equals(lastId)) {
+                    startIndex = i + 1;
+                    break;
+                }
+            }
+        }
+
+        // limit + 1개를 조회하여 hasMore 판단 (클라이언트가 hasMore로 판단)
+        int endIndex = Math.min(startIndex + limit, results.size());
+        
+        if (startIndex >= results.size()) {
+            return Collections.emptyList();
+        }
+
+        return results.subList(startIndex, endIndex);
+    }
+
+    /**
+     * 오프셋 기반 페이징 처리 (하위 호환성)
+     *
+     * @param results 정렬된 결과 목록
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 오프셋 기반 페이징된 결과
+     */
+    private List<RecommendationResult> paginateByOffset(
             List<RecommendationResult> results,
             int page,
             int size
@@ -143,6 +190,17 @@ public class RecommendationApplicationService {
         }
         
         return results.subList(fromIndex, toIndex);
+    }
+
+    /**
+     * 페이징 처리 (하위 호환성 - 구 메서드)
+     */
+    private List<RecommendationResult> paginateResults(
+            List<RecommendationResult> results,
+            int page,
+            int size
+    ) {
+        return paginateByOffset(results, page, size);
     }
 
     /**

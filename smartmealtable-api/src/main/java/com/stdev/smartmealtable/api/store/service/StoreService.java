@@ -41,13 +41,28 @@ public class StoreService {
      * 가게 목록 조회
      * - 사용자의 기본 주소를 기준으로 거리 계산
      * - 다양한 필터 및 정렬 옵션 지원
+     * - 커서 기반 페이징 및 오프셋 기반 페이징 모두 지원
      */
     public StoreListResponse getStores(Long memberId, StoreListRequest request) {
         // 사용자의 기본 주소 조회
         AddressHistory primaryAddress = addressHistoryRepository.findPrimaryByMemberId(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
         
-        // 가게 검색
+        // 페이징 모드에 따라 처리
+        if (request.useCursorPagination()) {
+            return paginateByCursor(memberId, request, primaryAddress);
+        } else {
+            return paginateByOffset(memberId, request, primaryAddress);
+        }
+    }
+
+    /**
+     * 커서 기반 페이징으로 가게 목록 조회
+     */
+    private StoreListResponse paginateByCursor(Long memberId, StoreListRequest request, AddressHistory primaryAddress) {
+        // 커서 기반 페이징: limit + 1개를 조회하여 hasMore 여부 결정
+        int queryLimit = request.limit() + 1;
+
         StoreRepository.StoreSearchResult searchResult = storeRepository.searchStores(
                 request.keyword(),
                 BigDecimal.valueOf(primaryAddress.getAddress().getLatitude()),
@@ -57,12 +72,54 @@ public class StoreService {
                 request.isOpen(),
                 request.storeType(),
                 request.sortBy(),
-                request.page(),
+                0, // 커서 기반에서는 page 무시
+                queryLimit
+        );
+
+        // lastId 위치 이후의 데이터만 반환
+        List<StoreWithDistance> resultStores = new java.util.ArrayList<>(searchResult.stores());
+        if (request.lastId() != null) {
+            int startIndex = 0;
+            for (int i = 0; i < resultStores.size(); i++) {
+                if (resultStores.get(i).store().getStoreId().equals(request.lastId())) {
+                    startIndex = i + 1;
+                    break;
+                }
+            }
+            resultStores = resultStores.subList(startIndex, resultStores.size());
+        }
+
+        // limit개만 클라이언트에게 반환 (hasMore 결정용 +1개는 제외)
+        int limit = request.limit();
+        boolean hasMore = resultStores.size() > limit;
+        List<StoreWithDistance> returnStores = resultStores.stream()
+                .limit(limit)
+                .toList();
+
+        return StoreListResponse.ofCursor(returnStores, searchResult.totalCount(), limit, limit);
+    }
+
+
+    /**
+     * 오프셋 기반 페이징으로 가게 목록 조회 (기존 방식)
+     */
+    private StoreListResponse paginateByOffset(Long memberId, StoreListRequest request, AddressHistory primaryAddress) {
+        StoreRepository.StoreSearchResult searchResult = storeRepository.searchStores(
+                request.keyword(),
+                BigDecimal.valueOf(primaryAddress.getAddress().getLatitude()),
+                BigDecimal.valueOf(primaryAddress.getAddress().getLongitude()),
+                request.radius(),
+                request.categoryId(),
+                request.isOpen(),
+                request.storeType(),
+                request.sortBy(),
+                request.getEffectivePage(),
                 request.size()
         );
-        
-        return StoreListResponse.from(searchResult.stores(), searchResult.totalCount(), request.page(), request.size());
+
+        return StoreListResponse.from(searchResult.stores(), searchResult.totalCount(), request.getEffectivePage(), request.size());
     }
+
     
     /**
      * 가게 상세 조회

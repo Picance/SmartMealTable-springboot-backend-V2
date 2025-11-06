@@ -67,6 +67,41 @@ public class RecommendationRequestDto {
     private Integer size = 20;
 
     /**
+     * 마지막 항목의 ID (커서 기반 페이징용)
+     *
+     * <p>null인 경우 처음부터 조회합니다.</p>
+     */
+    private Long lastId;
+
+    /**
+     * 조회할 항목 수 (커서 기반 페이징용)
+     *
+     * <p>기본값: 20, 최대값: 100</p>
+     */
+    @Min(value = 1, message = "조회 항목 수는 1 이상이어야 합니다")
+    @Max(value = 100, message = "조회 항목 수는 100 이하여야 합니다")
+    @Builder.Default
+    private Integer limit = 20;
+
+    /**
+     * 커서 기반 페이징 사용 여부 확인
+     *
+     * @return true if cursor-based pagination should be used
+     */
+    public boolean useCursorPagination() {
+        return lastId != null || (page == null && size == null);
+    }
+
+    /**
+     * 오프셋 페이징 사용 여부 확인 (하위 호환성)
+     *
+     * @return true if offset-based pagination should be used
+     */
+    public boolean useOffsetPagination() {
+        return !useCursorPagination();
+    }
+
+    /**
      * 정렬 기준 Enum
      */
     public enum SortBy {

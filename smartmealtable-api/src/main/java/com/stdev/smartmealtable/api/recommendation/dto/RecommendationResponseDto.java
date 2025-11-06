@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.recommendation.dto;
 
 import com.stcom.smartmealtable.recommendation.domain.model.RecommendationResult;
+import com.stdev.smartmealtable.core.pagination.CursorIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,12 +13,14 @@ import java.util.stream.Collectors;
 
 /**
  * 추천 결과 응답 DTO
+ *
+ * <p>커서 기반 페이징을 지원하기 위해 CursorIdentifiable을 구현합니다.</p>
  */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecommendationResponseDto {
+public class RecommendationResponseDto implements CursorIdentifiable {
 
     /**
      * 가게 ID
@@ -94,5 +97,15 @@ public class RecommendationResponseDto {
         return results.stream()
                 .map(RecommendationResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 커서 페이징을 위한 ID 반환
+     *
+     * @return 가게 ID
+     */
+    @Override
+    public Long getCursorId() {
+        return storeId;
     }
 }

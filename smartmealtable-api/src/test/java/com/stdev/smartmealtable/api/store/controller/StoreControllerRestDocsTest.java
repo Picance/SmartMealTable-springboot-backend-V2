@@ -225,6 +225,13 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.pageSize")
                                         .type(JsonFieldType.NUMBER)
                                         .description("페이지 크기"),
+                                fieldWithPath("data.hasMore")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("마지막 가게 ID (커서 페이징용)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")
@@ -345,6 +352,13 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.pageSize")
                                         .type(JsonFieldType.NUMBER)
                                         .description("페이지 크기"),
+                                fieldWithPath("data.hasMore")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("마지막 가게 ID (커서 페이징용)")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")
@@ -354,7 +368,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
     }
 
     @Test
-    @DisplayName("가게 목록 조회 실패 - 유효하지 않은 반경")
+    @DisplayName("가게 상세 조회")
     void getStores_fail_invalidRadius_docs() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/stores")
@@ -705,6 +719,218 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error.data")
                                         .type(JsonFieldType.OBJECT)
                                         .description("에러 상세 정보")
+                                        .optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("가게 목록 조회 성공 - 커서 기반 무한 스크롤 (첫 요청)")
+    void getStores_success_cursorPagination_first_docs() throws Exception {
+        // when & then: 첫 요청 (lastId 없음)
+        mockMvc.perform(get("/api/v1/stores")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("keyword", "한식")
+                        .param("limit", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("store/get-list-cursor-first",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("Bearer {accessToken}")
+                        ),
+                        queryParameters(
+                                parameterWithName("keyword")
+                                        .description("검색어 (가게명, 카테고리명)")
+                                        .optional(),
+                                parameterWithName("limit")
+                                        .description("커서 모드 조회 개수 (1-100, 기본값: 20)")
+                                        .optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.stores")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("가게 목록"),
+                                fieldWithPath("data.stores[].storeId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 ID"),
+                                fieldWithPath("data.stores[].name")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게명"),
+                                fieldWithPath("data.stores[].categoryId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID"),
+                                fieldWithPath("data.stores[].categoryName")
+                                        .type(JsonFieldType.NULL)
+                                        .description("카테고리명 (현재 NULL, 추후 카테고리 조인 시 추가 예정)")
+                                        .optional(),
+                                fieldWithPath("data.stores[].address")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 주소"),
+                                fieldWithPath("data.stores[].latitude")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 위도"),
+                                fieldWithPath("data.stores[].longitude")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 경도"),
+                                fieldWithPath("data.stores[].averagePrice")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("평균 가격"),
+                                fieldWithPath("data.stores[].reviewCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("리뷰 수"),
+                                fieldWithPath("data.stores[].viewCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("조회 수"),
+                                fieldWithPath("data.stores[].storeType")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 유형 (예: RESTAURANT, CAFE)"),
+                                fieldWithPath("data.stores[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 이미지 URL"),
+                                fieldWithPath("data.stores[].distance")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("거리 (km)"),
+                                fieldWithPath("data.stores[].phoneNumber")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 전화번호"),
+                                fieldWithPath("data.totalCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("전체 가게 수"),
+                                fieldWithPath("data.hasMore")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("마지막 가게 ID (다음 요청의 cursor)"),
+                                fieldWithPath("data.currentPage")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 (커서 모드에서는 0)"),
+                                fieldWithPath("data.pageSize")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.totalPages")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("전체 페이지 수 (커서 모드에서는 1)"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("가게 목록 조회 성공 - 커서 기반 무한 스크롤 (다음 요청)")
+    void getStores_success_cursorPagination_next_docs() throws Exception {
+        // when & then: 다음 요청 (lastId = 첫 번째 가게의 storeId)
+        mockMvc.perform(get("/api/v1/stores")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("keyword", "한식")
+                        .param("lastId", "1")
+                        .param("limit", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("store/get-list-cursor-next",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("Bearer {accessToken}")
+                        ),
+                        queryParameters(
+                                parameterWithName("keyword")
+                                        .description("검색어 (가게명, 카테고리명)")
+                                        .optional(),
+                                parameterWithName("lastId")
+                                        .description("커서 ID (이전 응답의 lastId)")
+                                        .optional(),
+                                parameterWithName("limit")
+                                        .description("커서 모드 조회 개수 (1-100, 기본값: 20)")
+                                        .optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.stores")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("가게 목록"),
+                                fieldWithPath("data.stores[].storeId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 ID"),
+                                fieldWithPath("data.stores[].name")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게명"),
+                                fieldWithPath("data.stores[].categoryId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID"),
+                                fieldWithPath("data.stores[].categoryName")
+                                        .type(JsonFieldType.NULL)
+                                        .description("카테고리명 (현재 NULL, 추후 카테고리 조인 시 추가 예정)")
+                                        .optional(),
+                                fieldWithPath("data.stores[].address")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 주소"),
+                                fieldWithPath("data.stores[].latitude")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 위도"),
+                                fieldWithPath("data.stores[].longitude")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 경도"),
+                                fieldWithPath("data.stores[].averagePrice")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("평균 가격"),
+                                fieldWithPath("data.stores[].reviewCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("리뷰 수"),
+                                fieldWithPath("data.stores[].viewCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("조회 수"),
+                                fieldWithPath("data.stores[].storeType")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 유형 (예: RESTAURANT, CAFE)"),
+                                fieldWithPath("data.stores[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 이미지 URL"),
+                                fieldWithPath("data.stores[].distance")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("거리 (km)"),
+                                fieldWithPath("data.stores[].phoneNumber")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 전화번호"),
+                                fieldWithPath("data.totalCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("전체 가게 수"),
+                                fieldWithPath("data.hasMore")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("마지막 가게 ID (다음 요청의 cursor)"),
+                                fieldWithPath("data.currentPage")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("현재 페이지 (커서 모드에서는 0)"),
+                                fieldWithPath("data.pageSize")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("페이지 크기"),
+                                fieldWithPath("data.totalPages")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("전체 페이지 수 (커서 모드에서는 1)"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
                                         .optional()
                         )
                 ));

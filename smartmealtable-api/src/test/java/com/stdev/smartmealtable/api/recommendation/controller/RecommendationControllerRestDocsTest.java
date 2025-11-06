@@ -93,6 +93,7 @@ class RecommendationControllerRestDocsTest extends AbstractRestDocsTest {
                 fieldWithPath("data[].imageUrl").type(JsonFieldType.STRING).description("대표 이미지 URL").optional(),
                 fieldWithPath("data[].latitude").type(JsonFieldType.NUMBER).description("위도"),
                 fieldWithPath("data[].longitude").type(JsonFieldType.NUMBER).description("경도"),
+                fieldWithPath("data[].cursorId").type(JsonFieldType.NUMBER).description("커서 ID (커서 기반 페이징용)"),
                 fieldWithPath("error").type(JsonFieldType.OBJECT).description("에러 정보 (성공 시 null)").optional()
         };
     }

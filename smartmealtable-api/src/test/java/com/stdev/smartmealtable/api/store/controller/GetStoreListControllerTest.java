@@ -238,6 +238,8 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.currentPage").description("현재 페이지 번호 (0부터 시작)"),
                                 fieldWithPath("data.pageSize").description("페이지 크기"),
                                 fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.hasMore").description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId").description("마지막 가게 ID (커서 페이징용)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
@@ -297,6 +299,8 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.currentPage").description("현재 페이지 번호"),
                                 fieldWithPath("data.pageSize").description("페이지 크기"),
                                 fieldWithPath("data.totalPages").description("전체 페이지 수"),
+                                fieldWithPath("data.hasMore").description("다음 데이터 존재 여부"),
+                                fieldWithPath("data.lastId").description("마지막 가게 ID (커서 페이징용)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
