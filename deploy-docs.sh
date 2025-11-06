@@ -70,15 +70,43 @@ print_usage() {
 # Function to get modified test files from git
 get_modified_tests() {
     local modified_files
-    modified_files=$(git diff --name-only HEAD 2>/dev/null | grep -i "test.*\.java$" || echo "")
     
-    if [ -z "$modified_files" ]; then
-        print_warning "Git에서 수정된 테스트 파일을 찾을 수 없습니다."
+    # 먼저 git 상태 확인
+    if ! git rev-parse --git-dir > /dev/null 2>&1; then
+        print_error "Git 리포지토리가 아닙니다." >&2
         return 1
     fi
     
+    # 수정된 파일 감지 (staged + unstaged)
+    modified_files=$(git diff --name-only HEAD 2>/dev/null | grep -i "test.*\.java$" || echo "")
+    
+    # staged되지 않은 변경사항도 확인
+    if [ -z "$modified_files" ]; then
+        modified_files=$(git diff --name-only 2>/dev/null | grep -i "test.*\.java$" || echo "")
+    fi
+    
+    # 모든 변경사항이 비어있으면 전체 파일 목록 확인
+    if [ -z "$modified_files" ]; then
+        print_info "" >&2
+        print_info "💡 Git에서 수정된 테스트를 감지하지 못했습니다." >&2
+        print_info "" >&2
+        print_info "원인 (다음 중 하나):" >&2
+        print_info "  1. 모든 변경사항이 커밋됨" >&2
+        print_info "  2. 수정된 파일 중 RestDocsTest가 없음" >&2
+        print_info "  3. Git에 변경사항이 stage되지 않음" >&2
+        print_info "" >&2
+        print_info "해결 방법:" >&2
+        print_info "  • 파일 수정 후: git add . && ./deploy-docs.sh --auto-detect" >&2
+        print_info "  • 특정 테스트만: ./deploy-docs.sh --test-filter 'TestName'" >&2
+        print_info "  • 모든 테스트 실행: ./deploy-docs.sh" >&2
+        print_info "" >&2
+        return 1
+    fi
+    
+    print_info "📝 감지된 수정된 테스트 파일:" >&2
     local test_classes=""
     while IFS= read -r file; do
+        print_info "   • $file" >&2
         # 파일 경로에서 클래스 이름 추출 (e.g., src/test/.../AuthControllerTest.java -> AuthControllerTest)
         local class_name=$(basename "$file" .java)
         if [[ "$class_name" == *"RestDocsTest" ]]; then
@@ -87,12 +115,25 @@ get_modified_tests() {
     done <<< "$modified_files"
     
     if [ -z "$test_classes" ]; then
-        print_warning "수정된 RestDocsTest를 찾을 수 없습니다."
+        print_warning "❌ 수정된 파일 중 RestDocsTest가 없습니다." >&2
+        print_info "" >&2
+        print_info "RestDocsTest 파일만 감지됩니다." >&2
+        print_info "사용 가능한 테스트를 확인하세요: ./deploy-docs.sh --list-tests" >&2
+        print_info "" >&2
         return 1
     fi
     
-    # 마지막 '|' 제거
-    echo "${test_classes%|}"
+    print_success "✓ 다음 테스트를 실행합니다:" >&2
+    # 클래스명 출력 (| 구분자 제거)
+    local test_names="${test_classes%|}"
+    echo "$test_names" | tr '|' '\n' | sed 's/^/   • /' | while read line; do print_info "$line" >&2; done
+    print_info "" >&2
+    
+    # 각 테스트 이름에 와일드카드를 추가하여 반환
+    # 예: AddressControllerRestDocsTest|OnboardingAddressControllerRestDocsTest
+    # 각 라인에 하나씩 출력 (구분자: 개행문자)
+    local filtered_tests="${test_classes%|}"
+    echo "$filtered_tests" | sed 's/\([^|]*\)/\*\1/g' | tr '|' '\n'
 }
 
 # Function to show available RestDocsTest files
@@ -159,18 +200,50 @@ if [ "$SKIP_TESTS" = false ]; then
     
     # Determine which tests to run
     if [ "$AUTO_DETECT" = true ]; then
-        print_info "Git에서 수정된 테스트 감지 중..."
+        print_info "🔍 Git에서 수정된 테스트 감지 중...\n"
         TEST_FILTER=$(get_modified_tests)
-        if [ $? -ne 0 ]; then
-            print_warning "수정된 테스트를 자동으로 감지할 수 없습니다. 모든 RestDocsTest를 실행합니다."
-            TEST_FILTER="*RestDocsTest"
+        DETECT_RESULT=$?
+        
+        if [ $DETECT_RESULT -ne 0 ]; then
+            # 감지 실패 시 사용자 선택 제공
+            echo ""
+            print_warning "선택지:"
+            print_info "  1️⃣  모든 RestDocsTest 실행 (기본, 5-10분)"
+            print_info "  2️⃣  특정 테스트 지정: ./deploy-docs.sh --test-filter 'TestName'"
+            print_info "  3️⃣  사용 가능한 테스트: ./deploy-docs.sh --list-tests"
+            echo ""
+            print_info "지금은 모든 RestDocsTest를 실행합니다..."
+            # 빈 배열로 설정하여 나중에 기본값 사용
+            TEST_FILTER=""
+        else
+            print_success "✓ 테스트 감지 완료"
         fi
-    elif [ -z "$TEST_FILTER" ]; then
+    fi
+    
+    if [ -z "$TEST_FILTER" ]; then
         TEST_FILTER="*RestDocsTest"
     fi
     
-    print_info "실행 대상 테스트: $TEST_FILTER"
-    print_warning "테스트 실행 중 (몇 분이 소요될 수 있습니다)..."
+    echo ""
+    print_warning "⏱️  테스트 실행 중 (몇 분이 소요될 수 있습니다)..."
+    print_info ""
+    
+    # Gradle --tests 옵션 구성
+    # TEST_FILTER는 줄로 구분된(newline-separated) 테스트 이름들
+    # 각각을 배열에 추가하여 Gradle에 "--tests Test1 --tests Test2" 형식으로 전달
+    declare -a gradle_tests_array
+    
+    # TEST_FILTER의 각 줄을 읽어서 배열에 추가
+    if [ -n "$TEST_FILTER" ]; then
+        while IFS= read -r test_name; do
+            if [ -n "$test_name" ]; then
+                gradle_tests_array+=("--tests" "$test_name")
+            fi
+        done <<< "$TEST_FILTER"
+    else
+        # TEST_FILTER가 비어있으면 기본값 사용
+        gradle_tests_array=("--tests" "*RestDocsTest")
+    fi
     
     # Set environment variables for tests
     export KAKAO_CLIENT_ID=$(grep KAKAO_CLIENT_ID .env | cut -d '=' -f2)
@@ -183,7 +256,8 @@ if [ "$SKIP_TESTS" = false ]; then
     export VERTEX_AI_TEMPERATURE=$(grep VERTEX_AI_TEMPERATURE .env | cut -d '=' -f2)
     export VERTEX_AI_LOCATION=$(grep VERTEX_AI_LOCATION .env | cut -d '=' -f2)
     
-    if ./gradlew :smartmealtable-api:test --tests "$TEST_FILTER"; then
+    # Gradle 명령어 실행
+    if ./gradlew :smartmealtable-api:test "${gradle_tests_array[@]}"; then
         print_success "REST Docs 테스트 통과"
     else
         print_error "일부 테스트가 실패했습니다. 위의 로그를 확인하세요."
