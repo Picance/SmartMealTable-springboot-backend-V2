@@ -31,6 +31,8 @@ public class QStoreJpaEntity extends EntityPathBase<StoreJpaEntity> {
 
     public final StringPath description = createString("description");
 
+    public final StringPath externalId = createString("externalId");
+
     public final NumberPath<Integer> favoriteCount = createNumber("favoriteCount", Integer.class);
 
     public final StringPath imageUrl = createString("imageUrl");

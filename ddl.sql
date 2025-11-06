@@ -125,6 +125,7 @@ CREATE TABLE category (
 -- 음식점(가게) 테이블
 CREATE TABLE store (
     store_id              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식점의 고유 식별자',
+    external_id           VARCHAR(50)    NULL     COMMENT '외부 크롤링 시스템의 가게 ID (네이버 플레이스, 카카오맵 등)',
     category_id           BIGINT         NOT NULL COMMENT '음식점이 속한 음식 카테고리의 식별자',
     seller_id             BIGINT         NULL     COMMENT '판매자 식별자 (논리 FK)',
     name                  VARCHAR(100)   NOT NULL COMMENT '음식점의 상호명',
@@ -145,6 +146,7 @@ CREATE TABLE store (
     created_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
     updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
     PRIMARY KEY (store_id),
+    UNIQUE KEY uq_external_id (external_id),
     INDEX idx_category_id (category_id),
     INDEX idx_seller_id (seller_id),
     INDEX idx_name (name),
@@ -171,6 +173,21 @@ CREATE TABLE store_opening_hour (
                                     INDEX idx_store_id (store_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='가게의 요일별 영업 및 휴게 시간 등 상세 정보를 관리하는 테이블';
 
+-- 가게 이미지 테이블
+CREATE TABLE store_image (
+    store_image_id BIGINT         NOT NULL AUTO_INCREMENT COMMENT '이미지의 고유 식별자',
+    store_id       BIGINT         NOT NULL COMMENT '이미지가 속한 가게의 식별자 (논리 FK)',
+    image_url      VARCHAR(500)   NOT NULL COMMENT '이미지 URL',
+    is_main        BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '대표 이미지 여부',
+    display_order  INT            NULL     COMMENT '표시 순서 (낮을수록 우선)',
+    created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (store_image_id),
+    INDEX idx_store_id (store_id),
+    INDEX idx_store_main (store_id, is_main),
+    INDEX idx_store_display (store_id, display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='가게의 이미지 정보를 저장하는 테이블';
+
 -- 판매자 테이블
 CREATE TABLE seller (
                         seller_id   BIGINT        NOT NULL AUTO_INCREMENT COMMENT '판매자의 고유 식별자',
@@ -187,12 +204,14 @@ CREATE TABLE seller (
 -- 음식 테이블
 CREATE TABLE food (
                       food_id       BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식의 고유 식별자',
-                      store_id      BIGINT         NOT NULL COMMENT '이 음식을 판매하는 가게의 식별자',
-                      category_id   BIGINT         NOT NULL COMMENT '음식 카테고리 식별자',
+                      store_id      BIGINT         NOT NULL COMMENT '이 음식을 판매하는 가게의 식별자 (논리 FK)',
+                      category_id   BIGINT         NOT NULL COMMENT '음식 카테고리 식별자 (논리 FK)',
                       food_name     VARCHAR(100)   NOT NULL COMMENT '음식의 이름',
                       price         INT            NOT NULL COMMENT '음식의 판매 가격',
-                      description   VARCHAR(500)   NULL     COMMENT '음식에 대한 상세 설명',
+                      description   TEXT           NULL     COMMENT '음식에 대한 상세 설명/소개',
                       image_url     VARCHAR(500)   NULL     COMMENT '음식 이미지 주소',
+                      is_main       BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '대표 메뉴 여부',
+                      display_order INT            NULL     COMMENT '표시 순서 (낮을수록 우선)',
                       registered_dt DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '음식 등록 시각 (시스템 자동 기록, 신메뉴 표시용, 비즈니스 필드)',
                       deleted_at    DATETIME       NULL     COMMENT '삭제 시각 (소프트 삭제용)',
                       created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
@@ -201,8 +220,10 @@ CREATE TABLE food (
                       INDEX idx_store_id (store_id),
                       INDEX idx_category_id (category_id),
                       INDEX idx_food_name (food_name),
-                      INDEX idx_registered_dt (registered_dt)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식의 정보를 저장하는 테이블';
+                      INDEX idx_registered_dt (registered_dt),
+                      INDEX idx_store_main (store_id, is_main),
+                      INDEX idx_store_display (store_id, display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식(메뉴)의 정보를 저장하는 테이블';
 
 -- 가게 조회 이력 테이블
 CREATE TABLE store_view_history (

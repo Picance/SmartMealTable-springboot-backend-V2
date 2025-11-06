@@ -4,6 +4,7 @@ import com.stdev.smartmealtable.domain.store.StoreOpeningHour;
 import com.stdev.smartmealtable.domain.store.StoreOpeningHourRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,9 +27,16 @@ public class StoreOpeningHourRepositoryImpl implements StoreOpeningHourRepositor
     }
     
     @Override
+    @Transactional
     public StoreOpeningHour save(StoreOpeningHour storeOpeningHour) {
         StoreOpeningHourJpaEntity entity = StoreEntityMapper.toJpaEntity(storeOpeningHour);
         StoreOpeningHourJpaEntity saved = jpaRepository.save(entity);
         return StoreEntityMapper.toDomain(saved);
+    }
+    
+    @Override
+    @Transactional
+    public void deleteByStoreId(Long storeId) {
+        jpaRepository.deleteByStoreId(storeId);
     }
 }

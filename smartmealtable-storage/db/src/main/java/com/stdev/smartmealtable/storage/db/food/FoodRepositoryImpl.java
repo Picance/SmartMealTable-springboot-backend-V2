@@ -77,6 +77,11 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteByStoreId(Long storeId) {
+        foodJpaRepository.deleteByStoreId(storeId);
+    }
+
     // ===== ADMIN 전용 메서드 =====
 
     @Override

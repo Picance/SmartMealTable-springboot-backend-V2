@@ -16,4 +16,9 @@ public interface StoreOpeningHourRepository {
      * 영업시간 저장
      */
     StoreOpeningHour save(StoreOpeningHour storeOpeningHour);
+    
+    /**
+     * 가게의 모든 영업시간 삭제
+     */
+    void deleteByStoreId(Long storeId);
 }

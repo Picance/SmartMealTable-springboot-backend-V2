@@ -27,11 +27,15 @@ public class QFoodJpaEntity extends EntityPathBase<FoodJpaEntity> {
 
     public final StringPath description = createString("description");
 
+    public final NumberPath<Integer> displayOrder = createNumber("displayOrder", Integer.class);
+
     public final NumberPath<Long> foodId = createNumber("foodId", Long.class);
 
     public final StringPath foodName = createString("foodName");
 
     public final StringPath imageUrl = createString("imageUrl");
+
+    public final BooleanPath isMain = createBoolean("isMain");
 
     public final NumberPath<Integer> price = createNumber("price", Integer.class);
 

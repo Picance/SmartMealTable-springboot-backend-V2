@@ -20,6 +20,7 @@ public final class StoreEntityMapper {
     public static StoreJpaEntity toJpaEntity(Store store) {
         return StoreJpaEntity.builder()
                 .storeId(store.getStoreId())
+                .externalId(store.getExternalId())
                 .name(store.getName())
                 .categoryId(store.getCategoryId())
                 .sellerId(store.getSellerId())
@@ -46,6 +47,7 @@ public final class StoreEntityMapper {
     public static Store toDomain(StoreJpaEntity entity) {
         return Store.builder()
                 .storeId(entity.getStoreId())
+                .externalId(entity.getExternalId())
                 .name(entity.getName())
                 .categoryId(entity.getCategoryId())
                 .sellerId(entity.getSellerId())

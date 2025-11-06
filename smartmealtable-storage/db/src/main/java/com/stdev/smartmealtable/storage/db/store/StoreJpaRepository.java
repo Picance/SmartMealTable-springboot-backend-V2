@@ -18,6 +18,12 @@ public interface StoreJpaRepository extends JpaRepository<StoreJpaEntity, Long> 
     Optional<StoreJpaEntity> findByStoreIdAndDeletedAtIsNull(Long storeId);
     
     /**
+     * 외부 크롤링 ID로 조회
+     * 배치 작업에서 기존 가게 찾기에 사용
+     */
+    Optional<StoreJpaEntity> findByExternalId(String externalId);
+    
+    /**
      * 여러 ID로 조회 (삭제되지 않은 가게만)
      */
     List<StoreJpaEntity> findByStoreIdInAndDeletedAtIsNull(List<Long> storeIds);

@@ -36,4 +36,9 @@ public interface FoodJpaRepository extends JpaRepository<FoodJpaEntity, Long>, F
      * 가게별 음식 조회
      */
     List<FoodJpaEntity> findByStoreId(Long storeId);
+
+    /**
+     * 가게별 음식 삭제 (크롤러 배치용)
+     */
+    void deleteByStoreId(Long storeId);
 }

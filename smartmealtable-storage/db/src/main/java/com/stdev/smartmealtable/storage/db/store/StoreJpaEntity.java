@@ -27,6 +27,9 @@ public class StoreJpaEntity {
     @Column(name = "store_id")
     private Long storeId;
     
+    @Column(name = "external_id", unique = true, length = 50)
+    private String externalId;
+    
     @Column(name = "name", nullable = false, length = 100)
     private String name;
     
