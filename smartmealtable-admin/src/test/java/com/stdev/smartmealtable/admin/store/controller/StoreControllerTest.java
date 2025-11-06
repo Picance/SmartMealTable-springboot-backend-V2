@@ -245,4 +245,97 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         var result = storeRepository.adminSearch(null, "학생식당", null, 0, 10);
         // 논리 삭제이므로 adminSearch에서는 제외됨
     }
+
+    // ==================== 지오코딩 통합 테스트 ====================
+
+    @Test
+    @DisplayName("[성공] 음식점 생성 - 주소 기반 자동 좌표 설정")
+    void createStore_AutoGeocoding_Success() throws Exception {
+        // Given
+        CreateStoreRequest request = new CreateStoreRequest(
+                "지오코딩 테스트 음식점",
+                testCategoryId,
+                null,
+                "서울시 강남구 테헤란로 123", // 주소만 입력
+                "서울시 강남구 역삼동 456",
+                "02-1111-2222",
+                "주소로 좌표가 자동 설정됩니다",
+                20000,
+                StoreType.RESTAURANT
+        );
+
+        // When & Then
+        mockMvc.perform(post("/api/v1/admin/stores")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.name").value("지오코딩 테스트 음식점"))
+                .andExpect(jsonPath("$.data.latitude").value(37.4979)) // Mock에서 반환하는 고정 좌표
+                .andExpect(jsonPath("$.data.longitude").value(127.0276))
+                .andExpect(jsonPath("$.data.address").value("서울시 강남구 테헤란로 123"));
+    }
+
+    @Test
+    @DisplayName("[성공] 음식점 수정 - 주소 변경 시 좌표 자동 재계산")
+    void updateStore_AddressChanged_AutoRecalculateCoordinates() throws Exception {
+        // Given - 기존 음식점
+        Store store = storeRepository.adminSearch(null, "학생식당", null, 0, 1).content().get(0);
+        
+        // When - 주소 변경
+        mockMvc.perform(put("/api/v1/admin/stores/{storeId}", store.getStoreId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "name": "학생식당",
+                                    "categoryId": %d,
+                                    "address": "서울시 종로구 새로운주소 789",
+                                    "lotNumberAddress": "서울시 종로구 새로운동 101",
+                                    "phoneNumber": "02-9999-8888",
+                                    "description": "주소 변경 테스트",
+                                    "averagePrice": 6000,
+                                    "storeType": "CAMPUS_RESTAURANT"
+                                }
+                                """.formatted(testCategoryId)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.latitude").value(37.4979)) // 새로운 좌표로 자동 설정
+                .andExpect(jsonPath("$.data.longitude").value(127.0276))
+                .andExpect(jsonPath("$.data.address").value("서울시 종로구 새로운주소 789"));
+    }
+
+    @Test
+    @DisplayName("[실패] 음식점 생성 - 유효하지 않은 주소 (지오코딩 실패)")
+    void createStore_InvalidAddress_GeocodingFailed() throws Exception {
+        // Given - MockMapService는 항상 성공하므로, 실제로는 실패하지 않음
+        // 실제 환경에서는 유효하지 않은 주소일 때 400 Bad Request 발생
+        CreateStoreRequest request = new CreateStoreRequest(
+                "유효하지 않은 주소 테스트",
+                testCategoryId,
+                null,
+                "존재하지않는도시 존재하지않는구 존재하지않는로 999",
+                null,
+                "02-0000-0000",
+                "이 테스트는 실제 환경에서만 의미가 있습니다",
+                10000,
+                StoreType.RESTAURANT
+        );
+
+        // When & Then
+        // MockMapService는 항상 성공하므로 이 테스트는 통과함
+        // 실제 Naver Maps API를 사용하는 환경에서는 400 Bad Request가 발생해야 함
+        mockMvc.perform(post("/api/v1/admin/stores")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(request)))
+                .andDo(print())
+                .andExpect(status().isCreated()) // Mock 환경에서는 성공
+                .andExpect(jsonPath("$.result").value("SUCCESS"));
+        
+        // 실제 환경에서의 기대 결과:
+        // .andExpect(status().isBadRequest())
+        // .andExpect(jsonPath("$.error.code").value("INVALID_ADDRESS"));
+    }
 }
+

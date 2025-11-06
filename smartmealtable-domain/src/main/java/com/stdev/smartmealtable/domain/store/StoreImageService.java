@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.domain.store;
 
+import com.stdev.smartmealtable.core.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.stdev.smartmealtable.core.error.ErrorType.*;
 
 /**
  * 가게 이미지 도메인 서비스
@@ -25,6 +28,7 @@ import java.util.Optional;
 public class StoreImageService {
     
     private final StoreImageRepository storeImageRepository;
+    private final StoreRepository storeRepository;
     
     /**
      * 가게 이미지를 생성합니다.
@@ -38,22 +42,33 @@ public class StoreImageService {
     public StoreImage createImage(StoreImage storeImage) {
         validateImage(storeImage);
         
+        // Store 존재 여부 검증
+        storeRepository.findById(storeImage.getStoreId())
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
+        
+        // 가게의 첫 번째 이미지인 경우 자동으로 대표 이미지로 설정
+        List<StoreImage> existingImages = storeImageRepository.findByStoreId(storeImage.getStoreId());
+        boolean isFirstImage = existingImages.isEmpty();
+        boolean shouldBeMain = isFirstImage || storeImage.isMain();
+        
         // 대표 이미지로 설정하는 경우 기존 대표 이미지 해제
-        if (storeImage.isMain()) {
+        if (shouldBeMain) {
             unsetExistingMainImage(storeImage.getStoreId());
         }
         
         // displayOrder가 null이면 자동 할당
-        StoreImage imageToSave = storeImage;
-        if (storeImage.getDisplayOrder() == null) {
-            int nextOrder = getNextDisplayOrder(storeImage.getStoreId());
-            imageToSave = StoreImage.builder()
-                    .storeId(storeImage.getStoreId())
-                    .imageUrl(storeImage.getImageUrl())
-                    .isMain(storeImage.isMain())
-                    .displayOrder(nextOrder)
-                    .build();
+        Integer displayOrder = storeImage.getDisplayOrder();
+        if (displayOrder == null) {
+            displayOrder = getNextDisplayOrder(storeImage.getStoreId());
         }
+        
+        // 이미지 저장
+        StoreImage imageToSave = StoreImage.builder()
+                .storeId(storeImage.getStoreId())
+                .imageUrl(storeImage.getImageUrl())
+                .isMain(shouldBeMain)
+                .displayOrder(displayOrder)
+                .build();
         
         StoreImage savedImage = storeImageRepository.save(imageToSave);
         log.info("가게 이미지 생성 완료 - storeId: {}, imageId: {}, isMain: {}, displayOrder: {}", 
@@ -80,11 +95,11 @@ public class StoreImageService {
         StoreImage existingImage = storeImageRepository.findById(storeImageId);
         
         if (existingImage == null) {
-            throw new IllegalArgumentException("존재하지 않는 이미지입니다. imageId: " + storeImageId);
+            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
         }
         
         if (!existingImage.getStoreId().equals(storeId)) {
-            throw new IllegalArgumentException("해당 가게의 이미지가 아닙니다. storeId: " + storeId);
+            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
         }
         
         // 대표 이미지로 변경하는 경우 기존 대표 이미지 해제
@@ -120,17 +135,24 @@ public class StoreImageService {
         StoreImage existingImage = storeImageRepository.findById(storeImageId);
         
         if (existingImage == null) {
-            throw new IllegalArgumentException("존재하지 않는 이미지입니다. imageId: " + storeImageId);
+            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
         }
         
         if (!existingImage.getStoreId().equals(storeId)) {
-            throw new IllegalArgumentException("해당 가게의 이미지가 아닙니다. storeId: " + storeId);
+            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
         }
         
-        // Repository에서는 물리적 삭제 (이미지는 논리적 삭제 불필요)
-        storeImageRepository.deleteByStoreId(storeId);
+        boolean wasMainImage = existingImage.isMain();
         
-        log.info("가게 이미지 삭제 완료 - storeId: {}, imageId: {}", storeId, storeImageId);
+        // 개별 이미지만 삭제 (deleteById 사용)
+        storeImageRepository.deleteById(storeImageId);
+        
+        // 대표 이미지를 삭제한 경우, 다음 이미지를 대표로 설정
+        if (wasMainImage) {
+            promoteNextImageToMain(storeId);
+        }
+        
+        log.info("가게 이미지 삭제 완료 - storeId: {}, imageId: {}, wasMain: {}", storeId, storeImageId, wasMainImage);
     }
     
     /**
@@ -200,6 +222,42 @@ public class StoreImageService {
             storeImageRepository.save(updatedMain);
             log.debug("기존 대표 이미지 해제 - storeId: {}, imageId: {}", storeId, currentMain.getStoreImageId());
         }
+    }
+    
+    /**
+     * 다음 이미지를 대표 이미지로 승격합니다.
+     * 
+     * <p>displayOrder가 가장 작은 이미지를 대표 이미지로 설정합니다.</p>
+     * 
+     * @param storeId 가게 ID
+     */
+    private void promoteNextImageToMain(Long storeId) {
+        List<StoreImage> remainingImages = storeImageRepository.findByStoreId(storeId);
+        
+        if (remainingImages.isEmpty()) {
+            log.debug("남은 이미지가 없어 대표 이미지 승격을 건너뜁니다 - storeId: {}", storeId);
+            return;
+        }
+        
+        // displayOrder가 가장 작은 이미지를 찾아 대표 이미지로 설정
+        StoreImage nextMainImage = remainingImages.stream()
+                .min((a, b) -> Integer.compare(
+                        a.getDisplayOrder() != null ? a.getDisplayOrder() : Integer.MAX_VALUE,
+                        b.getDisplayOrder() != null ? b.getDisplayOrder() : Integer.MAX_VALUE
+                ))
+                .orElseThrow();
+        
+        StoreImage promotedImage = StoreImage.builder()
+                .storeImageId(nextMainImage.getStoreImageId())
+                .storeId(nextMainImage.getStoreId())
+                .imageUrl(nextMainImage.getImageUrl())
+                .isMain(true)  // 대표 이미지로 승격
+                .displayOrder(nextMainImage.getDisplayOrder())
+                .build();
+        
+        storeImageRepository.save(promotedImage);
+        log.info("다음 이미지를 대표 이미지로 승격 - storeId: {}, imageId: {}, displayOrder: {}", 
+                storeId, promotedImage.getStoreImageId(), promotedImage.getDisplayOrder());
     }
     
     /**

@@ -42,6 +42,24 @@ public class StoreImage {
     private Integer displayOrder;
     
     /**
+     * 새로운 가게 이미지 생성
+     * 
+     * @param storeId 가게 ID
+     * @param imageUrl 이미지 URL
+     * @param isMain 대표 이미지 여부
+     * @param displayOrder 표시 순서
+     * @return 생성된 StoreImage 객체
+     */
+    public static StoreImage create(Long storeId, String imageUrl, boolean isMain, Integer displayOrder) {
+        return StoreImage.builder()
+                .storeId(storeId)
+                .imageUrl(imageUrl)
+                .isMain(isMain)
+                .displayOrder(displayOrder)
+                .build();
+    }
+    
+    /**
      * 이미지가 유효한지 검증
      */
     public boolean isValid() {

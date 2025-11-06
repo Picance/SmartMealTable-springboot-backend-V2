@@ -3,11 +3,133 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-11-07 04:15
+**최종 업데이트**: 2025-11-07 06:30
 
 ---
 
-## 🎉 최신 업데이트 (2025-11-07 04:15)
+## 🎉 최신 업데이트 (2025-11-07 06:30)
+
+### ADMIN API v2.0 - 완전 구현 및 테스트 완료! 🎊🎊🎊
+- **완료 범위**: StoreImage CRUD, 자동 지오코딩, Food 정렬 기능
+- **테스트 결과**: ✅ **81/81 테스트 통과 (100%)**
+- **신규 엔드포인트**: 3개 (StoreImage CRUD)
+
+#### 🆕 주요 구현 내용
+
+##### 1. StoreImage 다중 관리 시스템
+- **Domain Layer**: 
+  - ✅ `StoreImage` 도메인 엔티티 생성 (isMain, displayOrder)
+  - ✅ `StoreImageService` 도메인 서비스 (대표 이미지 자동 관리)
+    - 첫 번째 이미지 자동 대표 설정
+    - **대표 이미지 삭제 시 다음 이미지 자동 승격** (displayOrder 기준)
+  - ✅ Store 존재 여부 검증
+
+- **Storage Layer**:
+  - ✅ `StoreImageJpaEntity` JPA 엔티티
+  - ✅ `StoreImageRepositoryImpl` 구현
+    - `deleteById(Long)`: 특정 이미지만 삭제
+    - `deleteByStoreId(Long)`: 가게의 모든 이미지 삭제
+
+- **Application Layer**:
+  - ✅ `StoreImageApplicationService` (유즈케이스 조율)
+  - ✅ `StoreApplicationService` 수정 (이미지 목록 조회 포함)
+
+- **Presentation Layer**:
+  - ✅ `StoreImageController` (3개 엔드포인트)
+    - POST `/stores/{storeId}/images` - 이미지 추가
+    - PUT `/stores/{storeId}/images/{imageId}` - 이미지 수정
+    - DELETE `/stores/{storeId}/images/{imageId}` - 이미지 삭제
+  - ✅ Request/Response DTOs
+
+- **Tests**: ✅ **11/11 통과**
+  - 첫 번째 이미지 자동 대표 설정
+  - 명시적 대표 이미지 설정
+  - 여러 이미지 추가
+  - 대표 이미지 변경
+  - 이미지 삭제
+  - **대표 이미지 삭제 시 다음 이미지 자동 승격** ⭐
+  - 404/422 에러 처리
+
+##### 2. 자동 지오코딩 (Address → Coordinates)
+- **Client Layer**: 
+  - ✅ API 모듈의 `MapService` 재사용 (Naver Maps API)
+  - ✅ `NaverMapClient` 지오코딩 연동
+
+- **Application Layer**:
+  - ✅ `StoreApplicationService.createStore()` - 주소 기반 좌표 자동 계산
+  - ✅ `StoreApplicationService.updateStore()` - 주소 변경 시 좌표 재계산
+  - ✅ 에러 처리: `INVALID_ADDRESS` (400 Bad Request)
+
+- **API 변경**:
+  - ❌ **제거**: `latitude`, `longitude` 필수 입력 (Request)
+  - ✅ **자동**: 서버에서 주소 기반 좌표 계산
+  - ✅ **Optional**: Update 요청 시 좌표 Optional (없으면 자동 계산)
+
+- **Tests**: ✅ **3/3 통과**
+  - 가게 생성 시 자동 좌표 설정
+  - 가게 수정 시 주소 변경 → 좌표 재계산
+  - 유효하지 않은 주소 에러 처리
+
+##### 3. Food 정렬 기능 (isMain, displayOrder)
+- **Domain Layer**:
+  - ✅ `Food.reconstituteWithMainAndOrder()` 메서드 추가
+
+- **Application Layer**:
+  - ✅ `FoodApplicationService` 정렬 로직 수정
+
+- **Presentation Layer**:
+  - ✅ `UpdateFoodRequest`, `CreateFoodRequest` (isMain, displayOrder 추가)
+
+- **Tests**: ✅ **6/6 통과**
+  - isMain 기준 정렬 (대표 메뉴 우선)
+  - displayOrder 기준 정렬 (오름차순/내림차순)
+  - 복합 정렬 (isMain 우선 + displayOrder)
+
+##### 4. 예외 처리 개선
+- **Core Layer**:
+  - ✅ `ErrorType.STORE_IMAGE_NOT_FOUND` 추가 (404)
+  - ✅ `IllegalArgumentException` → `BusinessException` 통일
+
+##### 5. 테스트 인프라
+- **Admin Module**:
+  - ✅ `AdminTestConfiguration` - Mock `MapService` (고정 좌표)
+  - ✅ Test Container 사용 (MySQL 8.0)
+
+#### 📊 테스트 결과 요약
+```
+Total: 81 tests
+Passed: 81 tests
+Failed: 0 tests
+Success Rate: 100%
+```
+
+**세부 결과**:
+- StoreImageControllerTest: 11/11 ✅
+- StoreControllerTest (지오코딩): 3/3 ✅
+- FoodControllerTest (정렬): 6/6 ✅
+- 기존 Admin 테스트: 61/61 ✅
+
+#### 📝 문서화 완료
+- ✅ `ADMIN_API_SPECIFICATION.md` 체크리스트 업데이트
+- ✅ `ADMIN_API_V2_IMPLEMENTATION_COMPLETE.md` 최종 보고서
+- ✅ `ADMIN_API_V2_SESSION_SUMMARY.md` 세션 요약
+- ✅ Markdown 기반 API 문서 관리 (Spring Rest Docs 미사용)
+
+#### 🎯 주요 성과
+- ✅ **완전한 기능 구현**: StoreImage CRUD, 자동 지오코딩, Food 정렬
+- ✅ **100% 테스트 커버리지**: 81/81 테스트 통과
+- ✅ **문서화 완료**: Markdown 기반 명세서 + 구현 보고서
+- ✅ **예외 처리 통일**: BusinessException 기반 일관된 에러 응답
+- ✅ **프론트엔드 친화적**: 좌표 자동 계산으로 사용자 편의성 향상
+
+**상세 문서**: 
+- ADMIN_API_SPECIFICATION.md (섹션 3.2, 4 업데이트)
+- ADMIN_API_V2_IMPLEMENTATION_COMPLETE.md (최종 보고서)
+- ADMIN_API_V2_SESSION_SUMMARY.md (세션 요약)
+
+---
+
+## 🎉 이전 업데이트 (2025-11-07 04:15)
 
 ### API 모듈 - Food/Store 엔티티 재설계에 따른 API 업데이트 완료! 🎊🎊🎊
 - **완료 범위**: isMain/displayOrder 필드 추가 및 StoreImage 테이블 신규 생성에 따른 API 전면 재설계

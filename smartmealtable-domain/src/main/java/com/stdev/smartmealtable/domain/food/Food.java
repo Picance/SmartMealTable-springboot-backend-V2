@@ -54,6 +54,35 @@ public class Food {
     }
 
     /**
+     * JPA Entity에서 Domain Entity로 변환 시 사용 (reconstitute 패턴) - v2.0
+     * 
+     * <p>isMain, displayOrder 필드가 포함됩니다.</p>
+     */
+    public static Food reconstituteWithMainAndOrder(
+            Long foodId,
+            String foodName,
+            Long storeId,
+            Long categoryId,
+            String description,
+            String imageUrl,
+            Integer averagePrice,
+            Boolean isMain,
+            Integer displayOrder
+    ) {
+        return Food.builder()
+                .foodId(foodId)
+                .foodName(foodName)
+                .storeId(storeId)
+                .categoryId(categoryId)
+                .description(description)
+                .imageUrl(imageUrl)
+                .averagePrice(averagePrice)
+                .isMain(isMain != null ? isMain : false)
+                .displayOrder(displayOrder)
+                .build();
+    }
+
+    /**
      * 새로운 음식 생성 (테스트 및 초기화 시 사용) - v2.0
      * 
      * <p>isMain, displayOrder 필드가 추가되었습니다.</p>

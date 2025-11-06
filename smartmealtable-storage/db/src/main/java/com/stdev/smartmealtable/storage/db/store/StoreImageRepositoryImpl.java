@@ -40,6 +40,11 @@ public class StoreImageRepositoryImpl implements StoreImageRepository {
     }
     
     @Override
+    public void deleteById(Long storeImageId) {
+        jpaRepository.deleteById(storeImageId);
+    }
+    
+    @Override
     public List<StoreImage> findByStoreId(Long storeId) {
         return jpaRepository.findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId)
                 .stream()

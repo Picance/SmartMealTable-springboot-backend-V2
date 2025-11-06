@@ -160,6 +160,28 @@ public class StoreApplicationService {
         Store existingStore = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
         
+        // 좌표 결정 로직
+        BigDecimal latitude = request.latitude();
+        BigDecimal longitude = request.longitude();
+        
+        // 좌표가 없으면 주소 기반 지오코딩
+        if (latitude == null || longitude == null) {
+            log.info("[ADMIN] 좌표 미제공 - 주소 기반 지오코딩 수행 - address: {}", request.address());
+            
+            List<AddressSearchResult> results = mapService.searchAddress(request.address(), 1);
+            
+            if (results.isEmpty()) {
+                log.error("[ADMIN] 유효하지 않은 주소 - address: {}", request.address());
+                throw new BusinessException(INVALID_ADDRESS);
+            }
+            
+            AddressSearchResult addressResult = results.get(0);
+            latitude = addressResult.latitude();
+            longitude = addressResult.longitude();
+            
+            log.info("[ADMIN] 지오코딩 완료 - lat: {}, lng: {}", latitude, longitude);
+        }
+        
         Store updatedStore = Store.builder()
                 .storeId(existingStore.getStoreId())
                 .name(request.name())
@@ -167,8 +189,8 @@ public class StoreApplicationService {
                 .sellerId(existingStore.getSellerId()) // sellerId는 수정하지 않음
                 .address(request.address())
                 .lotNumberAddress(request.lotNumberAddress())
-                .latitude(request.latitude())
-                .longitude(request.longitude())
+                .latitude(latitude)
+                .longitude(longitude)
                 .phoneNumber(request.phoneNumber())
                 .description(request.description())
                 .averagePrice(request.averagePrice())

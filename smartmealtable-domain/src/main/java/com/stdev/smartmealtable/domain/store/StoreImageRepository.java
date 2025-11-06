@@ -19,6 +19,11 @@ public interface StoreImageRepository {
     StoreImage findById(Long storeImageId);
     
     /**
+     * 이미지 ID로 삭제
+     */
+    void deleteById(Long storeImageId);
+    
+    /**
      * 가게의 모든 이미지 삭제
      */
     void deleteByStoreId(Long storeId);

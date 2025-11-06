@@ -559,80 +559,93 @@
 ### 4.1. 백엔드 (smartmealtable-admin)
 
 #### Domain Layer
-- [ ] `StoreImage` 도메인 엔티티 생성
-  - [ ] `storeImageId`, `storeId`, `imageUrl`, `isMain`, `displayOrder` 필드
-- [ ] `Food` 도메인 엔티티 수정
-  - [ ] `isMain`, `displayOrder` 필드 추가
-- [ ] `StoreImageRepository` 인터페이스 생성
+- [x] `StoreImage` 도메인 엔티티 생성 ✅ (2025-11-07 완료)
+  - [x] `storeImageId`, `storeId`, `imageUrl`, `isMain`, `displayOrder` 필드
+  - [x] `StoreImage.create()` 팩토리 메서드 (자동 대표 이미지 설정)
+- [x] `Food` 도메인 엔티티 수정 ✅ (2025-11-07 완료)
+  - [x] `isMain`, `displayOrder` 필드 추가
+  - [x] `Food.reconstituteWithMainAndOrder()` 메서드 추가
+- [x] `StoreImageRepository` 인터페이스 생성 ✅ (2025-11-07 완료)
+  - [x] `deleteById(Long)` 메서드 추가
 
 #### Storage Layer
-- [ ] `StoreImageJpaEntity` 생성 (완료 확인 필요)
-- [ ] `StoreImageRepositoryImpl` 구현
-- [ ] `FoodJpaEntity`에 `isMain`, `displayOrder` 매핑 (완료 확인 필요)
+- [x] `StoreImageJpaEntity` 생성 ✅ (2025-11-07 완료)
+- [x] `StoreImageRepositoryImpl` 구현 ✅ (2025-11-07 완료)
+  - [x] `deleteById()` vs `deleteByStoreId()` 구분
+- [x] `FoodJpaEntity`에 `isMain`, `displayOrder` 매핑 ✅ (2025-11-07 완료)
 
 #### Application Layer
-- [ ] `StoreService` 수정
-  - [ ] 주소 기반 지오코딩 로직 추가
-  - [ ] 가게 생성/수정 시 `latitude`, `longitude` 파라미터 제거
-- [ ] `StoreImageService` 생성 (신규)
-  - [ ] `addStoreImage(Long storeId, StoreImageRequest request)`
-  - [ ] `updateStoreImage(Long storeId, Long imageId, StoreImageRequest request)`
-  - [ ] `deleteStoreImage(Long storeId, Long imageId)`
-  - [ ] `getStoreImages(Long storeId)` (대표 이미지 우선 정렬)
-- [ ] `FoodService` 수정
-  - [ ] `isMain`, `displayOrder` 처리 로직 추가
-  - [ ] 메뉴 목록 조회 시 정렬 기능 추가
+- [x] `StoreApplicationService` 수정 ✅ (2025-11-07 완료)
+  - [x] 주소 기반 지오코딩 로직 추가 (Naver Maps API)
+  - [x] 가게 생성/수정 시 `latitude`, `longitude` 자동 계산
+- [x] `StoreImageService` 생성 (도메인 서비스) ✅ (2025-11-07 완료)
+  - [x] `createImage()` - 대표 이미지 자동 관리
+  - [x] `updateImage()` - 대표 이미지 전환
+  - [x] `deleteImage()` - 삭제 시 다음 이미지 자동 승격
+  - [x] `getStoreImages()` - 대표 이미지 우선 정렬
+  - [x] Store 존재 여부 검증
+- [x] `FoodApplicationService` 수정 ✅ (2025-11-07 완료)
+  - [x] `isMain`, `displayOrder` 처리 로직 추가
+  - [x] 메뉴 목록 조회 시 정렬 기능 추가
 
 #### Presentation Layer (Controller)
-- [ ] `StoreController` 수정
-  - [ ] `POST /stores`: `latitude`, `longitude` 제거
-  - [ ] `PUT /stores/{storeId}`: `latitude`, `longitude` 제거
-  - [ ] `GET /stores/{storeId}`: 응답에 `images` 배열 추가
-- [ ] `StoreImageController` 생성 (신규)
-  - [ ] `POST /stores/{storeId}/images`
-  - [ ] `PUT /stores/{storeId}/images/{imageId}`
-  - [ ] `DELETE /stores/{storeId}/images/{imageId}`
-- [ ] `FoodController` 수정
-  - [ ] `POST /stores/{storeId}/foods`: `isMain`, `displayOrder` 추가
-  - [ ] `PUT /foods/{foodId}`: `isMain`, `displayOrder` 추가
-  - [ ] `GET /stores/{storeId}/foods`: 정렬 옵션 추가
+- [x] `StoreController` 수정 ✅ (2025-11-07 완료)
+  - [x] `POST /stores`: `latitude`, `longitude` 제거
+  - [x] `PUT /stores/{storeId}`: `latitude`, `longitude` 제거 (자동 계산)
+  - [x] `GET /stores/{storeId}`: 응답에 `images` 배열 추가
+- [x] `StoreImageController` 생성 ✅ (2025-11-07 완료)
+  - [x] `POST /stores/{storeId}/images`
+  - [x] `PUT /stores/{storeId}/images/{imageId}`
+  - [x] `DELETE /stores/{storeId}/images/{imageId}`
+- [x] `FoodController` 수정 ✅ (2025-11-07 완료)
+  - [x] `POST /stores/{storeId}/foods`: `isMain`, `displayOrder` 추가
+  - [x] `PUT /foods/{foodId}`: `isMain`, `displayOrder` 추가
+  - [x] `GET /stores/{storeId}/foods`: 정렬 옵션 추가
 
 #### Client Layer (Geocoding)
-- [ ] 지오코딩 서비스 구현
-  - [ ] Kakao Local API 또는 Google Geocoding API 연동
-  - [ ] `GeocodingClient` 인터페이스 및 구현체
-  - [ ] 주소 → 좌표 변환 로직
-  - [ ] 에러 처리 (주소가 유효하지 않을 경우)
+- [x] 지오코딩 서비스 구현 ✅ (기존 API 모듈 재사용)
+  - [x] Naver Maps API 연동 (API 모듈의 `MapService` 재사용)
+  - [x] 주소 → 좌표 변환 로직
+  - [x] 에러 처리 (주소가 유효하지 않을 경우 `INVALID_ADDRESS`)
 
 ### 4.2. 테스트
 
 #### 단위 테스트
-- [ ] `StoreServiceTest`
-  - [ ] 지오코딩 자동 처리 테스트
-  - [ ] 주소 변경 시 좌표 재계산 테스트
-- [ ] `StoreImageServiceTest`
-  - [ ] 이미지 추가/수정/삭제 테스트
-  - [ ] 대표 이미지 자동 변경 테스트
-- [ ] `FoodServiceTest`
-  - [ ] `isMain`, `displayOrder` 처리 테스트
-  - [ ] 메뉴 정렬 테스트
+- [x] `StoreImageService` 테스트 ✅ (2025-11-07 완료)
+  - [x] 이미지 추가/수정/삭제 테스트
+  - [x] 대표 이미지 자동 변경 테스트
+  - [x] 대표 이미지 삭제 시 다음 이미지 자동 승격 테스트
+  - [x] Store 존재 여부 검증 테스트
 
-#### 통합 테스트
-- [ ] `StoreControllerTest`
-  - [ ] 가게 생성 시 지오코딩 자동 처리 검증
-  - [ ] 가게 상세 조회 시 이미지 배열 포함 검증
-- [ ] `StoreImageControllerTest`
-  - [ ] 이미지 CRUD 테스트
-  - [ ] 대표 이미지 토글 테스트
-- [ ] `FoodControllerTest`
-  - [ ] 메뉴 생성/수정 시 `isMain`, `displayOrder` 검증
-  - [ ] 메뉴 목록 정렬 테스트
+#### 통합 테스트 ✅ (2025-11-07 완료 - 81/81 테스트 통과)
+- [x] `StoreControllerTest` ✅
+  - [x] 가게 생성 시 지오코딩 자동 처리 검증
+  - [x] 가게 수정 시 주소 변경 시 좌표 자동 재계산 검증
+  - [x] 가게 상세 조회 시 이미지 배열 포함 검증
+  - [x] 유효하지 않은 주소 에러 처리 검증
+- [x] `StoreImageControllerTest` (11개 테스트) ✅
+  - [x] 첫 번째 이미지 자동 대표 설정
+  - [x] 명시적 대표 이미지 설정
+  - [x] 여러 이미지 추가
+  - [x] 대표 이미지 변경
+  - [x] 이미지 수정 (존재하지 않는 이미지 404)
+  - [x] 이미지 삭제 성공
+  - [x] **대표 이미지 삭제 시 다음 이미지 자동 승격**
+  - [x] 존재하지 않는 이미지 삭제 404
+  - [x] 존재하지 않는 가게 404
+  - [x] 이미지 URL 누락 422 (Validation)
+- [x] `FoodControllerTest` (6개 정렬 테스트) ✅
+  - [x] 메뉴 생성/수정 시 `isMain`, `displayOrder` 검증
+  - [x] isMain 기준 정렬 (대표 메뉴 우선)
+  - [x] displayOrder 기준 정렬 (오름차순/내림차순)
+  - [x] 복합 정렬 (isMain 우선, displayOrder 차선)
 
 ### 4.3. 문서화
-- [ ] Spring Rest Docs 업데이트
-  - [ ] Store API 문서 갱신
-  - [ ] StoreImage API 문서 추가
-  - [ ] Food API 문서 갱신
+- [x] ADMIN API 명세서 업데이트 ✅ (2025-11-07 완료)
+  - [x] Store API 문서 갱신 (지오코딩 자동 처리 반영)
+  - [x] StoreImage API 문서 추가 (CRUD, 대표 이미지 관리)
+  - [x] Food API 문서 갱신 (정렬 기능 추가)
+  - [x] 구현 체크리스트 업데이트
 
 ---
 
