@@ -784,13 +784,15 @@ Authorization: Bearer {access_token}
   "lotNumberAddress": "서울특별시 강남구 역삼동 456-78",
   "detailedAddress": "101동 1234호",
   "latitude": 37.497942,
-  "longitude": 127.027621,
-  "isPrimary": true
+  "longitude": 127.027621
 }
 ```
 
 **Validation:**
 - 네이버 지도 API로 주소 검증 필수
+
+**Note:**
+- 첫 번째로 등록된 주소는 자동으로 기본 주소(primary address)로 설정됩니다.
 
 **Response (201):**
 ```json
@@ -1881,6 +1883,19 @@ Authorization: Bearer {access_token}
 **Endpoint:** `GET /api/v1/stores`
 
 **Query Parameters:**
+커서 기반 페이징 (권장):
+```
+?keyword=치킨
+&radius=0.5
+&categoryId=5
+&isOpen=true
+&storeType=RESTAURANT
+&sortBy=distance
+&lastId=101
+&limit=20
+```
+
+오프셋 기반 페이징 (하위 호환성):
 ```
 ?keyword=치킨
 &radius=0.5
@@ -1894,23 +1909,31 @@ Authorization: Bearer {access_token}
 
 **Parameters:**
 - `keyword` (optional): 가게명 또는 카테고리 검색어
-- `radius` (optional): 반경 (0.5, 1, 2 km) - 기본값: 0.5
+- `radius` (optional): 반경 (0.5 ~ 50 km) - 기본값: 3.0
 - `categoryId` (optional): 카테고리 필터
 - `isOpen` (optional): true면 영업 중만 조회
 - `storeType` (optional): `CAMPUS_RESTAURANT`, `RESTAURANT`, `ALL` (기본값: ALL)
 - `sortBy` (optional): `distance`, `reviewCount`, `priceAsc`, `priceDesc`, `favoriteCount`, `viewCount`
-- `page`, `size`: 페이징
+
+**커서 기반 페이징 파라미터:**
+- `lastId` (optional): 이전 응답의 마지막 가게 ID (첫 요청시 생략)
+- `limit` (optional): 조회할 개수 (1-100, 기본값: 20)
+
+**오프셋 기반 페이징 파라미터:**
+- `page` (optional): 페이지 번호 (0부터 시작, 기본값: 0)
+- `size` (optional): 페이지 크기 (1-100, 기본값: 20)
 
 **Note:**
 - 사용자의 **기본 주소(primary address)**를 기준으로 거리 계산
 - 기본 주소가 없으면 404 에러 반환
+- 커서 기반 페이징 사용 시 무한 스크롤 구현 가능
 
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
   "data": {
-    "content": [
+    "stores": [
       {
         "storeId": 101,
         "name": "교촌치킨 강남점",
@@ -1923,15 +1946,17 @@ Authorization: Bearer {access_token}
         "averagePrice": 18000,
         "reviewCount": 1523,
         "viewCount": 8945,
-        "favoriteCount": 234,
-        "isOpen": true,
-        "isFavorite": false,
-        "isTemporaryClosed": false,
+        "storeType": "RESTAURANT",
+        "phoneNumber": "02-1234-5678",
         "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
       }
     ],
-    "pageable": { ... },
-    "totalElements": 45
+    "totalCount": 45,
+    "currentPage": 0,
+    "pageSize": 20,
+    "totalPages": 3,
+    "hasMore": true,
+    "lastId": 101
   },
   "error": null
 }
@@ -2389,72 +2414,77 @@ Response:
 
 ### 9.1 개인화 추천 (기본)
 
-**Endpoint:** `POST /api/v1/recommendations`
+**Endpoint:** `GET /api/v1/recommendations`
 
-**Request:**
-```json
-{
-  "radius": 0.5,
-  "excludeDisliked": false,
-  "isOpenOnly": false,
-  "storeType": "ALL",
-  "sortBy": "recommendation"
-}
+**Query Parameters:**
+커서 기반 페이징 (권장):
+```
+?latitude=37.497942
+&longitude=127.027621
+&radius=0.5
+&lastId=101
+&limit=20
+```
+
+오프셋 기반 페이징 (하위 호환성):
+```
+?latitude=37.497942
+&longitude=127.027621
+&radius=0.5
+&page=0
+&size=20
 ```
 
 **Parameters:**
-- `radius`: 0.5, 1, 2 (km) - 기본값: 0.5
-- `excludeDisliked`: 불호 음식 제외 여부 - 기본값: false
-- `isOpenOnly`: 영업 중만 조회 - 기본값: false
-- `storeType`: `ALL`, `CAMPUS_RESTAURANT`, `RESTAURANT` - 기본값: ALL
-- `sortBy`: 정렬 기준 (기본값: recommendation)
+- `latitude` (required): 현재 위도 (-90 ~ 90)
+- `longitude` (required): 현재 경도 (-180 ~ 180)
+- `radius` (optional): 반경 (0.1 ~ 10 km, 기본값: 0.5)
+- `sortBy` (optional): `SCORE`, `reviewCount`, `distance` (기본값: SCORE)
+- `includeDisliked` (optional): 불호 음식 포함 여부 (기본값: false)
+- `openNow` (optional): 영업 중인 가게만 조회 (기본값: false)
+- `storeType` (optional): `ALL`, `CAMPUS_RESTAURANT`, `RESTAURANT` (기본값: ALL)
 
-**Note:**
-- 사용자의 **기본 주소(primary address)**를 기준으로 추천 제공
-- 기본 주소가 없으면 404 에러 반환
+**커서 기반 페이징 파라미터:**
+- `lastId` (optional): 이전 응답의 마지막 항목 ID (첫 요청시 생략)
+- `limit` (optional): 조회할 개수 (1-100, 기본값: 20)
+
+**오프셋 기반 페이징 파라미터:**
+- `page` (optional): 페이지 번호 (0부터 시작, 기본값: 0)
+- `size` (optional): 페이지 크기 (1-100, 기본값: 20)
 
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
-  "data": {
-    "userProfile": {
-      "recommendationType": "BALANCED",
-      "weights": {
-        "stability": 0.30,
-        "exploration": 0.25,
-        "budgetEfficiency": 0.30,
-        "accessibility": 0.15
-      }
-    },
-    "recommendations": [
-      {
-        "storeId": 101,
-        "name": "교촌치킨 강남점",
-        "categoryName": "치킨",
-        "address": "서울특별시 강남구 테헤란로 123",
-        "distance": 0.45,
-        "averagePrice": 18000,
-        "reviewCount": 1523,
-        "recommendationScore": 87.5,
-        "scores": {
-          "stability": 85.0,
-          "exploration": 72.0,
-          "budgetEfficiency": 90.0,
-          "accessibility": 95.0
-        },
-        "isFavorite": false,
-        "isOpen": true,
-        "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
-      }
-    ],
-    "totalCount": 45,
-    "filterApplied": {
-      "radius": 0.5,
-      "excludeDisliked": false,
-      "isOpenOnly": false
+  "data": [
+    {
+      "storeId": 101,
+      "name": "교촌치킨 강남점",
+      "categoryName": "치킨",
+      "address": "서울특별시 강남구 테헤란로 123",
+      "latitude": 37.498123,
+      "longitude": 127.028456,
+      "distance": 0.45,
+      "averagePrice": 18000,
+      "reviewCount": 1523,
+      "recommendationScore": 87.5,
+      "scores": {
+        "stability": 85.0,
+        "exploration": 72.0,
+        "budgetEfficiency": 90.0,
+        "accessibility": 95.0
+      },
+      "isFavorite": false,
+      "isOpen": true,
+      "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
     }
-  },
+  ],
+  "totalCount": 45,
+  "currentPage": 0,
+  "pageSize": 20,
+  "totalPages": 3,
+  "hasMore": true,
+  "lastId": 101,
   "error": null
 }
 ```
@@ -2787,7 +2817,41 @@ Response:
 
 **Endpoint:** `POST /api/v1/members/me/addresses`
 
-**Request/Response:** 온보딩 주소 등록과 동일
+**Request:**
+```json
+{
+  "addressAlias": "회사",
+  "addressType": "OFFICE",
+  "streetNameAddress": "서울특별시 강남구 테헤란로 234",
+  "lotNumberAddress": "서울특별시 강남구 역삼동 567-89",
+  "detailedAddress": "200동 2345호",
+  "latitude": 37.498500,
+  "longitude": 127.029000
+}
+```
+
+**Response (201):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "addressHistoryId": 457,
+    "addressAlias": "회사",
+    "addressType": "OFFICE",
+    "streetNameAddress": "서울특별시 강남구 테헤란로 234",
+    "detailedAddress": "200동 2345호",
+    "latitude": 37.498500,
+    "longitude": 127.029000,
+    "isPrimary": false,
+    "createdAt": "2025-10-08T12:34:56.789Z"
+  },
+  "error": null
+}
+```
+
+**Note:**
+- 첫 번째 주소 등록 시 자동으로 기본 주소로 설정됩니다.
+- 추가 주소 등록 시 기본 주소 설정은 별도의 API를 이용합니다.
 
 ---
 
@@ -2795,7 +2859,38 @@ Response:
 
 **Endpoint:** `PUT /api/v1/members/me/addresses/{addressHistoryId}`
 
-**Request/Response:** 온보딩 주소 등록과 동일
+**Request:**
+```json
+{
+  "addressAlias": "회사 (강남)",
+  "addressType": "OFFICE",
+  "streetNameAddress": "서울특별시 강남구 테헤란로 234",
+  "lotNumberAddress": "서울특별시 강남구 역삼동 567-89",
+  "detailedAddress": "200동 2345호",
+  "latitude": 37.498500,
+  "longitude": 127.029000
+}
+```
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "addressHistoryId": 457,
+    "addressAlias": "회사 (강남)",
+    "addressType": "OFFICE",
+    "streetNameAddress": "서울특별시 강남구 테헤란로 234",
+    "detailedAddress": "200동 2345호",
+    "latitude": 37.498500,
+    "longitude": 127.029000,
+    "isPrimary": false,
+    "createdAt": "2025-10-08T12:34:56.789Z",
+    "updatedAt": "2025-10-08T13:45:00.000Z"
+  },
+  "error": null
+}
+```
 
 ---
 
