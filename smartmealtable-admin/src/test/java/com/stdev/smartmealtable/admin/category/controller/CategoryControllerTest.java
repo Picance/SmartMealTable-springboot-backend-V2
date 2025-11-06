@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.admin.category.controller.request.CreateCategoryRequest;
 import com.stdev.smartmealtable.admin.category.controller.request.UpdateCategoryRequest;
 import com.stdev.smartmealtable.admin.common.AbstractAdminContainerTest;
+import com.stdev.smartmealtable.admin.config.AdminTestConfiguration;
 import com.stdev.smartmealtable.core.error.ErrorCode;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(AdminTestConfiguration.class)
 class CategoryControllerTest extends AbstractAdminContainerTest {
 
     @Autowired

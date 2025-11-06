@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.admin.food.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.admin.common.AbstractAdminContainerTest;
+import com.stdev.smartmealtable.admin.config.AdminTestConfiguration;
 import com.stdev.smartmealtable.admin.food.controller.dto.CreateFoodRequest;
 import com.stdev.smartmealtable.admin.food.controller.dto.UpdateFoodRequest;
 import com.stdev.smartmealtable.domain.category.Category;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(AdminTestConfiguration.class)
 class FoodControllerTest extends AbstractAdminContainerTest {
 
     @Autowired
@@ -92,7 +95,9 @@ class FoodControllerTest extends AbstractAdminContainerTest {
                 testCategoryId,
                 "매콤한 김치찌개",
                 "http://example.com/kimchi.jpg",
-                8000
+                8000,
+                true,  // isMain
+                1      // displayOrder
         );
 
         Food food2 = Food.create(
@@ -101,7 +106,9 @@ class FoodControllerTest extends AbstractAdminContainerTest {
                 testCategoryId,
                 "구수한 된장찌개",
                 "http://example.com/doenjang.jpg",
-                7000
+                7000,
+                false, // isMain
+                2      // displayOrder
         );
 
         foodRepository.save(food1);
@@ -195,7 +202,9 @@ class FoodControllerTest extends AbstractAdminContainerTest {
                 testCategoryId,
                 "달콤한 불고기",
                 "http://example.com/bulgogi.jpg",
-                12000
+                12000,
+                true,  // isMain
+                1      // displayOrder
         );
 
         // When & Then
@@ -220,7 +229,9 @@ class FoodControllerTest extends AbstractAdminContainerTest {
                 testCategoryId,
                 "설명",
                 null,
-                12000
+                12000,
+                false, // isMain
+                null   // displayOrder
         );
 
         // When & Then

@@ -275,7 +275,9 @@ public class CafeteriaDataImportService {
                         categoryId,
                         null, // description
                         null, // imageUrl
-                        menu.getPrice()
+                        menu.getPrice(),
+                        false, // isMain
+                        null   // displayOrder
                 );
                 
                 foodRepository.save(food);

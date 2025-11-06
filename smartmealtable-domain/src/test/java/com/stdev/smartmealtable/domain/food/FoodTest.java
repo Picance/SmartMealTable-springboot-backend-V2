@@ -61,7 +61,7 @@ class FoodTest {
             Integer averagePrice = 7000;
 
             // When
-            Food food = Food.create(foodName, storeId, categoryId, description, imageUrl, averagePrice);
+            Food food = Food.create(foodName, storeId, categoryId, description, imageUrl, averagePrice, false, null);
 
             // Then
             assertThat(food).isNotNull();
@@ -72,6 +72,8 @@ class FoodTest {
             assertThat(food.getDescription()).isEqualTo(description);
             assertThat(food.getImageUrl()).isEqualTo(imageUrl);
             assertThat(food.getAveragePrice()).isEqualTo(averagePrice);
+            assertThat(food.getIsMain()).isFalse();
+            assertThat(food.getDisplayOrder()).isNull();
         }
     }
 

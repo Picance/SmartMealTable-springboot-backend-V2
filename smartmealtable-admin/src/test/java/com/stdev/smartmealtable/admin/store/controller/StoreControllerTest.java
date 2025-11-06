@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.admin.store.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.admin.common.AbstractAdminContainerTest;
+import com.stdev.smartmealtable.admin.config.AdminTestConfiguration;
 import com.stdev.smartmealtable.admin.store.controller.request.CreateStoreRequest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(AdminTestConfiguration.class)
 class StoreControllerTest extends AbstractAdminContainerTest {
 
     @Autowired
@@ -184,13 +187,10 @@ class StoreControllerTest extends AbstractAdminContainerTest {
                 null,
                 "서울시 강남구 테헤란로 789",
                 "서울시 강남구 역삼동 789-12",
-                new BigDecimal("37.4981"),
-                new BigDecimal("127.0278"),
                 "02-9876-5432",
                 "새로 오픈한 음식점입니다",
                 8000,
-                StoreType.RESTAURANT,
-                null
+                StoreType.RESTAURANT
         );
 
         // When & Then
@@ -215,13 +215,10 @@ class StoreControllerTest extends AbstractAdminContainerTest {
                 null,
                 "서울시 강남구 테헤란로 789",
                 null,
-                new BigDecimal("37.4981"),
-                new BigDecimal("127.0278"),
                 null,
                 null,
                 8000,
-                StoreType.RESTAURANT,
-                null
+                StoreType.RESTAURANT
         );
 
         // When & Then

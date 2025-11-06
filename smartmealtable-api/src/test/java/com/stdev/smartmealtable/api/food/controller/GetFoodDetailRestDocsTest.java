@@ -123,7 +123,9 @@ class GetFoodDetailRestDocsTest extends AbstractRestDocsTest {
                 5L,
                 "교촌의 시그니처 메뉴",
                 "https://cdn.smartmealtable.com/foods/201.jpg",
-                18000
+                18000,
+                true, // isMain
+                1     // displayOrder
         );
         testFood = foodRepository.save(testFood);
     }

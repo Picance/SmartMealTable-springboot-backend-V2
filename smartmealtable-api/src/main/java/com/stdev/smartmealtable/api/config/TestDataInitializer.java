@@ -317,7 +317,9 @@ public class TestDataInitializer {
                 for (Store store : createdStores) {
                     Food food = Food.create(
                         foodData.foodName, store.getStoreId(), category.getCategoryId(), 
-                        foodData.description, foodData.imageUrl, foodData.averagePrice
+                        foodData.description, foodData.imageUrl, foodData.averagePrice,
+                        false, // isMain
+                        null   // displayOrder
                     );
                     
                     Food savedFood = foodRepository.save(food);
