@@ -128,13 +128,31 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
             List<Long> excludedCategoryIds,
             boolean isOpenOnly
     ) {
-        log.debug("반경 내 가게 조회 - lat: {}, lon: {}, radius: {}km, excludedCategories: {}, openOnly: {}",
-                latitude, longitude, radiusKm, excludedCategoryIds, isOpenOnly);
+        return findStoresInRadiusWithKeyword(
+                latitude,
+                longitude,
+                radiusKm,
+                null, // keyword 없음
+                excludedCategoryIds,
+                isOpenOnly
+        );
+    }
+
+    @Override
+    public List<Store> findStoresInRadiusWithKeyword(
+            BigDecimal latitude,
+            BigDecimal longitude,
+            double radiusKm,
+            String keyword,
+            List<Long> excludedCategoryIds,
+            boolean isOpenOnly
+    ) {
+        log.debug("반경 내 가게 조회 (검색어 포함) - lat: {}, lon: {}, radius: {}km, keyword: {}, excludedCategories: {}, openOnly: {}",
+                latitude, longitude, radiusKm, keyword, excludedCategoryIds, isOpenOnly);
 
         // QueryDSL을 활용한 복잡한 쿼리 실행
-        // TODO: excludedCategoryIds 필터링 추가 필요
         StoreRepository.StoreSearchResult result = storeQueryDslRepository.searchStores(
-                null,           // keyword
+                keyword,        // 검색어 (가게명 또는 음식명)
                 latitude,
                 longitude,
                 radiusKm,
