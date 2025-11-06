@@ -100,4 +100,39 @@ class StoreRepositoryImplTest {
     StoreRepository.StoreSearchResult res = repository.searchStores("k", BigDecimal.ONE, BigDecimal.ONE, 1.0, null, null, StoreType.RESTAURANT, "", 0, 10);
     assertThat(res.totalCount()).isZero();
     }
+
+    @Test
+    void findByExternalId_returns_store_when_exists() {
+        // Given
+        String externalId = "naver_12345";
+        Store store = Store.builder()
+                .storeId(1L)
+                .name("Test Store")
+                .externalId(externalId)
+                .build();
+
+        when(jpaRepository.findByExternalId(externalId))
+                .thenReturn(Optional.of(StoreEntityMapper.toJpaEntity(store)));
+
+        // When
+        Optional<Store> result = repository.findByExternalId(externalId);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get().getExternalId()).isEqualTo(externalId);
+        assertThat(result.get().getStoreId()).isEqualTo(1L);
+    }
+
+    @Test
+    void findByExternalId_returns_empty_when_not_exists() {
+        // Given
+        String externalId = "nonexistent_id";
+        when(jpaRepository.findByExternalId(externalId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<Store> result = repository.findByExternalId(externalId);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
 }
