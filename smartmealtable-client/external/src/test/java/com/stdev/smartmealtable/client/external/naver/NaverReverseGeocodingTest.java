@@ -1,6 +1,5 @@
 package com.stdev.smartmealtable.client.external.naver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.client.external.naver.dto.NaverReverseGeocodingResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
