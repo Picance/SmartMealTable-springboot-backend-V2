@@ -9,11 +9,11 @@
 # 3. Copying to docs/ directory for GitHub Pages
 #
 # Usage:
-#   ./deploy-docs.sh                          # Run all RestDocsTest
+#   ./deploy-docs.sh                          # Run all RestDocsTest (완전한 문서, 5-10분)
 #   ./deploy-docs.sh --skip-tests             # Skip tests, use existing snippets
 #   ./deploy-docs.sh --test-filter "AuthControllerRestDocsTest"  # Specific test
-#   ./deploy-docs.sh --test-filter "com.stdev.smartmealtable.api.auth.*"  # Pattern match
-#   ./deploy-docs.sh --auto-detect            # Auto-detect modified tests from git
+#   ./deploy-docs.sh --auto-detect            # 수정된 테스트만 실행, 스니펫만 업데이트 (빠름, 1-2분)
+#   ./deploy-docs.sh --auto-detect-full       # 수정된 테스트만 실행 + 전체 문서 생성 (권장, 1-2분)
 ##############################################################################
 
 set -e  # Exit on error
@@ -50,11 +50,12 @@ print_info() {
 
 print_usage() {
     echo -e "${BLUE}사용법:${NC}"
-    echo "  $0                                           # 모든 RestDocsTest 실행"
+    echo "  $0                                           # 모든 RestDocsTest 실행 (5-10분)"
     echo "  $0 --skip-tests                              # 테스트 스킵, 기존 snippets 사용"
     echo "  $0 --test-filter 'AuthControllerRestDocsTest'  # 특정 테스트만 실행"
     echo "  $0 --test-filter 'com.stdev.*auth.*'        # 패턴으로 테스트 선택"
-    echo "  $0 --auto-detect                             # git에서 수정된 테스트만 실행"
+    echo "  $0 --auto-detect                             # 수정된 테스트만 실행, 스니펫만 업데이트 (1-2분)"
+    echo "  $0 --auto-detect-full                        # 수정된 테스트만 실행 + 전체 문서 생성 (1-2분, 권장)"
     echo ""
     echo -e "${BLUE}예시:${NC}"
     echo "  # 인증 관련 테스트만 업데이트"
@@ -63,8 +64,11 @@ print_usage() {
     echo "  # 여러 테스트 패턴"
     echo "  $0 --test-filter '*AddressControllerRestDocsTest|*AuthControllerRestDocsTest'"
     echo ""
-    echo "  # 수정된 테스트만 자동으로 감지"
+    echo "  # 수정된 테스트만 자동으로 감지 (스니펫만 업데이트, 빠름)"
     echo "  $0 --auto-detect"
+    echo ""
+    echo "  # 수정된 테스트만 감지 + 전체 문서 생성 (권장, 더 빠름)"
+    echo "  $0 --auto-detect-full"
 }
 
 # Function to get modified test files from git
@@ -146,6 +150,7 @@ list_available_tests() {
 TEST_FILTER=""
 SKIP_TESTS=false
 AUTO_DETECT=false
+AUTO_DETECT_FULL=false
 SHOW_HELP=false
 
 while [[ $# -gt 0 ]]; do
@@ -160,6 +165,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --auto-detect)
             AUTO_DETECT=true
+            shift
+            ;;
+        --auto-detect-full)
+            AUTO_DETECT_FULL=true
             shift
             ;;
         --list-tests)
@@ -199,7 +208,21 @@ if [ "$SKIP_TESTS" = false ]; then
     print_header "Step 2: REST Docs 테스트 실행"
     
     # Determine which tests to run
-    if [ "$AUTO_DETECT" = true ]; then
+    if [ "$AUTO_DETECT_FULL" = true ]; then
+        # --auto-detect-full: 변경사항 감지 + 감지된 테스트만 실행 + 전체 문서 생성
+        print_info "🔍 Git 변경사항 감지 중...\n"
+        TEST_FILTER=$(get_modified_tests)
+        DETECT_RESULT=$?
+        
+        if [ $DETECT_RESULT -eq 0 ]; then
+            print_success "✓ 변경사항 감지됨"
+            print_warning "💡 감지된 테스트만 실행하여 전체 문서를 생성합니다..."
+        else
+            print_warning "변경사항 감지 실패"
+        fi
+        
+    elif [ "$AUTO_DETECT" = true ]; then
+        # --auto-detect: 수정된 테스트만 실행
         print_info "🔍 Git에서 수정된 테스트 감지 중...\n"
         TEST_FILTER=$(get_modified_tests)
         DETECT_RESULT=$?
@@ -208,15 +231,17 @@ if [ "$SKIP_TESTS" = false ]; then
             # 감지 실패 시 사용자 선택 제공
             echo ""
             print_warning "선택지:"
-            print_info "  1️⃣  모든 RestDocsTest 실행 (기본, 5-10분)"
-            print_info "  2️⃣  특정 테스트 지정: ./deploy-docs.sh --test-filter 'TestName'"
-            print_info "  3️⃣  사용 가능한 테스트: ./deploy-docs.sh --list-tests"
+            print_info "  1️⃣  모든 RestDocsTest 실행 (기본, 5-10분): ./deploy-docs.sh"
+            print_info "  2️⃣  변경사항 감지 + 전체 테스트 (권장): ./deploy-docs.sh --auto-detect-full"
+            print_info "  3️⃣  특정 테스트만: ./deploy-docs.sh --test-filter 'TestName'"
+            print_info "  4️⃣  사용 가능한 테스트: ./deploy-docs.sh --list-tests"
             echo ""
             print_info "지금은 모든 RestDocsTest를 실행합니다..."
             # 빈 배열로 설정하여 나중에 기본값 사용
             TEST_FILTER=""
         else
             print_success "✓ 테스트 감지 완료"
+            print_info "💡 팁: --auto-detect-full을 사용하면 전체 문서도 생성됩니다."
         fi
     fi
     
@@ -318,6 +343,20 @@ Git 브랜치: $(git branch --show-current 2>/dev/null || echo "N/A")
 생성된 파일:
 - api-docs.html: Spring REST Docs로 생성된 전체 API 문서
 - README.md: 문서 인덱스 및 빠른 시작 가이드
+
+사용 가능한 명령어:
+  # 모든 테스트 실행 (완전한 문서, 5-10분)
+  ./deploy-docs.sh
+
+  # 변경사항 감지 + 전체 테스트 (권장, 5-10분)
+  ./deploy-docs.sh --auto-detect-full
+
+  # 수정된 테스트만 실행 (빠름, 1-2분)
+  # ⚠️ 주의: 완전한 문서가 아닐 수 있음
+  ./deploy-docs.sh --auto-detect
+
+  # 테스트 스킵, 기존 snippets 사용
+  ./deploy-docs.sh --skip-tests
 
 다음 단계:
 1. 생성된 문서 검토: docs/api-docs.html
