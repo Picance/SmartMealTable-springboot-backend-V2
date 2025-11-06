@@ -102,7 +102,7 @@ class CartControllerTest extends AbstractRestDocsTest {
         Food food1 = Food.reconstitute(
                 null,
                 "김치찌개",
-                1L,
+                savedStore.getStoreId(),
                 savedCategory.getCategoryId(),
                 "맛있는 김치찌개",
                 "https://example.com/food1.jpg",
@@ -114,7 +114,7 @@ class CartControllerTest extends AbstractRestDocsTest {
         Food food2 = Food.reconstitute(
                 null,
                 "된장찌개",
-                1L,
+                savedStore.getStoreId(),
                 savedCategory.getCategoryId(),
                 "맛있는 된장찌개",
                 "https://example.com/food2.jpg",
