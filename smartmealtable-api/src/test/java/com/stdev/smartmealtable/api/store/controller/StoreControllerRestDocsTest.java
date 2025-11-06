@@ -570,6 +570,30 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.NUMBER)
                                         .description("평균 가격")
                                         .optional(),
+                                fieldWithPath("data.images")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("가게 이미지 배열")
+                                        .optional(),
+                                fieldWithPath("data.images[].storeImageId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("이미지 ID")
+                                        .optional(),
+                                fieldWithPath("data.images[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("이미지 URL")
+                                        .optional(),
+                                fieldWithPath("data.images[].isMain")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("대표 이미지 여부")
+                                        .optional(),
+                                fieldWithPath("data.images[].displayOrder")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("표시 순서")
+                                        .optional(),
+                                fieldWithPath("data.registeredAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 등록일 (ISO 8601)")
+                                        .optional(),
                                 fieldWithPath("data.isFavorite")
                                         .type(JsonFieldType.BOOLEAN)
                                         .description("즐겨찾기 여부"),

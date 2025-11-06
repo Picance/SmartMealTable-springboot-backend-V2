@@ -165,6 +165,14 @@ class GetFoodDetailRestDocsTest extends AbstractRestDocsTest {
                                         .description("메뉴 가격 (원)"),
                                 fieldWithPath("data.imageUrl").type(JsonFieldType.STRING)
                                         .description("메뉴 이미지 URL"),
+                                fieldWithPath("data.isMain").type(JsonFieldType.BOOLEAN)
+                                        .description("대표 메뉴 여부"),
+                                fieldWithPath("data.displayOrder").type(JsonFieldType.NUMBER)
+                                        .optional()
+                                        .description("표시 순서"),
+                                fieldWithPath("data.registeredDt").type(JsonFieldType.STRING)
+                                        .optional()
+                                        .description("메뉴 등록일 (ISO 8601)"),
                                 fieldWithPath("data.store").type(JsonFieldType.OBJECT)
                                         .description("판매 가게 정보"),
                                 fieldWithPath("data.store.storeId").type(JsonFieldType.NUMBER)
