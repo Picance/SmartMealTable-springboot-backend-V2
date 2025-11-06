@@ -8,10 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 /**
  * 온보딩 - 주소 등록 Service
+ * 첫 번째 주소는 자동으로 기본 주소로 설정됨
  */
 @Service
 @RequiredArgsConstructor
@@ -22,24 +21,22 @@ public class OnboardingAddressService {
     
     /**
      * 주소 등록
-     * - isPrimary = true인 경우, 기존 주 주소를 일반 주소로 전환
+     * - 첫 번째 주소는 자동으로 기본 주소로 설정됨
+     * - 기존 주소가 있을 경우 새 주소는 일반 주소로 등록됨
      */
     @Transactional
     public OnboardingAddressServiceResponse registerAddress(OnboardingAddressServiceRequest request) {
-        // 주 주소로 등록하는 경우, 기존 주 주소 해제
-        if (Boolean.TRUE.equals(request.isPrimary())) {
-            Optional<AddressHistory> existingPrimary = addressHistoryRepository.findPrimaryByMemberId(request.memberId());
-            existingPrimary.ifPresent(primary -> {
-                primary.unmarkAsPrimary();
-                addressHistoryRepository.save(primary);
-            });
-        }
+        // 회원의 기존 주소 개수 확인
+        long existingAddressCount = addressHistoryRepository.countByMemberId(request.memberId());
+        
+        // 첫 번째 주소는 자동으로 기본 주소, 이후는 일반 주소
+        boolean isPrimary = (existingAddressCount == 0);
         
         // 새 주소 등록
         AddressHistory newAddress = AddressHistory.create(
                 request.memberId(),
                 request.address(),
-                request.isPrimary()
+                isPrimary
         );
         
         AddressHistory savedAddress = addressHistoryRepository.save(newAddress);
@@ -47,3 +44,4 @@ public class OnboardingAddressService {
         return OnboardingAddressServiceResponse.from(savedAddress);
     }
 }
+

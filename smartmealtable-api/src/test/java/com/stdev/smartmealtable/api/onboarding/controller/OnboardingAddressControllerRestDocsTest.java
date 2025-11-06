@@ -90,8 +90,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "위워크 삼성역점 10층",
                 37.5081,
                 127.0630,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then
@@ -121,9 +120,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("longitude").type(JsonFieldType.NUMBER)
                                         .description("경도 (-180.0 ~ 180.0)"),
                                 fieldWithPath("addressType").type(JsonFieldType.STRING)
-                                        .description("주소 유형 (최대 20자, 예: HOME, WORK, 선택 사항)").optional(),
-                                fieldWithPath("isPrimary").type(JsonFieldType.BOOLEAN)
-                                        .description("주 거주지 여부 (true: 주 거주지, false: 부 거주지, 선택 사항)").optional()
+                                        .description("주소 유형 (최대 20자, 예: HOME, WORK, 선택 사항)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING)
@@ -165,8 +162,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "롯데월드타워 35층",
                 37.5125,
                 127.1025,
-                "WORK",
-                false
+                "WORK"
         );
 
         // when & then
@@ -291,8 +287,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "상세주소",
                 37.5081,
                 127.0630,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then
@@ -340,8 +335,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "위워크 10층",
                 37.5081,
                 127.0630,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then - Authorization 헤더 없이 요청
@@ -379,8 +373,7 @@ class OnboardingAddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "위워크 10층",
                 37.5081,
                 127.0630,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then - 잘못된 토큰으로 요청

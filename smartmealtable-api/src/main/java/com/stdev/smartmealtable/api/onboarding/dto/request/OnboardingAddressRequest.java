@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 온보딩 - 주소 등록 요청 DTO
+ * isPrimary 필드는 제거됨 - 첫 주소는 자동으로 기본 주소로 설정됨
  */
 public record OnboardingAddressRequest(
         
@@ -30,8 +31,6 @@ public record OnboardingAddressRequest(
         Double longitude,
         
         @Size(max = 20, message = "주소 유형은 20자 이내여야 합니다.")
-        String addressType,
-        
-        Boolean isPrimary
+        String addressType
 ) {
 }

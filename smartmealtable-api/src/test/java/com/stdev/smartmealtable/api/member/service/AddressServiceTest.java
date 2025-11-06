@@ -75,14 +75,14 @@ class AddressServiceTest {
         Long memberId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME", false
+                "101동 1234호", 37.497942, 127.027621, "HOME"
         );
         
         AddressHistory savedAddress = AddressHistory.reconstitute(
                 1L, memberId, request.toAddress(), true, null
         );
         
-        given(addressDomainService.addAddress(eq(memberId), any(Address.class), eq(false)))
+        given(addressDomainService.addAddress(eq(memberId), any(Address.class)))
                 .willReturn(savedAddress);
         
         // when
@@ -91,24 +91,24 @@ class AddressServiceTest {
         // then
         assertThat(response.getAddressAlias()).isEqualTo("우리집");
         assertThat(response.getIsPrimary()).isTrue(); // 첫 번째 주소는 자동으로 기본 주소
-        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class), eq(false));
+        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class));
     }
     
     @Test
-    @DisplayName("주소 추가 - 성공 (기본 주소로 설정 시 기존 기본 주소 해제)")
-    void addAddress_Success_UnmarkPreviousPrimary() {
+    @DisplayName("주소 추가 - 성공 (두 번째 이후 주소는 일반 주소로 등록)")
+    void addAddress_Success_SecondAddressBecomesNormal() {
         // given
         Long memberId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "회사", null, "서울특별시 강남구 테헤란로 456",
-                "5층", 37.497942, 127.027621, "OFFICE", true
+                "5층", 37.497942, 127.027621, "OFFICE"
         );
         
         AddressHistory savedAddress = AddressHistory.reconstitute(
-                2L, memberId, request.toAddress(), true, null
+                2L, memberId, request.toAddress(), false, null
         );
         
-        given(addressDomainService.addAddress(eq(memberId), any(Address.class), eq(true)))
+        given(addressDomainService.addAddress(eq(memberId), any(Address.class)))
                 .willReturn(savedAddress);
         
         // when
@@ -116,8 +116,8 @@ class AddressServiceTest {
         
         // then
         assertThat(response.getAddressAlias()).isEqualTo("회사");
-        assertThat(response.getIsPrimary()).isTrue();
-        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class), eq(true));
+        assertThat(response.getIsPrimary()).isFalse(); // 두 번째 주소는 일반 주소
+        verify(addressDomainService, times(1)).addAddress(eq(memberId), any(Address.class));
     }
     
     @Test
@@ -128,7 +128,7 @@ class AddressServiceTest {
         Long addressHistoryId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME", true
+                "202동 5678호", 37.497942, 127.027621, "HOME"
         );
         
         AddressHistory updatedAddress = AddressHistory.reconstitute(
@@ -136,7 +136,7 @@ class AddressServiceTest {
         );
         
         given(addressDomainService.updateAddress(
-                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+                eq(memberId), eq(addressHistoryId), any(Address.class)
         )).willReturn(updatedAddress);
         
         // when
@@ -146,7 +146,7 @@ class AddressServiceTest {
         assertThat(response.getAddressAlias()).isEqualTo("우리집(수정)");
         assertThat(response.getStreetNameAddress()).isEqualTo("서울특별시 강남구 테헤란로 789");
         verify(addressDomainService, times(1)).updateAddress(
-                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+                eq(memberId), eq(addressHistoryId), any(Address.class)
         );
     }
     
@@ -158,11 +158,11 @@ class AddressServiceTest {
         Long addressHistoryId = 999L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME", true
+                "202동 5678호", 37.497942, 127.027621, "HOME"
         );
         
         given(addressDomainService.updateAddress(
-                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+                eq(memberId), eq(addressHistoryId), any(Address.class)
         )).willThrow(new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
         
         // when & then
@@ -179,11 +179,11 @@ class AddressServiceTest {
         Long addressHistoryId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME", true
+                "202동 5678호", 37.497942, 127.027621, "HOME"
         );
         
         given(addressDomainService.updateAddress(
-                eq(memberId), eq(addressHistoryId), any(Address.class), eq(true)
+                eq(memberId), eq(addressHistoryId), any(Address.class)
         )).willThrow(new BusinessException(ErrorType.FORBIDDEN_ACCESS));
         
         // when & then

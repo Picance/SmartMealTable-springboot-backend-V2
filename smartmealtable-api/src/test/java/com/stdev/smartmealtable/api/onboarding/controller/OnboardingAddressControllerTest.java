@@ -60,7 +60,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("주소 등록 성공 - 첫 번째 주소 (자동으로 주 주소)")
+    @DisplayName("주소 등록 성공 - 첫 번째 주소 (자동으로 기본 주소)")
     void registerAddress_Success_FirstAddress() throws Exception {
         // given
         Member member = createMember("test@example.com");
@@ -73,8 +73,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then
@@ -91,20 +90,20 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.latitude").value(37.123456))
                 .andExpect(jsonPath("$.data.longitude").value(127.123456))
                 .andExpect(jsonPath("$.data.addressType").value("HOME"))
-                .andExpect(jsonPath("$.data.isPrimary").value(true));
+                .andExpect(jsonPath("$.data.isPrimary").value(true));  // 첫 주소는 자동으로 기본 주소
     }
 
     @Test
-    @DisplayName("주소 등록 성공 - 두 번째 주소 등록 시 기존 주 주소 해제")
-    void registerAddress_Success_UnmarkExistingPrimary() throws Exception {
+    @DisplayName("주소 등록 성공 - 두 번째 주소 등록 (자동으로 일반 주소)")
+    void registerAddress_Success_SecondAddressBecomesNormal() throws Exception {
         // given
         Member member = createMember("test2@example.com");
         Long memberId = member.getMemberId();
 
-        // 기존 주 주소 등록
+        // 기존 기본 주소 등록
         createAddress(memberId, "기존집", true);
 
-        // 새 주 주소 등록 요청
+        // 새 주소 등록 요청 (두 번째 주소는 자동으로 일반 주소)
         OnboardingAddressRequest request = new OnboardingAddressRequest(
                 "새집",
                 "서울시 서초구 강남대로 456",
@@ -112,8 +111,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "202동 2002호",
                 37.234567,
                 127.234567,
-                "HOME",
-                true  // 주 주소로 설정
+                "HOME"
         );
 
         // when & then
@@ -125,12 +123,13 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.alias").value("새집"))
-                .andExpect(jsonPath("$.data.isPrimary").value(true));
+                .andExpect(jsonPath("$.data.isPrimary").value(false));  // 두 번째 주소는 일반 주소
 
-        // 기존 주 주소가 해제되었는지 검증
+        // 기존 주소는 여전히 기본 주소여야 함
         var addresses = addressHistoryRepository.findAllByMemberId(memberId);
-        long primaryCount = addresses.stream().filter(AddressHistory::getIsPrimary).count();
-        org.assertj.core.api.Assertions.assertThat(primaryCount).isEqualTo(1); // 주 주소는 하나만 존재해야 함
+        var primaryAddress = addresses.stream().filter(AddressHistory::getIsPrimary).findFirst();
+        org.assertj.core.api.Assertions.assertThat(primaryAddress).isPresent();
+        org.assertj.core.api.Assertions.assertThat(primaryAddress.get().getAddress().getAlias()).isEqualTo("기존집");
     }
 
     @Test
@@ -143,12 +142,11 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
         OnboardingAddressRequest request = new OnboardingAddressRequest(
                 "우리집",
                 "서울시 강남구 테헤란로 123",
-                null,  // 도로명 주소 누락
+                "",  // 도로명 주소 누락
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then
@@ -177,8 +175,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME",
-                true
+                "HOME"
         );
 
         // when & then
@@ -199,22 +196,23 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
         Member member = createMember("test5@example.com");
         Long memberId = member.getMemberId();
 
-        OnboardingAddressRequest request = new OnboardingAddressRequest(
-                "우리집",
-                "서울시 강남구 테헤란로 123",
-                "서울시 강남구 테헤란로 123",
-                "101동 1001호",
-                null,  // 위도 누락
-                127.123456,
-                "HOME",
-                true
-        );
+        // OnboardingAddressRequest를 직접 생성하지 않고 JSON으로 전송하여 필드 누락 테스트
+        String requestJson = """
+                {
+                    "alias": "우리집",
+                    "lotNumberAddress": "서울시 강남구 테헤란로 123",
+                    "streetNameAddress": "서울시 강남구 테헤란로 123",
+                    "detailedAddress": "101동 1001호",
+                    "longitude": 127.123456,
+                    "addressType": "HOME"
+                }
+                """;
 
         // when & then
         mockMvc.perform(post("/api/v1/onboarding/address")
                         .header("Authorization", createAuthorizationHeader(memberId))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -222,8 +220,8 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("주소 등록 성공 - 일반 주소 (isPrimary = false)")
-    void registerAddress_Success_NonPrimaryAddress() throws Exception {
+    @DisplayName("주소 등록 성공 - 일반 주소로 등록")
+    void registerAddress_Success_NormalAddress() throws Exception {
         // given
         Member member = createMember("test6@example.com");
         Long memberId = member.getMemberId();
@@ -235,8 +233,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "5층",
                 37.345678,
                 126.987654,
-                "OFFICE",
-                false  // 일반 주소
+                "OFFICE"
         );
 
         // when & then
@@ -249,7 +246,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.alias").value("회사"))
                 .andExpect(jsonPath("$.data.addressType").value("OFFICE"))
-                .andExpect(jsonPath("$.data.isPrimary").value(false));
+                .andExpect(jsonPath("$.data.isPrimary").value(true));  // 첫 주소는 자동 기본 주소
     }
 
     // === Helper Methods ===

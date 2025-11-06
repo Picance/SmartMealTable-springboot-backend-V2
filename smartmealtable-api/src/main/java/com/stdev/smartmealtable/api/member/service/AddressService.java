@@ -42,6 +42,7 @@ public class AddressService {
     /**
      * 주소 추가
      * Domain Service를 통한 비즈니스 로직 처리
+     * 첫 번째 주소는 자동으로 기본 주소로 설정됨
      *
      * @param memberId 회원 ID
      * @param request  주소 등록 요청 DTO
@@ -50,10 +51,10 @@ public class AddressService {
     @Transactional
     public AddressServiceResponse addAddress(Long memberId, AddressServiceRequest request) {
         // Domain Service를 통한 주소 추가 (검증 + 도메인 로직 포함)
+        // isPrimary 파라미터 없음 - 첫 주소는 자동으로 기본 주소로 설정됨
         AddressHistory savedAddress = addressDomainService.addAddress(
                 memberId,
-                request.toAddress(),
-                request.getIsPrimary()
+                request.toAddress()
         );
         
         return AddressServiceResponse.from(savedAddress);
@@ -62,6 +63,7 @@ public class AddressService {
     /**
      * 주소 수정
      * Domain Service를 통한 비즈니스 로직 처리
+     * 주소 정보만 업데이트 (기본 주소 변경은 setPrimaryAddress 사용)
      *
      * @param memberId         회원 ID
      * @param addressHistoryId 수정할 주소 ID
@@ -78,8 +80,7 @@ public class AddressService {
         AddressHistory updatedAddress = addressDomainService.updateAddress(
                 memberId,
                 addressHistoryId,
-                request.toAddress(),
-                request.getIsPrimary()
+                request.toAddress()
         );
         
         return AddressServiceResponse.from(updatedAddress);

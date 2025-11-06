@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 주소 등록/수정 요청 DTO
+ * isPrimary 필드는 제거됨 - 첫 주소는 자동으로 기본 주소로 설정됨
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,7 +20,6 @@ public class AddressServiceRequest {
     private Double latitude;
     private Double longitude;
     private String addressType;
-    private Boolean isPrimary;
     
     public AddressServiceRequest(
             String addressAlias,
@@ -28,8 +28,7 @@ public class AddressServiceRequest {
             String detailedAddress,
             Double latitude,
             Double longitude,
-            String addressType,
-            Boolean isPrimary
+            String addressType
     ) {
         this.addressAlias = addressAlias;
         this.lotNumberAddress = lotNumberAddress;
@@ -38,7 +37,6 @@ public class AddressServiceRequest {
         this.latitude = latitude;
         this.longitude = longitude;
         this.addressType = addressType;
-        this.isPrimary = isPrimary != null ? isPrimary : false;
     }
     
     /**

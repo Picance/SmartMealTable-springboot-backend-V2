@@ -103,8 +103,8 @@ public class OnboardingController {
             @Valid @RequestBody OnboardingAddressRequest request,
             @AuthUser AuthenticatedUser authenticatedUser
     ) {
-        log.info("온보딩 주소 등록 API 호출 - memberId: {}, alias: {}, isPrimary: {}", 
-                authenticatedUser.memberId(), request.alias(), request.isPrimary());
+        log.info("온보딩 주소 등록 API 호출 - memberId: {}, alias: {}", 
+                authenticatedUser.memberId(), request.alias());
 
         OnboardingAddressServiceRequest serviceRequest = OnboardingAddressServiceRequest.of(
                 authenticatedUser.memberId(),
@@ -114,8 +114,7 @@ public class OnboardingController {
                 request.detailedAddress(),
                 request.latitude(),
                 request.longitude(),
-                request.addressType(),
-                request.isPrimary()
+                request.addressType()
         );
 
         OnboardingAddressServiceResponse serviceResponse = onboardingAddressService.registerAddress(serviceRequest);

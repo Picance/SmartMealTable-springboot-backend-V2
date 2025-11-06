@@ -145,8 +145,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "본관 201호",
                 37.5662,
                 126.9346,
-                "SCHOOL",
-                false
+                "SCHOOL"
         );
 
         mockMvc.perform(post("/api/v1/members/me/addresses")
@@ -168,8 +167,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("detailedAddress").type(JsonFieldType.STRING).description("상세 주소 (최대 255자)").optional(),
                                 fieldWithPath("latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
                                 fieldWithPath("longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
-                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형 (최대 20자)").optional(),
-                                fieldWithPath("isPrimary").type(JsonFieldType.BOOLEAN).description("기본 주소 여부").optional()
+                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형 (최대 20자)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
@@ -194,21 +192,17 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
     @Test
     @DisplayName("주소 추가 실패 - 유효성 검증 실패 (422)")
     void addAddress_ValidationFailure() throws Exception {
-        AddressRequest request = new AddressRequest(
-                "",  // 빈 별칭 (유효성 검증 실패)
-                null,
-                "",  // 빈 도로명 주소 (유효성 검증 실패)
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        String requestJson = """
+                {
+                    "addressAlias": "",
+                    "streetNameAddress": ""
+                }
+                """;
 
         mockMvc.perform(post("/api/v1/members/me/addresses")
                         .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -219,13 +213,12 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                         authorizationHeader(),
                         requestFields(
                                 fieldWithPath("addressAlias").type(JsonFieldType.STRING).description("주소 별칭 (빈 값)"),
-                                fieldWithPath("lotNumberAddress").type(JsonFieldType.NULL).description("지번 주소").optional(),
+                                fieldWithPath("lotNumberAddress").type(JsonFieldType.STRING).description("지번 주소").optional(),
                                 fieldWithPath("streetNameAddress").type(JsonFieldType.STRING).description("도로명 주소 (빈 값)"),
-                                fieldWithPath("detailedAddress").type(JsonFieldType.NULL).description("상세 주소").optional(),
-                                fieldWithPath("latitude").type(JsonFieldType.NULL).description("위도").optional(),
-                                fieldWithPath("longitude").type(JsonFieldType.NULL).description("경도").optional(),
-                                fieldWithPath("addressType").type(JsonFieldType.NULL).description("주소 유형").optional(),
-                                fieldWithPath("isPrimary").type(JsonFieldType.NULL).description("기본 주소 여부").optional()
+                                fieldWithPath("detailedAddress").type(JsonFieldType.STRING).description("상세 주소").optional(),
+                                fieldWithPath("latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
+                                fieldWithPath("longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
+                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),
@@ -250,8 +243,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "102동 102호",  // 상세 주소 변경
                 37.4783,
                 126.9516,
-                "HOME",
-                null
+                "HOME"
         );
 
         mockMvc.perform(put("/api/v1/members/me/addresses/{addressHistoryId}", addressHistoryId)
@@ -276,8 +268,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("detailedAddress").type(JsonFieldType.STRING).description("상세 주소").optional(),
                                 fieldWithPath("latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
                                 fieldWithPath("longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
-                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형").optional(),
-                                fieldWithPath("isPrimary").type(JsonFieldType.NULL).description("기본 주소 여부").optional()
+                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
@@ -307,8 +298,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "101동 101호",
                 37.4783,
                 126.9516,
-                "HOME",
-                null
+                "HOME"
         );
 
         mockMvc.perform(put("/api/v1/members/me/addresses/{addressHistoryId}", 99999L)
@@ -333,8 +323,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("detailedAddress").type(JsonFieldType.STRING).description("상세 주소").optional(),
                                 fieldWithPath("latitude").type(JsonFieldType.NUMBER).description("위도").optional(),
                                 fieldWithPath("longitude").type(JsonFieldType.NUMBER).description("경도").optional(),
-                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형").optional(),
-                                fieldWithPath("isPrimary").type(JsonFieldType.NULL).description("기본 주소 여부").optional()
+                                fieldWithPath("addressType").type(JsonFieldType.STRING).description("주소 유형").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (ERROR)"),

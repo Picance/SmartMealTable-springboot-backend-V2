@@ -31,7 +31,36 @@ public class AddressDomainService {
     }
 
     /**
-     * 주소 추가
+     * 주소 추가 (새로운 방식: isPrimary 파라미터 없음)
+     * - 첫 번째 주소는 자동으로 기본 주소
+     * - 그 이후 주소는 일반 주소로 등록됨
+     *
+     * @param memberId 회원 ID
+     * @param address  주소 정보
+     * @return 생성된 AddressHistory
+     */
+    public AddressHistory addAddress(Long memberId, Address address) {
+        long addressCount = countAddresses(memberId);
+
+        // 첫 번째 주소는 자동으로 기본 주소, 그 이후는 일반 주소
+        boolean shouldBePrimary = (addressCount == 0);
+
+        AddressHistory addressHistory = AddressHistory.create(
+                memberId,
+                address,
+                shouldBePrimary
+        );
+
+        AddressHistory saved = addressHistoryRepository.save(addressHistory);
+
+        log.info("주소 추가 완료 - memberId: {}, addressHistoryId: {}, isPrimary: {}",
+                memberId, saved.getAddressHistoryId(), shouldBePrimary);
+
+        return saved;
+    }
+
+    /**
+     * 주소 추가 (레거시 방식: isPrimary 파라미터 포함)
      * - 첫 번째 주소는 자동으로 기본 주소
      * - 기본 주소로 설정 시 기존 기본 주소 해제
      *
@@ -39,7 +68,9 @@ public class AddressDomainService {
      * @param address  주소 정보
      * @param isPrimary 기본 주소 여부
      * @return 생성된 AddressHistory
+     * @deprecated isPrimary 파라미터를 제거한 {@link #addAddress(Long, Address)}를 사용하세요.
      */
+    @Deprecated
     public AddressHistory addAddress(Long memberId, Address address, Boolean isPrimary) {
         long addressCount = countAddresses(memberId);
 
@@ -66,14 +97,44 @@ public class AddressDomainService {
     }
 
     /**
-     * 주소 수정
+     * 주소 수정 (새로운 방식: isPrimary 파라미터 없음)
+     * - 주소 정보만 업데이트됨
+     * - 기본 주소 변경은 setPrimaryAddress 메서드로 별도 처리
+     *
+     * @param memberId         회원 ID
+     * @param addressHistoryId 주소 ID
+     * @param address          새 주소 정보
+     * @return 수정된 AddressHistory
+     */
+    public AddressHistory updateAddress(
+            Long memberId,
+            Long addressHistoryId,
+            Address address
+    ) {
+        AddressHistory addressHistory = validateAndGetAddress(addressHistoryId, memberId);
+
+        // 주소 정보 업데이트
+        addressHistory.updateAddress(address);
+
+        AddressHistory updated = addressHistoryRepository.save(addressHistory);
+
+        log.info("주소 수정 완료 - memberId: {}, addressHistoryId: {}",
+                memberId, addressHistoryId);
+
+        return updated;
+    }
+
+    /**
+     * 주소 수정 (레거시 방식: isPrimary 파라미터 포함)
      *
      * @param memberId         회원 ID
      * @param addressHistoryId 주소 ID
      * @param address          새 주소 정보
      * @param isPrimary        기본 주소 여부
      * @return 수정된 AddressHistory
+     * @deprecated isPrimary 파라미터를 제거한 {@link #updateAddress(Long, Long, Address)}를 사용하세요.
      */
+    @Deprecated
     public AddressHistory updateAddress(
             Long memberId,
             Long addressHistoryId,
