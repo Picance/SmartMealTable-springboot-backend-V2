@@ -138,6 +138,13 @@ public enum ErrorType {
             LogLevel.WARN
     ),
     
+    INVALID_ADDRESS(
+            HttpStatus.BAD_REQUEST,
+            ErrorCode.E400,
+            "유효하지 않은 주소입니다. 주소를 찾을 수 없습니다.",
+            LogLevel.WARN
+    ),
+    
     EXPENDITURE_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,

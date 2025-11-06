@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 /**
- * 음식 생성 요청 DTO
+ * 음식 생성 요청 DTO - v2.0
+ * 
+ * <p>isMain, displayOrder 필드가 추가되었습니다.</p>
  */
 public record CreateFoodRequest(
         @NotBlank(message = "음식 이름은 필수입니다.")
@@ -30,7 +32,11 @@ public record CreateFoodRequest(
 
         @NotNull(message = "평균 가격은 필수입니다.")
         @Positive(message = "평균 가격은 양수여야 합니다.")
-        Integer averagePrice
+        Integer averagePrice,
+        
+        Boolean isMain, // 대표 메뉴 여부 (null이면 false로 처리)
+        
+        Integer displayOrder // 표시 순서 (null이면 자동 할당)
 ) {
     public CreateFoodServiceRequest toServiceRequest() {
         return new CreateFoodServiceRequest(
@@ -39,7 +45,9 @@ public record CreateFoodRequest(
                 categoryId,
                 description,
                 imageUrl,
-                averagePrice
+                averagePrice,
+                isMain != null ? isMain : false,
+                displayOrder
         );
     }
 }

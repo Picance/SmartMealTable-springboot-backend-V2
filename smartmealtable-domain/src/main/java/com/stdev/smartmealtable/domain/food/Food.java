@@ -54,7 +54,9 @@ public class Food {
     }
 
     /**
-     * 새로운 음식 생성 (테스트 및 초기화 시 사용)
+     * 새로운 음식 생성 (테스트 및 초기화 시 사용) - v2.0
+     * 
+     * <p>isMain, displayOrder 필드가 추가되었습니다.</p>
      */
     public static Food create(
             String foodName,
@@ -62,7 +64,9 @@ public class Food {
             Long categoryId,
             String description,
             String imageUrl,
-            Integer averagePrice
+            Integer averagePrice,
+            Boolean isMain,
+            Integer displayOrder
     ) {
         return Food.builder()
                 .foodName(foodName)
@@ -71,6 +75,8 @@ public class Food {
                 .description(description)
                 .imageUrl(imageUrl)
                 .averagePrice(averagePrice)
+                .isMain(isMain != null ? isMain : false)
+                .displayOrder(displayOrder)
                 .build();
     }
 

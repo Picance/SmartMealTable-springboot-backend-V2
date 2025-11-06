@@ -2,12 +2,15 @@ package com.stdev.smartmealtable.admin.store.service;
 
 import com.stdev.smartmealtable.admin.store.service.dto.*;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.map.AddressSearchResult;
+import com.stdev.smartmealtable.domain.map.MapService;
 import com.stdev.smartmealtable.domain.store.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,9 +18,10 @@ import java.util.stream.Collectors;
 import static com.stdev.smartmealtable.core.error.ErrorType.*;
 
 /**
- * 음식점 관리 Application Service (ADMIN)
+ * 음식점 관리 Application Service (ADMIN) - v2.0
  * 
  * <p>트랜잭션 관리와 유즈케이스에 집중합니다.</p>
+ * <p>주소 기반 지오코딩을 통해 좌표를 자동으로 계산합니다.</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,8 @@ import static com.stdev.smartmealtable.core.error.ErrorType.*;
 public class StoreApplicationService {
 
     private final StoreRepository storeRepository;
+    private final MapService mapService;
+    private final StoreImageService storeImageService;
 
     /**
      * 음식점 목록 조회 (페이징)
@@ -59,7 +65,9 @@ public class StoreApplicationService {
     }
 
     /**
-     * 음식점 상세 조회
+     * 음식점 상세 조회 - v2.0
+     * 
+     * <p>이미지 목록도 함께 조회합니다.</p>
      */
     public StoreServiceResponse getStore(Long storeId) {
         log.info("[ADMIN] 음식점 상세 조회 - storeId: {}", storeId);
@@ -67,25 +75,45 @@ public class StoreApplicationService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
         
-        log.info("[ADMIN] 음식점 상세 조회 완료 - name: {}", store.getName());
+        // 이미지 목록 조회
+        List<StoreImage> images = storeImageService.getStoreImages(storeId);
         
-        return StoreServiceResponse.from(store);
+        log.info("[ADMIN] 음식점 상세 조회 완료 - name: {}, images: {}", store.getName(), images.size());
+        
+        return StoreServiceResponse.from(store, images);
     }
 
     /**
-     * 음식점 생성
+     * 음식점 생성 - v2.0
+     * 
+     * <p>주소를 기반으로 지오코딩하여 좌표를 자동으로 계산합니다.</p>
      */
     @Transactional
     public StoreServiceResponse createStore(CreateStoreServiceRequest request) {
-        log.info("[ADMIN] 음식점 생성 요청 - name: {}", request.name());
+        log.info("[ADMIN] 음식점 생성 요청 - name: {}, address: {}", request.name(), request.address());
         
+        // 1. 주소로 좌표 검색 (Naver Maps Geocoding API)
+        List<AddressSearchResult> results = mapService.searchAddress(request.address(), 1);
+        
+        if (results.isEmpty()) {
+            log.error("[ADMIN] 유효하지 않은 주소 - address: {}", request.address());
+            throw new BusinessException(INVALID_ADDRESS);
+        }
+        
+        AddressSearchResult addressResult = results.get(0);
+        BigDecimal latitude = addressResult.latitude();
+        BigDecimal longitude = addressResult.longitude();
+        
+        log.info("[ADMIN] 지오코딩 완료 - lat: {}, lng: {}", latitude, longitude);
+        
+        // 2. Store 엔티티 생성 (좌표 자동 설정)
         Store store = Store.create(
                 request.name(),
                 request.categoryId(),
                 request.address(),
                 request.lotNumberAddress(),
-                request.latitude(),
-                request.longitude(),
+                latitude,  // 지오코딩 결과 사용
+                longitude, // 지오코딩 결과 사용
                 request.phoneNumber(),
                 request.description(),
                 request.averagePrice(),
@@ -95,7 +123,7 @@ public class StoreApplicationService {
                 request.storeType()
         );
         
-        // sellerId, imageUrl은 별도로 설정
+        // sellerId는 별도로 설정
         Store storeWithDetails = Store.builder()
                 .name(store.getName())
                 .categoryId(store.getCategoryId())
@@ -111,7 +139,6 @@ public class StoreApplicationService {
                 .viewCount(store.getViewCount())
                 .favoriteCount(store.getFavoriteCount())
                 .storeType(store.getStoreType())
-                .imageUrl(request.imageUrl())
                 .registeredAt(LocalDateTime.now())
                 .build();
         
