@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.api.store.dto;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.store.Store;
 
+import java.time.LocalDateTime;
+
 /**
  * 메뉴 상세 조회 응답 DTO
  */
@@ -12,6 +14,9 @@ public record GetFoodDetailResponse(
         String description,
         Integer price,
         String imageUrl,
+        Boolean isMain,
+        Integer displayOrder,
+        LocalDateTime registeredDt,
         StoreInfo store,
         Boolean isAvailable,
         BudgetComparison budgetComparison
@@ -27,8 +32,11 @@ public record GetFoodDetailResponse(
                 food.getDescription(),
                 food.getAveragePrice(),
                 food.getImageUrl(),
+                food.getIsMain(),
+                food.getDisplayOrder(),
+                food.getRegisteredDt(),
                 StoreInfo.from(store),
-                true, // TODO: 음식 판매 가능 여부 확인 필요
+                food.getDeletedAt() == null,
                 BudgetComparison.of(userMealBudget, food.getAveragePrice())
         );
     }

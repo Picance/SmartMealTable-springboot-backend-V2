@@ -3,11 +3,88 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-11-05 21:00
+**최종 업데이트**: 2025-11-07 04:15
 
 ---
 
-## 🎉 최신 업데이트 (2025-11-05 21:00)
+## 🎉 최신 업데이트 (2025-11-07 04:15)
+
+### API 모듈 - Food/Store 엔티티 재설계에 따른 API 업데이트 완료! 🎊🎊🎊
+- **완료 범위**: isMain/displayOrder 필드 추가 및 StoreImage 테이블 신규 생성에 따른 API 전면 재설계
+- **테스트 결과**: ✅ **모든 테스트 통과 (BUILD SUCCESSFUL)**
+- **엔드포인트**: 기존 API 수정 + 신규 API 1개 추가
+
+#### 🎯 API Redesign 완료 항목
+- **구현 내용**:
+  - ✅ Domain Layer: StoreImageRepository 인터페이스 (3개 쿼리 메서드)
+  - ✅ Storage Layer: StoreImageJpaRepository 구현 (정렬 쿼리)
+  - ✅ API Layer - Common DTOs: StoreImageDto, FoodDto 생성
+  - ✅ API Layer - Response DTOs: StoreDetailResponse, GetFoodDetailResponse 수정
+  - ✅ API Layer - Response DTOs: GetStoreFoodsResponse (신규)
+  - ✅ API Layer - Service: StoreService 수정 (이미지 조회, 메뉴 정렬 로직)
+  - ✅ API Layer - Controller: StoreController 신규 엔드포인트 추가
+  - ✅ Integration Tests: GetStoreFoodsControllerTest (5개 테스트)
+  - ✅ Spring Rest Docs: 5개 스니펫 생성 완료
+
+- **API 엔드포인트 변경사항**:
+  - **수정**: GET `/api/v1/stores/{storeId}` - 가게 상세 조회
+    - `images` 배열 추가 (StoreImageDto 구조)
+    - `menus[].isMain`, `menus[].displayOrder`, `menus[].registeredDt` 추가
+    - `registeredAt` 필드 추가 (가게 등록일)
+    - `imageUrl` 필드 유지 (하위 호환성)
+    
+  - **수정**: GET `/api/v1/foods/{foodId}` - 메뉴 상세 조회
+    - `isMain`, `displayOrder`, `registeredDt` 필드 추가
+    
+  - **신규**: GET `/api/v1/stores/{storeId}/foods` - 가게별 메뉴 목록 조회
+    - 쿼리 파라미터: `sort` (정렬 기준)
+    - 정렬 옵션: displayOrder, price, registeredDt, isMain (각 asc/desc)
+
+- **주요 기능**:
+  - ✅ 대표 이미지/메뉴 우선 정렬 (isMain DESC)
+  - ✅ 표시 순서 정렬 (displayOrder ASC)
+  - ✅ 다양한 정렬 옵션 (4가지 필드, 2가지 방향)
+  - ✅ Null 안전성 (Comparator.nullsLast)
+  - ✅ 하위 호환성 유지 (기존 imageUrl 필드 유지)
+  - ✅ Switch Expression 활용 (Java 21)
+
+- **버그 수정**:
+  - ✅ isMain 정렬 로직 수정 (Boolean.compare 방향 교정)
+  - 문제: desc 정렬 시 false가 먼저 나오는 버그
+  - 수정: `Boolean.compare(m2, m1)` → `Boolean.compare(m1, m2)`
+
+- **테스트 커버리지**: **5개 테스트 통과**
+  - ✅ 기본 정렬 (displayOrder,asc)
+  - ✅ 가격 오름차순 정렬
+  - ✅ 대표 메뉴 우선 정렬
+  - ✅ 신메뉴 순 정렬
+  - ✅ 404 에러 처리
+
+- **REST Docs 스니펫 생성**: ✅ **5/5 완료**
+  - get-store-foods-default
+  - get-store-foods-sort-price-asc
+  - get-store-foods-sort-isMain
+  - get-store-foods-sort-registeredDt
+  - get-store-foods-not-found
+
+- **문서화**:
+  - ✅ API_SPECIFICATION.md 업데이트 (섹션 7.2, 7.3, 7.5, 8.1)
+  - ✅ API_SPECIFICATION_UPDATE_2025-11-07.md (변경사항 요약)
+  - ✅ API_REDESIGN_COMPLETION_REPORT.md (상세 완료 보고서)
+
+- **성능 최적화**:
+  - ✅ N+1 쿼리 분석 완료
+  - ✅ 현재 구조 이미 최적화됨 (엔티티별 별도 쿼리)
+  - ✅ 향후 개선안 문서화 (QueryDSL Fetch Join, @EntityGraph, Redis 캐싱)
+
+**상세 문서**: 
+- API_SPECIFICATION.md (섹션 7.2, 7.3, 7.5, 8.1)
+- API_SPECIFICATION_UPDATE_2025-11-07.md
+- API_REDESIGN_COMPLETION_REPORT.md
+
+---
+
+## 🎉 이전 업데이트 (2025-11-05 21:00)
 
 ### ADMIN API - 통계 조회 구현 완료! 🎊🎊🎊 (ADMIN 모듈 100% 완성!)
 - **완료 범위**: 관리자용 통계 조회 API 완전 구현

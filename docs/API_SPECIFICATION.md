@@ -1995,9 +1995,26 @@ Authorization: Bearer {access_token}
     "isCampusRestaurant": false,
     "isFavorite": true,
     "isTemporaryClosed": false,
-    "imageUrls": [
-      "https://cdn.smartmealtable.com/stores/101/main.jpg",
-      "https://cdn.smartmealtable.com/stores/101/menu.jpg"
+    "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
+    "images": [
+      {
+        "storeImageId": 1,
+        "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
+        "isMain": true,
+        "displayOrder": 1
+      },
+      {
+        "storeImageId": 2,
+        "imageUrl": "https://cdn.smartmealtable.com/stores/101/menu.jpg",
+        "isMain": false,
+        "displayOrder": 2
+      },
+      {
+        "storeImageId": 3,
+        "imageUrl": "https://cdn.smartmealtable.com/stores/101/interior.jpg",
+        "isMain": false,
+        "displayOrder": 3
+      }
     ],
     "openingHours": [
       {
@@ -2060,7 +2077,10 @@ Authorization: Bearer {access_token}
         "price": 18000,
         "description": "교촌의 시그니처 메뉴",
         "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+        "isMain": true,
+        "displayOrder": 1,
         "isAvailable": true,
+        "registeredDt": "2024-01-15T09:00:00.000Z",
         "budgetComparison": {
           "userMealBudget": 20000,
           "difference": 2000,
@@ -2074,7 +2094,10 @@ Authorization: Bearer {access_token}
         "price": 18000,
         "description": "매콤한 양념치킨",
         "imageUrl": "https://cdn.smartmealtable.com/foods/202.jpg",
+        "isMain": false,
+        "displayOrder": 2,
         "isAvailable": true,
+        "registeredDt": "2024-01-20T10:30:00.000Z",
         "budgetComparison": {
           "userMealBudget": 20000,
           "difference": 2000,
@@ -2088,7 +2111,10 @@ Authorization: Bearer {access_token}
         "price": 21000,
         "description": "달콤한 허니 소스",
         "imageUrl": "https://cdn.smartmealtable.com/foods/203.jpg",
+        "isMain": false,
+        "displayOrder": 3,
         "isAvailable": true,
+        "registeredDt": "2024-02-01T14:00:00.000Z",
         "budgetComparison": {
           "userMealBudget": 20000,
           "difference": -1000,
@@ -2102,20 +2128,128 @@ Authorization: Bearer {access_token}
       "businessNumber": "123-45-67890",
       "ownerName": "김사장"
     },
-    "createdAt": "2024-01-15T09:00:00.000Z"
+    "registeredAt": "2024-01-15T09:00:00.000Z"
   },
   "error": null
 }
 ```
 
+**Response Fields:**
+- `images`: 가게 이미지 배열 (상세 조회에서만 제공)
+  - `storeImageId`: 이미지 고유 식별자
+  - `imageUrl`: 이미지 URL
+  - `isMain`: 대표 이미지 여부
+  - `displayOrder`: 표시 순서 (낮을수록 우선)
+- `imageUrl`: 대표 이미지 URL (하위 호환성, `images[0].imageUrl`과 동일)
+- `menus`: 가게의 메뉴 목록 (isMain 우선, displayOrder 오름차순 정렬)
+  - `isMain`: 대표 메뉴 여부 (신규 필드)
+  - `displayOrder`: 표시 순서 (신규 필드)
+  - `registeredDt`: 메뉴 등록일 (신규 필드, ISO8601 형식)
+- `registeredAt`: 가게 등록일 (비즈니스 필드)
+
 **Note:** 
 - 조회 시 `store_view_history` 테이블에 자동 기록
 - `view_count` 1 증가
 - 조회 이력 기록 시점: 사용자가 가게 목록에서 가게 카드를 터치하여 상세 페이지로 진입한 시점
+- `menus` 정렬 우선순위: isMain(대표 메뉴 우선) → displayOrder(오름차순)
+- `images` 정렬 우선순위: isMain(대표 이미지 우선) → displayOrder(오름차순)
 
 ---
 
-### 7.3 가게 검색 (자동완성)
+### 7.3 가게별 메뉴 목록 조회
+
+**Endpoint:** `GET /api/v1/stores/{storeId}/foods`
+
+**설명:**
+- 특정 가게의 메뉴 목록만 조회합니다.
+- 다양한 정렬 옵션을 지원합니다 (대표 메뉴 우선, 표시 순서, 가격순, 최신순).
+
+**Path Parameters:**
+- `storeId`: 가게 고유 식별자 (필수)
+
+**Query Parameters:**
+- `sort` (optional): 정렬 기준 (기본값: `displayOrder,asc`)
+  - `displayOrder,asc`: 표시 순서 오름차순 (낮을수록 우선)
+  - `displayOrder,desc`: 표시 순서 내림차순
+  - `price,asc`: 가격 오름차순 (저렴한 순)
+  - `price,desc`: 가격 내림차순 (비싼 순)
+  - `registeredDt,desc`: 신메뉴 순 (최신 등록 순)
+  - `isMain,desc`: 대표 메뉴 우선 정렬
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "storeId": 101,
+    "storeName": "교촌치킨 강남점",
+    "foods": [
+      {
+        "foodId": 201,
+        "foodName": "교촌 오리지널",
+        "price": 18000,
+        "description": "교촌의 시그니처 메뉴",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+        "isMain": true,
+        "displayOrder": 1,
+        "isAvailable": true,
+        "registeredDt": "2024-01-15T09:00:00.000Z"
+      },
+      {
+        "foodId": 202,
+        "foodName": "교촌 레드",
+        "price": 18000,
+        "description": "매콤한 양념치킨",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/202.jpg",
+        "isMain": false,
+        "displayOrder": 2,
+        "isAvailable": true,
+        "registeredDt": "2024-01-20T10:30:00.000Z"
+      },
+      {
+        "foodId": 203,
+        "foodName": "교촌 허니콤보",
+        "price": 21000,
+        "description": "달콤한 허니 소스",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/203.jpg",
+        "isMain": false,
+        "displayOrder": 3,
+        "isAvailable": true,
+        "registeredDt": "2024-02-01T14:00:00.000Z"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Response Fields:**
+- `storeId`: 가게 고유 식별자
+- `storeName`: 가게 이름
+- `foods`: 메뉴 목록 배열
+  - `foodId`: 메뉴 고유 식별자
+  - `foodName`: 메뉴 이름
+  - `price`: 가격
+  - `description`: 메뉴 설명
+  - `imageUrl`: 메뉴 이미지 URL
+  - `isMain`: 대표 메뉴 여부
+  - `displayOrder`: 표시 순서
+  - `isAvailable`: 판매 가능 여부
+  - `registeredDt`: 메뉴 등록일 (ISO8601 형식)
+
+**Error Cases:**
+- `404`: 가게를 찾을 수 없음
+
+**정렬 동작:**
+- `displayOrder,asc`: 낮은 순서 → 높은 순서 (null은 마지막)
+- `displayOrder,desc`: 높은 순서 → 낮은 순서 (null은 마지막)
+- `isMain,desc`: 대표 메뉴(true) 우선 → 일반 메뉴(false)
+- `price,asc/desc`: 가격 기준 정렬
+- `registeredDt,desc`: 최신 등록일 우선
+
+---
+
+### 7.4 가게 검색 (자동완성)
 
 **Endpoint:** `GET /api/v1/stores/autocomplete?keyword=치킨&limit=10`
 
@@ -2141,7 +2275,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 7.4 메뉴 상세 조회
+### 7.5 메뉴 상세 조회
 
 **Endpoint:** `GET /api/v1/foods/{foodId}`
 
@@ -2162,6 +2296,9 @@ Authorization: Bearer {access_token}
     "description": "교촌의 시그니처 메뉴",
     "price": 18000,
     "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+    "isMain": true,
+    "displayOrder": 1,
+    "registeredDt": "2024-01-15T09:00:00.000Z",
     "store": {
       "storeId": 101,
       "storeName": "교촌치킨 강남점",
@@ -2191,6 +2328,9 @@ Authorization: Bearer {access_token}
 - `description`: 메뉴 설명
 - `price`: 메뉴 가격
 - `imageUrl`: 메뉴 이미지 URL
+- `isMain`: 대표 메뉴 여부 (신규 필드)
+- `displayOrder`: 표시 순서 (신규 필드)
+- `registeredDt`: 메뉴 등록일 (신규 필드, ISO8601 형식)
 - `store`: 이 메뉴를 판매하는 가게 정보
 - `isAvailable`: 메뉴 판매 가능 여부
 - `budgetComparison`: 사용자 예산과의 비교 정보
@@ -2235,6 +2375,9 @@ Content-Type: application/json
     "description": "교촌의 시그니처 메뉴",
     "price": 18000,
     "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg",
+    "isMain": true,
+    "displayOrder": 1,
+    "registeredDt": "2024-01-15T09:00:00.000Z",
     "store": {
       "storeId": 101,
       "storeName": "교촌치킨 강남점",
@@ -2264,6 +2407,9 @@ Content-Type: application/json
 - `description`: 메뉴 설명
 - `price`: 메뉴 가격 (정수, 원 단위)
 - `imageUrl`: 메뉴 이미지 URL
+- `isMain`: 대표 메뉴 여부 (신규 필드)
+- `displayOrder`: 표시 순서 (신규 필드)
+- `registeredDt`: 메뉴 등록일 (신규 필드, ISO8601 형식)
 - `store`: 이 메뉴를 판매하는 가게 정보
   - `storeId`: 가게 고유 식별자
   - `storeName`: 가게 이름

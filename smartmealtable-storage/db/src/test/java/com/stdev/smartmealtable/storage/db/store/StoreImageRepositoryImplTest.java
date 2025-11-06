@@ -225,4 +225,153 @@ class StoreImageRepositoryImplTest {
             assertThat(found.getImageUrl()).isEqualTo(saved.getImageUrl());
         }
     }
+
+    @Nested
+    @DisplayName("findByStoreId 메서드는")
+    class Describe_findByStoreId {
+
+        @Test
+        @DisplayName("가게의 모든 이미지를 isMain 우선, displayOrder 순으로 정렬하여 반환한다")
+        void it_returns_images_sorted_by_isMain_and_displayOrder() {
+            // Given
+            Long storeId = 100L;
+
+            List<StoreImageJpaEntity> entities = List.of(
+                    createImageEntity(3L, storeId, "https://example.com/image3.jpg", false, 3),
+                    createImageEntity(1L, storeId, "https://example.com/image1.jpg", true, 1),
+                    createImageEntity(4L, storeId, "https://example.com/image4.jpg", false, 4),
+                    createImageEntity(2L, storeId, "https://example.com/image2.jpg", true, 2)
+            );
+
+            when(storeImageJpaRepository.findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId))
+                    .thenReturn(entities);
+
+            // When
+            List<StoreImage> result = storeImageRepository.findByStoreId(storeId);
+
+            // Then
+            assertThat(result).hasSize(4);
+            verify(storeImageJpaRepository, times(1))
+                    .findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId);
+        }
+
+        @Test
+        @DisplayName("이미지가 없는 경우 빈 리스트를 반환한다")
+        void it_returns_empty_list_when_no_images() {
+            // Given
+            Long storeId = 999L;
+            when(storeImageJpaRepository.findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId))
+                    .thenReturn(List.of());
+
+            // When
+            List<StoreImage> result = storeImageRepository.findByStoreId(storeId);
+
+            // Then
+            assertThat(result).isEmpty();
+            verify(storeImageJpaRepository, times(1))
+                    .findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId);
+        }
+    }
+
+    @Nested
+    @DisplayName("findByStoreIdAndIsMainTrue 메서드는")
+    class Describe_findByStoreIdAndIsMainTrue {
+
+        @Test
+        @DisplayName("대표 이미지를 반환한다")
+        void it_returns_main_image() {
+            // Given
+            Long storeId = 100L;
+            StoreImageJpaEntity mainImageEntity = createImageEntity(
+                    1L, storeId, "https://example.com/main.jpg", true, 1
+            );
+
+            when(storeImageJpaRepository.findByStoreIdAndIsMainTrue(storeId))
+                    .thenReturn(Optional.of(mainImageEntity));
+
+            // When
+            Optional<StoreImage> result = storeImageRepository.findByStoreIdAndIsMainTrue(storeId);
+
+            // Then
+            assertThat(result).isPresent();
+            assertThat(result.get().isMainImage()).isTrue();
+            assertThat(result.get().getImageUrl()).isEqualTo("https://example.com/main.jpg");
+            verify(storeImageJpaRepository, times(1)).findByStoreIdAndIsMainTrue(storeId);
+        }
+
+        @Test
+        @DisplayName("대표 이미지가 없으면 Optional.empty()를 반환한다")
+        void it_returns_empty_when_no_main_image() {
+            // Given
+            Long storeId = 100L;
+            when(storeImageJpaRepository.findByStoreIdAndIsMainTrue(storeId))
+                    .thenReturn(Optional.empty());
+
+            // When
+            Optional<StoreImage> result = storeImageRepository.findByStoreIdAndIsMainTrue(storeId);
+
+            // Then
+            assertThat(result).isEmpty();
+            verify(storeImageJpaRepository, times(1)).findByStoreIdAndIsMainTrue(storeId);
+        }
+    }
+
+    @Nested
+    @DisplayName("findFirstByStoreIdOrderByDisplayOrderAsc 메서드는")
+    class Describe_findFirstByStoreIdOrderByDisplayOrderAsc {
+
+        @Test
+        @DisplayName("displayOrder가 가장 낮은 이미지를 반환한다")
+        void it_returns_first_image_by_display_order() {
+            // Given
+            Long storeId = 100L;
+            StoreImageJpaEntity firstImageEntity = createImageEntity(
+                    5L, storeId, "https://example.com/first.jpg", false, 1
+            );
+
+            when(storeImageJpaRepository.findFirstByStoreIdOrderByDisplayOrderAsc(storeId))
+                    .thenReturn(Optional.of(firstImageEntity));
+
+            // When
+            Optional<StoreImage> result = storeImageRepository.findFirstByStoreIdOrderByDisplayOrderAsc(storeId);
+
+            // Then
+            assertThat(result).isPresent();
+            assertThat(result.get().getDisplayOrder()).isEqualTo(1);
+            assertThat(result.get().getImageUrl()).isEqualTo("https://example.com/first.jpg");
+            verify(storeImageJpaRepository, times(1))
+                    .findFirstByStoreIdOrderByDisplayOrderAsc(storeId);
+        }
+
+        @Test
+        @DisplayName("이미지가 없으면 Optional.empty()를 반환한다")
+        void it_returns_empty_when_no_images() {
+            // Given
+            Long storeId = 999L;
+            when(storeImageJpaRepository.findFirstByStoreIdOrderByDisplayOrderAsc(storeId))
+                    .thenReturn(Optional.empty());
+
+            // When
+            Optional<StoreImage> result = storeImageRepository.findFirstByStoreIdOrderByDisplayOrderAsc(storeId);
+
+            // Then
+            assertThat(result).isEmpty();
+            verify(storeImageJpaRepository, times(1))
+                    .findFirstByStoreIdOrderByDisplayOrderAsc(storeId);
+        }
+    }
+
+    /**
+     * 테스트용 StoreImageJpaEntity 생성 헬퍼 메서드
+     */
+    private StoreImageJpaEntity createImageEntity(Long id, Long storeId, String imageUrl, boolean isMain, Integer displayOrder) {
+        StoreImage domain = StoreImage.builder()
+                .storeImageId(id)
+                .storeId(storeId)
+                .imageUrl(imageUrl)
+                .isMain(isMain)
+                .displayOrder(displayOrder)
+                .build();
+        return StoreImageEntityMapper.toJpaEntity(domain);
+    }
 }

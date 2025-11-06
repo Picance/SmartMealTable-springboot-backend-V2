@@ -104,7 +104,7 @@ public class StoreController {
      *
      * @param user 인증된 사용자
      * @param storeId 조회할 가게 ID
-     * @return 가게 상세 정보 (영업시간, 임시 휴무 등 포함)
+     * @return 가게 상세 정보 (영업시간, 임시 휴무, 이미지, 메뉴 등 포함)
      */
     @GetMapping("/{storeId}")
     public ApiResponse<StoreDetailResponse> getStoreDetail(
@@ -114,6 +114,26 @@ public class StoreController {
         log.info("가게 상세 조회 API 호출 - memberId: {}, storeId: {}", user.memberId(), storeId);
         
         StoreDetailResponse response = storeService.getStoreDetail(user.memberId(), storeId);
+        
+        return ApiResponse.success(response);
+    }
+    
+    /**
+     * 가게별 메뉴 목록 조회
+     * GET /api/v1/stores/{storeId}/foods
+     *
+     * @param storeId 가게 ID
+     * @param sort 정렬 기준 (displayOrder,asc/desc, price,asc/desc, registeredDt,desc, isMain,desc)
+     * @return 가게의 메뉴 목록
+     */
+    @GetMapping("/{storeId}/foods")
+    public ApiResponse<com.stdev.smartmealtable.api.store.dto.GetStoreFoodsResponse> getStoreFoods(
+            @PathVariable Long storeId,
+            @RequestParam(required = false, defaultValue = "displayOrder,asc") String sort
+    ) {
+        log.info("가게별 메뉴 목록 조회 API 호출 - storeId: {}, sort: {}", storeId, sort);
+        
+        var response = storeService.getStoreFoods(storeId, sort);
         
         return ApiResponse.success(response);
     }

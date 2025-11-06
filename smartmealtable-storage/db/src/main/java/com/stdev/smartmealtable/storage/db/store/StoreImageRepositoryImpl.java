@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * StoreImageRepository 구현체
  */
@@ -34,5 +37,25 @@ public class StoreImageRepositoryImpl implements StoreImageRepository {
     @Transactional
     public void deleteByStoreId(Long storeId) {
         jpaRepository.deleteByStoreId(storeId);
+    }
+    
+    @Override
+    public List<StoreImage> findByStoreId(Long storeId) {
+        return jpaRepository.findByStoreIdOrderByIsMainDescDisplayOrderAsc(storeId)
+                .stream()
+                .map(StoreImageEntityMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public Optional<StoreImage> findByStoreIdAndIsMainTrue(Long storeId) {
+        return jpaRepository.findByStoreIdAndIsMainTrue(storeId)
+                .map(StoreImageEntityMapper::toDomain);
+    }
+    
+    @Override
+    public Optional<StoreImage> findFirstByStoreIdOrderByDisplayOrderAsc(Long storeId) {
+        return jpaRepository.findFirstByStoreIdOrderByDisplayOrderAsc(storeId)
+                .map(StoreImageEntityMapper::toDomain);
     }
 }
