@@ -237,10 +237,34 @@ public class StoreService {
         String[] parts = sort.split(",");
         String field = parts[0];
         String direction = parts.length > 1 ? parts[1] : "asc";
-        boolean ascending = "asc".equalsIgnoreCase(direction);
+        final boolean ascending = "asc".equalsIgnoreCase(direction);
         
         return foods.stream()
                 .sorted((f1, f2) -> {
+                    if ("isMain".equals(field)) {
+                        boolean f1Main = f1.getIsMain() != null && f1.getIsMain();
+                        boolean f2Main = f2.getIsMain() != null && f2.getIsMain();
+                        int mainCompare = Boolean.compare(f1Main, f2Main);
+                        if (!ascending) {
+                            mainCompare = -mainCompare;
+                        }
+                        if (mainCompare != 0) {
+                            return mainCompare;
+                        }
+                        Integer d1 = f1.getDisplayOrder();
+                        Integer d2 = f2.getDisplayOrder();
+                        if (d1 == null && d2 == null) {
+                            return 0;
+                        }
+                        if (d1 == null) {
+                            return 1;
+                        }
+                        if (d2 == null) {
+                            return -1;
+                        }
+                        return Integer.compare(d1, d2);
+                    }
+
                     int compare = switch (field) {
                         case "price" -> {
                             Integer p1 = f1.getAveragePrice();
@@ -258,11 +282,6 @@ public class StoreService {
                             if (r2 == null) yield -1;
                             yield r1.compareTo(r2);
                         }
-                        case "isMain" -> {
-                            boolean m1 = f1.getIsMain() != null && f1.getIsMain();
-                            boolean m2 = f2.getIsMain() != null && f2.getIsMain();
-                            yield Boolean.compare(m1, m2); // false < true (오름차순)
-                        }
                         default -> { // displayOrder
                             Integer d1 = f1.getDisplayOrder();
                             Integer d2 = f2.getDisplayOrder();
@@ -276,6 +295,7 @@ public class StoreService {
                 })
                 .toList();
     }
+
     
     /**
      * 가게 자동완성 검색

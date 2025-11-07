@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -115,8 +116,7 @@ public class StoreImageController {
      * @return 성공 응답
      */
     @DeleteMapping("/{storeImageId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ApiResponse<Void> deleteStoreImage(
+    public ResponseEntity<Void> deleteStoreImage(
             @PathVariable @Positive Long storeId,
             @PathVariable @Positive Long storeImageId
     ) {
@@ -124,6 +124,7 @@ public class StoreImageController {
         
         storeImageApplicationService.deleteStoreImage(storeId, storeImageId);
         
-        return ApiResponse.success();
+        return ResponseEntity.noContent().build();
     }
 }
+

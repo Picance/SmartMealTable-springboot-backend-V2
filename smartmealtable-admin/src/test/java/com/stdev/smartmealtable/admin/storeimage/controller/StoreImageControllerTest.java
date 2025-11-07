@@ -276,7 +276,8 @@ class StoreImageControllerTest extends AbstractAdminContainerTest {
         entityManager.flush();
         entityManager.clear();
         
-        StoreImage updatedImage1 = storeImageRepository.findById(image1.getStoreImageId());
+        StoreImage updatedImage1 = storeImageRepository.findById(image1.getStoreImageId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이미지"));
         assertThat(updatedImage1.isMain()).isFalse();
     }
 
@@ -318,8 +319,7 @@ class StoreImageControllerTest extends AbstractAdminContainerTest {
                 .andExpect(status().isNoContent());
 
         // 삭제 확인
-        StoreImage deletedImage = storeImageRepository.findById(image.getStoreImageId());
-        assertThat(deletedImage).isNull();
+        assertThat(storeImageRepository.findById(image.getStoreImageId())).isEmpty();
     }
 
     @Test

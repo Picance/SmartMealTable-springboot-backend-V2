@@ -16,7 +16,7 @@ public interface StoreImageRepository {
     /**
      * 이미지 ID로 조회
      */
-    StoreImage findById(Long storeImageId);
+    Optional<StoreImage> findById(Long storeImageId);
     
     /**
      * 이미지 ID로 삭제

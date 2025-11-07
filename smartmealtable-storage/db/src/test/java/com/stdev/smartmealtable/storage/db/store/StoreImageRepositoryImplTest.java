@@ -130,27 +130,27 @@ class StoreImageRepositoryImplTest {
             when(storeImageJpaRepository.findById(storeImageId)).thenReturn(Optional.of(entity));
 
             // When
-            StoreImage result = storeImageRepository.findById(storeImageId);
+            Optional<StoreImage> result = storeImageRepository.findById(storeImageId);
 
             // Then
-            assertThat(result).isNotNull();
-            assertThat(result.getStoreImageId()).isEqualTo(storeImageId);
-            assertThat(result.getStoreId()).isEqualTo(100L);
+            assertThat(result).isPresent();
+            assertThat(result.get().getStoreImageId()).isEqualTo(storeImageId);
+            assertThat(result.get().getStoreId()).isEqualTo(100L);
             verify(storeImageJpaRepository, times(1)).findById(storeImageId);
         }
 
         @Test
-        @DisplayName("존재하지 않는 ID로 조회 시 null을 반환한다")
-        void it_returns_null_when_not_exists() {
+        @DisplayName("존재하지 않는 ID로 조회 시 empty Optional을 반환한다")
+        void it_returns_empty_optional_when_not_exists() {
             // Given
             Long storeImageId = 999L;
             when(storeImageJpaRepository.findById(storeImageId)).thenReturn(Optional.empty());
 
             // When
-            StoreImage result = storeImageRepository.findById(storeImageId);
+            Optional<StoreImage> result = storeImageRepository.findById(storeImageId);
 
             // Then
-            assertThat(result).isNull();
+            assertThat(result).isEmpty();
             verify(storeImageJpaRepository, times(1)).findById(storeImageId);
         }
     }
@@ -217,7 +217,8 @@ class StoreImageRepositoryImplTest {
 
             // When
             StoreImage saved = storeImageRepository.save(domain);
-            StoreImage found = storeImageRepository.findById(saved.getStoreImageId());
+            Optional<StoreImage> foundOptional = storeImageRepository.findById(saved.getStoreImageId());
+            StoreImage found = foundOptional.orElseThrow();
 
             // Then
             assertThat(found).isNotNull();

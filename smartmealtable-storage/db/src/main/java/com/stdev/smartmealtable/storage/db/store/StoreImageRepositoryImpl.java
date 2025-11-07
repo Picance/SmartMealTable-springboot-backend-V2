@@ -27,10 +27,9 @@ public class StoreImageRepositoryImpl implements StoreImageRepository {
     }
     
     @Override
-    public StoreImage findById(Long storeImageId) {
+    public Optional<StoreImage> findById(Long storeImageId) {
         return jpaRepository.findById(storeImageId)
-                .map(StoreImageEntityMapper::toDomain)
-                .orElse(null);
+                .map(StoreImageEntityMapper::toDomain);
     }
     
     @Override

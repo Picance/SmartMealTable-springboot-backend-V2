@@ -40,6 +40,10 @@ public class StoreImageApplicationService {
         log.info("[ADMIN] 가게 이미지 추가 요청 - storeId: {}, isMain: {}, displayOrder: {}", 
                 storeId, isMain, displayOrder);
         
+        // 가게 존재 여부 검증
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
+        
         StoreImage storeImage = StoreImage.builder()
                 .storeId(storeId)
                 .imageUrl(imageUrl)
@@ -64,6 +68,10 @@ public class StoreImageApplicationService {
                                        String imageUrl, boolean isMain, Integer displayOrder) {
         log.info("[ADMIN] 가게 이미지 수정 요청 - storeId: {}, imageId: {}, isMain: {}, displayOrder: {}", 
                 storeId, storeImageId, isMain, displayOrder);
+        
+        // 가게 존재 여부 검증
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
         
         return storeImageService.updateImage(storeImageId, storeId, imageUrl, isMain, displayOrder);
     }

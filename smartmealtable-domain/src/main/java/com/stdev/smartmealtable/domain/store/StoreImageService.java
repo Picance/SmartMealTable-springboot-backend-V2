@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.stdev.smartmealtable.core.error.ErrorType.*;
@@ -92,11 +93,8 @@ public class StoreImageService {
      */
     public StoreImage updateImage(Long storeImageId, Long storeId, String imageUrl, 
                                   boolean isMain, Integer displayOrder) {
-        StoreImage existingImage = storeImageRepository.findById(storeImageId);
-        
-        if (existingImage == null) {
-            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
-        }
+        StoreImage existingImage = storeImageRepository.findById(storeImageId)
+                .orElseThrow(() -> new BusinessException(STORE_IMAGE_NOT_FOUND));
         
         if (!existingImage.getStoreId().equals(storeId)) {
             throw new BusinessException(STORE_IMAGE_NOT_FOUND);
@@ -132,11 +130,8 @@ public class StoreImageService {
      * @param storeId 가게 ID (권한 검증용)
      */
     public void deleteImage(Long storeImageId, Long storeId) {
-        StoreImage existingImage = storeImageRepository.findById(storeImageId);
-        
-        if (existingImage == null) {
-            throw new BusinessException(STORE_IMAGE_NOT_FOUND);
-        }
+        StoreImage existingImage = storeImageRepository.findById(storeImageId)
+                .orElseThrow(() -> new BusinessException(STORE_IMAGE_NOT_FOUND));
         
         if (!existingImage.getStoreId().equals(storeId)) {
             throw new BusinessException(STORE_IMAGE_NOT_FOUND);
@@ -176,11 +171,8 @@ public class StoreImageService {
      */
     @Transactional(readOnly = true)
     public StoreImage getImageById(Long storeImageId) {
-        StoreImage image = storeImageRepository.findById(storeImageId);
-        if (image == null) {
-            throw new IllegalArgumentException("존재하지 않는 이미지입니다. imageId: " + storeImageId);
-        }
-        return image;
+        return storeImageRepository.findById(storeImageId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이미지입니다. imageId: " + storeImageId));
     }
     
     /**
@@ -275,6 +267,7 @@ public class StoreImageService {
         
         return existingImages.stream()
                 .map(StoreImage::getDisplayOrder)
+                .filter(Objects::nonNull)
                 .max(Integer::compareTo)
                 .orElse(0) + 1;
     }

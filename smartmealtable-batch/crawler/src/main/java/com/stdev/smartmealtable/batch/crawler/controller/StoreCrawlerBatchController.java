@@ -3,9 +3,11 @@ package com.stdev.smartmealtable.batch.crawler.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,22 +35,39 @@ public class StoreCrawlerBatchController {
     @PostMapping("/import-stores")
     public ResponseEntity<String> importStores(@RequestParam String filePath) {
         try {
+            // 파일 경로 검증
+            if (!isValidFilePath(filePath)) {
+                return ResponseEntity.badRequest()
+                        .body("Invalid file path: must start with file: and not contain ..");
+            }
+            
             log.info("Starting importCrawledStoreJob with filePath: {}", filePath);
             
             JobParameters jobParameters = new JobParametersBuilder()
                     .addString("inputFilePath", filePath)
-                    .addLong("timestamp", System.currentTimeMillis()) // 중복 실행 방지
+                    .addLong("timestamp", System.currentTimeMillis())
                     .toJobParameters();
             
-            jobLauncher.run(importCrawledStoreJob, jobParameters);
+            JobExecution jobExecution = jobLauncher.run(importCrawledStoreJob, jobParameters);
             
-            log.info("Successfully completed importCrawledStoreJob");
-            return ResponseEntity.ok("Batch job started successfully");
-            
+            log.info("Batch job started with execution id: {}", jobExecution.getId());
+            return ResponseEntity.accepted()
+                    .body("Batch job started with id: " + jobExecution.getId());
         } catch (Exception e) {
-            log.error("Failed to run importCrawledStoreJob", e);
-            return ResponseEntity.internalServerError()
+            log.error("Failed to start batch job", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to start batch job: " + e.getMessage());
         }
+    }
+    
+    /**
+     * 파일 경로 유효성 검증
+     */
+    private boolean isValidFilePath(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            return false;
+        }
+        // file: 스킴으로 시작하고, 경로 순회(path traversal) 방지
+        return filePath.startsWith("file:") && !filePath.contains("..");
     }
 }

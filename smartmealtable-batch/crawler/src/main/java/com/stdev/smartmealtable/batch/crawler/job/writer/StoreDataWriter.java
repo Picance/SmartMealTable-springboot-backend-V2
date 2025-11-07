@@ -68,15 +68,10 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
      * 기존 관련 엔티티 삭제
      */
     private void deleteExistingRelations(Long storeId) {
-        try {
-            foodRepository.deleteByStoreId(storeId);
-            storeImageRepository.deleteByStoreId(storeId);
-            openingHourRepository.deleteByStoreId(storeId);
-            log.debug("Deleted existing relations for store ID: {}", storeId);
-        } catch (Exception e) {
-            log.warn("Failed to delete existing relations for store ID: {}", storeId, e);
-            // 기존 데이터가 없을 수 있으므로 예외 무시하고 계속 진행
-        }
+        foodRepository.deleteByStoreId(storeId);
+        storeImageRepository.deleteByStoreId(storeId);
+        openingHourRepository.deleteByStoreId(storeId);
+        log.debug("Deleted existing relations for store ID: {}", storeId);
     }
     
     /**

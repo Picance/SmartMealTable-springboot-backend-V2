@@ -22,7 +22,7 @@ public record FoodDto(
         return new FoodDto(
                 food.getFoodId(),
                 food.getFoodName(),
-                food.getAveragePrice(),
+                food.getPrice(),
                 food.getDescription(),
                 food.getImageUrl(),
                 food.getIsMain(),
