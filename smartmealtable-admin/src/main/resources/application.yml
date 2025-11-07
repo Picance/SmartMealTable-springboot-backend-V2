@@ -5,6 +5,9 @@ spring:
   application:
     name: smartmealtable-admin
   
+  profiles:
+    include: client
+  
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL:jdbc:mysql://localhost:3306/smartmealtable?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}

@@ -2,6 +2,7 @@ dependencies {
     // 모듈 의존성
     implementation project(':smartmealtable-core')
     implementation project(':smartmealtable-domain')
+    implementation project(':smartmealtable-client:external')
     implementation project(':smartmealtable-storage:db')
     implementation project(':smartmealtable-storage:cache')
     
