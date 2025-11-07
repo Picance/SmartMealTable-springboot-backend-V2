@@ -1027,6 +1027,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_성공_응답_200_ok_40">성공 응답 (200 OK)</a></li>
 </ul>
 </li>
+<li><a href="#_검색_사용_예시">검색 사용 예시</a></li>
 <li><a href="#_필터링_및_정렬">필터링 및 정렬</a>
 <ul class="sectlevel3">
 <li><a href="#_요청_50">요청</a></li>
@@ -11961,6 +11962,9 @@ Content-Length: 405
 <div class="paragraph">
 <p>사용자 위치 기반으로 개인화된 식당을 추천합니다.</p>
 </div>
+<div class="paragraph">
+<p>검색어를 입력하면 <strong>음식점 이름</strong> 또는 <strong>음식 이름</strong>으로 검색할 수 있습니다.</p>
+</div>
 <div class="sect3">
 <h4 id="_요청_49"><a class="link" href="#_요청_49">요청</a></h4>
 <div class="listingblock">
@@ -11992,33 +11996,119 @@ Host: api.smartmealtable.com</code></pre>
 </table>
 </div>
 <div class="sect4">
-<h5 id="_요청_파라미터_9"><a class="link" href="#_요청_파라미터_9">요청 파라미터</a></h5>
+<h5 id="_요청_파라미터_필수"><a class="link" href="#_요청_파라미터_필수">요청 파라미터 (필수)</a></h5>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Type</th>
 <th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>latitude</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">현재 위도 (WGS84, 필수)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">latitude</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BigDecimal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">현재 위도 (WGS84, -90 ~ 90)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>longitude</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">현재 경도 (WGS84, 필수)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>radius</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">검색 반경 (km)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">longitude</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BigDecimal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">현재 경도 (WGS84, -180 ~ 180)</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="sect4">
+<h5 id="_요청_파라미터_선택"><a class="link" href="#_요청_파라미터_선택">요청 파라미터 (선택)</a></h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">keyword</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색어 (음식점 이름 또는 음식 이름)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">radius</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Double</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색 반경 (km, 0.1 ~ 10)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0.5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sortBy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">정렬 기준 (SCORE/DISTANCE/REVIEW/PRICE_LOW/PRICE_HIGH/FAVORITE/INTEREST_HIGH/INTEREST_LOW)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SCORE</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">includeDisliked</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">불호 음식 포함 여부</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">openNow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">영업 중인 가게만 조회</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">storeType</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">가게 타입 필터 (ALL/CAMPUS_RESTAURANT/RESTAURANT)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ALL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">page</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 번호 (오프셋 기반 페이징, 0부터 시작)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">size</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">페이지 크기 (1 ~ 100)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lastId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Long</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">이전 응답의 마지막 가게 ID (커서 기반 페이징용)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">limit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Integer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">조회 항목 수 (커서 기반 페이징용, 1 ~ 100)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>파라미터 팁:</strong>
+* 커서 기반 페이징: <code>lastId</code>, <code>limit</code> 사용 (무한 스크롤 권장)
+* 오프셋 기반 페이징: <code>page</code>, <code>size</code> 사용 (하위 호환성)</p>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -12167,6 +12257,44 @@ Content-Length: 1040
 </div>
 </div>
 <div class="sect2">
+<h3 id="_검색_사용_예시"><a class="link" href="#_검색_사용_예시">검색 사용 예시</a></h3>
+<div class="paragraph">
+<p>검색어를 통해 음식점 이름이나 음식 이름으로 추천 결과를 필터링할 수 있습니다.</p>
+</div>
+<div class="paragraph">
+<p><strong>음식점 이름 검색:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">GET /api/v1/recommendations?latitude=37.5&amp;longitude=127.0&amp;keyword=교촌치킨&amp;limit=20</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>음식 이름 검색:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">GET /api/v1/recommendations?latitude=37.5&amp;longitude=127.0&amp;keyword=김치찌개&amp;limit=20</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>검색 + 필터링:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">GET /api/v1/recommendations?latitude=37.5&amp;longitude=127.0&amp;keyword=파스타&amp;openNow=true&amp;sortBy=PRICE_LOW</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>검색 + 커서 페이징:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">GET /api/v1/recommendations?latitude=37.5&amp;longitude=127.0&amp;keyword=치킨&amp;lastId=50&amp;limit=20</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_필터링_및_정렬"><a class="link" href="#_필터링_및_정렬">필터링 및 정렬</a></h3>
 <div class="sect3">
 <h4 id="_요청_50"><a class="link" href="#_요청_50">요청</a></h4>
@@ -12238,7 +12366,7 @@ Content-Length: 1040
 <div class="ulist">
 <ul>
 <li>
-<p><code>SCORE</code>: 추천 점수순</p>
+<p><code>SCORE</code>: 추천 점수순 (기본값)</p>
 </li>
 <li>
 <p><code>DISTANCE</code>: 거리순</p>
@@ -12262,6 +12390,11 @@ Content-Length: 1040
 <p><code>INTEREST_LOW</code>: 관심도 낮은 순</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p><strong>참고:</strong>
+* 검색어가 없으면 기존과 동일하게 모든 추천 결과를 반환합니다.
+* 검색 결과에도 추천 점수, 필터링, 정렬이 모두 적용됩니다.</p>
 </div>
 </div>
 <div class="sect3">
@@ -15117,7 +15250,7 @@ Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_요청_파라미터_10"><a class="link" href="#_요청_파라미터_10">요청 파라미터</a></h5>
+<h5 id="_요청_파라미터_9"><a class="link" href="#_요청_파라미터_9">요청 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -15374,7 +15507,7 @@ Host: api.smartmealtable.com</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_요청_파라미터_11"><a class="link" href="#_요청_파라미터_11">요청 파라미터</a></h5>
+<h5 id="_요청_파라미터_10"><a class="link" href="#_요청_파라미터_10">요청 파라미터</a></h5>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 50%;">
@@ -16155,7 +16288,7 @@ Content-Length: 137
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2025-10-23 23:31:12 +0900
+Last updated 2025-11-07 21:48:24 +0900
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css">

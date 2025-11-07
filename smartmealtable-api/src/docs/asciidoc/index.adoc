@@ -1868,6 +1868,8 @@ include::{snippets}/expenditure/get-statistics-success/response-fields.adoc[]
 
 사용자 위치 기반으로 개인화된 식당을 추천합니다.
 
+검색어를 입력하면 **음식점 이름** 또는 **음식 이름**으로 검색할 수 있습니다.
+
 ==== 요청
 
 include::{snippets}/recommendation-list-success-default/http-request.adoc[]
@@ -1876,9 +1878,79 @@ include::{snippets}/recommendation-list-success-default/http-request.adoc[]
 
 include::{snippets}/recommendation-list-success-default/request-headers.adoc[]
 
-===== 요청 파라미터
+===== 요청 파라미터 (필수)
 
-include::{snippets}/recommendation-list-success-default/query-parameters.adoc[]
+|===
+| Parameter | Type | Description
+
+| latitude
+| BigDecimal
+| 현재 위도 (WGS84, -90 ~ 90)
+
+| longitude
+| BigDecimal
+| 현재 경도 (WGS84, -180 ~ 180)
+|===
+
+===== 요청 파라미터 (선택)
+
+|===
+| Parameter | Type | Description | Default
+
+| keyword
+| String
+| 검색어 (음식점 이름 또는 음식 이름)
+| -
+
+| radius
+| Double
+| 검색 반경 (km, 0.1 ~ 10)
+| 0.5
+
+| sortBy
+| String
+| 정렬 기준 (SCORE/DISTANCE/REVIEW/PRICE_LOW/PRICE_HIGH/FAVORITE/INTEREST_HIGH/INTEREST_LOW)
+| SCORE
+
+| includeDisliked
+| Boolean
+| 불호 음식 포함 여부
+| false
+
+| openNow
+| Boolean
+| 영업 중인 가게만 조회
+| false
+
+| storeType
+| String
+| 가게 타입 필터 (ALL/CAMPUS_RESTAURANT/RESTAURANT)
+| ALL
+
+| page
+| Integer
+| 페이지 번호 (오프셋 기반 페이징, 0부터 시작)
+| 0
+
+| size
+| Integer
+| 페이지 크기 (1 ~ 100)
+| 20
+
+| lastId
+| Long
+| 이전 응답의 마지막 가게 ID (커서 기반 페이징용)
+| -
+
+| limit
+| Integer
+| 조회 항목 수 (커서 기반 페이징용, 1 ~ 100)
+| 20
+|===
+
+*파라미터 팁:*
+* 커서 기반 페이징: `lastId`, `limit` 사용 (무한 스크롤 권장)
+* 오프셋 기반 페이징: `page`, `size` 사용 (하위 호환성)
 
 ==== 성공 응답 (200 OK)
 
@@ -1887,6 +1959,30 @@ include::{snippets}/recommendation-list-success-default/http-response.adoc[]
 ===== 응답 필드
 
 include::{snippets}/recommendation-list-success-default/response-fields.adoc[]
+
+=== 검색 사용 예시
+
+검색어를 통해 음식점 이름이나 음식 이름으로 추천 결과를 필터링할 수 있습니다.
+
+**음식점 이름 검색:**
+```
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=교촌치킨&limit=20
+```
+
+**음식 이름 검색:**
+```
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=김치찌개&limit=20
+```
+
+**검색 + 필터링:**
+```
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=파스타&openNow=true&sortBy=PRICE_LOW
+```
+
+**검색 + 커서 페이징:**
+```
+GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=50&limit=20
+```
 
 === 필터링 및 정렬
 
@@ -1900,7 +1996,7 @@ include::{snippets}/recommendation-list-success-with-filters/http-response.adoc[
 
 ==== 정렬 옵션
 
-* `SCORE`: 추천 점수순
+* `SCORE`: 추천 점수순 (기본값)
 * `DISTANCE`: 거리순
 * `REVIEW`: 리뷰 많은 순
 * `PRICE_LOW`: 가격 낮은 순
@@ -1908,6 +2004,10 @@ include::{snippets}/recommendation-list-success-with-filters/http-response.adoc[
 * `FAVORITE`: 즐겨찾기 우선
 * `INTEREST_HIGH`: 관심도 높은 순
 * `INTEREST_LOW`: 관심도 낮은 순
+
+**참고:**
+* 검색어가 없으면 기존과 동일하게 모든 추천 결과를 반환합니다.
+* 검색 결과에도 추천 점수, 필터링, 정렬이 모두 적용됩니다.
 
 ==== 에러 응답
 
