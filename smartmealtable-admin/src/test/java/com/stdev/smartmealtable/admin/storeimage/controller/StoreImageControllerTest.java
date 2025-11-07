@@ -368,6 +368,65 @@ class StoreImageControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.error.code").value("E404"));
     }
 
+    // ==================== 이미지 목록 조회 테스트 ====================
+
+    @Test
+    @DisplayName("[성공] 가게 이미지 목록 조회 - 대표 이미지 우선 정렬")
+    void getStoreImages_Success() throws Exception {
+        // Given - 여러 이미지 등록
+        storeImageRepository.save(
+                StoreImage.create(testStoreId, "https://example.com/img3.jpg", false, 3)
+        );
+        storeImageRepository.save(
+                StoreImage.create(testStoreId, "https://example.com/main.jpg", true, 1)
+        );
+        storeImageRepository.save(
+                StoreImage.create(testStoreId, "https://example.com/img2.jpg", false, 2)
+        );
+        entityManager.flush();
+        entityManager.clear();
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/images", testStoreId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(3)))
+                // 첫 번째는 대표 이미지
+                .andExpect(jsonPath("$.data[0].isMain").value(true))
+                .andExpect(jsonPath("$.data[0].displayOrder").value(1))
+                .andExpect(jsonPath("$.data[0].imageUrl").value("https://example.com/main.jpg"))
+                // 나머지는 displayOrder 순서
+                .andExpect(jsonPath("$.data[1].isMain").value(false))
+                .andExpect(jsonPath("$.data[1].displayOrder").value(2))
+                .andExpect(jsonPath("$.data[2].isMain").value(false))
+                .andExpect(jsonPath("$.data[2].displayOrder").value(3));
+    }
+
+    @Test
+    @DisplayName("[성공] 가게 이미지 목록 조회 - 이미지 없음")
+    void getStoreImages_EmptyList() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/images", testStoreId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("[실패] 가게 이미지 목록 조회 - 존재하지 않는 가게")
+    void getStoreImages_StoreNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/images", 999999L))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"));
+    }
+
     // ==================== Helper Methods ====================
 
     private String toJson(Object obj) throws Exception {

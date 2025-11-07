@@ -150,14 +150,17 @@
 | `POST`      | `/stores`                                      | 음식점 생성              |
 | `PUT`       | `/stores/{storeId}`                            | 음식점 수정              |
 | `DELETE`    | `/stores/{storeId}`                            | 음식점 삭제 (논리적)     |
+| `GET`       | `/stores/{storeId}/images`                     | 가게 이미지 목록 조회    |
 | `POST`      | `/stores/{storeId}/images`                     | 가게 이미지 추가         |
 | `PUT`       | `/stores/{storeId}/images/{imageId}`           | 가게 이미지 수정         |
 | `DELETE`    | `/stores/{storeId}/images/{imageId}`           | 가게 이미지 삭제         |
+| `GET`       | `/stores/{storeId}/opening-hours`              | 영업시간 목록 조회       |
 | `POST`      | `/stores/{storeId}/opening-hours`              | 영업시간 추가            |
 | `PUT`       | `/stores/{storeId}/opening-hours/{openingHourId}`| 영업시간 수정            |
 | `DELETE`    | `/stores/{storeId}/opening-hours/{openingHourId}`| 영업시간 삭제            |
-| `POST`      | `/stores/{storeId}/temporary-closure`          | 임시 휴무 등록           |
-| `DELETE`    | `/stores/{storeId}/temporary-closure/{closureId}`| 임시 휴무 삭제           |
+| `GET`       | `/stores/{storeId}/temporary-closures`         | 임시 휴무 목록 조회      |
+| `POST`      | `/stores/{storeId}/temporary-closures`         | 임시 휴무 등록           |
+| `DELETE`    | `/stores/{storeId}/temporary-closures/{closureId}`| 임시 휴무 삭제           |
 
 #### `GET /stores`
 
@@ -309,6 +312,42 @@
 - **설명**: 가게 이미지를 삭제합니다 (물리적 삭제).
 - **Response (204)**: No Content
 
+#### `GET /stores/{storeId}/opening-hours`
+
+- **설명**: 특정 음식점의 영업시간 목록을 조회합니다.
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": [
+      {
+        "openingHourId": 1,
+        "storeId": 101,
+        "dayOfWeek": "MONDAY",
+        "openTime": "09:00:00",
+        "closeTime": "21:00:00",
+        "breakStartTime": "15:00:00",
+        "breakEndTime": "17:00:00",
+        "isHoliday": false
+      },
+      {
+        "openingHourId": 2,
+        "storeId": 101,
+        "dayOfWeek": "SUNDAY",
+        "openTime": null,
+        "closeTime": null,
+        "breakStartTime": null,
+        "breakEndTime": null,
+        "isHoliday": true
+      }
+    ],
+    "error": null
+  }
+  ```
+- **참고**:
+  - 영업시간은 `dayOfWeek` 순서(MONDAY ~ SUNDAY)로 정렬되어 반환됩니다.
+  - 휴무일(`isHoliday=true`)인 경우 `openTime`, `closeTime`은 null입니다.
+
 #### `POST /stores/{storeId}/opening-hours`
 
 - **설명**: 특정 음식점의 영업시간을 추가합니다.
@@ -324,11 +363,40 @@
   }
   ```
 - **참고**: 
-  - `dayOfWeek`: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
-  - 휴무일인 경우: `isHoliday: true`, `openTime`, `closeTime`은 null
+  - 종일 휴무인 경우: `startTime`, `endTime`은 null
   - 브레이크 타임이 없는 경우: `breakStartTime`, `breakEndTime`은 null
 
-#### `POST /stores/{storeId}/temporary-closure`
+#### `GET /stores/{storeId}/images`
+
+- **설명**: 특정 음식점의 이미지 목록을 조회합니다.
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": [
+      {
+        "storeImageId": 1,
+        "storeId": 101,
+        "imageUrl": "http://example.com/image1.jpg",
+        "isMain": true,
+        "displayOrder": 1
+      },
+      {
+        "storeImageId": 2,
+        "storeId": 101,
+        "imageUrl": "http://example.com/image2.jpg",
+        "isMain": false,
+        "displayOrder": 2
+      }
+    ],
+    "error": null
+  }
+  ```
+- **참고**:
+  - 이미지는 `displayOrder` 오름차순으로 정렬되어 반환됩니다.
+  - 대표 이미지(`isMain=true`)가 항상 먼저 표시됩니다.
+
+#### `POST /stores/{storeId}/images`
 
 - **설명**: 특정 음식점의 임시 휴무를 등록합니다.
 - **Request Body**:
@@ -344,6 +412,39 @@
   - 종일 휴무인 경우: `startTime`, `endTime`은 null
   - `registeredAt`은 DB에서 자동 설정됩니다 (비즈니스 필드, 최근 휴업 알림용)
   - **주의**: 도메인 엔티티 `StoreTemporaryClosure`는 record 타입으로 `registeredAt` 필드를 포함하지 않습니다. 조회가 필요한 경우 Storage 계층 처리를 고려하세요.
+
+#### `GET /stores/{storeId}/temporary-closures`
+
+- **설명**: 특정 음식점의 임시 휴무 목록을 조회합니다.
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": [
+      {
+        "closureId": 1,
+        "storeId": 101,
+        "closureDate": "2025-12-25",
+        "startTime": null,
+        "endTime": null,
+        "reason": "크리스마스 휴무"
+      },
+      {
+        "closureId": 2,
+        "storeId": 101,
+        "closureDate": "2025-12-31",
+        "startTime": "18:00",
+        "endTime": "24:00",
+        "reason": "연말 조기 마감"
+      }
+    ],
+    "error": null
+  }
+  ```
+- **참고**:
+  - 임시 휴무는 `closureDate` 오름차순으로 정렬되어 반환됩니다.
+  - 종일 휴무인 경우 `startTime`, `endTime`은 null입니다.
+  - 과거 임시 휴무도 포함됩니다 (필요시 필터링은 클라이언트에서 처리).
 
 ---
 
@@ -554,9 +655,48 @@
 
 ---
 
-## 4. 구현 체크리스트
+## 4. CRUD 현황표
 
-### 4.1. 백엔드 (smartmealtable-admin)
+### 4.1. 완전한 CRUD 리소스 (4가지 모두 구현)
+
+| 리소스 | Create (POST) | Read (GET) | Update (PUT) | Delete (DELETE) | 비고 |
+|--------|--------------|-----------|--------------|-----------------|------|
+| **Category** | ✅ | ✅ (List, Detail) | ✅ | ✅ (물리 삭제) | 완전한 CRUD |
+| **Store** | ✅ | ✅ (List, Detail) | ✅ | ✅ (논리 삭제) | 완전한 CRUD |
+| **Food** | ✅ | ✅ (List, Detail) | ✅ | ✅ (논리 삭제) | 완전한 CRUD |
+| **Group** | ✅ | ✅ (List, Detail) | ✅ | ✅ (물리 삭제) | 완전한 CRUD |
+| **Policy** | ✅ | ✅ (List, Detail) | ✅ | ✅ (물리 삭제) | 완전한 CRUD + PATCH(토글) |
+
+### 4.2. 불완전한 CRUD 리소스
+
+#### 4.2.1. 하위 리소스 (부모 리소스에 종속적)
+
+| 리소스 | Create (POST) | Read (GET) | Update (PUT) | Delete (DELETE) | 상태 | 이유 |
+|--------|--------------|-----------|--------------|-----------------|------|------|
+| **StoreImage** | ✅ | ✅ | ✅ | ✅ (물리 삭제) | **완전한 CRUD** | GET List API 추가로 완전한 CRUD 구현 |
+| **StoreOpeningHour** | ✅ | ✅ | ✅ | ✅ (물리 삭제) | **완전한 CRUD** | GET List API 추가로 완전한 CRUD 구현 |
+| **StoreTemporaryClosure** | ✅ | ✅ | ❌ | ✅ (물리 삭제) | **CRD 구현** | GET List API 추가<br>수정은 삭제 후 재등록 |
+
+**설명**:
+- 이들 리소스는 Store의 하위 리소스이지만, 독립적인 목록 조회 API를 제공합니다.
+- Store 상세 조회 시에도 함께 조회되므로, 두 가지 방법 모두 사용 가능합니다.
+- StoreTemporaryClosure는 수정(PUT) 없이 삭제 후 재등록 방식으로 관리합니다.
+
+#### 4.2.2. 조회 전용 리소스
+
+| 리소스 | Create (POST) | Read (GET) | Update (PUT) | Delete (DELETE) | 상태 | 이유 |
+|--------|--------------|-----------|--------------|-----------------|------|------|
+| **Statistics** | ❌ | ✅ | ❌ | ❌ | **Read-Only** | 통계 데이터는 조회만 가능 (생성/수정/삭제 불가) |
+
+**설명**:
+- Statistics는 시스템에서 자동으로 집계되는 통계 데이터입니다.
+- 관리자는 조회만 가능하며, 직접 생성하거나 수정할 수 없습니다.
+
+---
+
+## 5. 구현 체크리스트
+
+### 5.1. 백엔드 (smartmealtable-admin)
 
 #### Domain Layer
 - [x] `StoreImage` 도메인 엔티티 생성 ✅ (2025-11-07 완료)
@@ -640,7 +780,7 @@
   - [x] displayOrder 기준 정렬 (오름차순/내림차순)
   - [x] 복합 정렬 (isMain 우선, displayOrder 차선)
 
-### 4.3. 문서화
+### 5.3. 문서화
 - [x] ADMIN API 명세서 업데이트 ✅ (2025-11-07 완료)
   - [x] Store API 문서 갱신 (지오코딩 자동 처리 반영)
   - [x] StoreImage API 문서 추가 (CRUD, 대표 이미지 관리)
@@ -649,7 +789,7 @@
 
 ---
 
-## 5. 참고 문서
+## 6. 참고 문서
 
 - [ddl.sql](../ddl.sql) - 데이터베이스 스키마
 - [API_REDESIGN_FOOD_AND_STORE_IMAGE.md](./API_REDESIGN_FOOD_AND_STORE_IMAGE.md) - API 모듈 재설계 문서
@@ -657,9 +797,9 @@
 
 ---
 
-## 6. 지오코딩 API 연동 가이드
+## 7. 지오코딩 API 연동 가이드
 
-### 6.1. Naver Maps API (구현 완료)
+### 7.1. Naver Maps API (구현 완료)
 
 **주의**: 본 프로젝트는 API 모듈에서 이미 Naver Maps API 기반 지오코딩 기능을 구현하여 사용하고 있습니다.  
 ADMIN 모듈에서는 API 모듈의 `MapService`를 재사용하거나, 동일한 방식으로 구현하면 됩니다.
@@ -697,7 +837,7 @@ X-NCP-APIGW-API-KEY: {client_secret}
 }
 ```
 
-### 6.2. 에러 처리
+### 7.2. 에러 처리
 
 | 케이스 | HTTP Status | Error Code | Message |
 |--------|-------------|------------|---------|
@@ -705,7 +845,7 @@ X-NCP-APIGW-API-KEY: {client_secret}
 | 지오코딩 API 장애 | 503 | GEOCODING_SERVICE_UNAVAILABLE | 주소 변환 서비스를 사용할 수 없습니다. |
 | API 키 오류 | 500 | GEOCODING_API_ERROR | 주소 변환 중 오류가 발생했습니다. |
 
-### 6.3. 기존 구현체 활용 방법
+### 7.3. 기존 구현체 활용 방법
 
 **API 모듈의 MapService 활용:**
 ```java
@@ -755,7 +895,7 @@ public class StoreService {
 }
 ```
 
-### 6.4. 새로운 구현 (필요 시)
+### 7.4. 새로운 구현 (필요 시)
 
 만약 ADMIN 모듈에서 독립적으로 구현하려면:
 

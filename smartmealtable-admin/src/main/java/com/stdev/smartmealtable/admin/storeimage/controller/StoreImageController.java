@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 가게 이미지 관리 Controller (ADMIN)
  * 
@@ -27,6 +29,27 @@ import org.springframework.web.bind.annotation.*;
 public class StoreImageController {
     
     private final StoreImageApplicationService storeImageApplicationService;
+    
+    /**
+     * 가게 이미지 목록 조회
+     * 
+     * @param storeId 가게 ID
+     * @return 이미지 목록 (displayOrder 오름차순, 대표 이미지 우선)
+     */
+    @GetMapping
+    public ApiResponse<List<StoreImageResponse>> getStoreImages(
+            @PathVariable @Positive Long storeId
+    ) {
+        log.info("[ADMIN] GET /api/v1/admin/stores/{}/images", storeId);
+        
+        List<StoreImage> storeImages = storeImageApplicationService.getStoreImages(storeId);
+        
+        List<StoreImageResponse> responses = storeImages.stream()
+                .map(StoreImageResponse::from)
+                .toList();
+        
+        return ApiResponse.success(responses);
+    }
     
     /**
      * 가게 이미지 추가

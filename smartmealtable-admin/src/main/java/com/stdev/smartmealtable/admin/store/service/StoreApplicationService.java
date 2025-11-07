@@ -232,6 +232,25 @@ public class StoreApplicationService {
     // ===== 영업시간 관리 =====
 
     /**
+     * 영업시간 목록 조회
+     */
+    public List<OpeningHourServiceResponse> getOpeningHours(Long storeId) {
+        log.info("[ADMIN] 영업시간 목록 조회 - storeId: {}", storeId);
+        
+        // 음식점 존재 확인
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
+        
+        List<StoreOpeningHour> openingHours = storeRepository.findOpeningHoursByStoreId(storeId);
+        
+        log.info("[ADMIN] 영업시간 목록 조회 완료 - count: {}", openingHours.size());
+        
+        return openingHours.stream()
+                .map(OpeningHourServiceResponse::from)
+                .toList();
+    }
+
+    /**
      * 영업시간 추가
      */
     @Transactional
@@ -316,6 +335,25 @@ public class StoreApplicationService {
     }
 
     // ===== 임시 휴무 관리 =====
+
+    /**
+     * 임시 휴무 목록 조회
+     */
+    public List<TemporaryClosureServiceResponse> getTemporaryClosures(Long storeId) {
+        log.info("[ADMIN] 임시 휴무 목록 조회 - storeId: {}", storeId);
+        
+        // 음식점 존재 확인
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
+        
+        List<StoreTemporaryClosure> closures = storeRepository.findTemporaryClosuresByStoreId(storeId);
+        
+        log.info("[ADMIN] 임시 휴무 목록 조회 완료 - count: {}", closures.size());
+        
+        return closures.stream()
+                .map(TemporaryClosureServiceResponse::from)
+                .toList();
+    }
 
     /**
      * 임시 휴무 등록

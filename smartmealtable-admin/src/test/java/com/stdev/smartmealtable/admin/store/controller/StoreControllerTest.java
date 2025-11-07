@@ -54,6 +54,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
     private ObjectMapper objectMapper;
 
     private Long testCategoryId;
+    private Long testStoreId;
 
     @BeforeEach
     void setUp() {
@@ -95,8 +96,10 @@ class StoreControllerTest extends AbstractAdminContainerTest {
                 StoreType.RESTAURANT
         );
 
-        storeRepository.save(store1);
+        Store savedStore1 = storeRepository.save(store1);
         storeRepository.save(store2);
+        
+        testStoreId = savedStore1.getStoreId(); // 첫 번째 가게 ID 저장
 
         entityManager.flush();
         entityManager.clear();
@@ -336,6 +339,58 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // 실제 환경에서의 기대 결과:
         // .andExpect(status().isBadRequest())
         // .andExpect(jsonPath("$.error.code").value("INVALID_ADDRESS"));
+    }
+
+    // ==================== 영업시간 목록 조회 테스트 ====================
+
+    @Test
+    @DisplayName("[성공] 영업시간 목록 조회")
+    void getOpeningHours_Success() throws Exception {
+        // Given - 영업시간 여러 개 추가
+        // MockMvc를 통해 직접 추가하는 대신, 직접 생성
+        // (실제로는 POST 요청으로 추가하지만 테스트 단순화를 위해)
+        
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/opening-hours", testStoreId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    @DisplayName("[실패] 영업시간 목록 조회 - 존재하지 않는 가게")
+    void getOpeningHours_StoreNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/opening-hours", 999999L))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"));
+    }
+
+    // ==================== 임시 휴무 목록 조회 테스트 ====================
+
+    @Test
+    @DisplayName("[성공] 임시 휴무 목록 조회")
+    void getTemporaryClosures_Success() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/temporary-closures", testStoreId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    @DisplayName("[실패] 임시 휴무 목록 조회 - 존재하지 않는 가게")
+    void getTemporaryClosures_StoreNotFound() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/v1/admin/stores/{storeId}/temporary-closures", 999999L))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"));
     }
 }
 

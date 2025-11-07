@@ -1,13 +1,17 @@
 package com.stdev.smartmealtable.admin.storeimage.service;
 
+import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.store.StoreImage;
 import com.stdev.smartmealtable.domain.store.StoreImageService;
+import com.stdev.smartmealtable.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.stdev.smartmealtable.core.error.ErrorType.*;
 
 /**
  * 가게 이미지 관리 Application Service
@@ -21,6 +25,7 @@ import java.util.List;
 public class StoreImageApplicationService {
     
     private final StoreImageService storeImageService;
+    private final StoreRepository storeRepository;
     
     /**
      * 가게 이미지를 추가합니다.
@@ -76,13 +81,17 @@ public class StoreImageApplicationService {
     }
     
     /**
-     * 가게의 모든 이미지를 조회합니다.
+     * 가게 이미지 목록 조회
      * 
      * @param storeId 가게 ID
      * @return 이미지 목록
      */
     @Transactional(readOnly = true)
     public List<StoreImage> getStoreImages(Long storeId) {
+        // 가게 존재 확인
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new BusinessException(STORE_NOT_FOUND));
+        
         return storeImageService.getStoreImages(storeId);
     }
 }
