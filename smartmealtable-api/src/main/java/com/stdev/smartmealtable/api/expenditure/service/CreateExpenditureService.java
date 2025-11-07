@@ -27,31 +27,59 @@ public class CreateExpenditureService {
      */
     @Transactional
     public CreateExpenditureServiceResponse createExpenditure(CreateExpenditureServiceRequest request) {
-        // 지출 항목 DTO 변환
-        List<ExpenditureDomainService.ExpenditureItemRequest> itemRequests = request.items() != null
-                ? request.items().stream()
-                .map(itemReq -> new ExpenditureDomainService.ExpenditureItemRequest(
-                        itemReq.foodId(),
-                        itemReq.quantity(),
-                        itemReq.price()
-                ))
-                .collect(Collectors.toList())
-                : List.of();
+        // storeId 여부에 따라 다른 Domain Service 메서드 호출
+        if (request.storeId() != null) {
+            // 장바구니 시나리오: storeId + foodId 포함
+            List<ExpenditureDomainService.CartExpenditureItemRequest> cartItems = request.items() != null
+                    ? request.items().stream()
+                    .map(itemReq -> new ExpenditureDomainService.CartExpenditureItemRequest(
+                            itemReq.foodId(),
+                            itemReq.foodName(),  // foodName도 함께 전달
+                            itemReq.quantity(),
+                            itemReq.price()
+                    ))
+                    .collect(Collectors.toList())
+                    : List.of();
 
-        // Domain Service를 통한 지출 생성 (검증 + 도메인 로직 포함)
-        ExpenditureDomainService.ExpenditureCreationResult result = expenditureDomainService.createExpenditure(
-                request.memberId(),
-                request.storeName(),
-                request.amount(),
-                request.expendedDate(),
-                request.expendedTime(),
-                request.categoryId(),
-                request.mealType(),
-                request.memo(),
-                itemRequests
-        );
-        
-        // 응답 생성
-        return CreateExpenditureServiceResponse.from(result.expenditure(), result.categoryName());
+            ExpenditureDomainService.ExpenditureCreationResult result = expenditureDomainService.createExpenditureFromCart(
+                    request.memberId(),
+                    request.storeId(),
+                    request.storeName(),
+                    request.amount(),
+                    request.expendedDate(),
+                    request.expendedTime(),
+                    request.categoryId(),
+                    request.mealType(),
+                    request.memo(),
+                    cartItems
+            );
+            
+            return CreateExpenditureServiceResponse.from(result.expenditure(), result.categoryName());
+        } else {
+            // 수기 입력 시나리오: storeId 없음
+            List<ExpenditureDomainService.ExpenditureItemRequest> itemRequests = request.items() != null
+                    ? request.items().stream()
+                    .map(itemReq -> new ExpenditureDomainService.ExpenditureItemRequest(
+                            itemReq.foodId(),
+                            itemReq.quantity(),
+                            itemReq.price()
+                    ))
+                    .collect(Collectors.toList())
+                    : List.of();
+
+            ExpenditureDomainService.ExpenditureCreationResult result = expenditureDomainService.createExpenditure(
+                    request.memberId(),
+                    request.storeName(),
+                    request.amount(),
+                    request.expendedDate(),
+                    request.expendedTime(),
+                    request.categoryId(),
+                    request.mealType(),
+                    request.memo(),
+                    itemRequests
+            );
+            
+            return CreateExpenditureServiceResponse.from(result.expenditure(), result.categoryName());
+        }
     }
 }

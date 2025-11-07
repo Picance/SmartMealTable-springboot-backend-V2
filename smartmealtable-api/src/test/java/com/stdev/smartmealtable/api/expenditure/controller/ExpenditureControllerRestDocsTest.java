@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.expenditure.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
+import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureFromCartRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.ParseSmsRequest;
 import com.stdev.smartmealtable.api.expenditure.service.ParseSmsService;
@@ -1471,6 +1472,296 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("에러 정보"),
                                 fieldWithPath("error.code").type(JsonFieldType.STRING)
                                         .description("에러 코드 (E401: 인증 실패)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
+                                        .description("에러 상세 정보"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).optional()
+                                        .description("에러가 발생한 필드"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).optional()
+                                        .description("에러 사유")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[Docs] 장바구니에서 지출 내역 등록 - 성공")
+    void createExpenditureFromCart_Success() throws Exception {
+        // given
+        String request = objectMapper.writeValueAsString(
+                new CreateExpenditureFromCartRequest(
+                        101L,  // storeId
+                        "교촌치킨 강남점",
+                        13500,
+                        LocalDate.of(2025, 10, 8),
+                        LocalTime.of(12, 30),
+                        categoryId,
+                        MealType.LUNCH,
+                        "동료와 점심",
+                        List.of(
+                                new CreateExpenditureFromCartRequest.CartExpenditureItemRequest(
+                                        456L,
+                                        "싸이버거 세트",
+                                        1,
+                                        6500
+                                ),
+                                new CreateExpenditureFromCartRequest.CartExpenditureItemRequest(
+                                        789L,
+                                        "치킨버거 세트",
+                                        1,
+                                        7000
+                                )
+                        )
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/expenditures/from-cart")
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.storeName").value("교촌치킨 강남점"))
+                .andExpect(jsonPath("$.data.amount").value(13500))
+                .andExpect(jsonPath("$.data.hasStoreLink").value(true))
+                .andExpect(jsonPath("$.error").doesNotExist())
+                .andDo(document("expenditure/create-from-cart-success",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)"),
+                                headerWithName("Content-Type").description("application/json")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeId").type(JsonFieldType.NUMBER)
+                                        .description("가게 ID (필수)"),
+                                fieldWithPath("storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름 (필수)"),
+                                fieldWithPath("amount").type(JsonFieldType.NUMBER)
+                                        .description("지출 금액 (필수, 0 이상)"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜 (필수, YYYY-MM-DD)"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING)
+                                        .description("지출 시간 (선택, HH:mm:ss)"),
+                                fieldWithPath("categoryId").type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID (선택)").optional(),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형 (BREAKFAST, LUNCH, DINNER, OTHER)").optional(),
+                                fieldWithPath("memo").type(JsonFieldType.STRING)
+                                        .description("메모 (선택, 최대 500자)").optional(),
+                                fieldWithPath("items").type(JsonFieldType.ARRAY)
+                                        .description("지출 항목 목록 (필수)"),
+                                fieldWithPath("items[].foodId").type(JsonFieldType.NUMBER)
+                                        .description("음식 ID (필수)"),
+                                fieldWithPath("items[].foodName").type(JsonFieldType.STRING)
+                                        .description("음식 이름 (필수)"),
+                                fieldWithPath("items[].quantity").type(JsonFieldType.NUMBER)
+                                        .description("수량 (필수, 1 이상)"),
+                                fieldWithPath("items[].price").type(JsonFieldType.NUMBER)
+                                        .description("가격 (필수, 0 이상)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER)
+                                        .description("지출 내역 ID"),
+                                fieldWithPath("data.storeId").type(JsonFieldType.NUMBER)
+                                        .description("가게 ID"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.amount").type(JsonFieldType.NUMBER)
+                                        .description("지출 금액"),
+                                fieldWithPath("data.expendedDate").type(JsonFieldType.STRING)
+                                        .description("지출 날짜"),
+                                fieldWithPath("data.expendedTime").type(JsonFieldType.STRING)
+                                        .description("지출 시간").optional(),
+                                fieldWithPath("data.categoryId").type(JsonFieldType.NUMBER)
+                                        .description("카테고리 ID").optional(),
+                                fieldWithPath("data.categoryName").type(JsonFieldType.STRING)
+                                        .description("카테고리 이름").optional(),
+                                fieldWithPath("data.mealType").type(JsonFieldType.STRING)
+                                        .description("식사 유형").optional(),
+                                fieldWithPath("data.memo").type(JsonFieldType.STRING)
+                                        .description("메모").optional(),
+                                fieldWithPath("data.items").type(JsonFieldType.ARRAY)
+                                        .description("지출 항목 목록"),
+                                fieldWithPath("data.items[].expenditureItemId").type(JsonFieldType.NUMBER)
+                                        .description("항목 ID"),
+                                fieldWithPath("data.items[].foodId").type(JsonFieldType.NUMBER)
+                                        .description("음식 ID"),
+                                fieldWithPath("data.items[].hasFoodLink").type(JsonFieldType.BOOLEAN)
+                                        .description("음식 상세 페이지 링크 가능 여부"),
+                                fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING)
+                                        .description("음식 이름"),
+                                fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER)
+                                        .description("수량"),
+                                fieldWithPath("data.items[].price").type(JsonFieldType.NUMBER)
+                                        .description("가격"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.STRING)
+                                        .description("생성 시간"),
+                                fieldWithPath("data.hasStoreLink").type(JsonFieldType.BOOLEAN)
+                                        .description("가게 상세 페이지 링크 가능 여부"),
+                                fieldWithPath("error").type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[Docs] 장바구니에서 지출 내역 등록 - 유효성 검증 실패 (필수 필드 누락)")
+    void createExpenditureFromCart_ValidationFailed() throws Exception {
+        // given - storeId 누락
+        String request = objectMapper.writeValueAsString(
+                new CreateExpenditureFromCartRequest(
+                        null,  // storeId 누락
+                        "교촌치킨 강남점",
+                        13500,
+                        LocalDate.of(2025, 10, 8),
+                        LocalTime.of(12, 30),
+                        categoryId,
+                        MealType.LUNCH,
+                        "동료와 점심",
+                        List.of()
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/expenditures/from-cart")
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/create-from-cart-validation-failed",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)"),
+                                headerWithName("Content-Type").description("application/json")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E422: Unprocessable Entity)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지"),
+                                fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
+                                        .description("에러 상세 정보"),
+                                fieldWithPath("error.data.field").type(JsonFieldType.STRING).optional()
+                                        .description("에러가 발생한 필드"),
+                                fieldWithPath("error.data.reason").type(JsonFieldType.STRING).optional()
+                                        .description("에러 사유")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[Docs] 장바구니에서 지출 내역 등록 - 인증 실패")
+    void createExpenditureFromCart_Unauthorized() throws Exception {
+        // given
+        String request = objectMapper.writeValueAsString(
+                new CreateExpenditureFromCartRequest(
+                        101L,
+                        "교촌치킨 강남점",
+                        13500,
+                        LocalDate.of(2025, 10, 8),
+                        LocalTime.of(12, 30),
+                        categoryId,
+                        MealType.LUNCH,
+                        "동료와 점심",
+                        List.of()
+                )
+        );
+
+        // when & then - Authorization 헤더 없이 요청
+        mockMvc.perform(post("/api/v1/expenditures/from-cart")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/create-from-cart-unauthorized",
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E401: 인증 실패)"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING)
+                                        .description("에러 메시지")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("[Docs] 장바구니에서 지출 내역 등록 - 항목 총액 불일치")
+    void createExpenditureFromCart_ItemTotalMismatch() throws Exception {
+        // given - items 총액이 amount와 일치하지 않음
+        String request = objectMapper.writeValueAsString(
+                new CreateExpenditureFromCartRequest(
+                        101L,
+                        "교촌치킨 강남점",
+                        20000,  // 20000원
+                        LocalDate.of(2025, 10, 8),
+                        LocalTime.of(12, 30),
+                        categoryId,
+                        MealType.LUNCH,
+                        "동료와 점심",
+                        List.of(
+                                new CreateExpenditureFromCartRequest.CartExpenditureItemRequest(
+                                        456L,
+                                        "싸이버거 세트",
+                                        1,
+                                        6500  // 합계 13500 ≠ 20000
+                                ),
+                                new CreateExpenditureFromCartRequest.CartExpenditureItemRequest(
+                                        789L,
+                                        "치킨버거 세트",
+                                        1,
+                                        7000
+                                )
+                        )
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/expenditures/from-cart")
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error").exists())
+                .andDo(document("expenditure/create-from-cart-item-total-mismatch",
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT 액세스 토큰 (Bearer)"),
+                                headerWithName("Content-Type").description("application/json")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING)
+                                        .description("응답 결과 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL)
+                                        .description("응답 데이터 (에러 시 null)")
+                                        .optional(),
+                                fieldWithPath("error").type(JsonFieldType.OBJECT)
+                                        .description("에러 정보"),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING)
+                                        .description("에러 코드 (E400: 비즈니스 로직 검증 실패)"),
                                 fieldWithPath("error.message").type(JsonFieldType.STRING)
                                         .description("에러 메시지"),
                                 fieldWithPath("error.data").type(JsonFieldType.OBJECT).optional()
