@@ -10,15 +10,14 @@ import jakarta.validation.constraints.Size;
  * 음식 생성 요청 DTO - v2.0
  * 
  * <p>isMain, displayOrder 필드가 추가되었습니다.</p>
+ * <p>storeId는 URL path에서 전달받으므로 optional입니다.</p>
  */
 public record CreateFoodRequest(
         @NotBlank(message = "음식 이름은 필수입니다.")
         @Size(max = 100, message = "음식 이름은 100자를 초과할 수 없습니다.")
         String foodName,
 
-        @NotNull(message = "가게 ID는 필수입니다.")
-        @Positive(message = "가게 ID는 양수여야 합니다.")
-        Long storeId,
+        Long storeId, // URL path에서 전달받음 (optional)
 
         @NotNull(message = "카테고리 ID는 필수입니다.")
         @Positive(message = "카테고리 ID는 양수여야 합니다.")
@@ -50,4 +49,21 @@ public record CreateFoodRequest(
                 displayOrder
         );
     }
+
+    /**
+     * URL path에서 받은 storeId를 설정합니다.
+     */
+    public CreateFoodRequest withStoreId(Long storeId) {
+        return new CreateFoodRequest(
+                this.foodName,
+                storeId,
+                this.categoryId,
+                this.description,
+                this.imageUrl,
+                this.averagePrice,
+                this.isMain,
+                this.displayOrder
+        );
+    }
 }
+

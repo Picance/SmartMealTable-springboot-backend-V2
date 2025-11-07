@@ -3,10 +3,11 @@ package com.stdev.smartmealtable.admin.store.controller.request;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import jakarta.validation.constraints.*;
 
-import java.math.BigDecimal;
-
 /**
- * 음식점 수정 요청 DTO (Controller)
+ * 음식점 수정 요청 DTO (Controller) - v2.0
+ * 
+ * <p>latitude, longitude 필드는 제거됨 (서버에서 주소 기반 자동 지오코딩)</p>
+ * <p>imageUrl 필드는 제거됨 (별도의 StoreImage API로 관리)</p>
  */
 public record UpdateStoreRequest(
         @NotBlank(message = "음식점 이름은 필수입니다.")
@@ -23,14 +24,6 @@ public record UpdateStoreRequest(
         @Size(max = 200, message = "지번 주소는 최대 200자까지 입력 가능합니다.")
         String lotNumberAddress,
 
-        @DecimalMin(value = "-90.0", message = "위도는 -90 이상이어야 합니다.")
-        @DecimalMax(value = "90.0", message = "위도는 90 이하여야 합니다.")
-        BigDecimal latitude,
-
-        @DecimalMin(value = "-180.0", message = "경도는 -180 이상이어야 합니다.")
-        @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다.")
-        BigDecimal longitude,
-
         @Size(max = 20, message = "전화번호는 최대 20자까지 입력 가능합니다.")
         String phoneNumber,
 
@@ -40,9 +33,6 @@ public record UpdateStoreRequest(
         Integer averagePrice,
 
         @NotNull(message = "음식점 유형은 필수입니다.")
-        StoreType storeType,
-
-        @Size(max = 500, message = "이미지 URL은 최대 500자까지 입력 가능합니다.")
-        String imageUrl
+        StoreType storeType
 ) {
 }

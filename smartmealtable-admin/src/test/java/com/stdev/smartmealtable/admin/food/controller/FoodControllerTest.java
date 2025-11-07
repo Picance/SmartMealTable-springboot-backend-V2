@@ -126,7 +126,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
     @DisplayName("[성공] 음식 목록 조회 - 전체")
     void getFoods_Success() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("page", "0")
                         .param("size", "10"))
                 .andDo(print())
@@ -141,7 +141,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
     @DisplayName("[성공] 음식 목록 조회 - 이름 검색")
     void getFoods_WithNameFilter_Success() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("name", "김치")
                         .param("page", "0")
                         .param("size", "10"))
@@ -156,7 +156,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
     @DisplayName("[성공] 음식 목록 조회 - 가게 ID 필터")
     void getFoods_WithStoreIdFilter_Success() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("storeId", testStoreId.toString())
                         .param("page", "0")
                         .param("size", "10"))
@@ -173,7 +173,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         Food food = foodRepository.adminSearch(null, null, "김치찌개", 0, 1).content().get(0);
 
         // When & Then
-        mockMvc.perform(get("/api/v1/admin/foods/{foodId}", food.getFoodId()))
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods/{foodId}", food.getFoodId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
@@ -185,7 +185,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
     @DisplayName("[실패] 음식 상세 조회 - 존재하지 않는 ID")
     void getFood_NotFound() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/v1/admin/foods/{foodId}", 999999L))
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods/{foodId}", 999999L))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.result").value("ERROR"))
@@ -198,7 +198,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateFoodRequest request = new CreateFoodRequest(
                 "불고기",
-                testStoreId,
+                null, // storeId는 URL path에서 전달받음
                 testCategoryId,
                 "달콤한 불고기",
                 "http://example.com/bulgogi.jpg",
@@ -208,11 +208,11 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         );
 
         // When & Then
-        mockMvc.perform(post("/api/v1/admin/foods")
+        mockMvc.perform(post("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.foodName").value("불고기"))
                 .andExpect(jsonPath("$.data.averagePrice").value(12000))
@@ -225,7 +225,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateFoodRequest request = new CreateFoodRequest(
                 null, // 이름 누락
-                testStoreId,
+                null, // storeId는 URL path에서 전달받음
                 testCategoryId,
                 "설명",
                 null,
@@ -235,7 +235,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         );
 
         // When & Then
-        mockMvc.perform(post("/api/v1/admin/foods")
+        mockMvc.perform(post("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())
@@ -260,7 +260,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         );
 
         // When & Then
-        mockMvc.perform(put("/api/v1/admin/foods/{foodId}", food.getFoodId())
+        mockMvc.perform(put("/api/v1/admin/stores/" + testStoreId + "/foods/{foodId}", food.getFoodId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())
@@ -277,9 +277,9 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         Food food = foodRepository.adminSearch(null, null, "김치찌개", 0, 1).content().get(0);
 
         // When & Then
-        mockMvc.perform(delete("/api/v1/admin/foods/{foodId}", food.getFoodId()))
+        mockMvc.perform(delete("/api/v1/admin/stores/" + testStoreId + "/foods/{foodId}", food.getFoodId()))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify: 삭제 후 adminSearch에서는 제외됨
         var result = foodRepository.adminSearch(null, null, "김치찌개", 0, 10);
@@ -314,7 +314,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         entityManager.flush();
 
         // When & Then - isMain=true인 메뉴가 먼저 조회되어야 함
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("storeId", testStoreId.toString())
                         .param("size", "10"))
                 .andDo(print())
@@ -351,7 +351,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         entityManager.flush();
 
         // When & Then - displayOrder가 낮은 순서대로 조회
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("storeId", testStoreId.toString())
                         .param("size", "10"))
                 .andDo(print())
@@ -396,7 +396,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         // When & Then
         // 정렬 순서: isMain=true인 것들이 먼저, 그 중에서 displayOrder 오름차순
         // 예상 순서: 대표메뉴2(true, 15) → 대표메뉴1(true, 20) → 일반메뉴1(false, 5) → 일반메뉴2(false, 10)
-        mockMvc.perform(get("/api/v1/admin/foods")
+        mockMvc.perform(get("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .param("storeId", testStoreId.toString())
                         .param("size", "10"))
                 .andDo(print())
@@ -411,7 +411,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateFoodRequest request = new CreateFoodRequest(
                 "신메뉴",
-                testStoreId,
+                null, // storeId는 URL path에서 전달받음
                 testCategoryId,
                 "새로운 대표 메뉴입니다",
                 "http://example.com/new.jpg",
@@ -421,11 +421,11 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         );
 
         // When & Then
-        mockMvc.perform(post("/api/v1/admin/foods")
+        mockMvc.perform(post("/api/v1/admin/stores/" + testStoreId + "/foods")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.foodName").value("신메뉴"))
                 .andExpect(jsonPath("$.data.isMain").value(true))
@@ -449,7 +449,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         );
 
         // When & Then
-        mockMvc.perform(put("/api/v1/admin/foods/{foodId}", food.getFoodId())
+        mockMvc.perform(put("/api/v1/admin/stores/" + testStoreId + "/foods/{foodId}", food.getFoodId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(toJson(request)))
                 .andDo(print())

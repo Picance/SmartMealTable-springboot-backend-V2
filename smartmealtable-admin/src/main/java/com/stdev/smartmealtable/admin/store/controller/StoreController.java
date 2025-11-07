@@ -115,13 +115,10 @@ public class StoreController {
                 request.categoryId(),
                 request.address(),
                 request.lotNumberAddress(),
-                request.latitude(),
-                request.longitude(),
                 request.phoneNumber(),
                 request.description(),
                 request.averagePrice(),
-                request.storeType(),
-                request.imageUrl()
+                request.storeType()
         );
         StoreServiceResponse serviceResponse = storeApplicationService.updateStore(storeId, serviceRequest);
         

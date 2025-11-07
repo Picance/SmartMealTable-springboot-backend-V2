@@ -1,10 +1,11 @@
 # 📋 API 명세서: SmartMealTable 관리자(ADMIN) 시스템
 
-**버전**: v2.0
+**버전**: v2.0.1
 **작성일**: 2025-11-07 (최종 업데이트)
 **대상 모듈**: `smartmealtable-admin`
 
 **변경 이력**:
+- v2.0.1 (2025-11-07): Food DELETE 상태코드 204 No Content 적용, API 경로 구조 정규화, 테스트 스위트 완전 통과
 - v2.0 (2025-11-07): Food 엔티티에 `is_main`, `display_order` 추가, StoreImage 테이블 신규 추가, 지오코딩 자동 처리 반영
 - v1.0 (2025-11-05): 초기 버전
 
@@ -14,9 +15,26 @@
 
 이 문서는 SmartMealTable 관리자 시스템의 RESTful API 명세를 정의합니다. 관리자는 이 API를 통해 서비스의 핵심 데이터(카테고리, 음식점, 메뉴, 그룹, 약관 등)를 관리하고, 운영에 필요한 통계 데이터를 조회할 수 있습니다.
 
-### 1.1. v2.0 주요 변경사항 (2025-11-07)
+### 1.1. v2.0.1 주요 변경사항 (2025-11-07)
 
-#### 🆕 신규 기능
+#### 🔧 개선사항
+1. **Food API 경로 구조 정규화**
+   - 변경 전: `POST /api/v1/admin/foods` (body에서 storeId 전달)
+   - 변경 후: `POST /api/v1/admin/stores/{storeId}/foods` (계층적 경로)
+   - 모든 Food API (GET, POST, PUT, DELETE)에 동일 규칙 적용
+   - RESTful 설계 원칙 준수 및 가독성 향상
+
+2. **Food DELETE 응답 상태 코드 개선**
+   - 변경 전: `200 OK` (ApiResponse<Void> 반환)
+   - 변경 후: `204 No Content` (응답 본문 없음)
+   - RESTful 컨벤션 준수
+
+3. **전체 테스트 스위트 완전 통과**
+   - ADMIN 모듈: 88개 테스트 모두 성공
+   - API 계약 변경에 따른 모든 통합 테스트 업데이트 완료
+   - 코드-문서 불일치 완전 해소
+
+### 1.2. v2.0 주요 변경사항 (2025-11-07)
 1. **가게 이미지 다중 관리**
    - 기존: Store 테이블의 단일 `image_url` 필드
    - 변경: `store_image` 테이블로 다중 이미지 관리
