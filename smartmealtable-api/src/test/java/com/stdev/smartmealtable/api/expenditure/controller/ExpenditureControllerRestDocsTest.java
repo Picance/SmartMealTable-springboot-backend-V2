@@ -4,7 +4,10 @@ import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureFromCartRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.ParseSmsRequest;
+import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.ParseSmsService;
+import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
+import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceResponse;
 import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
@@ -66,6 +69,9 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     
     @MockBean
     private ParseSmsService parseSmsService;
+    
+    @MockBean
+    private CreateExpenditureService createExpenditureService;
 
     private Member member;
     private String accessToken;
@@ -118,6 +124,30 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 "점심 식사",
                 List.of(item1, item2)
         );
+
+        // Mock 설정
+        CreateExpenditureServiceResponse mockServiceResponse = new CreateExpenditureServiceResponse(
+                1L,
+                null,
+                "맛있는집",
+                15000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(12, 30),
+                categoryId,
+                "한식",
+                MealType.LUNCH,
+                "점심 식사",
+                List.of(
+                        ExpenditureItemServiceResponse.builder()
+                                .expenditureItemId(1L).foodId(1L)
+                                .foodName(null).quantity(1).price(8000).build(),
+                        ExpenditureItemServiceResponse.builder()
+                                .expenditureItemId(2L).foodId(2L)
+                                .foodName(null).quantity(1).price(7000).build()
+                ),
+                java.time.LocalDateTime.now()
+        );
+        when(createExpenditureService.createExpenditure(any())).thenReturn(mockServiceResponse);
 
         // when & then
         mockMvc.perform(post("/api/v1/expenditures")
@@ -224,6 +254,23 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 null,
                 null
         );
+
+        // Mock 설정
+        CreateExpenditureServiceResponse mockServiceResponse = new CreateExpenditureServiceResponse(
+                2L,
+                null,
+                "편의점",
+                5000,
+                LocalDate.of(2025, 10, 12),
+                LocalTime.of(14, 0),
+                categoryId,
+                "카테고리이름",
+                MealType.OTHER,
+                null,
+                List.of(),
+                java.time.LocalDateTime.now()
+        );
+        when(createExpenditureService.createExpenditure(any())).thenReturn(mockServiceResponse);
 
         // when & then
         mockMvc.perform(post("/api/v1/expenditures")
@@ -1487,7 +1534,38 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     @Test
     @DisplayName("[Docs] 장바구니에서 지출 내역 등록 - 성공")
     void createExpenditureFromCart_Success() throws Exception {
-        // given
+        // given - CreateExpenditureService mock 설정
+        CreateExpenditureServiceResponse mockServiceResponse = new CreateExpenditureServiceResponse(
+                100L,  // expenditureId
+                101L,  // storeId
+                "교촌치킨 강남점",
+                13500,
+                LocalDate.of(2025, 10, 8),
+                LocalTime.of(12, 30),
+                categoryId,
+                "한식",
+                MealType.LUNCH,
+                "동료와 점심",
+                List.of(
+                        ExpenditureItemServiceResponse.builder()
+                                .expenditureItemId(1L)
+                                .foodId(456L)
+                                .foodName("싸이버거 세트")
+                                .quantity(1)
+                                .price(6500)
+                                .build(),
+                        ExpenditureItemServiceResponse.builder()
+                                .expenditureItemId(2L)
+                                .foodId(789L)
+                                .foodName("치킨버거 세트")
+                                .quantity(1)
+                                .price(7000)
+                                .build()
+                ),
+                java.time.LocalDateTime.now()
+        );
+        when(createExpenditureService.createExpenditure(any())).thenReturn(mockServiceResponse);
+        
         String request = objectMapper.writeValueAsString(
                 new CreateExpenditureFromCartRequest(
                         101L,  // storeId

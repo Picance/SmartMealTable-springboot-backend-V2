@@ -1,11 +1,16 @@
 package com.stdev.smartmealtable.api.cart.controller;
 
+import com.stdev.smartmealtable.api.budget.service.DailyBudgetQueryService;
+import com.stdev.smartmealtable.api.budget.service.MonthlyBudgetQueryService;
+import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse;
+import com.stdev.smartmealtable.api.budget.service.dto.MonthlyBudgetQueryServiceResponse;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
 import com.stdev.smartmealtable.domain.cart.Cart;
 import com.stdev.smartmealtable.domain.cart.CartItem;
 import com.stdev.smartmealtable.domain.cart.CartRepository;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.Group;
@@ -30,7 +35,9 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -71,12 +78,19 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
     @Autowired
     private CreateExpenditureService createExpenditureService;
+    
+    @Autowired
+    private DailyBudgetQueryService dailyBudgetQueryService;
+    
+    @Autowired
+    private MonthlyBudgetQueryService monthlyBudgetQueryService;
 
     private Member member;
     private String accessToken;
     private Store store;
     private Food food1;
     private Food food2;
+
 
     @BeforeEach
     void setUp() {
@@ -94,7 +108,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         authenticationRepository.save(auth);
 
         // JWT 토큰 생성
-        accessToken = jwtTokenProvider.createToken(member.getMemberId());
+        accessToken = createAccessToken(member.getMemberId());
 
         // 테스트 가게 생성
         store = Store.builder()
@@ -156,7 +170,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/cart/items")
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
@@ -234,7 +248,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/cart/store/{storeId}", store.getStoreId())
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data").exists())
@@ -278,7 +292,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(get("/api/v1/cart")
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data").isArray())
@@ -328,7 +342,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/cart/items/{cartItemId}", cartItemId)
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isOk())
@@ -366,7 +380,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(put("/api/v1/cart/items/{cartItemId}", 99999L)
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNotFound())
@@ -408,7 +422,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(delete("/api/v1/cart/items/{cartItemId}", cartItemId)
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andDo(document("cart-remove-item-success",
@@ -439,7 +453,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(delete("/api/v1/cart/store/{storeId}", store.getStoreId())
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andDo(document("cart-clear-success",
@@ -466,7 +480,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         
         // when & then - 존재하지 않아도 200 OK (멱등성 보장)
         mockMvc.perform(delete("/api/v1/cart/store/{storeId}", 99999L)
-                        .header("Authorization", "Bearer " + accessToken))
+                        .header("Authorization", accessToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andDo(document("cart-clear-non-existent",
@@ -507,6 +521,37 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         Mockito.when(createExpenditureService.createExpenditure(Mockito.any()))
                 .thenReturn(mockResponse);
         
+        // given - DailyBudgetQueryService mock 설정
+        DailyBudgetQueryServiceResponse dailyBudgetMock = new DailyBudgetQueryServiceResponse(
+                java.time.LocalDate.parse("2025-01-10"),  // date
+                50000,  // totalBudget
+                27000,  // totalSpent (before)
+                23000,  // remainingBudget (before)
+                java.util.List.of(
+                        new DailyBudgetQueryServiceResponse.MealBudgetInfo(
+                                com.stdev.smartmealtable.domain.expenditure.MealType.BREAKFAST,
+                                15000,  // budget
+                                2000,  // spent (before)
+                                13000  // remaining (before)
+                        )
+                )
+        );
+        Mockito.when(dailyBudgetQueryService.getDailyBudget(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(dailyBudgetMock);
+        
+        // given - MonthlyBudgetQueryService mock 설정
+        MonthlyBudgetQueryServiceResponse monthlyBudgetMock = new MonthlyBudgetQueryServiceResponse(
+                2025,  // year
+                1,  // month
+                1500000,  // totalBudget
+                500000,  // totalSpent (before)
+                1000000,  // remainingBudget (before)
+                new java.math.BigDecimal("33.33"),  // utilizationRate
+                21  // daysRemaining
+        );
+        Mockito.when(monthlyBudgetQueryService.getMonthlyBudget(Mockito.any()))
+                .thenReturn(monthlyBudgetMock);
+        
         // given - 장바구니에 아이템 추가
         Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
         cart.addItem(food1.getFoodId(), 2);
@@ -526,7 +571,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/cart/checkout")
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
@@ -595,6 +640,37 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
         Mockito.when(createExpenditureService.createExpenditure(Mockito.any()))
                 .thenReturn(mockResponse);
         
+        // given - DailyBudgetQueryService mock 설정
+        DailyBudgetQueryServiceResponse dailyBudgetMock = new DailyBudgetQueryServiceResponse(
+                java.time.LocalDate.parse("2025-01-10"),  // date
+                50000,  // totalBudget
+                8000,  // totalSpent (before)
+                42000,  // remainingBudget (before)
+                java.util.List.of(
+                        new DailyBudgetQueryServiceResponse.MealBudgetInfo(
+                                com.stdev.smartmealtable.domain.expenditure.MealType.LUNCH,
+                                20000,  // budget
+                                0,  // spent (before)
+                                20000  // remaining (before)
+                        )
+                )
+        );
+        Mockito.when(dailyBudgetQueryService.getDailyBudget(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(dailyBudgetMock);
+        
+        // given - MonthlyBudgetQueryService mock 설정
+        MonthlyBudgetQueryServiceResponse monthlyBudgetMock = new MonthlyBudgetQueryServiceResponse(
+                2025,  // year
+                1,  // month
+                1500000,  // totalBudget
+                500000,  // totalSpent (before)
+                1000000,  // remainingBudget (before)
+                new java.math.BigDecimal("33.33"),  // utilizationRate
+                21  // daysRemaining
+        );
+        Mockito.when(monthlyBudgetQueryService.getMonthlyBudget(Mockito.any()))
+                .thenReturn(monthlyBudgetMock);
+        
         // given - 장바구니에 아이템 추가
         Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
         cart.addItem(food1.getFoodId(), 1);
@@ -612,7 +688,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/cart/checkout")
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isCreated())
@@ -678,7 +754,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
         // when & then
         mockMvc.perform(post("/api/v1/cart/checkout")
-                        .header("Authorization", "Bearer " + accessToken)
+                        .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())

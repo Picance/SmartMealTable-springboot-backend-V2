@@ -1,5 +1,10 @@
 package com.stdev.smartmealtable.api.cart.service;
 
+import com.stdev.smartmealtable.api.budget.service.DailyBudgetQueryService;
+import com.stdev.smartmealtable.api.budget.service.MonthlyBudgetQueryService;
+import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse;
+import com.stdev.smartmealtable.api.budget.service.dto.MonthlyBudgetQueryServiceRequest;
+import com.stdev.smartmealtable.api.budget.service.dto.MonthlyBudgetQueryServiceResponse;
 import com.stdev.smartmealtable.api.cart.dto.*;
 import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceRequest;
@@ -19,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +45,8 @@ public class CartService {
     private final StoreRepository storeRepository;
     private final FoodRepository foodRepository;
     private final CreateExpenditureService createExpenditureService;
+    private final DailyBudgetQueryService dailyBudgetQueryService;
+    private final MonthlyBudgetQueryService monthlyBudgetQueryService;
 
     
     /**
@@ -381,6 +390,22 @@ public class CartService {
         // 6. 최종 결제 금액 계산
         long finalAmount = subtotal - discount;
         
+        // 6.5. 지출 생성 전 예산 정보 조회 (before)
+        DailyBudgetQueryServiceResponse budgetBefore = dailyBudgetQueryService.getDailyBudget(
+                memberId,
+                request.expendedDate()
+        );
+        
+        // 월별 예산 조회 (지출 날짜 기준)
+        YearMonth expenditureMonth = YearMonth.from(request.expendedDate());
+        MonthlyBudgetQueryServiceResponse monthlyBudgetBefore = monthlyBudgetQueryService.getMonthlyBudget(
+                new MonthlyBudgetQueryServiceRequest(
+                        memberId,
+                        expenditureMonth.getYear(),
+                        expenditureMonth.getMonthValue()
+                )
+        );
+        
         // 7. ExpenditureService를 통해 지출 내역 생성
         CreateExpenditureServiceRequest expenditureRequest = 
                 new CreateExpenditureServiceRequest(
@@ -398,8 +423,35 @@ public class CartService {
         
         CreateExpenditureServiceResponse expenditureResponse = createExpenditureService.createExpenditure(expenditureRequest);
         
+        // 7.5. 지출 생성 후 예산 정보 조회 (after)
+        DailyBudgetQueryServiceResponse budgetAfter = dailyBudgetQueryService.getDailyBudget(
+                memberId,
+                request.expendedDate()
+        );
+        
+        MonthlyBudgetQueryServiceResponse monthlyBudgetAfter = monthlyBudgetQueryService.getMonthlyBudget(
+                new MonthlyBudgetQueryServiceRequest(
+                        memberId,
+                        expenditureMonth.getYear(),
+                        expenditureMonth.getMonthValue()
+                )
+        );
+        
         // 8. 장바구니 비우기
         clearCart(memberId, request.storeId());
+        
+        // 식사별 예산 정보 추출
+        Integer mealBudgetBefore = budgetBefore.mealBudgets().stream()
+                .filter(mb -> mb.mealType() == request.mealType())
+                .map(DailyBudgetQueryServiceResponse.MealBudgetInfo::remaining)
+                .findFirst()
+                .orElse(0);
+        
+        Integer mealBudgetAfter = budgetAfter.mealBudgets().stream()
+                .filter(mb -> mb.mealType() == request.mealType())
+                .map(DailyBudgetQueryServiceResponse.MealBudgetInfo::remaining)
+                .findFirst()
+                .orElse(0);
         
         // 9. 응답 생성
         return CartCheckoutResponse.builder()
@@ -413,12 +465,12 @@ public class CartService {
                 .expendedDate(request.expendedDate())
                 .expendedTime(request.expendedTime())
                 .budgetSummary(CartCheckoutResponse.BudgetSummary.builder()
-                        .mealBudgetBefore(0L) // TODO: Budget 서비스 연동 시 실제 값으로 변경
-                        .mealBudgetAfter(0L)
-                        .dailyBudgetBefore(0L)
-                        .dailyBudgetAfter(0L)
-                        .monthlyBudgetBefore(0L)
-                        .monthlyBudgetAfter(0L)
+                        .mealBudgetBefore(mealBudgetBefore.longValue())
+                        .mealBudgetAfter(mealBudgetAfter.longValue())
+                        .dailyBudgetBefore(budgetBefore.remainingBudget().longValue())
+                        .dailyBudgetAfter(budgetAfter.remainingBudget().longValue())
+                        .monthlyBudgetBefore(monthlyBudgetBefore.remainingBudget().longValue())
+                        .monthlyBudgetAfter(monthlyBudgetAfter.remainingBudget().longValue())
                         .build())
                 .createdAt(java.time.LocalDateTime.now())
                 .build();

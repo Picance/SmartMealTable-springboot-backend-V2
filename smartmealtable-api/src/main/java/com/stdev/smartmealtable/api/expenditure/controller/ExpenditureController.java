@@ -89,6 +89,17 @@ public class ExpenditureController {
             @AuthUser AuthenticatedUser user,
             @Valid @RequestBody CreateExpenditureFromCartRequest request
     ) {
+        // Validation: item total과 amount 일치 확인
+        int itemTotal = request.items() != null
+                ? request.items().stream()
+                .mapToInt(item -> item.price() * item.quantity())
+                .sum()
+                : 0;
+        
+        if (itemTotal != request.amount()) {
+            throw new IllegalArgumentException("항목들의 총액과 결제 금액이 일치하지 않습니다");
+        }
+        
         // DTO 변환
         CreateExpenditureServiceRequest serviceRequest = convertCartToServiceRequest(request, user.memberId());
         
