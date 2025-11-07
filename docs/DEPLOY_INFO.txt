@@ -1,10 +1,10 @@
 SmartMealTable API 문서 배포
 ============================
 
-배포 날짜: 2025-11-07 01:48:52
+배포 날짜: 2025-11-07 20:41:28
 배포자: luna
-Git 커밋: c48c6c4
-Git 브랜치: refactor/recommendation
+Git 커밋: 1bc0506
+Git 브랜치: feat/batch
 
 생성된 파일:
 - api-docs.html: Spring REST Docs로 생성된 전체 API 문서

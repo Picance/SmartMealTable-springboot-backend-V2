@@ -119,7 +119,9 @@ class GetFoodDetailControllerTest extends AbstractRestDocsTest {
                 5L,
                 "교촌의 시그니처 메뉴",
                 "https://cdn.smartmealtable.com/foods/201.jpg",
-                18000
+                18000,
+                true, // isMain
+                1     // displayOrder
         );
         testFood = foodRepository.save(testFood);
     }
@@ -155,6 +157,9 @@ class GetFoodDetailControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.description").description("메뉴 설명"),
                                 fieldWithPath("data.price").description("메뉴 가격"),
                                 fieldWithPath("data.imageUrl").description("메뉴 이미지 URL"),
+                                fieldWithPath("data.isMain").description("대표 메뉴 여부"),
+                                fieldWithPath("data.displayOrder").optional().description("표시 순서"),
+                                fieldWithPath("data.registeredDt").optional().description("메뉴 등록일 (ISO 8601)"),
                                 fieldWithPath("data.store.storeId").description("가게 고유 식별자"),
                                 fieldWithPath("data.store.storeName").description("가게 이름"),
                                 fieldWithPath("data.store.categoryName").description("가게 카테고리"),

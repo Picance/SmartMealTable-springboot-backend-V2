@@ -290,4 +290,7 @@ portfolio-key.pub
 smartmealtable-key
 smartmealtable-key.pub
 
+# dataSources
+/districts_before
+
 # End of https://www.toptal.com/developers/gitignore/api/java,react,gradle,maven,intellij

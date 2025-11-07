@@ -20,6 +20,12 @@ public interface StoreRepository {
     Optional<Store> findByIdAndDeletedAtIsNull(Long storeId);
     
     /**
+     * 외부 크롤링 ID로 조회
+     * 배치 작업에서 기존 가게 찾기에 사용
+     */
+    Optional<Store> findByExternalId(String externalId);
+    
+    /**
      * 여러 가게 ID로 조회
      */
     List<Store> findByIdIn(List<Long> storeIds);

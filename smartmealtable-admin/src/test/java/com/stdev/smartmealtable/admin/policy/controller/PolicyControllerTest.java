@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.admin.policy.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.admin.common.AbstractAdminContainerTest;
+import com.stdev.smartmealtable.admin.config.AdminTestConfiguration;
 import com.stdev.smartmealtable.admin.policy.controller.dto.CreatePolicyRequest;
 import com.stdev.smartmealtable.admin.policy.controller.dto.UpdatePolicyRequest;
 import com.stdev.smartmealtable.domain.policy.entity.PolicyType;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("약관 관리 Controller 통합 테스트")
+@Import(AdminTestConfiguration.class)
 class PolicyControllerTest extends AbstractAdminContainerTest {
 
     @Autowired

@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 음식점 관리 API Controller (ADMIN)
  * 
@@ -85,13 +87,10 @@ public class StoreController {
                 request.sellerId(),
                 request.address(),
                 request.lotNumberAddress(),
-                request.latitude(),
-                request.longitude(),
                 request.phoneNumber(),
                 request.description(),
                 request.averagePrice(),
-                request.storeType(),
-                request.imageUrl()
+                request.storeType()
         );
         StoreServiceResponse serviceResponse = storeApplicationService.createStore(serviceRequest);
         
@@ -142,6 +141,26 @@ public class StoreController {
     }
 
     // ===== 영업시간 관리 =====
+
+    /**
+     * 영업시간 목록 조회
+     *
+     * @param storeId 음식점 ID
+     * @return 영업시간 목록 (dayOfWeek 순서로 정렬)
+     */
+    @GetMapping("/{storeId}/opening-hours")
+    public ApiResponse<List<OpeningHourResponse>> getOpeningHours(
+            @PathVariable Long storeId
+    ) {
+        List<OpeningHourServiceResponse> serviceResponses = 
+            storeApplicationService.getOpeningHours(storeId);
+        
+        List<OpeningHourResponse> responses = serviceResponses.stream()
+            .map(OpeningHourResponse::from)
+            .toList();
+        
+        return ApiResponse.success(responses);
+    }
 
     /**
      * 영업시간 추가
@@ -216,6 +235,26 @@ public class StoreController {
     }
 
     // ===== 임시 휴무 관리 =====
+
+    /**
+     * 임시 휴무 목록 조회
+     *
+     * @param storeId 음식점 ID
+     * @return 임시 휴무 목록 (closureDate 오름차순 정렬)
+     */
+    @GetMapping("/{storeId}/temporary-closures")
+    public ApiResponse<List<TemporaryClosureResponse>> getTemporaryClosures(
+            @PathVariable Long storeId
+    ) {
+        List<TemporaryClosureServiceResponse> serviceResponses = 
+            storeApplicationService.getTemporaryClosures(storeId);
+        
+        List<TemporaryClosureResponse> responses = serviceResponses.stream()
+            .map(TemporaryClosureResponse::from)
+            .toList();
+        
+        return ApiResponse.success(responses);
+    }
 
     /**
      * 임시 휴무 등록

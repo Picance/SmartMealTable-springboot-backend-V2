@@ -35,11 +35,17 @@ public class FoodJpaEntity {
     @Column(name = "category_id", nullable = false)
     private Long categoryId;
 
-    @Column(name = "description", length = 500)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    @Column(name = "is_main", nullable = false)
+    private Boolean isMain;
+
+    @Column(name = "display_order")
+    private Integer displayOrder;
 
     @Column(name = "registered_dt", insertable = false, updatable = false)
     private LocalDateTime registeredDt;
@@ -56,7 +62,8 @@ public class FoodJpaEntity {
 
     @Builder
     private FoodJpaEntity(Long foodId, Long storeId, String foodName, Integer price, Long categoryId,
-                          String description, String imageUrl, LocalDateTime registeredDt, LocalDateTime deletedAt) {
+                          String description, String imageUrl, Boolean isMain, Integer displayOrder,
+                          LocalDateTime registeredDt, LocalDateTime deletedAt) {
         this.foodId = foodId;
         this.storeId = storeId;
         this.foodName = foodName;
@@ -64,6 +71,8 @@ public class FoodJpaEntity {
         this.categoryId = categoryId;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.isMain = isMain != null ? isMain : false;
+        this.displayOrder = displayOrder;
         this.registeredDt = registeredDt;
         this.deletedAt = deletedAt;
     }
@@ -72,29 +81,39 @@ public class FoodJpaEntity {
      * JPA Entity → Domain 변환
      */
     public Food toDomain() {
-        return Food.reconstitute(
-                this.foodId,
-                this.foodName,
-                this.storeId,
-                this.categoryId,
-                this.description,
-                this.imageUrl,
-                this.price
-        );
+        return Food.builder()
+                .foodId(this.foodId)
+                .foodName(this.foodName)
+                .storeId(this.storeId)
+                .categoryId(this.categoryId)
+                .description(this.description)
+                .imageUrl(this.imageUrl)
+                .averagePrice(this.price) // price를 averagePrice로 매핑
+                .price(this.price)
+                .isMain(this.isMain)
+                .displayOrder(this.displayOrder)
+                .registeredDt(this.registeredDt)
+                .deletedAt(this.deletedAt)
+                .build();
     }
 
     /**
      * Domain → JPA Entity 변환 (for save)
      */
     public static FoodJpaEntity fromDomain(Food food) {
-        FoodJpaEntity entity = new FoodJpaEntity();
-        entity.foodId = food.getFoodId();
-        entity.foodName = food.getFoodName();
-        entity.storeId = food.getStoreId();
-        entity.categoryId = food.getCategoryId();
-        entity.description = food.getDescription();
-        entity.imageUrl = food.getImageUrl();
-        entity.price = food.getAveragePrice();
-        return entity;
+        return FoodJpaEntity.builder()
+                .foodId(food.getFoodId())
+                .storeId(food.getStoreId())
+                .categoryId(food.getCategoryId())
+                .foodName(food.getFoodName())
+                .price(food.getPrice() != null ? food.getPrice() : food.getAveragePrice())
+                .description(food.getDescription())
+                .imageUrl(food.getImageUrl())
+                .isMain(food.getIsMain() != null ? food.getIsMain() : false)
+                .displayOrder(food.getDisplayOrder())
+                .registeredDt(food.getRegisteredDt())
+                .deletedAt(food.getDeletedAt())
+                .build();
     }
 }
+

@@ -36,6 +36,12 @@ public class StoreRepositoryImpl implements StoreRepository {
     }
     
     @Override
+    public Optional<Store> findByExternalId(String externalId) {
+        return jpaRepository.findByExternalId(externalId)
+                .map(StoreEntityMapper::toDomain);
+    }
+    
+    @Override
     public List<Store> findByIdIn(List<Long> storeIds) {
         return jpaRepository.findByStoreIdInAndDeletedAtIsNull(storeIds)
                 .stream()

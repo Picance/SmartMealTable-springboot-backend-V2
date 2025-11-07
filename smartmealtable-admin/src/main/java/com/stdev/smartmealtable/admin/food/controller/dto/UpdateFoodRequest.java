@@ -26,7 +26,11 @@ public record UpdateFoodRequest(
 
         @NotNull(message = "평균 가격은 필수입니다.")
         @Positive(message = "평균 가격은 양수여야 합니다.")
-        Integer averagePrice
+        Integer averagePrice,
+
+        Boolean isMain,
+
+        Integer displayOrder
 ) {
     public UpdateFoodServiceRequest toServiceRequest() {
         return new UpdateFoodServiceRequest(
@@ -34,7 +38,9 @@ public record UpdateFoodRequest(
                 categoryId,
                 description,
                 imageUrl,
-                averagePrice
+                averagePrice,
+                isMain,
+                displayOrder
         );
     }
 }

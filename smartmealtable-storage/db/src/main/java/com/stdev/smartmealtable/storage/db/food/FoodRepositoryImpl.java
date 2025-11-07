@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -75,6 +76,12 @@ public class FoodRepositoryImpl implements FoodRepository {
         return foodJpaRepository.findByStoreId(storeId).stream()
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deleteByStoreId(Long storeId) {
+        foodJpaRepository.deleteByStoreId(storeId);
     }
 
     // ===== ADMIN 전용 메서드 =====

@@ -3,11 +3,210 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-11-05 21:00
+**최종 업데이트**: 2025-11-07 06:30
 
 ---
 
-## 🎉 최신 업데이트 (2025-11-05 21:00)
+## 🎉 최신 업데이트 (2025-11-07 06:30)
+
+### ADMIN API v2.0 - 완전 구현 및 테스트 완료! 🎊🎊🎊
+- **완료 범위**: StoreImage CRUD, 자동 지오코딩, Food 정렬 기능
+- **테스트 결과**: ✅ **81/81 테스트 통과 (100%)**
+- **신규 엔드포인트**: 3개 (StoreImage CRUD)
+
+#### 🆕 주요 구현 내용
+
+##### 1. StoreImage 다중 관리 시스템
+- **Domain Layer**: 
+  - ✅ `StoreImage` 도메인 엔티티 생성 (isMain, displayOrder)
+  - ✅ `StoreImageService` 도메인 서비스 (대표 이미지 자동 관리)
+    - 첫 번째 이미지 자동 대표 설정
+    - **대표 이미지 삭제 시 다음 이미지 자동 승격** (displayOrder 기준)
+  - ✅ Store 존재 여부 검증
+
+- **Storage Layer**:
+  - ✅ `StoreImageJpaEntity` JPA 엔티티
+  - ✅ `StoreImageRepositoryImpl` 구현
+    - `deleteById(Long)`: 특정 이미지만 삭제
+    - `deleteByStoreId(Long)`: 가게의 모든 이미지 삭제
+
+- **Application Layer**:
+  - ✅ `StoreImageApplicationService` (유즈케이스 조율)
+  - ✅ `StoreApplicationService` 수정 (이미지 목록 조회 포함)
+
+- **Presentation Layer**:
+  - ✅ `StoreImageController` (3개 엔드포인트)
+    - POST `/stores/{storeId}/images` - 이미지 추가
+    - PUT `/stores/{storeId}/images/{imageId}` - 이미지 수정
+    - DELETE `/stores/{storeId}/images/{imageId}` - 이미지 삭제
+  - ✅ Request/Response DTOs
+
+- **Tests**: ✅ **11/11 통과**
+  - 첫 번째 이미지 자동 대표 설정
+  - 명시적 대표 이미지 설정
+  - 여러 이미지 추가
+  - 대표 이미지 변경
+  - 이미지 삭제
+  - **대표 이미지 삭제 시 다음 이미지 자동 승격** ⭐
+  - 404/422 에러 처리
+
+##### 2. 자동 지오코딩 (Address → Coordinates)
+- **Client Layer**: 
+  - ✅ API 모듈의 `MapService` 재사용 (Naver Maps API)
+  - ✅ `NaverMapClient` 지오코딩 연동
+
+- **Application Layer**:
+  - ✅ `StoreApplicationService.createStore()` - 주소 기반 좌표 자동 계산
+  - ✅ `StoreApplicationService.updateStore()` - 주소 변경 시 좌표 재계산
+  - ✅ 에러 처리: `INVALID_ADDRESS` (400 Bad Request)
+
+- **API 변경**:
+  - ❌ **제거**: `latitude`, `longitude` 필수 입력 (Request)
+  - ✅ **자동**: 서버에서 주소 기반 좌표 계산
+  - ✅ **Optional**: Update 요청 시 좌표 Optional (없으면 자동 계산)
+
+- **Tests**: ✅ **3/3 통과**
+  - 가게 생성 시 자동 좌표 설정
+  - 가게 수정 시 주소 변경 → 좌표 재계산
+  - 유효하지 않은 주소 에러 처리
+
+##### 3. Food 정렬 기능 (isMain, displayOrder)
+- **Domain Layer**:
+  - ✅ `Food.reconstituteWithMainAndOrder()` 메서드 추가
+
+- **Application Layer**:
+  - ✅ `FoodApplicationService` 정렬 로직 수정
+
+- **Presentation Layer**:
+  - ✅ `UpdateFoodRequest`, `CreateFoodRequest` (isMain, displayOrder 추가)
+
+- **Tests**: ✅ **6/6 통과**
+  - isMain 기준 정렬 (대표 메뉴 우선)
+  - displayOrder 기준 정렬 (오름차순/내림차순)
+  - 복합 정렬 (isMain 우선 + displayOrder)
+
+##### 4. 예외 처리 개선
+- **Core Layer**:
+  - ✅ `ErrorType.STORE_IMAGE_NOT_FOUND` 추가 (404)
+  - ✅ `IllegalArgumentException` → `BusinessException` 통일
+
+##### 5. 테스트 인프라
+- **Admin Module**:
+  - ✅ `AdminTestConfiguration` - Mock `MapService` (고정 좌표)
+  - ✅ Test Container 사용 (MySQL 8.0)
+
+#### 📊 테스트 결과 요약
+```
+Total: 81 tests
+Passed: 81 tests
+Failed: 0 tests
+Success Rate: 100%
+```
+
+**세부 결과**:
+- StoreImageControllerTest: 11/11 ✅
+- StoreControllerTest (지오코딩): 3/3 ✅
+- FoodControllerTest (정렬): 6/6 ✅
+- 기존 Admin 테스트: 61/61 ✅
+
+#### 📝 문서화 완료
+- ✅ `ADMIN_API_SPECIFICATION.md` 체크리스트 업데이트
+- ✅ `ADMIN_API_V2_IMPLEMENTATION_COMPLETE.md` 최종 보고서
+- ✅ `ADMIN_API_V2_SESSION_SUMMARY.md` 세션 요약
+- ✅ Markdown 기반 API 문서 관리 (Spring Rest Docs 미사용)
+
+#### 🎯 주요 성과
+- ✅ **완전한 기능 구현**: StoreImage CRUD, 자동 지오코딩, Food 정렬
+- ✅ **100% 테스트 커버리지**: 81/81 테스트 통과
+- ✅ **문서화 완료**: Markdown 기반 명세서 + 구현 보고서
+- ✅ **예외 처리 통일**: BusinessException 기반 일관된 에러 응답
+- ✅ **프론트엔드 친화적**: 좌표 자동 계산으로 사용자 편의성 향상
+
+**상세 문서**: 
+- ADMIN_API_SPECIFICATION.md (섹션 3.2, 4 업데이트)
+- ADMIN_API_V2_IMPLEMENTATION_COMPLETE.md (최종 보고서)
+- ADMIN_API_V2_SESSION_SUMMARY.md (세션 요약)
+
+---
+
+## 🎉 이전 업데이트 (2025-11-07 04:15)
+
+### API 모듈 - Food/Store 엔티티 재설계에 따른 API 업데이트 완료! 🎊🎊🎊
+- **완료 범위**: isMain/displayOrder 필드 추가 및 StoreImage 테이블 신규 생성에 따른 API 전면 재설계
+- **테스트 결과**: ✅ **모든 테스트 통과 (BUILD SUCCESSFUL)**
+- **엔드포인트**: 기존 API 수정 + 신규 API 1개 추가
+
+#### 🎯 API Redesign 완료 항목
+- **구현 내용**:
+  - ✅ Domain Layer: StoreImageRepository 인터페이스 (3개 쿼리 메서드)
+  - ✅ Storage Layer: StoreImageJpaRepository 구현 (정렬 쿼리)
+  - ✅ API Layer - Common DTOs: StoreImageDto, FoodDto 생성
+  - ✅ API Layer - Response DTOs: StoreDetailResponse, GetFoodDetailResponse 수정
+  - ✅ API Layer - Response DTOs: GetStoreFoodsResponse (신규)
+  - ✅ API Layer - Service: StoreService 수정 (이미지 조회, 메뉴 정렬 로직)
+  - ✅ API Layer - Controller: StoreController 신규 엔드포인트 추가
+  - ✅ Integration Tests: GetStoreFoodsControllerTest (5개 테스트)
+  - ✅ Spring Rest Docs: 5개 스니펫 생성 완료
+
+- **API 엔드포인트 변경사항**:
+  - **수정**: GET `/api/v1/stores/{storeId}` - 가게 상세 조회
+    - `images` 배열 추가 (StoreImageDto 구조)
+    - `menus[].isMain`, `menus[].displayOrder`, `menus[].registeredDt` 추가
+    - `registeredAt` 필드 추가 (가게 등록일)
+    - `imageUrl` 필드 유지 (하위 호환성)
+    
+  - **수정**: GET `/api/v1/foods/{foodId}` - 메뉴 상세 조회
+    - `isMain`, `displayOrder`, `registeredDt` 필드 추가
+    
+  - **신규**: GET `/api/v1/stores/{storeId}/foods` - 가게별 메뉴 목록 조회
+    - 쿼리 파라미터: `sort` (정렬 기준)
+    - 정렬 옵션: displayOrder, price, registeredDt, isMain (각 asc/desc)
+
+- **주요 기능**:
+  - ✅ 대표 이미지/메뉴 우선 정렬 (isMain DESC)
+  - ✅ 표시 순서 정렬 (displayOrder ASC)
+  - ✅ 다양한 정렬 옵션 (4가지 필드, 2가지 방향)
+  - ✅ Null 안전성 (Comparator.nullsLast)
+  - ✅ 하위 호환성 유지 (기존 imageUrl 필드 유지)
+  - ✅ Switch Expression 활용 (Java 21)
+
+- **버그 수정**:
+  - ✅ isMain 정렬 로직 수정 (Boolean.compare 방향 교정)
+  - 문제: desc 정렬 시 false가 먼저 나오는 버그
+  - 수정: `Boolean.compare(m2, m1)` → `Boolean.compare(m1, m2)`
+
+- **테스트 커버리지**: **5개 테스트 통과**
+  - ✅ 기본 정렬 (displayOrder,asc)
+  - ✅ 가격 오름차순 정렬
+  - ✅ 대표 메뉴 우선 정렬
+  - ✅ 신메뉴 순 정렬
+  - ✅ 404 에러 처리
+
+- **REST Docs 스니펫 생성**: ✅ **5/5 완료**
+  - get-store-foods-default
+  - get-store-foods-sort-price-asc
+  - get-store-foods-sort-isMain
+  - get-store-foods-sort-registeredDt
+  - get-store-foods-not-found
+
+- **문서화**:
+  - ✅ API_SPECIFICATION.md 업데이트 (섹션 7.2, 7.3, 7.5, 8.1)
+  - ✅ API_SPECIFICATION_UPDATE_2025-11-07.md (변경사항 요약)
+  - ✅ API_REDESIGN_COMPLETION_REPORT.md (상세 완료 보고서)
+
+- **성능 최적화**:
+  - ✅ N+1 쿼리 분석 완료
+  - ✅ 현재 구조 이미 최적화됨 (엔티티별 별도 쿼리)
+  - ✅ 향후 개선안 문서화 (QueryDSL Fetch Join, @EntityGraph, Redis 캐싱)
+
+**상세 문서**: 
+- API_SPECIFICATION.md (섹션 7.2, 7.3, 7.5, 8.1)
+- API_SPECIFICATION_UPDATE_2025-11-07.md
+- API_REDESIGN_COMPLETION_REPORT.md
+
+---
+
+## 🎉 이전 업데이트 (2025-11-05 21:00)
 
 ### ADMIN API - 통계 조회 구현 완료! 🎊🎊🎊 (ADMIN 모듈 100% 완성!)
 - **완료 범위**: 관리자용 통계 조회 API 완전 구현

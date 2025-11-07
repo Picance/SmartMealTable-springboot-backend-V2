@@ -61,11 +61,14 @@ public class FoodApplicationService {
     }
 
     /**
-     * 음식 생성
+     * 음식 생성 - v2.0
+     * 
+     * <p>isMain, displayOrder 필드를 포함합니다.</p>
      */
     @Transactional
     public FoodServiceResponse createFood(CreateFoodServiceRequest request) {
-        log.info("[ADMIN] 음식 생성 요청 - name: {}, storeId: {}", request.foodName(), request.storeId());
+        log.info("[ADMIN] 음식 생성 요청 - name: {}, storeId: {}, isMain: {}, displayOrder: {}", 
+                request.foodName(), request.storeId(), request.isMain(), request.displayOrder());
         
         Food food = Food.create(
                 request.foodName(),
@@ -73,42 +76,49 @@ public class FoodApplicationService {
                 request.categoryId(),
                 request.description(),
                 request.imageUrl(),
-                request.averagePrice()
+                request.averagePrice(),
+                request.isMain(),
+                request.displayOrder()
         );
         
         Food savedFood = foodRepository.save(food);
         
-        log.info("[ADMIN] 음식 생성 완료 - foodId: {}, name: {}", 
-                savedFood.getFoodId(), savedFood.getFoodName());
+        log.info("[ADMIN] 음식 생성 완료 - foodId: {}, name: {}, isMain: {}, displayOrder: {}", 
+                savedFood.getFoodId(), savedFood.getFoodName(), savedFood.getIsMain(), savedFood.getDisplayOrder());
         
         return FoodServiceResponse.from(savedFood);
     }
 
     /**
-     * 음식 수정
+     * 음식 수정 - v2.0
+     * 
+     * <p>isMain, displayOrder 필드를 포함합니다.</p>
      */
     @Transactional
     public FoodServiceResponse updateFood(Long foodId, UpdateFoodServiceRequest request) {
-        log.info("[ADMIN] 음식 수정 요청 - foodId: {}, name: {}", foodId, request.foodName());
+        log.info("[ADMIN] 음식 수정 요청 - foodId: {}, name: {}, isMain: {}, displayOrder: {}", 
+                foodId, request.foodName(), request.isMain(), request.displayOrder());
         
         Food existingFood = foodRepository.findByIdAndDeletedAtIsNull(foodId)
                 .orElseThrow(() -> new BusinessException(FOOD_NOT_FOUND));
         
         // Food 엔티티는 불변이므로 새로운 객체 생성
-        Food updatedFood = Food.reconstitute(
+        Food updatedFood = Food.reconstituteWithMainAndOrder(
                 existingFood.getFoodId(),
                 request.foodName(),
                 existingFood.getStoreId(), // storeId는 수정하지 않음
                 request.categoryId(),
                 request.description(),
                 request.imageUrl(),
-                request.averagePrice()
+                request.averagePrice(),
+                request.isMain(),
+                request.displayOrder()
         );
         
         Food savedFood = foodRepository.save(updatedFood);
         
-        log.info("[ADMIN] 음식 수정 완료 - foodId: {}, name: {}", 
-                savedFood.getFoodId(), savedFood.getFoodName());
+        log.info("[ADMIN] 음식 수정 완료 - foodId: {}, name: {}, isMain: {}, displayOrder: {}", 
+                savedFood.getFoodId(), savedFood.getFoodName(), savedFood.getIsMain(), savedFood.getDisplayOrder());
         
         return FoodServiceResponse.from(savedFood);
     }

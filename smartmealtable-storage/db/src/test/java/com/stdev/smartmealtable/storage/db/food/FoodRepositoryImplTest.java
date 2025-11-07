@@ -106,4 +106,16 @@ class FoodRepositoryImplTest {
         assertThat(foodRepository.count()).isEqualTo(42L);
         assertThat(foodRepository.countByCategoryId(7L)).isEqualTo(3L);
     }
+
+    @Test
+    void deleteByStoreId_removes_all_foods_for_store() {
+        // Given
+        Long storeId = 100L;
+
+        // When
+        foodRepository.deleteByStoreId(storeId);
+
+        // Then
+        verify(foodJpaRepository, times(1)).deleteByStoreId(storeId);
+    }
 }

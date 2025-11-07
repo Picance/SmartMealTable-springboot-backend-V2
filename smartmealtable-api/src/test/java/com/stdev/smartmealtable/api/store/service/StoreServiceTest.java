@@ -59,6 +59,9 @@ class StoreServiceTest {
     @Mock
     private FoodRepository foodRepository;
 
+    @Mock
+    private StoreImageRepository storeImageRepository;
+
     @InjectMocks
     private StoreService storeService;
 
@@ -285,6 +288,8 @@ class StoreServiceTest {
                 .willReturn(Optional.of(testStore));
         given(storeViewHistoryRepository.createViewHistory(testStoreId, testMemberId))
                 .willReturn(viewHistory);
+        given(storeImageRepository.findByStoreId(testStoreId))
+                .willReturn(List.of()); // 빈 이미지 리스트
         given(storeOpeningHourRepository.findByStoreId(testStoreId))
                 .willReturn(openingHours);
         given(storeTemporaryClosureRepository.findByStoreId(testStoreId))
@@ -314,6 +319,7 @@ class StoreServiceTest {
         verify(storeViewHistoryRepository).createViewHistory(testStoreId, testMemberId);
         verify(storeViewHistoryRepository).save(viewHistory);
         verify(storeRepository).save(testStore);
+        verify(storeImageRepository).findByStoreId(testStoreId);
         verify(storeOpeningHourRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
         verify(foodRepository).findByStoreId(testStoreId);
@@ -376,6 +382,8 @@ class StoreServiceTest {
                 .willReturn(Optional.of(testStore));
         given(storeViewHistoryRepository.createViewHistory(testStoreId, testMemberId))
                 .willReturn(viewHistory);
+        given(storeImageRepository.findByStoreId(testStoreId))
+                .willReturn(List.of()); // 빈 이미지 리스트
         given(storeOpeningHourRepository.findByStoreId(testStoreId))
                 .willReturn(openingHours);
         given(storeTemporaryClosureRepository.findByStoreId(testStoreId))
@@ -396,6 +404,7 @@ class StoreServiceTest {
         assertThat(response.temporaryClosures().get(0).endTime()).isEqualTo(LocalTime.of(23, 59));
         assertThat(response.menus()).isEmpty(); // 메뉴 없음 확인
 
+        verify(storeImageRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
         verify(foodRepository).findByStoreId(testStoreId);
     }

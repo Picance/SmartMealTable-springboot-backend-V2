@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.admin.group;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.admin.common.AbstractAdminContainerTest;
+import com.stdev.smartmealtable.admin.config.AdminTestConfiguration;
 import com.stdev.smartmealtable.admin.group.controller.request.CreateGroupRequest;
 import com.stdev.smartmealtable.admin.group.controller.request.UpdateGroupRequest;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(AdminTestConfiguration.class)
 class GroupControllerTest extends AbstractAdminContainerTest {
 
     @Autowired

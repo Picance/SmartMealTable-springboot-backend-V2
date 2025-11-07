@@ -48,6 +48,11 @@ public interface FoodRepository {
      */
     List<Food> findByStoreId(Long storeId);
 
+    /**
+     * 가게별 음식 삭제 (크롤러 배치용)
+     */
+    void deleteByStoreId(Long storeId);
+
     // ===== ADMIN 전용 메서드 =====
 
     /**

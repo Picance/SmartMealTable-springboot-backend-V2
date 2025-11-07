@@ -8,6 +8,9 @@ import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPreference;
 import com.stdev.smartmealtable.domain.food.FoodPreferenceRepository;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
+import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
@@ -22,6 +25,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -48,6 +54,9 @@ class PreferenceControllerTest extends AbstractContainerTest {
 
     @Autowired
     private FoodRepository foodRepository;
+
+    @Autowired
+    private StoreRepository storeRepository;
 
     @Autowired
     private PreferenceRepository preferenceRepository;
@@ -77,9 +86,30 @@ class PreferenceControllerTest extends AbstractContainerTest {
         koreanCategory = categoryRepository.save(koreanCategory);
         japaneseCategory = categoryRepository.save(japaneseCategory);
 
+        // 테스트용 가게 생성
+        Store testStore = Store.builder()
+                .name("테스트 음식점")
+                .categoryId(koreanCategory.getCategoryId())
+                .sellerId(1L)
+                .address("서울특별시 강남구 테헤란로 100")
+                .lotNumberAddress("서울특별시 강남구 역삼동 100-10")
+                .latitude(new BigDecimal("37.5015678"))
+                .longitude(new BigDecimal("127.0395432"))
+                .phoneNumber("02-1234-5678")
+                .description("테스트용 가게")
+                .averagePrice(8000)
+                .reviewCount(100)
+                .viewCount(500)
+                .favoriteCount(20)
+                .storeType(StoreType.RESTAURANT)
+                .imageUrl("https://example.com/store.jpg")
+                .registeredAt(LocalDateTime.now().minusMonths(1))
+                .build();
+        Store savedStore = storeRepository.save(testStore);
+
         // 음식 생성 (Storage 레이어를 통해 직접 삽입)
-        kimchiJjigae = Food.reconstitute(null, "김치찌개", 1L, koreanCategory.getCategoryId(), "얼큰한 김치찌개", "kimchi.jpg", 7000);
-        sushi = Food.reconstitute(null, "생굴", 1L, japaneseCategory.getCategoryId(), "신선한 생굴", "sushi.jpg", 15000);
+        kimchiJjigae = Food.reconstitute(null, "김치찌개", savedStore.getStoreId(), koreanCategory.getCategoryId(), "얼큰한 김치찌개", "kimchi.jpg", 7000);
+        sushi = Food.reconstitute(null, "생굴", savedStore.getStoreId(), japaneseCategory.getCategoryId(), "신선한 생굴", "sushi.jpg", 15000);
         kimchiJjigae = foodRepository.save(kimchiJjigae);
         sushi = foodRepository.save(sushi);
     }

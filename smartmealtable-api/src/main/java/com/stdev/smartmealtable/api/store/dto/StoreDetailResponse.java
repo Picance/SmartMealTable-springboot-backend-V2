@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.store.dto;
 
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreImage;
 import com.stdev.smartmealtable.domain.store.StoreOpeningHour;
 import com.stdev.smartmealtable.domain.store.StoreTemporaryClosure;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -9,6 +10,7 @@ import com.stdev.smartmealtable.domain.store.StoreType;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -32,13 +34,16 @@ public record StoreDetailResponse(
         Integer favoriteCount,
         StoreType storeType,
         String imageUrl,
+        List<StoreImageDto> images,
         List<OpeningHourInfo> openingHours,
         List<TemporaryClosureInfo> temporaryClosures,
         List<MenuInfo> menus,
-        Boolean isFavorite
+        Boolean isFavorite,
+        LocalDateTime registeredAt
 ) {
     public static StoreDetailResponse from(
             Store store,
+            List<StoreImage> images,
             List<StoreOpeningHour> openingHours,
             List<StoreTemporaryClosure> temporaryClosures,
             List<Food> foods
@@ -60,10 +65,12 @@ public record StoreDetailResponse(
                 store.getFavoriteCount(),
                 store.getStoreType(),
                 store.getImageUrl(),
+                images.stream().map(StoreImageDto::from).toList(),
                 openingHours.stream().map(OpeningHourInfo::from).toList(),
                 temporaryClosures.stream().map(TemporaryClosureInfo::from).toList(),
                 foods.stream().map(MenuInfo::from).toList(),
-                false // TODO: 즐겨찾기 여부 조회 필요
+                false, // TODO: 즐겨찾기 여부 조회 필요
+                store.getRegisteredAt()
         );
     }
     
@@ -117,7 +124,11 @@ public record StoreDetailResponse(
             String foodName,
             Integer price,
             String description,
-            String imageUrl
+            String imageUrl,
+            Boolean isMain,
+            Integer displayOrder,
+            Boolean isAvailable,
+            LocalDateTime registeredDt
     ) {
         public static MenuInfo from(Food food) {
             return new MenuInfo(
@@ -125,7 +136,11 @@ public record StoreDetailResponse(
                     food.getFoodName(),
                     food.getAveragePrice(),
                     food.getDescription(),
-                    food.getImageUrl()
+                    food.getImageUrl(),
+                    food.getIsMain(),
+                    food.getDisplayOrder(),
+                    food.getDeletedAt() == null,
+                    food.getRegisteredDt()
             );
         }
     }

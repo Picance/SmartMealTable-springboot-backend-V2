@@ -3,7 +3,9 @@ package com.stdev.smartmealtable.admin.food.service.dto;
 import com.stdev.smartmealtable.domain.food.Food;
 
 /**
- * 음식 응답 DTO
+ * 음식 응답 DTO - v2.0
+ * 
+ * <p>isMain, displayOrder 필드가 추가되었습니다.</p>
  */
 public record FoodServiceResponse(
         Long foodId,
@@ -12,7 +14,9 @@ public record FoodServiceResponse(
         Long categoryId,
         String description,
         String imageUrl,
-        Integer averagePrice
+        Integer averagePrice,
+        Boolean isMain, // 대표 메뉴 여부
+        Integer displayOrder // 표시 순서
 ) {
     public static FoodServiceResponse from(Food food) {
         return new FoodServiceResponse(
@@ -22,7 +26,9 @@ public record FoodServiceResponse(
                 food.getCategoryId(),
                 food.getDescription(),
                 food.getImageUrl(),
-                food.getAveragePrice()
+                food.getAveragePrice(),
+                food.getIsMain(),
+                food.getDisplayOrder()
         );
     }
 }

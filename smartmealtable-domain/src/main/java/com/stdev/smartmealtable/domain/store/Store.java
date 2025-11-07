@@ -25,6 +25,12 @@ public class Store {
     private Long storeId;
     
     /**
+     * 외부 크롤링 시스템의 가게 ID (Natural Key)
+     * 네이버 플레이스, 카카오맵 등의 원본 ID
+     */
+    private String externalId;
+    
+    /**
      * 가게명
      */
     private String name;

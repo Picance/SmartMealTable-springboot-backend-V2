@@ -7,6 +7,9 @@ import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
+import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
@@ -21,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,6 +61,9 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     @Autowired
     private FoodRepository foodRepository;
 
+    @Autowired
+    private StoreRepository storeRepository;
+
     private Long memberId;
     private Long foodId;
     private String accessToken;
@@ -83,7 +91,28 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         Category category = Category.reconstitute(null, "한식");
         Category savedCategory = categoryRepository.save(category);
 
-        Food food = Food.reconstitute(null, "김치찌개", 1L, savedCategory.getCategoryId(), 
+        // 테스트용 가게 생성
+        Store testStore = Store.builder()
+                .name("테스트 음식점")
+                .categoryId(savedCategory.getCategoryId())
+                .sellerId(1L)
+                .address("서울특별시 강남구 테헤란로 100")
+                .lotNumberAddress("서울특별시 강남구 역삼동 100-10")
+                .latitude(new BigDecimal("37.5015678"))
+                .longitude(new BigDecimal("127.0395432"))
+                .phoneNumber("02-1234-5678")
+                .description("테스트용 가게")
+                .averagePrice(8000)
+                .reviewCount(100)
+                .viewCount(500)
+                .favoriteCount(20)
+                .storeType(StoreType.RESTAURANT)
+                .imageUrl("https://example.com/store.jpg")
+                .registeredAt(LocalDateTime.now().minusMonths(1))
+                .build();
+        Store savedStore = storeRepository.save(testStore);
+
+        Food food = Food.reconstitute(null, "김치찌개", savedStore.getStoreId(), savedCategory.getCategoryId(), 
                 "맛있는 김치찌개", null, 8000);
         Food savedFood = foodRepository.save(food);
         this.foodId = savedFood.getFoodId();
