@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.cart.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
+import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
+import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
 import com.stdev.smartmealtable.domain.cart.Cart;
 import com.stdev.smartmealtable.domain.cart.CartItem;
 import com.stdev.smartmealtable.domain.cart.CartRepository;
@@ -20,13 +22,16 @@ import com.stdev.smartmealtable.domain.store.StoreType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -63,6 +68,9 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private CreateExpenditureService createExpenditureService;
 
     private Member member;
     private String accessToken;
@@ -474,6 +482,226 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (SUCCESS) - 존재하지 않아도 성공"),
                                 fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (삭제 성공 시 null)").optional(),
                                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("장바구니 결제 성공 - 할인 포함")
+    void checkoutCart_withDiscount_success_docs() throws Exception {
+        // given - CreateExpenditureService mock 설정
+        CreateExpenditureServiceResponse mockResponse = new CreateExpenditureServiceResponse(
+                100L,  // expenditureId
+                store.getStoreId(),  // storeId
+                store.getName(),  // storeName
+                23000,  // amount (8000*2 + 7000 - 1000)
+                java.time.LocalDate.parse("2025-01-10"),  // expendedDate
+                java.time.LocalTime.parse("09:30:00"),  // expendedTime
+                null,  // categoryId
+                null,  // categoryName
+                com.stdev.smartmealtable.domain.expenditure.MealType.BREAKFAST,  // mealType
+                "맛있게 먹었습니다",  // memo
+                java.util.List.of(),  // items
+                LocalDateTime.now()  // createdAt
+        );
+        Mockito.when(createExpenditureService.createExpenditure(Mockito.any()))
+                .thenReturn(mockResponse);
+        
+        // given - 장바구니에 아이템 추가
+        Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
+        cart.addItem(food1.getFoodId(), 2);
+        cart.addItem(food2.getFoodId(), 1);
+        cartRepository.save(cart);
+
+        String requestBody = objectMapper.writeValueAsString(
+                Map.of(
+                        "storeId", store.getStoreId(),
+                        "mealType", "BREAKFAST",
+                        "discount", 1000L,
+                        "expendedDate", "2025-01-10",
+                        "expendedTime", "09:30:00",
+                        "memo", "맛있게 먹었습니다"
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/cart/checkout")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.storeName").value(store.getName()))
+                .andExpect(jsonPath("$.data.mealType").value("BREAKFAST"))
+                .andExpect(jsonPath("$.data.discount").value(1000))
+                .andExpect(jsonPath("$.data.expenditureId").value(100))
+                .andDo(document("cart-checkout-with-discount",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT Access Token (Bearer)")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING).description("식사 타입 (BREAKFAST/LUNCH/DINNER)"),
+                                fieldWithPath("discount").type(JsonFieldType.NUMBER).description("할인 금액 (0 이상)"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING).description("지출 날짜 (YYYY-MM-DD)"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING).description("지출 시간 (HH:mm:ss)"),
+                                fieldWithPath("memo").type(JsonFieldType.STRING).description("메모 (선택사항)").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (SUCCESS)"),
+                                fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER).description("지출 ID"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING).description("가게명"),
+                                fieldWithPath("data.mealType").type(JsonFieldType.STRING).description("식사 타입"),
+                                fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING).description("음식명"),
+                                fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER).description("수량"),
+                                fieldWithPath("data.items[].price").type(JsonFieldType.NUMBER).description("가격"),
+                                fieldWithPath("data.subtotal").type(JsonFieldType.NUMBER).description("소계"),
+                                fieldWithPath("data.discount").type(JsonFieldType.NUMBER).description("할인 금액"),
+                                fieldWithPath("data.finalAmount").type(JsonFieldType.NUMBER).description("최종 금액"),
+                                fieldWithPath("data.expendedDate").type(JsonFieldType.STRING).description("지출 날짜"),
+                                fieldWithPath("data.expendedTime").type(JsonFieldType.STRING).description("지출 시간"),
+                                fieldWithPath("data.budgetSummary.mealBudgetBefore").type(JsonFieldType.NUMBER).description("식사별 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.mealBudgetAfter").type(JsonFieldType.NUMBER).description("식사별 예산 (이후)"),
+                                fieldWithPath("data.budgetSummary.dailyBudgetBefore").type(JsonFieldType.NUMBER).description("일일 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.dailyBudgetAfter").type(JsonFieldType.NUMBER).description("일일 예산 (이후)"),
+                                fieldWithPath("data.budgetSummary.monthlyBudgetBefore").type(JsonFieldType.NUMBER).description("월간 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.monthlyBudgetAfter").type(JsonFieldType.NUMBER).description("월간 예산 (이후)"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.STRING).description("생성 시간"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("장바구니 결제 성공 - 할인 없음")
+    void checkoutCart_withoutDiscount_success_docs() throws Exception {
+        // given - CreateExpenditureService mock 설정
+        CreateExpenditureServiceResponse mockResponse = new CreateExpenditureServiceResponse(
+                101L,  // expenditureId
+                store.getStoreId(),  // storeId
+                store.getName(),  // storeName
+                8000,  // amount
+                java.time.LocalDate.parse("2025-01-10"),  // expendedDate
+                java.time.LocalTime.parse("12:00:00"),  // expendedTime
+                null,  // categoryId
+                null,  // categoryName
+                com.stdev.smartmealtable.domain.expenditure.MealType.LUNCH,  // mealType
+                null,  // memo
+                java.util.List.of(),  // items
+                LocalDateTime.now()  // createdAt
+        );
+        Mockito.when(createExpenditureService.createExpenditure(Mockito.any()))
+                .thenReturn(mockResponse);
+        
+        // given - 장바구니에 아이템 추가
+        Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
+        cart.addItem(food1.getFoodId(), 1);
+        cartRepository.save(cart);
+
+        String requestBody = objectMapper.writeValueAsString(
+                Map.of(
+                        "storeId", store.getStoreId(),
+                        "mealType", "LUNCH",
+                        "discount", 0L,
+                        "expendedDate", "2025-01-10",
+                        "expendedTime", "12:00:00"
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/cart/checkout")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.discount").value(0))
+                .andExpect(jsonPath("$.data.expenditureId").value(101))
+                .andDo(document("cart-checkout-without-discount",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT Access Token (Bearer)")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING).description("식사 타입"),
+                                fieldWithPath("discount").type(JsonFieldType.NUMBER).description("할인 금액 (0)"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING).description("지출 날짜"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING).description("지출 시간"),
+                                fieldWithPath("memo").type(JsonFieldType.STRING).description("메모 (선택사항)").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (SUCCESS)"),
+                                fieldWithPath("data.expenditureId").type(JsonFieldType.NUMBER).description("지출 ID"),
+                                fieldWithPath("data.storeName").type(JsonFieldType.STRING).description("가게명"),
+                                fieldWithPath("data.mealType").type(JsonFieldType.STRING).description("식사 타입"),
+                                fieldWithPath("data.items[].foodName").type(JsonFieldType.STRING).description("음식명"),
+                                fieldWithPath("data.items[].quantity").type(JsonFieldType.NUMBER).description("수량"),
+                                fieldWithPath("data.items[].price").type(JsonFieldType.NUMBER).description("가격"),
+                                fieldWithPath("data.subtotal").type(JsonFieldType.NUMBER).description("소계"),
+                                fieldWithPath("data.discount").type(JsonFieldType.NUMBER).description("할인 금액"),
+                                fieldWithPath("data.finalAmount").type(JsonFieldType.NUMBER).description("최종 금액"),
+                                fieldWithPath("data.expendedDate").type(JsonFieldType.STRING).description("지출 날짜"),
+                                fieldWithPath("data.expendedTime").type(JsonFieldType.STRING).description("지출 시간"),
+                                fieldWithPath("data.budgetSummary.mealBudgetBefore").type(JsonFieldType.NUMBER).description("식사별 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.mealBudgetAfter").type(JsonFieldType.NUMBER).description("식사별 예산 (이후)"),
+                                fieldWithPath("data.budgetSummary.dailyBudgetBefore").type(JsonFieldType.NUMBER).description("일일 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.dailyBudgetAfter").type(JsonFieldType.NUMBER).description("일일 예산 (이후)"),
+                                fieldWithPath("data.budgetSummary.monthlyBudgetBefore").type(JsonFieldType.NUMBER).description("월간 예산 (이전)"),
+                                fieldWithPath("data.budgetSummary.monthlyBudgetAfter").type(JsonFieldType.NUMBER).description("월간 예산 (이후)"),
+                                fieldWithPath("data.createdAt").type(JsonFieldType.STRING).description("생성 시간"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("장바구니 결제 실패 - 할인 금액이 총액을 초과")
+    void checkoutCart_discountExceedsTotal_docs() throws Exception {
+        // given - 장바구니에 아이템 추가
+        Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
+        cart.addItem(food1.getFoodId(), 1);  // 가격: 10000원
+        cartRepository.save(cart);
+
+        String requestBody = objectMapper.writeValueAsString(
+                Map.of(
+                        "storeId", store.getStoreId(),
+                        "mealType", "BREAKFAST",
+                        "discount", 20000L,  // 총액보다 큰 할인
+                        "expendedDate", "2025-01-10",
+                        "expendedTime", "09:30:00"
+                )
+        );
+
+        // when & then
+        mockMvc.perform(post("/api/v1/cart/checkout")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andDo(document("cart-checkout-discount-exceeds-total",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("JWT Access Token (Bearer)")
+                        ),
+                        requestFields(
+                                fieldWithPath("storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
+                                fieldWithPath("mealType").type(JsonFieldType.STRING).description("식사 타입"),
+                                fieldWithPath("discount").type(JsonFieldType.NUMBER).description("할인 금액 (총액 초과)"),
+                                fieldWithPath("expendedDate").type(JsonFieldType.STRING).description("지출 날짜"),
+                                fieldWithPath("expendedTime").type(JsonFieldType.STRING).description("지출 시간"),
+                                fieldWithPath("memo").type(JsonFieldType.STRING).description("메모").optional()
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (ERROR)"),
+                                fieldWithPath("data").type(JsonFieldType.NULL).description("응답 데이터 (에러 시 null)").optional(),
+                                fieldWithPath("error.code").type(JsonFieldType.STRING).description("에러 코드"),
+                                fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지")
                         )
                 ));
     }

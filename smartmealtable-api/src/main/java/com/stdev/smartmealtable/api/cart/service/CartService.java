@@ -1,12 +1,16 @@
 package com.stdev.smartmealtable.api.cart.service;
 
 import com.stdev.smartmealtable.api.cart.dto.*;
+import com.stdev.smartmealtable.api.expenditure.service.CreateExpenditureService;
+import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceRequest;
+import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.cart.Cart;
 import com.stdev.smartmealtable.domain.cart.CartDomainService;
 import com.stdev.smartmealtable.domain.cart.CartItem;
 import com.stdev.smartmealtable.domain.cart.CartRepository;
+import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.store.Store;
@@ -18,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 /**
  * 장바구니 Application Service
@@ -32,6 +37,8 @@ public class CartService {
     private final CartDomainService cartDomainService;
     private final StoreRepository storeRepository;
     private final FoodRepository foodRepository;
+    private final CreateExpenditureService createExpenditureService;
+
     
     /**
      * 장바구니에 아이템 추가
@@ -309,5 +316,111 @@ public class CartService {
     @Transactional
     public void clearCart(Long memberId, Long storeId) {
         cartDomainService.clearCart(memberId, storeId);
+    }
+    
+    /**
+     * 장바구니 체크아웃 (지출로 변환)
+     * 장바구니의 모든 항목을 지출 내역으로 등록하고 장바구니를 비웁니다.
+     * 
+     * @param memberId 회원 ID
+     * @param request 체크아웃 요청 정보
+     * @return 생성된 지출 내역 정보
+     */
+    @Transactional
+    public CartCheckoutResponse checkoutCart(Long memberId, CartCheckoutRequest request) {
+        // 1. 가게 존재 여부 확인
+        Store store = storeRepository.findById(request.storeId())
+                .orElseThrow(() -> new BusinessException(ErrorType.STORE_NOT_FOUND));
+        
+        // 2. 장바구니 조회
+        Cart cart = cartRepository.findByMemberIdAndStoreId(memberId, request.storeId())
+                .orElseThrow(() -> new BusinessException(ErrorType.CART_NOT_FOUND));
+        
+        // 3. 장바구니가 비어있지 않은지 확인
+        if (cart.isEmpty()) {
+            throw new BusinessException(ErrorType.INVALID_INPUT_VALUE);
+        }
+        
+        // 4. 장바구니 항목별 총액 계산 및 CheckoutItemResponse 생성
+        long subtotal = 0L;
+        List<CartCheckoutResponse.CheckoutItemResponse> items = new java.util.ArrayList<>();
+        List<CreateExpenditureServiceRequest.ExpenditureItemServiceRequest> expenditureItems = new java.util.ArrayList<>();
+        
+        for (CartItem cartItem : cart.getItems()) {
+            Food food = foodRepository.findById(cartItem.getFoodId())
+                    .orElseThrow(() -> new BusinessException(ErrorType.FOOD_NOT_FOUND));
+            
+            // 음식 가격 결정 (price가 있으면 price, 없으면 averagePrice 사용)
+            long itemPrice = food.getPrice() != null ? food.getPrice() : 
+                            (food.getAveragePrice() != null ? food.getAveragePrice() : 0L);
+            long itemTotal = itemPrice * cartItem.getQuantity();
+            subtotal += itemTotal;
+            
+            // 응답 DTO용 아이템
+            items.add(CartCheckoutResponse.CheckoutItemResponse.builder()
+                    .foodName(food.getFoodName())
+                    .quantity(cartItem.getQuantity())
+                    .price(itemPrice)
+                    .build());
+            
+            // 지출 생성용 아이템
+            expenditureItems.add(new CreateExpenditureServiceRequest.ExpenditureItemServiceRequest(
+                    cartItem.getFoodId(),
+                    food.getFoodName(),
+                    cartItem.getQuantity(),
+                    (int) itemPrice
+            ));
+        }
+        
+        // 5. 할인액이 소계를 초과하지 않는지 확인
+        long discount = request.discount() != null ? request.discount() : 0L;
+        if (discount > subtotal) {
+            throw new BusinessException(ErrorType.INVALID_INPUT_VALUE);
+        }
+        
+        // 6. 최종 결제 금액 계산
+        long finalAmount = subtotal - discount;
+        
+        // 7. ExpenditureService를 통해 지출 내역 생성
+        CreateExpenditureServiceRequest expenditureRequest = 
+                new CreateExpenditureServiceRequest(
+                        memberId,
+                        request.storeId(),
+                        store.getName(),
+                        (int) finalAmount,  // 할인이 적용된 최종 금액 저장 (type: Integer)
+                        request.expendedDate(),
+                        request.expendedTime(),
+                        null,  // categoryId는 cart checkout에서는 null
+                        request.mealType(),
+                        request.memo(),
+                        expenditureItems
+                );
+        
+        CreateExpenditureServiceResponse expenditureResponse = createExpenditureService.createExpenditure(expenditureRequest);
+        
+        // 8. 장바구니 비우기
+        clearCart(memberId, request.storeId());
+        
+        // 9. 응답 생성
+        return CartCheckoutResponse.builder()
+                .expenditureId(expenditureResponse.expenditureId())
+                .storeName(store.getName())
+                .items(items)
+                .subtotal(subtotal)
+                .discount(discount)
+                .finalAmount(finalAmount)
+                .mealType(request.mealType().toString())
+                .expendedDate(request.expendedDate())
+                .expendedTime(request.expendedTime())
+                .budgetSummary(CartCheckoutResponse.BudgetSummary.builder()
+                        .mealBudgetBefore(0L) // TODO: Budget 서비스 연동 시 실제 값으로 변경
+                        .mealBudgetAfter(0L)
+                        .dailyBudgetBefore(0L)
+                        .dailyBudgetAfter(0L)
+                        .monthlyBudgetBefore(0L)
+                        .monthlyBudgetAfter(0L)
+                        .build())
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
     }
 }

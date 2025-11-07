@@ -5,6 +5,7 @@ import com.stdev.smartmealtable.api.cart.service.CartService;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -116,5 +117,22 @@ public class CartController {
             @PathVariable Long storeId) {
         cartService.clearCart(user.memberId(), storeId);
         return ApiResponse.success(null);
+    }
+    
+    /**
+     * 장바구니 체크아웃 (지출 등록)
+     * POST /api/v1/cart/checkout
+     * 
+     * @param user 인증된 사용자 정보
+     * @param request 체크아웃 요청
+     * @return 체크아웃 결과 (지출 정보 포함)
+     */
+    @PostMapping("/checkout")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<CartCheckoutResponse> checkoutCart(
+            @AuthUser AuthenticatedUser user,
+            @RequestBody @Valid CartCheckoutRequest request) {
+        CartCheckoutResponse response = cartService.checkoutCart(user.memberId(), request);
+        return ApiResponse.success(response);
     }
 }

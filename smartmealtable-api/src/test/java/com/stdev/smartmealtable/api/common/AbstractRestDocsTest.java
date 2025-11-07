@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.config.MockChatModelConfig;
+import com.stdev.smartmealtable.api.config.MockExpenditureServiceConfig;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 @ActiveProfiles("test")
 @Transactional
 @ExtendWith(RestDocumentationExtension.class)
-@Import(MockChatModelConfig.class)  // ChatModel Mock 빈 Import
+@Import({MockChatModelConfig.class, MockExpenditureServiceConfig.class})  // Mock 빈 Import
 public abstract class AbstractRestDocsTest extends AbstractContainerTest {
     
     @Autowired
