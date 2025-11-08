@@ -66,8 +66,56 @@ public class JsonStoreItemReader implements ItemReader<CrawledStoreDto> {
      */
     private List<CrawledStoreDto> loadStoresFromJson(Resource resource) throws IOException {
         try {
-            List<CrawledStoreDto> stores = objectMapper.readValue(
-                    resource.getInputStream(),
+            // 먼저 JsonNode로 읽어서 Integer 오버플로우 필드를 처리
+            JsonNode rootNode = objectMapper.readTree(resource.getInputStream());
+            if (!rootNode.isArray()) {
+                return new ArrayList<>();
+            }
+
+            // Integer 오버플로우 필드를 null로 설정
+            for (JsonNode storeNode : rootNode) {
+                if (storeNode.isObject()) {
+                    com.fasterxml.jackson.databind.node.ObjectNode objectNode = (com.fasterxml.jackson.databind.node.ObjectNode) storeNode;
+                    
+                    // menu_average 필드 검사
+                    if (objectNode.has("menu_average")) {
+                        JsonNode menuAverageNode = objectNode.get("menu_average");
+                        if (menuAverageNode.isNumber()) {
+                            try {
+                                long value = menuAverageNode.asLong();
+                                if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+                                    log.warn("Skipping menu_average due to integer overflow: value={}", value);
+                                    objectNode.putNull("menu_average");
+                                }
+                            } catch (Exception e) {
+                                log.warn("Failed to parse menu_average field", e);
+                                objectNode.putNull("menu_average");
+                            }
+                        }
+                    }
+                    
+                    // review_count 필드 검사
+                    if (objectNode.has("review_count")) {
+                        JsonNode reviewCountNode = objectNode.get("review_count");
+                        if (reviewCountNode.isNumber()) {
+                            try {
+                                long value = reviewCountNode.asLong();
+                                if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+                                    log.warn("Skipping review_count due to integer overflow: value={}", value);
+                                    objectNode.putNull("review_count");
+                                }
+                            } catch (Exception e) {
+                                log.warn("Failed to parse review_count field", e);
+                                objectNode.putNull("review_count");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 정제된 노드로 역직렬화
+            List<CrawledStoreDto> stores = objectMapper.convertValue(
+                    rootNode,
                     new TypeReference<List<CrawledStoreDto>>() {}
             );
 

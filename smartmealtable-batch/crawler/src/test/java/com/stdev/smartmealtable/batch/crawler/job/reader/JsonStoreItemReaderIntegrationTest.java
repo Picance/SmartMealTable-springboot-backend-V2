@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.batch.crawler.job.reader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.batch.crawler.dto.CrawledStoreDto;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JsonStoreItemReaderIntegrationTest {
 
     @Test
+    @Disabled("실제 파일 경로에 대한 통합 테스트 - 필요시 실행")
     @DisplayName("실제 노원구 JSON 파일 파싱 성공")
     void testParsingRealJsonFile() throws Exception {
         // Arrange

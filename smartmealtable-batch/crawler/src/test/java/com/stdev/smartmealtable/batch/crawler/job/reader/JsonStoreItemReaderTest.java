@@ -221,6 +221,70 @@ class JsonStoreItemReaderTest {
             assertThat(reader.getTotalCount()).isZero();
             assertThat(reader.read()).isNull();
         }
+
+        @Test
+        @DisplayName("CrawledStoreDto Integer 오버플로우 필드 처리")
+        void testHandlingStoreIntegerOverflow() throws IOException {
+            // Arrange - menu_average가 Integer.MAX_VALUE를 초과
+            String jsonContent = """
+                    [{
+                        "id": "test-overflow-id",
+                        "name": "오버플로우 가게",
+                        "category": "한식",
+                        "address": "서울시 강남구",
+                        "menu_average": 26054019911,
+                        "review_count": 500,
+                        "menus": [
+                            {"isMain": true, "name": "메뉴1", "price": 10000}
+                        ]
+                    }]
+                    """;
+            Resource resource = createTempJsonResource(jsonContent);
+
+            // Act
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonStoreItemReader reader = new JsonStoreItemReader(resource, objectMapper);
+            CrawledStoreDto store = reader.read();
+
+            // Assert - 오버플로우 필드는 null로 처리되고 가게는 정상적으로 파싱됨
+            assertThat(store).isNotNull();
+            assertThat(store.getName()).isEqualTo("오버플로우 가게");
+            assertThat(store.getMenuAverage()).isNull(); // 오버플로우 필드는 null
+            assertThat(store.getReviewCount()).isNotNull(); // review_count는 정상 범위 내
+            assertThat(store.getMenus()).isNotEmpty();
+        }
+
+        @Test
+        @DisplayName("여러 Integer 오버플로우 필드 처리")
+        void testHandlingMultipleStoreIntegerOverflows() throws IOException {
+            // Arrange - menu_average와 review_count 모두 오버플로우
+            String jsonContent = """
+                    [{
+                        "id": "test-multi-overflow",
+                        "name": "멀티 오버플로우 가게",
+                        "category": "중식",
+                        "address": "서울시 종로구",
+                        "menu_average": 99999999999,
+                        "review_count": 99999999999,
+                        "menus": [
+                            {"isMain": true, "name": "메뉴", "price": 12000}
+                        ]
+                    }]
+                    """;
+            Resource resource = createTempJsonResource(jsonContent);
+
+            // Act
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonStoreItemReader reader = new JsonStoreItemReader(resource, objectMapper);
+            CrawledStoreDto store = reader.read();
+
+            // Assert - 모든 오버플로우 필드는 null이지만 가게는 정상 파싱됨
+            assertThat(store).isNotNull();
+            assertThat(store.getName()).isEqualTo("멀티 오버플로우 가게");
+            assertThat(store.getMenuAverage()).isNull();
+            assertThat(store.getReviewCount()).isNull();
+            assertThat(store.getMenus()).isNotEmpty();
+        }
     }
 
     @Nested
