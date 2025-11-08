@@ -94,6 +94,12 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     @Override
+    public Optional<Category> findByName(String name) {
+        return categoryJpaRepository.findByName(name)
+            .map(CategoryJpaEntity::toDomain);
+    }
+
+    @Override
     public boolean existsByNameAndIdNot(String name, Long categoryId) {
         Integer count = queryFactory
                 .selectOne()

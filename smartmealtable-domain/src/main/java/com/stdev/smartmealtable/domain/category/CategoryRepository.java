@@ -41,6 +41,11 @@ public interface CategoryRepository {
     CategoryPageResult searchByName(String name, int page, int size);
 
     /**
+     * 카테고리 이름으로 정확히 조회
+     */
+    Optional<Category> findByName(String name);
+
+    /**
      * 카테고리 이름 중복 여부 확인
      */
     boolean existsByName(String name);
