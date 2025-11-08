@@ -116,6 +116,15 @@ resource "aws_security_group" "ec2" {
     description = "Allow Admin application"
   }
 
+  # Batch Crawler 애플리케이션용 8082 포트 (VPC 내부 통신만)
+  ingress {
+    from_port   = 8082
+    to_port     = 8082
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+    description = "Allow Batch Crawler within VPC"
+  }
+
   # SSH 접속
   ingress {
     from_port   = 22
