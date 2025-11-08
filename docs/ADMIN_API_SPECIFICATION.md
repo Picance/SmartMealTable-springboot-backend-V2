@@ -414,7 +414,7 @@
   - 이미지는 `displayOrder` 오름차순으로 정렬되어 반환됩니다.
   - 대표 이미지(`isMain=true`)가 항상 먼저 표시됩니다.
 
-#### `POST /stores/{storeId}/images`
+#### `POST /stores/{storeId}/temporary-closures`
 
 - **설명**: 특정 음식점의 임시 휴무를 등록합니다.
 - **Request Body**:
