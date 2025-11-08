@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.stdev.smartmealtable.batch.crawler.dto.CrawledStoreDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
@@ -137,16 +138,76 @@ public class JsonStoreItemReader implements ItemReader<CrawledStoreDto> {
                 throws IOException, JsonProcessingException {
             try {
                 // 기본 디시리얼라이저로 시도
-                return (CrawledStoreDto.MenuInfo) defaultDeserializer.deserialize(p, ctxt);
+                JsonNode node = p.getCodec().readTree(p);
+                ObjectMapper mapper = (ObjectMapper) p.getCodec();
+                
+                CrawledStoreDto.MenuInfo menuInfo = new CrawledStoreDto.MenuInfo();
+                
+                // isMain 필드 처리
+                if (node.has("isMain")) {
+                    JsonNode isMainNode = node.get("isMain");
+                    if (isMainNode.isBoolean()) {
+                        menuInfo.setIsMain(isMainNode.asBoolean());
+                    } else if (isMainNode.isTextual()) {
+                        menuInfo.setIsMain(Boolean.parseBoolean(isMainNode.asText()));
+                    } else if (isMainNode.isNumber()) {
+                        menuInfo.setIsMain(isMainNode.asInt() != 0);
+                    }
+                }
+                
+                // name 필드 처리
+                if (node.has("name")) {
+                    menuInfo.setName(node.get("name").asText(null));
+                }
+                
+                // introduce 필드 처리
+                if (node.has("introduce")) {
+                    menuInfo.setIntroduce(node.get("introduce").asText(null));
+                }
+                
+                // price 필드 처리 - Integer 범위 초과 체크
+                if (node.has("price")) {
+                    JsonNode priceNode = node.get("price");
+                    if (!priceNode.isNull()) {
+                        try {
+                            long priceValue = priceNode.asLong();
+                            if (priceValue < Integer.MIN_VALUE || priceValue > Integer.MAX_VALUE) {
+                                log.warn("Skipping menu due to integer overflow: price={}", priceValue);
+                                return null;
+                            }
+                            menuInfo.setPrice((int) priceValue);
+                        } catch (Exception e) {
+                            log.warn("Failed to parse price: {}", priceNode.asText(), e);
+                            return null;
+                        }
+                    }
+                }
+                
+                // imgUrl 필드 처리
+                if (node.has("imgUrl")) {
+                    menuInfo.setImgUrl(node.get("imgUrl").asText(null));
+                }
+                
+                return menuInfo;
             } catch (JsonMappingException e) {
                 if (e.getCause() instanceof com.fasterxml.jackson.core.exc.InputCoercionException
                     && e.getCause().getMessage().contains("out of range of int")) {
-                    // Integer 범위 초과 시 해당 메뉴는 스킵하고 null 반환
                     log.warn("Skipping menu due to integer overflow: {}", e.getOriginalMessage());
                     return null;
                 }
                 throw e;
+            } catch (IOException e) {
+                if (e.getMessage() != null && e.getMessage().contains("out of range of int")) {
+                    log.warn("Skipping menu due to integer overflow: {}", e.getMessage());
+                    return null;
+                }
+                throw e;
             }
+        }
+
+        @Override
+        public Object deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+            return deserialize(p, ctxt);
         }
     }
 }

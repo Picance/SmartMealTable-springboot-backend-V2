@@ -216,10 +216,10 @@ class StoreCrawlerBatchJobIntegrationTest {
                     ],
                     "openingHours": [
                       {
-                        "dayOfWeek": "월요일",
+                        "dayOfWeek": "월",
                         "hours": {
-                          "openTime": "09:00",
-                          "closeTime": "21:00"
+                          "startTime": "09:00",
+                          "endTime": "21:00"
                         }
                       }
                     ],
@@ -231,6 +231,10 @@ class StoreCrawlerBatchJobIntegrationTest {
                       {
                         "name": "된장찌개",
                         "price": 7000
+                      },
+                      {
+                        "name": "고가 메뉴",
+                        "price": 3100036000
                       }
                     ]
                   }

@@ -114,7 +114,9 @@ public class CrawledStoreDto {
     @Setter
     public static class MenuInfo {
 
+        @JsonProperty("isMain")
         private Boolean isMain;
+        
         private String name;
         private String introduce;
         private Integer price;
