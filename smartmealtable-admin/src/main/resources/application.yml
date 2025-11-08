@@ -35,6 +35,12 @@ spring:
         gemini:
           enabled: false
 
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThatShouldBeLongEnough}
+  access-token-expiry: 3600000  # 1시간 (밀리초)
+  refresh-token-expiry: 86400000  # 24시간 (밀리초)
+
 logging:
   level:
     root: INFO
