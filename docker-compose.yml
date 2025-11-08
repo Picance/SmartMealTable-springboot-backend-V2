@@ -46,6 +46,8 @@ services:
     container_name: smartmealtable-api
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
@@ -55,6 +57,18 @@ services:
       DB_PASSWORD: root123
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
+      NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+      NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      VERTEX_AI_PROJECT_ID: ${VERTEX_AI_PROJECT_ID}
+      VERTEX_AI_MODEL: ${VERTEX_AI_MODEL}
+      VERTEX_AI_TEMPERATURE: ${VERTEX_AI_TEMPERATURE}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION}
+      JWT_SECRET: ${JWT_SECRET}
       JAVA_OPTS: "-Xms256m -Xmx512m"
     deploy:
       resources:
@@ -80,6 +94,8 @@ services:
     container_name: smartmealtable-admin
     ports:
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
@@ -87,6 +103,18 @@ services:
       DB_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       DB_USERNAME: root
       DB_PASSWORD: root123
+      NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+      NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      VERTEX_AI_PROJECT_ID: ${VERTEX_AI_PROJECT_ID}
+      VERTEX_AI_MODEL: ${VERTEX_AI_MODEL}
+      VERTEX_AI_TEMPERATURE: ${VERTEX_AI_TEMPERATURE}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION}
+      JWT_SECRET: ${JWT_SECRET}
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
@@ -105,6 +133,8 @@ services:
       context: .
       dockerfile: Dockerfile.scheduler
     container_name: smartmealtable-scheduler
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       SPRING_DATASOURCE_USERNAME: root
@@ -112,6 +142,18 @@ services:
       DB_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
       DB_USERNAME: root
       DB_PASSWORD: root123
+      NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+      NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      VERTEX_AI_PROJECT_ID: ${VERTEX_AI_PROJECT_ID}
+      VERTEX_AI_MODEL: ${VERTEX_AI_MODEL}
+      VERTEX_AI_TEMPERATURE: ${VERTEX_AI_TEMPERATURE}
+      VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION}
+      JWT_SECRET: ${JWT_SECRET}
       JAVA_OPTS: "-Xms128m -Xmx256m"
     deploy:
       resources:
@@ -130,10 +172,24 @@ services:
   #     context: .
   #     dockerfile: Dockerfile.crawler
   #   container_name: smartmealtable-crawler
+  #   env_file:
+  #     - .env
   #   environment:
   #     SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/smartmealtable?allowPublicKeyRetrieval=true&useSSL=false&rewriteBatchedStatements=true
   #     SPRING_DATASOURCE_USERNAME: smartmeal_user
   #     SPRING_DATASOURCE_PASSWORD: smartmeal1234
+  #     NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+  #     NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+  #     KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+  #     KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+  #     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  #     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  #     GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+  #     VERTEX_AI_PROJECT_ID: ${VERTEX_AI_PROJECT_ID}
+  #     VERTEX_AI_MODEL: ${VERTEX_AI_MODEL}
+  #     VERTEX_AI_TEMPERATURE: ${VERTEX_AI_TEMPERATURE}
+  #     VERTEX_AI_LOCATION: ${VERTEX_AI_LOCATION}
+  #     JWT_SECRET: ${JWT_SECRET}
   #     JAVA_OPTS: "-Xms128m -Xmx256m"
   #   depends_on:
   #     db:
