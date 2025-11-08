@@ -63,8 +63,12 @@ EC2_API_INSTANCE_ID=$(echo "$TERRAFORM_OUTPUT" | jq -r '.api_instance_id.value')
 EC2_ADMIN_INSTANCE_ID=$(echo "$TERRAFORM_OUTPUT" | jq -r '.admin_instance_id.value')
 EC2_BATCH_INSTANCE_ID=$(echo "$TERRAFORM_OUTPUT" | jq -r '.batch_instance_id.value')
 
-# EC2의 Private IP 조회 (Scheduler는 구성되지 않았으므로 Batch 사용)
+# EC2의 Private IP 조회
 ADMIN_PRIVATE_IP=$(aws ec2 describe-instances --instance-ids "${EC2_ADMIN_INSTANCE_ID}" \
+    --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text 2>/dev/null || echo "")
+
+# Batch 서버의 Private IP 조회
+BATCH_PRIVATE_IP=$(aws ec2 describe-instances --instance-ids "${EC2_BATCH_INSTANCE_ID}" \
     --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text 2>/dev/null || echo "")
 
 echo -e "${GREEN}✓ Terraform Output 추출 완료${NC}"
@@ -100,6 +104,7 @@ set_github_secret "RDS_ENDPOINT" "$RDS_ENDPOINT"
 set_github_secret "RDS_PASSWORD" "$RDS_PASSWORD"
 set_github_secret "RDS_USERNAME" "$RDS_USERNAME"
 set_github_secret "REDIS_HOST" "$ADMIN_PRIVATE_IP"
+set_github_secret "BATCH_CRAWLER_URL" "http://${BATCH_PRIVATE_IP}:8082"
 set_github_secret "EC2_API_INSTANCE_ID" "$EC2_API_INSTANCE_ID"
 set_github_secret "EC2_ADMIN_INSTANCE_ID" "$EC2_ADMIN_INSTANCE_ID"
 set_github_secret "EC2_BATCH_INSTANCE_ID" "$EC2_BATCH_INSTANCE_ID"
@@ -116,6 +121,7 @@ echo "  • RDS_ENDPOINT: $RDS_ENDPOINT"
 echo "  • RDS_PASSWORD: ***"
 echo "  • RDS_USERNAME: $RDS_USERNAME"
 echo "  • REDIS_HOST: $ADMIN_PRIVATE_IP"
+echo "  • BATCH_CRAWLER_URL: http://${BATCH_PRIVATE_IP}:8082"
 echo "  • EC2_API_INSTANCE_ID: $EC2_API_INSTANCE_ID"
 echo "  • EC2_ADMIN_INSTANCE_ID: $EC2_ADMIN_INSTANCE_ID"
 echo "  • EC2_BATCH_INSTANCE_ID: $EC2_BATCH_INSTANCE_ID"

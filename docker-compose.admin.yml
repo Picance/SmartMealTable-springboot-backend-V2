@@ -29,6 +29,7 @@ services:
       - VERTEX_AI_TEMPERATURE=${VERTEX_AI_TEMPERATURE}
       - VERTEX_AI_LOCATION=${VERTEX_AI_LOCATION}
       - JWT_SECRET=${JWT_SECRET}
+      - BATCH_CRAWLER_URL=${BATCH_CRAWLER_URL:-http://localhost:8082}
       - JAVA_OPTS=-Xms200m -Xmx400m
     deploy:
       resources:

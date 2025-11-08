@@ -133,6 +133,7 @@ jobs:
                 -e VERTEX_AI_TEMPERATURE=${{ secrets.VERTEX_AI_TEMPERATURE }} \\
                 -e VERTEX_AI_LOCATION=${{ secrets.VERTEX_AI_LOCATION }} \\
                 -e JWT_SECRET=${{ secrets.JWT_SECRET }} \\
+                -e BATCH_CRAWLER_URL=${{ secrets.BATCH_CRAWLER_URL }} \\
                 -e JAVA_OPTS=-Xmx256m \\
                 ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-admin:${{ github.sha }}'
             ]"
@@ -166,8 +167,9 @@ jobs:
               'docker rm smartmealtable-crawler || true',
               'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}',
               'docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-crawler:${{ github.sha }}',
-              'docker run -d --name smartmealtable-crawler \\
+              'docker run -d --name smartmealtable-crawler -p 8082:8082 \\
                 -e SPRING_APPLICATION_NAME=smartmealtable-crawler \\
+                -e SERVER_PORT=8082 \\
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\

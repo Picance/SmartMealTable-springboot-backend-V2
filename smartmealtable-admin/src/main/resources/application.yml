@@ -63,3 +63,8 @@ management:
   endpoint:
     health:
       show-details: always
+
+# 배치 서버 설정 (내부 통신용)
+batch:
+  crawler:
+    base-url: ${BATCH_CRAWLER_URL:http://localhost:8082}

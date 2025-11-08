@@ -118,7 +118,10 @@ EC2_BATCH_INSTANCE_ID=$(echo "$TERRAFORM_OUTPUT" | jq -r '.batch_instance_id.val
 
 # EC2의 Private IP 조회
 ADMIN_PRIVATE_IP=$(aws ec2 describe-instances --instance-ids "${EC2_ADMIN_INSTANCE_ID}" \
-    --region ap-northeast-2 \
+    --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text 2>/dev/null || echo "")
+
+# Batch 서버의 Private IP 조회
+BATCH_PRIVATE_IP=$(aws ec2 describe-instances --instance-ids "${EC2_BATCH_INSTANCE_ID}" \
     --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text 2>/dev/null || echo "")
 
 echo -e "${GREEN}✓ Output 추출 완료${NC}"
@@ -175,6 +178,7 @@ set_github_secret "RDS_ENDPOINT" "$RDS_ENDPOINT"
 set_github_secret "RDS_PASSWORD" "$RDS_PASSWORD"
 set_github_secret "RDS_USERNAME" "$RDS_USERNAME"
 set_github_secret "REDIS_HOST" "$ADMIN_PRIVATE_IP"
+set_github_secret "BATCH_CRAWLER_URL" "http://${BATCH_PRIVATE_IP}:8082"
 set_github_secret "EC2_API_INSTANCE_ID" "$EC2_API_INSTANCE_ID"
 set_github_secret "EC2_ADMIN_INSTANCE_ID" "$EC2_ADMIN_INSTANCE_ID"
 set_github_secret "EC2_BATCH_INSTANCE_ID" "$EC2_BATCH_INSTANCE_ID"
@@ -198,6 +202,7 @@ echo ""
 echo -e "${YELLOW}📊 배포 정보:${NC}"
 echo "  • RDS Endpoint: $RDS_ENDPOINT"
 echo "  • Redis Host: $ADMIN_PRIVATE_IP"
+echo "  • Batch Crawler URL: http://${BATCH_PRIVATE_IP}:8082"
 echo "  • API Instance ID: $EC2_API_INSTANCE_ID"
 echo "  • Admin Instance ID: $EC2_ADMIN_INSTANCE_ID"
 echo "  • Batch Instance ID: $EC2_BATCH_INSTANCE_ID"
