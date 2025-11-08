@@ -33,9 +33,6 @@ public class StoreJpaEntity {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
     
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
-    
     @Column(name = "seller_id")
     private Long sellerId;
     

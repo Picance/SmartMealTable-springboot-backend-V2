@@ -73,7 +73,7 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
                 .storeId(existing != null ? existing.getStoreId() : null)
                 .externalId(dto.getId())
                 .name(dto.getName())
-                .categoryId(storeCategoryId)
+                .categoryIds(List.of(storeCategoryId))
                 .sellerId(null) // 크롤링 데이터에는 판매자 정보 없음
                 .address(dto.getAddress())
                 .lotNumberAddress(null) // 크롤링 데이터에는 지번주소 없음

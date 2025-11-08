@@ -13,7 +13,6 @@ import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.store.StoreWithDistance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.category.QCategoryJpaEntity.categoryJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
+import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
 
 /**
  * Store QueryDSL Repository
@@ -71,7 +71,7 @@ public class StoreQueryDslRepository {
         }
         
         if (categoryId != null) {
-            conditions.add(storeJpaEntity.categoryId.eq(categoryId));
+            conditions.add(storeCategoryJpaEntity.categoryId.eq(categoryId));
         }
         
         if (storeType != null) {
@@ -90,7 +90,7 @@ public class StoreQueryDslRepository {
         Long totalCount = queryFactory
                 .select(storeJpaEntity.count())
                 .from(storeJpaEntity)
-                .leftJoin(categoryJpaEntity).on(storeJpaEntity.categoryId.eq(categoryJpaEntity.categoryId))
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(finalCondition)
                 .fetchOne();
         
@@ -105,7 +105,7 @@ public class StoreQueryDslRepository {
         List<Tuple> tuples = queryFactory
                 .select(storeJpaEntity, distanceExpression)
                 .from(storeJpaEntity)
-                .leftJoin(categoryJpaEntity).on(storeJpaEntity.categoryId.eq(categoryJpaEntity.categoryId))
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(finalCondition)
                 .orderBy(orderSpecifier)
                 .offset((long) page * size)
@@ -116,7 +116,8 @@ public class StoreQueryDslRepository {
                 .map(tuple -> {
                     StoreJpaEntity entity = tuple.get(storeJpaEntity);
                     Double distance = tuple.get(distanceExpression);
-                    Store store = StoreEntityMapper.toDomain(entity);
+                    List<Long> categoryIds = queryCategoryIdsByStoreId(entity.getStoreId());
+                    Store store = StoreEntityMapper.toDomain(entity, categoryIds);
                     return StoreWithDistance.of(store, distance);
                 })
                 .collect(Collectors.toList());
@@ -160,6 +161,18 @@ public class StoreQueryDslRepository {
         };
     }
 
+    /**
+     * 특정 가게의 카테고리 ID 목록 조회
+     */
+    private List<Long> queryCategoryIdsByStoreId(Long storeId) {
+        return queryFactory
+                .select(storeCategoryJpaEntity.categoryId)
+                .from(storeCategoryJpaEntity)
+                .where(storeCategoryJpaEntity.storeId.eq(storeId))
+                .orderBy(storeCategoryJpaEntity.displayOrder.asc())
+                .fetch();
+    }
+
     // ===== ADMIN 전용 메서드 =====
 
     /**
@@ -169,7 +182,7 @@ public class StoreQueryDslRepository {
         BooleanExpression condition = storeJpaEntity.deletedAt.isNull();
 
         if (categoryId != null) {
-            condition = condition.and(storeJpaEntity.categoryId.eq(categoryId));
+            condition = condition.and(storeCategoryJpaEntity.categoryId.eq(categoryId));
         }
 
         if (name != null && !name.isBlank()) {
@@ -182,8 +195,9 @@ public class StoreQueryDslRepository {
 
         // 전체 개수 조회
         Long total = queryFactory
-                .select(storeJpaEntity.count())
+                .select(storeJpaEntity.countDistinct())
                 .from(storeJpaEntity)
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(condition)
                 .fetchOne();
 
@@ -191,7 +205,9 @@ public class StoreQueryDslRepository {
 
         // 페이징 데이터 조회
         List<StoreJpaEntity> entities = queryFactory
-                .selectFrom(storeJpaEntity)
+                .selectDistinct(storeJpaEntity)
+                .from(storeJpaEntity)
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(condition)
                 .orderBy(storeJpaEntity.registeredAt.desc()) // 최신 등록 순
                 .offset((long) page * size)
@@ -199,7 +215,10 @@ public class StoreQueryDslRepository {
                 .fetch();
 
         List<Store> content = entities.stream()
-                .map(StoreEntityMapper::toDomain)
+                .map(entity -> {
+                    List<Long> categoryIds = queryCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
                 .collect(Collectors.toList());
 
         return StorePageResult.of(content, page, size, totalElements);
@@ -212,8 +231,9 @@ public class StoreQueryDslRepository {
         Integer count = queryFactory
                 .selectOne()
                 .from(storeJpaEntity)
+                .innerJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(
-                        storeJpaEntity.categoryId.eq(categoryId)
+                        storeCategoryJpaEntity.categoryId.eq(categoryId)
                                 .and(storeJpaEntity.deletedAt.isNull())
                 )
                 .fetchFirst();

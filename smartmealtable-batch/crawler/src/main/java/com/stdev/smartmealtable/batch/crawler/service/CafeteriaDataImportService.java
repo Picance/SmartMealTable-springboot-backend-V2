@@ -137,7 +137,7 @@ public class CafeteriaDataImportService {
             store = Store.builder()
                     .storeId(store.getStoreId())
                     .name(storeName)
-                    .categoryId(categoryId)
+                    .categoryIds(List.of(categoryId))
                     .sellerId(store.getSellerId())
                     .address(cafeteriaData.getAddress())
                     .lotNumberAddress(null)
@@ -161,7 +161,7 @@ public class CafeteriaDataImportService {
             
             store = Store.builder()
                     .name(storeName)
-                    .categoryId(categoryId)
+                    .categoryIds(List.of(categoryId))
                     .address(cafeteriaData.getAddress())
                     .latitude(cafeteriaData.getLatitude())
                     .longitude(cafeteriaData.getLongitude())

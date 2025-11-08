@@ -16,7 +16,7 @@ import java.util.List;
 public record StoreResponse(
         Long storeId,
         String name,
-        Long categoryId,
+        List<Long> categoryIds,
         Long sellerId,
         String address,
         String lotNumberAddress,
@@ -47,7 +47,7 @@ public record StoreResponse(
         return new StoreResponse(
                 serviceResponse.storeId(),
                 serviceResponse.name(),
-                serviceResponse.categoryId(),
+                serviceResponse.categoryIds(),
                 serviceResponse.sellerId(),
                 serviceResponse.address(),
                 serviceResponse.lotNumberAddress(),

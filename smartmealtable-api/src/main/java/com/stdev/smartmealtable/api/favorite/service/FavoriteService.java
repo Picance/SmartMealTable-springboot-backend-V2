@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Objects;import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -98,7 +98,8 @@ public class FavoriteService {
         
         // 3. 카테고리 정보 조회
         List<Long> categoryIds = storeMap.values().stream()
-                .map(Store::getCategoryId)
+                .map(store -> store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0))
+                .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
         
@@ -116,7 +117,8 @@ public class FavoriteService {
                         return null;
                     }
                     
-                    Category category = categoryMap.get(store.getCategoryId());
+                    Long primaryCategoryId = store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0);
+                    Category category = primaryCategoryId != null ? categoryMap.get(primaryCategoryId) : null;
                     String categoryName = category != null ? category.getName() : "";
                     
                     return FavoriteStoreDto.builder()

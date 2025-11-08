@@ -5,6 +5,9 @@ import com.stdev.smartmealtable.domain.store.StoreOpeningHour;
 import com.stdev.smartmealtable.domain.store.StoreTemporaryClosure;
 import com.stdev.smartmealtable.domain.store.StoreViewHistory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Store 엔티티와 JPA 엔티티 간 변환 Mapper
  */
@@ -16,13 +19,13 @@ public final class StoreEntityMapper {
     
     /**
      * Domain Store → JPA Entity
+     * categoryIds는 StoreCategoryJpaRepository를 통해 별도로 관리되므로 여기서는 제외
      */
     public static StoreJpaEntity toJpaEntity(Store store) {
         return StoreJpaEntity.builder()
                 .storeId(store.getStoreId())
                 .externalId(store.getExternalId())
                 .name(store.getName())
-                .categoryId(store.getCategoryId())
                 .sellerId(store.getSellerId())
                 .address(store.getAddress())
                 .lotNumberAddress(store.getLotNumberAddress())
@@ -42,14 +45,41 @@ public final class StoreEntityMapper {
     }
     
     /**
-     * JPA Entity → Domain Store
+     * JPA Entity → Domain Store (categoryIds는 별도로 설정)
      */
     public static Store toDomain(StoreJpaEntity entity) {
         return Store.builder()
                 .storeId(entity.getStoreId())
                 .externalId(entity.getExternalId())
                 .name(entity.getName())
-                .categoryId(entity.getCategoryId())
+                .categoryIds(new ArrayList<>())  // 별도로 로드되어야 함
+                .sellerId(entity.getSellerId())
+                .address(entity.getAddress())
+                .lotNumberAddress(entity.getLotNumberAddress())
+                .latitude(entity.getLatitude())
+                .longitude(entity.getLongitude())
+                .phoneNumber(entity.getPhoneNumber())
+                .description(entity.getDescription())
+                .averagePrice(entity.getAveragePrice())
+                .reviewCount(entity.getReviewCount())
+                .viewCount(entity.getViewCount())
+                .favoriteCount(entity.getFavoriteCount())
+                .storeType(entity.getStoreType())
+                .imageUrl(entity.getImageUrl())
+                .registeredAt(entity.getRegisteredAt())
+                .deletedAt(entity.getDeletedAt())
+                .build();
+    }
+    
+    /**
+     * JPA Entity + categoryIds → Domain Store
+     */
+    public static Store toDomain(StoreJpaEntity entity, List<Long> categoryIds) {
+        return Store.builder()
+                .storeId(entity.getStoreId())
+                .externalId(entity.getExternalId())
+                .name(entity.getName())
+                .categoryIds(categoryIds != null ? categoryIds : new ArrayList<>())
                 .sellerId(entity.getSellerId())
                 .address(entity.getAddress())
                 .lotNumberAddress(entity.getLotNumberAddress())

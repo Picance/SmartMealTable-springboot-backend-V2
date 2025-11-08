@@ -66,7 +66,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // 테스트 음식점 생성
         Store store1 = Store.create(
                 "학생식당",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 "서울시 강남구 테헤란로 123",
                 "서울시 강남구 역삼동 123-45",
                 new BigDecimal("37.4979"),
@@ -82,7 +82,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
 
         Store store2 = Store.create(
                 "일반음식점",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 "서울시 강남구 테헤란로 456",
                 "서울시 강남구 역삼동 456-78",
                 new BigDecimal("37.4980"),
@@ -186,7 +186,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateStoreRequest request = new CreateStoreRequest(
                 "새로운 음식점",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 null,
                 "서울시 강남구 테헤란로 789",
                 "서울시 강남구 역삼동 789-12",
@@ -214,7 +214,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateStoreRequest request = new CreateStoreRequest(
                 null, // 이름 누락
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 null,
                 "서울시 강남구 테헤란로 789",
                 null,
@@ -257,7 +257,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // Given
         CreateStoreRequest request = new CreateStoreRequest(
                 "지오코딩 테스트 음식점",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 null,
                 "서울시 강남구 테헤란로 123", // 주소만 입력
                 "서울시 강남구 역삼동 456",
@@ -316,7 +316,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
         // 실제 환경에서는 유효하지 않은 주소일 때 400 Bad Request 발생
         CreateStoreRequest request = new CreateStoreRequest(
                 "유효하지 않은 주소 테스트",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 null,
                 "존재하지않는도시 존재하지않는구 존재하지않는로 999",
                 null,

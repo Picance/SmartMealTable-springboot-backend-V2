@@ -44,6 +44,7 @@ public class ExplorationScoreCalculator implements ScoreCalculator {
      * 
      * <p>최근 30일간 해당 카테고리 방문 비중의 역수를 계산합니다.</p>
      * <p>자주 안 간 카테고리일수록 높은 점수를 부여합니다.</p>
+     * <p>가게가 여러 카테고리를 가진 경우, 주 카테고리(첫 번째)를 사용합니다.</p>
      * 
      * @param store 가게
      * @param userProfile 사용자 프로필
@@ -57,9 +58,18 @@ public class ExplorationScoreCalculator implements ScoreCalculator {
             return 50.0;
         }
 
+        // 주 카테고리 ID (첫 번째 카테고리 사용)
+        Long primaryCategoryId = store.getCategoryIds() != null && !store.getCategoryIds().isEmpty() 
+                ? store.getCategoryIds().get(0) 
+                : null;
+
+        if (primaryCategoryId == null) {
+            return 50.0; // 카테고리가 없으면 중간 점수
+        }
+
         // 해당 카테고리 방문 횟수
         long categoryCount = recentExpenditures.values().stream()
-                .filter(exp -> exp.getCategoryId().equals(store.getCategoryId()))
+                .filter(exp -> primaryCategoryId.equals(exp.getCategoryId()))
                 .count();
 
         // 전체 지출 대비 비중

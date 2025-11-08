@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.admin.store.service.dto;
 
 import com.stdev.smartmealtable.domain.store.StoreType;
 
+import java.util.List;
+
 /**
  * 음식점 생성 Service Request - v2.0
  * 
@@ -10,7 +12,7 @@ import com.stdev.smartmealtable.domain.store.StoreType;
  */
 public record CreateStoreServiceRequest(
         String name,
-        Long categoryId,
+        List<Long> categoryIds,
         Long sellerId,
         String address,
         String lotNumberAddress,
@@ -21,7 +23,7 @@ public record CreateStoreServiceRequest(
 ) {
     public static CreateStoreServiceRequest of(
             String name,
-            Long categoryId,
+            List<Long> categoryIds,
             Long sellerId,
             String address,
             String lotNumberAddress,
@@ -32,7 +34,7 @@ public record CreateStoreServiceRequest(
     ) {
         return new CreateStoreServiceRequest(
                 name,
-                categoryId,
+                categoryIds,
                 sellerId,
                 address,
                 lotNumberAddress,

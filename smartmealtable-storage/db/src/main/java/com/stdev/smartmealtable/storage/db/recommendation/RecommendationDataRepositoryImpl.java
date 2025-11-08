@@ -169,9 +169,15 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
                 .collect(Collectors.toList());
 
         // excludedCategoryIds 필터링 (메모리에서 처리)
+        // 주 카테고리(첫 번째)를 확인하여 필터링
         if (excludedCategoryIds != null && !excludedCategoryIds.isEmpty()) {
             stores = stores.stream()
-                    .filter(store -> !excludedCategoryIds.contains(store.getCategoryId()))
+                    .filter(store -> {
+                        Long primaryCategoryId = store.getCategoryIds() != null && !store.getCategoryIds().isEmpty()
+                                ? store.getCategoryIds().get(0)
+                                : null;
+                        return primaryCategoryId == null || !excludedCategoryIds.contains(primaryCategoryId);
+                    })
                     .collect(Collectors.toList());
         }
 

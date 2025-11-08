@@ -250,7 +250,6 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
         
         StoreJpaEntity store = StoreJpaEntity.builder()
                 .name("테스트 음식점")
-                .categoryId(category.getCategoryId())
                 .address("서울시 강남구")
                 .lotNumberAddress("서울시 강남구 123")
                 .latitude(java.math.BigDecimal.valueOf(37.12345))

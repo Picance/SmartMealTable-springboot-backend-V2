@@ -23,8 +23,6 @@ public class QStoreJpaEntity extends EntityPathBase<StoreJpaEntity> {
 
     public final NumberPath<Integer> averagePrice = createNumber("averagePrice", Integer.class);
 
-    public final NumberPath<Long> categoryId = createNumber("categoryId", Long.class);
-
     public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
 
     public final DateTimePath<java.time.LocalDateTime> deletedAt = createDateTime("deletedAt", java.time.LocalDateTime.class);

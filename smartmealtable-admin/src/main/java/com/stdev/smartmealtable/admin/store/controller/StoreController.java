@@ -83,7 +83,7 @@ public class StoreController {
     public ApiResponse<StoreResponse> createStore(@Valid @RequestBody CreateStoreRequest request) {
         CreateStoreServiceRequest serviceRequest = CreateStoreServiceRequest.of(
                 request.name(),
-                request.categoryId(),
+                request.categoryIds(),
                 request.sellerId(),
                 request.address(),
                 request.lotNumberAddress(),
@@ -112,7 +112,7 @@ public class StoreController {
     ) {
         UpdateStoreServiceRequest serviceRequest = UpdateStoreServiceRequest.of(
                 request.name(),
-                request.categoryId(),
+                request.categoryIds(),
                 request.address(),
                 request.lotNumberAddress(),
                 request.phoneNumber(),
