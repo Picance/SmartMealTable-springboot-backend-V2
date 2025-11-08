@@ -79,8 +79,11 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
      */
     private void saveFoods(Long storeId, java.util.List<Food> foods) {
         if (foods == null || foods.isEmpty()) {
+            log.warn("No foods to save for store ID: {}", storeId);
             return;
         }
+        
+        log.info("Saving {} foods for store ID: {}", foods.size(), storeId);
         
         for (Food food : foods) {
             Food foodToSave = Food.builder()
@@ -97,10 +100,12 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
                     .deletedAt(null)
                     .build();
             
-            foodRepository.save(foodToSave);
+            Food savedFood = foodRepository.save(foodToSave);
+            log.debug("Saved food: {} (ID: {}, price: {}) to store ID: {}", 
+                     savedFood.getFoodName(), savedFood.getFoodId(), savedFood.getPrice(), storeId);
         }
         
-        log.debug("Saved {} foods for store ID: {}", foods.size(), storeId);
+        log.info("Successfully saved {} foods for store ID: {}", foods.size(), storeId);
     }
     
     /**

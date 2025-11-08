@@ -96,15 +96,26 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
      * 음식(메뉴) 정보 변환
      */
     private List<Food> convertToFoods(CrawledStoreDto dto, Store store) {
-        if (dto.getMenus() == null || dto.getMenus().isEmpty()) {
+        if (dto.getMenus() == null) {
+            log.warn("Store has no menus list: {}", dto.getName());
+            return new ArrayList<>();
+        }
+        
+        if (dto.getMenus().isEmpty()) {
+            log.warn("Store has empty menus list: {}", dto.getName());
             return new ArrayList<>();
         }
         
         List<Food> foods = new ArrayList<>();
         int displayOrder = 0;
+        int validCount = 0;
+        int invalidCount = 0;
         
         // 음식 카테고리는 "음식" 또는 JSON의 카테고리 기반으로 결정
         Long foodCategoryId = resolveFoodCategoryId(dto.getCategory());
+        
+        log.info("Processing {} menus for store: {} (storeId: {})", 
+                dto.getMenus().size(), dto.getName(), store.getStoreId());
         
         for (CrawledStoreDto.MenuInfo menuInfo : dto.getMenus()) {
             Food food = Food.builder()
@@ -113,7 +124,8 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
                     .categoryId(foodCategoryId) // 음식 카테고리
                     .foodName(menuInfo.getName())
                     .description(menuInfo.getIntroduce())
-                    .price(menuInfo.getPrice())
+                    .price(menuInfo.getPrice())  // 크롤러용 개별 가격
+                    .averagePrice(null) // 추천 시스템용 (배치에서는 설정 안 함)
                     .imageUrl(menuInfo.getImgUrl())
                     .isMain(menuInfo.getIsMain() != null && menuInfo.getIsMain())
                     .displayOrder(displayOrder++)
@@ -123,10 +135,46 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
 
             if (food.isValid()) {
                 foods.add(food);
+                validCount++;
+                log.debug("✓ Valid food: name='{}', price={}, storeId={}", 
+                         food.getFoodName(), food.getPrice(), food.getStoreId());
+            } else {
+                invalidCount++;
+                log.warn("✗ Invalid food: name='{}', price={}, storeId={}, categoryId={}, reason: {}",
+                         food.getFoodName(), food.getPrice(), food.getStoreId(), food.getCategoryId(),
+                         getInvalidReasons(food));
             }
         }
         
+        log.info("Menu conversion result for store '{}': valid={}, invalid={}, total={}", 
+                dto.getName(), validCount, invalidCount, dto.getMenus().size());
+        
         return foods;
+    }
+    
+    /**
+     * 음식이 유효하지 않은 이유를 분석하는 헬퍼 메서드
+     */
+    private String getInvalidReasons(Food food) {
+        StringBuilder reasons = new StringBuilder();
+        
+        if (food.getFoodName() == null || food.getFoodName().trim().isEmpty()) {
+            reasons.append("[No name]");
+        }
+        if (food.getPrice() == null && food.getAveragePrice() == null) {
+            reasons.append("[No price/averagePrice]");
+        }
+        if (food.getPrice() != null && food.getPrice() < 0) {
+            reasons.append("[Negative price]");
+        }
+        if (food.getStoreId() == null) {
+            reasons.append("[No storeId]");
+        }
+        if (food.getCategoryId() == null) {
+            reasons.append("[No categoryId]");
+        }
+        
+        return reasons.length() > 0 ? reasons.toString() : "[Unknown reason]";
     }
     
     /**
