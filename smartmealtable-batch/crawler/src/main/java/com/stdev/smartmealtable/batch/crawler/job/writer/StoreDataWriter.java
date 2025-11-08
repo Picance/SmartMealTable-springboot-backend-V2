@@ -113,8 +113,11 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
      */
     private void saveImages(Long storeId, java.util.List<StoreImage> images) {
         if (images == null || images.isEmpty()) {
+            log.debug("No images to save for store ID: {}", storeId);
             return;
         }
+        
+        log.info("Saving {} images for store ID: {}", images.size(), storeId);
         
         for (StoreImage image : images) {
             StoreImage imageToSave = StoreImage.builder()
@@ -125,10 +128,13 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
                     .displayOrder(image.getDisplayOrder())
                     .build();
             
-            storeImageRepository.save(imageToSave);
+            StoreImage savedImage = storeImageRepository.save(imageToSave);
+            log.debug("Saved image: {} (ID: {}, isMain: {})", 
+                     savedImage.getImageUrl().substring(0, Math.min(50, savedImage.getImageUrl().length())) + "...", 
+                     savedImage.getStoreImageId(), savedImage.isMain());
         }
         
-        log.debug("Saved {} images for store ID: {}", images.size(), storeId);
+        log.info("Successfully saved {} images for store ID: {}", images.size(), storeId);
     }
     
     /**
@@ -136,8 +142,11 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
      */
     private void saveOpeningHours(Long storeId, java.util.List<StoreOpeningHour> openingHours) {
         if (openingHours == null || openingHours.isEmpty()) {
+            log.debug("No opening hours to save for store ID: {}", storeId);
             return;
         }
+        
+        log.info("Saving {} opening hours for store ID: {}", openingHours.size(), storeId);
         
         for (StoreOpeningHour oh : openingHours) {
             StoreOpeningHour ohToSave = new StoreOpeningHour(
@@ -151,9 +160,10 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
                     oh.isHoliday()
             );
             
-            openingHourRepository.save(ohToSave);
+            StoreOpeningHour savedOh = openingHourRepository.save(ohToSave);
+            log.debug("Saved opening hour: {} ({} ~ {})", savedOh.dayOfWeek(), savedOh.openTime(), savedOh.closeTime());
         }
         
-        log.debug("Saved {} opening hours for store ID: {}", openingHours.size(), storeId);
+        log.info("Successfully saved {} opening hours for store ID: {}", openingHours.size(), storeId);
     }
 }

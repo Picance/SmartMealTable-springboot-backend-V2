@@ -94,6 +94,7 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
     
     /**
      * 음식(메뉴) 정보 변환
+     * Processor 단계에서는 storeId를 설정하지 않음 (Writer에서 저장 후 설정)
      */
     private List<Food> convertToFoods(CrawledStoreDto dto, Store store) {
         if (dto.getMenus() == null) {
@@ -118,9 +119,10 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
                 dto.getMenus().size(), dto.getName(), store.getStoreId());
         
         for (CrawledStoreDto.MenuInfo menuInfo : dto.getMenus()) {
+            // storeId는 null로 둠 - Writer에서 저장된 storeId를 설정할 예정
             Food food = Food.builder()
                     .foodId(null) // 새로 생성
-                    .storeId(store.getStoreId()) // Writer에서 실제 storeId로 업데이트 필요
+                    .storeId(null) // Writer에서 실제 storeId로 설정
                     .categoryId(foodCategoryId) // 음식 카테고리
                     .foodName(menuInfo.getName())
                     .description(menuInfo.getIntroduce())
@@ -133,15 +135,17 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
                     .deletedAt(null)
                     .build();
 
-            if (food.isValid()) {
+            // Processor 단계에서는 storeId가 없어도 기본 검증만 수행
+            // (foodName, price, categoryId가 있으면 유효한 것으로 봄)
+            if (isValidFoodForProcessing(food)) {
                 foods.add(food);
                 validCount++;
-                log.debug("✓ Valid food: name='{}', price={}, storeId={}", 
-                         food.getFoodName(), food.getPrice(), food.getStoreId());
+                log.debug("✓ Valid food: name='{}', price={}", 
+                         food.getFoodName(), food.getPrice());
             } else {
                 invalidCount++;
-                log.warn("✗ Invalid food: name='{}', price={}, storeId={}, categoryId={}, reason: {}",
-                         food.getFoodName(), food.getPrice(), food.getStoreId(), food.getCategoryId(),
+                log.warn("✗ Invalid food: name='{}', price={}, categoryId={}, reason: {}",
+                         food.getFoodName(), food.getPrice(), food.getCategoryId(),
                          getInvalidReasons(food));
             }
         }
@@ -153,7 +157,20 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
     }
     
     /**
+     * Processor 단계에서 음식이 기본적으로 유효한지 검증
+     * (storeId는 아직 설정되지 않았으므로 제외)
+     */
+    private boolean isValidFoodForProcessing(Food food) {
+        return food.getFoodName() != null && !food.getFoodName().trim().isEmpty()
+            && (food.getPrice() != null || food.getAveragePrice() != null)
+            && (food.getPrice() == null || food.getPrice() >= 0)
+            && (food.getAveragePrice() == null || food.getAveragePrice() >= 0)
+            && food.getCategoryId() != null;
+    }
+    
+    /**
      * 음식이 유효하지 않은 이유를 분석하는 헬퍼 메서드
+     * (Processor 단계에서는 storeId가 없으므로 제외)
      */
     private String getInvalidReasons(Food food) {
         StringBuilder reasons = new StringBuilder();
@@ -166,9 +183,6 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
         }
         if (food.getPrice() != null && food.getPrice() < 0) {
             reasons.append("[Negative price]");
-        }
-        if (food.getStoreId() == null) {
-            reasons.append("[No storeId]");
         }
         if (food.getCategoryId() == null) {
             reasons.append("[No categoryId]");
@@ -214,51 +228,66 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
     
     /**
      * 이미지 정보 변환
+     * Processor 단계에서는 storeId를 설정하지 않음 (Writer에서 저장 후 설정)
      */
     private List<StoreImage> convertToImages(CrawledStoreDto dto, Store store) {
         if (dto.getImages() == null || dto.getImages().isEmpty()) {
+            log.debug("Store has no images: {}", dto.getName());
             return new ArrayList<>();
         }
         
         List<StoreImage> images = new ArrayList<>();
         int displayOrder = 0;
         
+        log.debug("Processing {} images for store: {}", dto.getImages().size(), dto.getName());
+        
         for (String imageUrl : dto.getImages()) {
+            // storeId는 null로 둠 - Writer에서 저장된 storeId를 설정할 예정
+            if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                log.warn("Skipping empty image URL for store: {}", dto.getName());
+                continue;
+            }
+            
             StoreImage image = StoreImage.builder()
                     .storeImageId(null)
-                    .storeId(store.getStoreId()) // Writer에서 실제 storeId로 업데이트 필요
+                    .storeId(null) // Writer에서 실제 storeId로 설정
                     .imageUrl(imageUrl)
                     .isMain(displayOrder == 0) // 첫 번째 이미지를 대표 이미지로
                     .displayOrder(displayOrder++)
                     .build();
             
-            if (image.isValid()) {
-                images.add(image);
-            }
+            images.add(image);
+            log.debug("  Image {}: {} (isMain={})", displayOrder, imageUrl.substring(0, Math.min(50, imageUrl.length())) + "...", image.isMain());
         }
         
+        log.info("Image conversion result for store '{}': total={}", dto.getName(), images.size());
         return images;
     }
     
     /**
      * 영업시간 정보 변환
+     * Processor 단계에서는 storeId를 설정하지 않음 (Writer에서 저장 후 설정)
      */
     private List<StoreOpeningHour> convertToOpeningHours(CrawledStoreDto dto, Store store) {
         if (dto.getOpeningHours() == null || dto.getOpeningHours().isEmpty()) {
+            log.debug("Store has no opening hours: {}", dto.getName());
             return new ArrayList<>();
         }
         
         List<StoreOpeningHour> openingHours = new ArrayList<>();
         
+        log.debug("Processing {} opening hours for store: {}", dto.getOpeningHours().size(), dto.getName());
+        
         for (CrawledStoreDto.OpeningHour oh : dto.getOpeningHours()) {
             DayOfWeek dayOfWeek = convertDayOfWeek(oh.getDayOfWeek());
             if (dayOfWeek == null || oh.getHours() == null) {
+                log.warn("Skipping invalid opening hour for store {}: dayOfWeek={}", dto.getName(), oh.getDayOfWeek());
                 continue;
             }
             
             StoreOpeningHour openingHour = new StoreOpeningHour(
                     null, // storeOpeningHourId
-                    store.getStoreId(), // Writer에서 실제 storeId로 업데이트 필요
+                    null, // Writer에서 실제 storeId 설정
                     dayOfWeek,
                     oh.getHours().getStartTime(),
                     oh.getHours().getEndTime(),
@@ -268,8 +297,10 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
             );
             
             openingHours.add(openingHour);
+            log.debug("  {}: {} ~ {}", dayOfWeek, oh.getHours().getStartTime(), oh.getHours().getEndTime());
         }
         
+        log.info("Opening hours conversion result for store '{}': total={}", dto.getName(), openingHours.size());
         return openingHours;
     }
     
