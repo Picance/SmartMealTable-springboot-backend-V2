@@ -185,7 +185,7 @@
 - **설명**: 음식점 목록을 필터링 및 페이지네이션으로 조회합니다.
 - **Query Parameters**:
   - `page`, `size` (number, optional)
-  - `categoryId` (number, optional)
+  - `categoryIds` (array of numbers, optional): 가게가 속한 카테고리 ID 배열
   - `name` (string, optional)
   - `storeType` (string, optional, e.g., `CAMPUS_RESTAURANT`, `RESTAURANT`)
 
@@ -199,8 +199,8 @@
     "data": {
       "storeId": 101,
       "name": "스마트 식당",
-      "categoryId": 1,
-      "categoryName": "한식",
+      "categoryIds": [1],
+      "categoryNames": ["한식"],
       "sellerId": null,
       "address": "서울시 강남구 테헤란로 123",
       "lotNumberAddress": "서울시 강남구 역삼동 123-45",
@@ -240,7 +240,7 @@
   ```json
   {
     "name": "스마트 식당",
-    "categoryId": 1,
+    "categoryIds": [1],
     "sellerId": null,
     "address": "서울시 강남구 테헤란로 123",
     "lotNumberAddress": "서울시 강남구 역삼동 123-45",
@@ -268,7 +268,7 @@
   ```json
   {
     "name": "스마트 식당 (수정)",
-    "categoryId": 1,
+    "categoryIds": [1],
     "address": "서울시 강남구 테헤란로 456",
     "lotNumberAddress": "서울시 강남구 역삼동 456-78",
     "phoneNumber": "02-5678-1234",

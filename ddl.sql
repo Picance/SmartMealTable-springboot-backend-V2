@@ -126,7 +126,6 @@ CREATE TABLE category (
 CREATE TABLE store (
     store_id              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식점의 고유 식별자',
     external_id           VARCHAR(50)    NULL     COMMENT '외부 크롤링 시스템의 가게 ID (네이버 플레이스, 카카오맵 등)',
-    category_id           BIGINT         NOT NULL COMMENT '음식점이 속한 음식 카테고리의 식별자',
     seller_id             BIGINT         NULL     COMMENT '판매자 식별자 (논리 FK)',
     name                  VARCHAR(100)   NOT NULL COMMENT '음식점의 상호명',
     address               VARCHAR(200)   NOT NULL COMMENT '도로명 기준 주소',
@@ -147,7 +146,6 @@ CREATE TABLE store (
     updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
     PRIMARY KEY (store_id),
     UNIQUE KEY uq_external_id (external_id),
-    INDEX idx_category_id (category_id),
     INDEX idx_seller_id (seller_id),
     INDEX idx_name (name),
     INDEX idx_review_count (review_count),
@@ -156,6 +154,21 @@ CREATE TABLE store (
     INDEX idx_store_type (store_type),
     INDEX idx_registered_at (registered_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
+
+-- 가게와 카테고리의 N:N 관계를 나타내는 중간 테이블
+CREATE TABLE store_category (
+    store_category_id     BIGINT         NOT NULL AUTO_INCREMENT COMMENT '매핑 레코드의 고유 식별자',
+    store_id              BIGINT         NOT NULL COMMENT '음식점 ID (논리 FK)',
+    category_id           BIGINT         NOT NULL COMMENT '카테고리 ID (논리 FK)',
+    display_order         INT            NOT NULL DEFAULT 0 COMMENT '카테고리 표시 순서 (주 카테고리를 먼저 표시하기 위함)',
+    created_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시각',
+    updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 시각',
+    PRIMARY KEY (store_category_id),
+    UNIQUE KEY uq_store_category (store_id, category_id),
+    INDEX idx_store_id (store_id),
+    INDEX idx_category_id (category_id),
+    INDEX idx_display_order (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점(store)과 음식 카테고리(category)의 N:N 관계를 나타내는 중간 테이블 (각 가게는 여러 카테고리를 가질 수 있음)';
 
 -- 가게 영업시간 테이블
 CREATE TABLE store_opening_hour (

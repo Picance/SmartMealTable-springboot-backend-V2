@@ -1937,8 +1937,8 @@ Authorization: Bearer {access_token}
       {
         "storeId": 101,
         "name": "교촌치킨 강남점",
-        "categoryId": 5,
-        "categoryName": "치킨",
+        "categoryIds": [5],
+        "categoryNames": ["치킨"],
         "address": "서울특별시 강남구 테헤란로 123",
         "latitude": 37.498123,
         "longitude": 127.028456,
@@ -1980,8 +1980,8 @@ Authorization: Bearer {access_token}
   "data": {
     "storeId": 101,
     "name": "교촌치킨 강남점",
-    "categoryId": 5,
-    "categoryName": "치킨",
+    "categoryIds": [5],
+    "categoryNames": ["치킨"],
     "address": "서울특별시 강남구 테헤란로 123",
     "lotNumberAddress": "서울특별시 강남구 역삼동 456-78",
     "latitude": 37.498123,
@@ -2499,8 +2499,8 @@ Response:
   "data": {
     "storeId": 101,
     "storeName": "교촌치킨 강남점",
-    "categoryId": 5,
-    "categoryName": "치킨",
+    "categoryIds": [5],
+    "categoryNames": ["치킨"],
     "address": "서울특별시 강남구 테헤란로 123",
     "phoneNumber": "02-1234-5678",
     "averagePrice": 18000,
