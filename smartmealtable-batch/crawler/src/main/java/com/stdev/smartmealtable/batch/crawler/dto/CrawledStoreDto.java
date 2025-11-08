@@ -113,7 +113,7 @@ public class CrawledStoreDto {
     @Getter
     @Setter
     public static class MenuInfo {
-        
+
         private Boolean isMain;
         private String name;
         private String introduce;

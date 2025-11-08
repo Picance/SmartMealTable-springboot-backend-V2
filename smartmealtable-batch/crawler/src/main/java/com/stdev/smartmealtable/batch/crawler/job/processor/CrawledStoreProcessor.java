@@ -22,10 +22,10 @@ import java.util.Map;
 @Slf4j
 @Component
 public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, CrawledStoreProcessor.ProcessedStoreData> {
-    
+
     private final StoreRepository storeRepository;
     private final Map<String, Long> categoryCache = new HashMap<>();
-    
+
     public CrawledStoreProcessor(StoreRepository storeRepository) {
         this.storeRepository = storeRepository;
     }
@@ -116,7 +116,7 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
                     .registeredDt(null) // DB DEFAULT
                     .deletedAt(null)
                     .build();
-            
+
             if (food.isValid()) {
                 foods.add(food);
             }
