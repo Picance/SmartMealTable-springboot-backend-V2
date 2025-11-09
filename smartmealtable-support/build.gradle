@@ -16,6 +16,9 @@ dependencies {
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter'
     
+    // Redis (검색 캐시용)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -23,4 +26,6 @@ dependencies {
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.testcontainers:testcontainers:1.20.4'
+    testImplementation 'org.testcontainers:junit-jupiter:1.20.4'
 }

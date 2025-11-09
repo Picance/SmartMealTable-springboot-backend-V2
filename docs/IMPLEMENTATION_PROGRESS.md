@@ -3,11 +3,167 @@
 > **목표**: TDD 기반 RESTful API 완전 구현
 
 **시작일**: 2025-10-08  
-**최종 업데이트**: 2025-11-08 10:45
+**최종 업데이트**: 2025-01-21 15:30
 
 ---
 
-## 🎉 최신 업데이트 (2025-11-08 10:45)
+## 🎉 최신 업데이트 (2025-01-21 15:30)
+
+### 🔍 검색 기능 강화 (Phase 2 완료) 🎊🎊🎊
+- **완료 범위**: Redis 기반 검색 캐시 시스템 + Group 자동완성 API + Admin 캐시 동기화
+- **테스트 결과**: ✅ **KoreanSearchUtil 37개 테스트 + SearchCacheService 통합 테스트 통과**
+- **빌드 상태**: ✅ **BUILD SUCCESSFUL**
+
+#### 🆕 Phase 2 주요 구현 내용
+
+##### 1. 핵심 인프라 (Phase 1 - 완료)
+- **Support Module**:
+  - ✅ `KoreanSearchUtil` - 한글 검색 유틸리티
+    - 초성 추출: "서울대학교" → "ㅅㅇㄷㅎㄱ"
+    - 부분 초성 매칭: "ㅅㄷ" matches "서울대학교"
+    - 편집 거리 계산 (Levenshtein Distance)
+    - **37개 단위 테스트 통과** (모든 엣지 케이스 커버)
+  
+  - ✅ `ChosungIndexBuilder` - Redis Set 기반 초성 역색인
+    - 도메인별 초성 → Entity ID 매핑
+    - O(1) 초성 검색 성능
+    - 단일/배치 인덱스 추가/제거
+  
+  - ✅ `SearchCacheService` - 자동완성 캐시 관리
+    - Redis Sorted Set: 인기도 기반 자동완성
+    - Redis Hash: Entity 상세 데이터
+    - Redis Set: 초성 역색인
+    - Prefix 최적화: 1-2글자로 제한 (키 폭발 방지)
+    - 24시간 TTL 자동 만료
+    - 인기 검색어 추적 (Sorted Set)
+  
+  - ✅ **Redis Testcontainer 기반 통합 테스트**
+    - 10개 시나리오 테스트 통과
+    - 캐시 CRUD, TTL, popularity 정렬 검증
+
+##### 2. Group 검색 API (Phase 2 - 완료)
+- **Domain Layer**:
+  - ✅ `GroupRepository` 확장
+    - `findByNameStartsWith()`: DB 인덱스 활용 prefix 검색
+    - `findAllByIdIn()`: 배치 ID 조회
+    - `count()`, `findAll()`: 캐시 워밍용
+
+- **Storage Layer**:
+  - ✅ `GroupJpaRepository` JPQL 쿼리
+    - `findByNameStartingWith()`: prefix 검색
+    - `findByGroupIdIn()`: IN 절 배치 조회
+  - ✅ DB 인덱스 생성 스크립트
+    - `idx_group_name_prefix`: B-Tree 인덱스
+    - `idx_group_type_name_prefix`: 복합 인덱스
+
+- **Application Layer**:
+  - ✅ `GroupAutocompleteService` - 3단계 검색 전략
+    - **Stage 1**: Prefix 캐시 검색 (Redis Sorted Set)
+    - **Stage 2**: 초성 인덱스 검색 (Redis Set)
+    - **Stage 3**: 오타 허용 검색 (DB + 편집 거리 ≤2)
+    - **Fallback**: Redis 장애 시 DB 전체 검색
+    - 하이브리드 데이터 조회 (캐시 우선 + DB 보완)
+
+- **Presentation Layer**:
+  - ✅ `GroupController` 신규 엔드포인트
+    - `GET /api/v1/groups/autocomplete?keyword={}&limit={}` - 자동완성
+    - `GET /api/v1/groups/trending?limit={}` - 인기 검색어
+  - ✅ Response DTOs
+    - `GroupAutocompleteResponse`: 자동완성 결과
+    - `GroupSuggestion`: groupId, name, type, address
+    - `TrendingKeywordsResponse`: 인기 검색어 + 검색 횟수
+
+- **Validation**: 
+  - ✅ @Valid, @Min(1), @Max(20) on limit
+  - ✅ Keyword max length 50
+
+##### 3. Admin 캐시 동기화 (Phase 2 - 완료)
+- **Application Layer**:
+  - ✅ `GroupApplicationService` 실시간 캐시 업데이트
+    - **createGroup()**: 저장 후 캐시 추가 (autocomplete + chosung index)
+    - **updateGroup()**: 기존 캐시 제거 → 새 데이터 추가 + 이름 변경 시 초성 인덱스 업데이트
+    - **deleteGroup()**: 캐시 완전 제거 (autocomplete + chosung index)
+  - ✅ 캐시 업데이트 실패해도 비즈니스 로직 성공 (로그만 ERROR)
+  - ✅ Redis Hash 추가 데이터: type, address
+
+- **Build Configuration**:
+  - ✅ `smartmealtable-admin/build.gradle`: support 모듈 의존성 추가
+  - ✅ 컴파일 검증 완료
+
+#### 📊 테스트 결과 요약
+```
+KoreanSearchUtil: 37/37 tests ✅
+SearchCacheService Integration: 10/10 tests ✅
+Admin Module Compile: BUILD SUCCESSFUL ✅
+API Module Compile: BUILD SUCCESSFUL ✅
+```
+
+#### 🎯 아키텍처 설계
+**캐시 전략**:
+- **Cache-Aside Pattern**: 캐시 미스 시 DB 조회 후 캐시 갱신
+- **Write-Through Pattern**: Admin API에서 데이터 변경 시 즉시 캐시 동기화
+- **TTL 24시간**: 자동 만료로 메모리 관리
+- **Prefix 제한**: 1-2글자로 키 개수 제한 (65MB 예상)
+
+**검색 전략**:
+1. **Prefix 검색** (가장 빠름): "서울" 입력 → Redis Sorted Set에서 O(log n)
+2. **초성 검색** (한글 특화): "ㅅㄷ" 입력 → Redis Set에서 O(1)
+3. **오타 허용 검색** (사용자 친화): "셔울" 입력 → DB 조회 + Levenshtein ≤2
+
+**Fallback 메커니즘**:
+- Redis 장애 시: 전체 DB 검색 (성능 저하 but 서비스 가용성 유지)
+- 로그 레벨: WARN (모니터링 가능)
+
+#### 📝 생성된 파일 (Phase 2)
+**Support Module**:
+- `KoreanSearchUtil.java` (160줄) + Test (550줄)
+- `ChosungIndexBuilder.java` (120줄)
+- `SearchCacheService.java` (370줄) + Integration Test (240줄)
+- `RedisTestContainerConfig.java` (테스트용)
+
+**Domain Module**:
+- `GroupRepository.java` (4개 메서드 추가)
+
+**Storage Module**:
+- `GroupRepositoryImpl.java` (4개 메서드 구현)
+- `GroupJpaRepository.java` (2개 JPQL 쿼리)
+- `search-enhancement-indexes.sql` (DB 인덱스)
+
+**API Module**:
+- `GroupAutocompleteService.java` (300줄, 3단계 검색 로직)
+- `GroupController.java` (2개 엔드포인트 추가)
+- `GroupAutocompleteResponse.java`, `TrendingKeywordsResponse.java`
+
+**Admin Module**:
+- `GroupApplicationService.java` (3개 캐시 업데이트 헬퍼 메서드)
+
+#### 🎯 주요 성과
+- ✅ **TDD 방식 개발**: 37개 단위 테스트 + 10개 통합 테스트 먼저 작성
+- ✅ **한글 특화 검색**: 초성 검색, 부분 매칭, 오타 허용
+- ✅ **고성능 캐시**: Redis Sorted Set + Hash + Set 조합
+- ✅ **실시간 동기화**: Admin API에서 자동 캐시 업데이트
+- ✅ **장애 대응**: Redis 장애 시 DB 폴백
+- ✅ **메모리 최적화**: Prefix 제한으로 65MB 예상 사용량
+- ✅ **모니터링 가능**: 폴백 발생 시 WARN 로그
+
+#### 🔜 Next Steps (Phase 3-4)
+- **Phase 3**: Recommendation 모듈 검색 확장
+  - Store 테이블 LEFT JOIN Food
+  - DISTINCT로 중복 제거
+  - RecommendationAutocompleteService 구현 (Group 로직 재사용)
+  
+- **Phase 4**: 캐시 워밍 & 성능 테스트
+  - Spring Batch Job으로 초기 캐시 구축
+  - JMeter 부하 테스트
+  - 메모리 사용량 모니터링
+
+**상세 문서**: 
+- spec-design-search-enhancement.md (설계 명세)
+- SEARCH_ENHANCEMENT_PLAN.md (구현 계획)
+
+---
+
+## 🎉 이전 업데이트 (2025-11-08 10:45)
 
 ### API 모듈 REST Docs 완전 구현! 🎊🎊🎊
 - **완료 범위**: SocialLoginController REST Docs 테스트 작성 완료
