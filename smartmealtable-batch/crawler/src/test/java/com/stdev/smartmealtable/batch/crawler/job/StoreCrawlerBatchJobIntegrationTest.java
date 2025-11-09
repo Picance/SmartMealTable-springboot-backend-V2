@@ -178,6 +178,66 @@ class StoreCrawlerBatchJobIntegrationTest {
 
     @Test
     @Order(5)
+    @DisplayName("CSV 형식의 카테고리를 분리해서 저장한다")
+    void it_splits_csv_categories() throws Exception {
+        // Given - CSV 카테고리를 가진 JSON 파일
+        File csvJsonFile = File.createTempFile("test-store-csv-", ".json");
+        writeTestJsonWithCsvCategories(csvJsonFile);
+
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("inputFilePath", "file:" + csvJsonFile.getAbsolutePath())
+                .addLong("timestamp", System.currentTimeMillis())
+                .toJobParameters();
+
+        // When
+        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+
+        // Then
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+
+        // Store 조회
+        Optional<Store> store = storeRepository.findByExternalId("test_external_csv_001");
+        assertThat(store).isPresent();
+
+        // 카테고리가 여러 개로 분리되어 저장되었는지 확인
+        List<Long> categoryIds = store.get().getCategoryIds();
+        assertThat(categoryIds).isNotEmpty();
+        assertThat(categoryIds.size()).isGreaterThanOrEqualTo(2); // 최소 2개 이상의 카테고리
+
+        // Cleanup
+        csvJsonFile.delete();
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("공백을 포함한 CSV 카테고리를 제대로 분리해서 저장한다")
+    void it_splits_csv_categories_with_spaces() throws Exception {
+        // Given - 공백을 포함한 CSV 카테고리
+        File csvJsonFile = File.createTempFile("test-store-csv-spaces-", ".json");
+        writeTestJsonWithCsvCategoriesWithSpaces(csvJsonFile);
+
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("inputFilePath", "file:" + csvJsonFile.getAbsolutePath())
+                .addLong("timestamp", System.currentTimeMillis())
+                .toJobParameters();
+
+        // When
+        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+
+        // Then
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+
+        // Store 조회
+        Optional<Store> store = storeRepository.findByExternalId("test_external_csv_spaces_001");
+        assertThat(store).isPresent();
+        assertThat(store.get().getCategoryIds()).isNotEmpty();
+
+        // Cleanup
+        csvJsonFile.delete();
+    }
+
+    @Test
+    @Order(7)
     @DisplayName("잘못된 파일 경로로 실행 시 실패한다")
     void it_fails_with_invalid_file_path() throws Exception {
         // Given
@@ -284,6 +344,106 @@ class StoreCrawlerBatchJobIntegrationTest {
                       {
                         "name": "제육볶음",
                         "price": 9000
+                      }
+                    ]
+                  }
+                ]
+                """;
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(json);
+        }
+    }
+
+    /**
+     * CSV 형식의 카테고리를 포함한 테스트용 JSON 데이터 생성
+     * 예: "한식,일식"
+     */
+    private void writeTestJsonWithCsvCategories(File file) throws IOException {
+        String json = """
+                [
+                  {
+                    "id": "test_external_csv_001",
+                    "name": "CSV 카테고리 음식점",
+                    "category": "한식,일식",
+                    "address": "서울특별시 노원구 공릉동 789",
+                    "coordinates": {
+                      "latitude": 37.6250,
+                      "longitude": 127.0757
+                    },
+                    "phone_number": "02-9999-9999",
+                    "menu_average": 12000,
+                    "review_count": 200,
+                    "images": [
+                      "https://example.com/csv-category.jpg"
+                    ],
+                    "openingHours": [
+                      {
+                        "dayOfWeek": "월",
+                        "hours": {
+                          "startTime": "10:00",
+                          "endTime": "22:00"
+                        }
+                      }
+                    ],
+                    "menus": [
+                      {
+                        "name": "비빔밥",
+                        "price": 9000
+                      },
+                      {
+                        "name": "초밥",
+                        "price": 15000
+                      }
+                    ]
+                  }
+                ]
+                """;
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(json);
+        }
+    }
+
+    /**
+     * 공백을 포함한 CSV 형식의 카테고리를 포함한 테스트용 JSON 데이터 생성
+     * 예: "한식, 일식, 양식"
+     */
+    private void writeTestJsonWithCsvCategoriesWithSpaces(File file) throws IOException {
+        String json = """
+                [
+                  {
+                    "id": "test_external_csv_spaces_001",
+                    "name": "공백 포함 CSV 카테고리 음식점",
+                    "category": "한식, 일식, 양식",
+                    "address": "서울특별시 노원구 공릉동 999",
+                    "coordinates": {
+                      "latitude": 37.6250,
+                      "longitude": 127.0757
+                    },
+                    "phone_number": "02-8888-8888",
+                    "menu_average": 13000,
+                    "review_count": 250,
+                    "images": [
+                      "https://example.com/csv-spaces.jpg"
+                    ],
+                    "openingHours": [
+                      {
+                        "dayOfWeek": "월",
+                        "hours": {
+                          "startTime": "11:00",
+                          "endTime": "23:00"
+                        }
+                      }
+                    ],
+                    "menus": [
+                      {
+                        "name": "스테이크",
+                        "price": 25000
+                      },
+                      {
+                        "name": "함박스테이크",
+                        "price": 18000
                       }
                     ]
                   }
