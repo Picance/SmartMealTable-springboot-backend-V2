@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -76,15 +77,37 @@ public class ChosungIndexBuilder {
     }
     
     /**
-     * 특정 초성으로 Entity ID 목록 조회
+     * 특정 초성으로 Entity ID 목록 조회 (Prefix 매칭 지원)
+     * 
+     * "ㅅㄷ" 입력 시 "ㅅㅇㄷㅎㄱㅛ" (서울대학교), "ㅅㄷㅎㄱㄱㅛ" (성당동학교) 등을 모두 찾습니다.
      * 
      * @param domain 도메인 이름
-     * @param chosung 초성 문자열
+     * @param chosung 초성 문자열 (Prefix)
      * @return Entity ID 목록
      */
     public Set<String> findIdsByChosung(String domain, String chosung) {
-        String key = buildChosungKey(domain, chosung);
-        return redisTemplate.opsForSet().members(key);
+        // 1. 정확히 일치하는 키 검색
+        String exactKey = buildChosungKey(domain, chosung);
+        Set<String> result = new HashSet<>();
+        Set<String> exactMatch = redisTemplate.opsForSet().members(exactKey);
+        if (exactMatch != null) {
+            result.addAll(exactMatch);
+        }
+        
+        // 2. Prefix 매칭을 위한 패턴 검색
+        String pattern = buildChosungKey(domain, chosung + "*");
+        Set<String> keys = redisTemplate.keys(pattern);
+        
+        if (keys != null && !keys.isEmpty()) {
+            for (String key : keys) {
+                Set<String> members = redisTemplate.opsForSet().members(key);
+                if (members != null) {
+                    result.addAll(members);
+                }
+            }
+        }
+        
+        return result;
     }
     
     /**

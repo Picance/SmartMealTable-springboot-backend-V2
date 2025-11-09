@@ -165,9 +165,17 @@ public class GroupAutocompleteService {
      * @return 검색 결과
      */
     private List<Group> searchWithTypoTolerance(String keyword, int limit) {
-        // DB에서 prefix 검색 후 편집 거리 계산
+        // DB에서 prefix 검색
+        List<Group> candidates = groupRepository.findByNameStartsWith(keyword);
+        
+        // Prefix 매칭 결과가 충분하면 즉시 반환
+        if (!candidates.isEmpty()) {
+            return candidates.stream().limit(limit).collect(Collectors.toList());
+        }
+        
+        // Prefix 매칭 실패 시, 편집 거리 기반 검색 (첫 2글자)
         String prefix = keyword.substring(0, Math.min(2, keyword.length()));
-        List<Group> candidates = groupRepository.findByNameStartsWith(prefix);
+        candidates = groupRepository.findByNameStartsWith(prefix);
         
         return candidates.stream()
             .filter(group -> {
