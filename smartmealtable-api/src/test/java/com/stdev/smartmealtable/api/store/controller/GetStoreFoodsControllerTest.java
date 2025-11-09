@@ -62,7 +62,7 @@ class GetStoreFoodsControllerTest extends AbstractRestDocsTest {
         // 테스트 가게 생성
         testStore = Store.builder()
                 .name("테스트 식당")
-                .categoryId(1L)
+                .categoryIds(java.util.List.of())  // N:N 관계는 따로 생성
                 .sellerId(1L)
                 .address("서울특별시 강남구 테헤란로 123")
                 .lotNumberAddress("서울특별시 강남구 역삼동 123-45")
@@ -80,6 +80,9 @@ class GetStoreFoodsControllerTest extends AbstractRestDocsTest {
                 .deletedAt(null)
                 .build();
         testStore = storeRepository.save(testStore);
+        
+        // Store-Category N:N 매핑 생성
+        createStoreCategories(testStore.getStoreId(), java.util.List.of(1L));
 
         // 가게 이미지 생성
         StoreImage mainImage = StoreImage.builder()

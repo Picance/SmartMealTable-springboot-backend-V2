@@ -96,7 +96,7 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
         // 테스트 가게 데이터 생성
         testStore = Store.builder()
                 .name("강남 한정식")
-                .categoryId(1L)
+                .categoryIds(java.util.List.of(1L))
                 .sellerId(1L)
                 .address("서울특별시 강남구 강남대로 400")
                 .lotNumberAddress("서울특별시 강남구 역삼동 826")

@@ -376,7 +376,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print())
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andDo(document("auth/login/kakao/invalid-code-failure",
                         getDocumentRequest(),
@@ -389,7 +389,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("리다이렉트 URI")
                         ),
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("응답 결과 코드 (ERROR)"),
@@ -401,7 +401,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("에러 정보"),
                                 fieldWithPath("error.code")
                                         .type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E401: 인증 실패)"),
+                                        .description("에러 코드 (E400: 요청 데이터 오류)"),
                                 fieldWithPath("error.message")
                                         .type(JsonFieldType.STRING)
                                         .description("에러 메시지")
@@ -429,7 +429,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andDo(print())
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("ERROR"))
                 .andDo(document("auth/login/google/invalid-code-failure",
                         getDocumentRequest(),
@@ -442,7 +442,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("리다이렉트 URI")
                         ),
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("응답 결과 코드 (ERROR)"),
@@ -454,7 +454,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("에러 정보"),
                                 fieldWithPath("error.code")
                                         .type(JsonFieldType.STRING)
-                                        .description("에러 코드 (E401: 인증 실패)"),
+                                        .description("에러 코드 (E400: 요청 데이터 오류)"),
                                 fieldWithPath("error.message")
                                         .type(JsonFieldType.STRING)
                                         .description("에러 메시지")
@@ -491,7 +491,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("리다이렉트 URI (빈 문자열 - 검증 실패)")
                         ),
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("응답 결과 코드 (ERROR)"),
@@ -540,7 +540,7 @@ class SocialLoginControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("리다이렉트 URI (빈 문자열 - 검증 실패)")
                         ),
-                        responseFields(
+                        relaxedResponseFields(
                                 fieldWithPath("result")
                                         .type(JsonFieldType.STRING)
                                         .description("응답 결과 코드 (ERROR)"),

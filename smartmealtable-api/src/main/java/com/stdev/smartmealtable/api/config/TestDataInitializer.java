@@ -224,7 +224,7 @@ public class TestDataInitializer {
                 }
                 
                 Store store = Store.create(
-                    storeData.storeName, category.getCategoryId(), storeData.address,
+                    storeData.storeName, List.of(category.getCategoryId()), storeData.address,
                     storeData.lotNumberAddress, storeData.latitude, storeData.longitude,
                     storeData.phoneNumber, storeData.description, storeData.averagePrice,
                     storeData.reviewCount, 0, 0, storeData.storeType

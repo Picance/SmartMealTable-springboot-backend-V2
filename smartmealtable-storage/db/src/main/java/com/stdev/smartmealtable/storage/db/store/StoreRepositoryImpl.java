@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class StoreRepositoryImpl implements StoreRepository {
     
     private final StoreJpaRepository jpaRepository;
+    private final StoreCategoryJpaRepository storeCategoryJpaRepository;
     private final StoreQueryDslRepository queryDslRepository;
     private final StoreOpeningHourJpaRepository openingHourJpaRepository;
     private final StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
@@ -26,26 +27,38 @@ public class StoreRepositoryImpl implements StoreRepository {
     @Override
     public Optional<Store> findById(Long storeId) {
         return jpaRepository.findById(storeId)
-                .map(StoreEntityMapper::toDomain);
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(storeId);
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                });
     }
     
     @Override
     public Optional<Store> findByIdAndDeletedAtIsNull(Long storeId) {
         return jpaRepository.findByStoreIdAndDeletedAtIsNull(storeId)
-                .map(StoreEntityMapper::toDomain);
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(storeId);
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                });
     }
     
     @Override
     public Optional<Store> findByExternalId(String externalId) {
         return jpaRepository.findByExternalId(externalId)
-                .map(StoreEntityMapper::toDomain);
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                });
     }
     
     @Override
     public List<Store> findByIdIn(List<Long> storeIds) {
         return jpaRepository.findByStoreIdInAndDeletedAtIsNull(storeIds)
                 .stream()
-                .map(StoreEntityMapper::toDomain)
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
                 .collect(Collectors.toList());
     }
     
@@ -53,14 +66,34 @@ public class StoreRepositoryImpl implements StoreRepository {
     public Store save(Store store) {
         StoreJpaEntity entity = StoreEntityMapper.toJpaEntity(store);
         StoreJpaEntity saved = jpaRepository.save(entity);
-        return StoreEntityMapper.toDomain(saved);
+        
+        // 기존 카테고리 매핑 제거
+        storeCategoryJpaRepository.deleteByStoreId(saved.getStoreId());
+        
+        // 새로운 카테고리 매핑 생성
+        List<Long> categoryIds = store.getCategoryIds();
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            for (int i = 0; i < categoryIds.size(); i++) {
+                StoreCategoryJpaEntity mapping = StoreCategoryJpaEntity.builder()
+                        .storeId(saved.getStoreId())
+                        .categoryId(categoryIds.get(i))
+                        .displayOrder(i)
+                        .build();
+                storeCategoryJpaRepository.save(mapping);
+            }
+        }
+        
+        return StoreEntityMapper.toDomain(saved, categoryIds);
     }
     
     @Override
     public List<Store> searchByKeywordForAutocomplete(String keyword, int limit) {
         return jpaRepository.searchByKeywordForAutocomplete(keyword, limit)
                 .stream()
-                .map(StoreEntityMapper::toDomain)
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
                 .collect(Collectors.toList());
     }
     
@@ -103,8 +136,8 @@ public class StoreRepositoryImpl implements StoreRepository {
         jpaRepository.findById(storeId).ifPresent(store -> {
             StoreJpaEntity updated = StoreJpaEntity.builder()
                     .storeId(store.getStoreId())
+                    .externalId(store.getExternalId())
                     .name(store.getName())
-                    .categoryId(store.getCategoryId())
                     .sellerId(store.getSellerId())
                     .address(store.getAddress())
                     .lotNumberAddress(store.getLotNumberAddress())

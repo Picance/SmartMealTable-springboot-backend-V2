@@ -72,7 +72,7 @@ class FoodControllerTest extends AbstractAdminContainerTest {
         // 테스트 가게 생성
         Store store = Store.create(
                 "테스트 음식점",
-                testCategoryId,
+                java.util.List.of(testCategoryId),
                 "서울시 강남구 테헤란로 123",
                 "서울시 강남구 역삼동 123-45",
                 new BigDecimal("37.4979"),

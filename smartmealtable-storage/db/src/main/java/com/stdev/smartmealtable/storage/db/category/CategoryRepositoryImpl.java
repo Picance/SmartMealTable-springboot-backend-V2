@@ -7,6 +7,7 @@ import com.stdev.smartmealtable.domain.category.CategoryPageResult;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity;
 import com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity;
+import com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -120,14 +121,16 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public boolean isUsedInStoreOrFood(Long categoryId) {
         QStoreJpaEntity store = QStoreJpaEntity.storeJpaEntity;
+        QStoreCategoryJpaEntity storeCategory = QStoreCategoryJpaEntity.storeCategoryJpaEntity;
         QFoodJpaEntity food = QFoodJpaEntity.foodJpaEntity;
 
-        // Store에서 사용 중인지 확인
+        // Store에서 사용 중인지 확인 (store_category 중간 테이블을 통해)
         Integer storeCount = queryFactory
                 .selectOne()
                 .from(store)
+                .innerJoin(storeCategory).on(store.storeId.eq(storeCategory.storeId))
                 .where(
-                        store.categoryId.eq(categoryId),
+                        storeCategory.categoryId.eq(categoryId),
                         store.deletedAt.isNull()  // 삭제되지 않은 음식점만
                 )
                 .fetchFirst();

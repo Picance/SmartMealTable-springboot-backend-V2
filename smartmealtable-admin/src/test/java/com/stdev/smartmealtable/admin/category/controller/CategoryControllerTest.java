@@ -250,7 +250,6 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
         
         StoreJpaEntity store = StoreJpaEntity.builder()
                 .name("테스트 음식점")
-                .categoryId(category.getCategoryId())
                 .address("서울시 강남구")
                 .lotNumberAddress("서울시 강남구 123")
                 .latitude(java.math.BigDecimal.valueOf(37.12345))
@@ -265,6 +264,17 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
                 .build();
         
         entityManager.persist(store);
+        entityManager.flush();
+        
+        // 카테고리와 스토어를 store_category 중간 테이블로 연결
+        com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity storeCategory = 
+                com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity.builder()
+                        .storeId(store.getStoreId())
+                        .categoryId(category.getCategoryId())
+                        .displayOrder(0)
+                        .build();
+        
+        entityManager.persist(storeCategory);
         entityManager.flush();
 
         // When & Then

@@ -2,6 +2,8 @@ package com.stdev.smartmealtable.admin.store.service.dto;
 
 import com.stdev.smartmealtable.domain.store.StoreType;
 
+import java.util.List;
+
 /**
  * 음식점 수정 Service Request - v2.0
  * 
@@ -11,7 +13,7 @@ import com.stdev.smartmealtable.domain.store.StoreType;
  */
 public record UpdateStoreServiceRequest(
         String name,
-        Long categoryId,
+        List<Long> categoryIds,
         String address,
         String lotNumberAddress,
         String phoneNumber,
@@ -21,7 +23,7 @@ public record UpdateStoreServiceRequest(
 ) {
     public static UpdateStoreServiceRequest of(
             String name,
-            Long categoryId,
+            List<Long> categoryIds,
             String address,
             String lotNumberAddress,
             String phoneNumber,
@@ -31,7 +33,7 @@ public record UpdateStoreServiceRequest(
     ) {
         return new UpdateStoreServiceRequest(
                 name,
-                categoryId,
+                categoryIds,
                 address,
                 lotNumberAddress,
                 phoneNumber,

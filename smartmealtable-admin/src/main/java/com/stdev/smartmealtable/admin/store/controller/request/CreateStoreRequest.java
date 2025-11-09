@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.admin.store.controller.request;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import jakarta.validation.constraints.*;
 
+import java.util.List;
+
 /**
  * 음식점 생성 요청 DTO (Controller) - v2.0
  * 
@@ -15,7 +17,7 @@ public record CreateStoreRequest(
         String name,
 
         @NotNull(message = "카테고리 ID는 필수입니다.")
-        Long categoryId,
+        List<Long> categoryIds,
 
         Long sellerId, // 선택 필드
 

@@ -89,7 +89,7 @@ class PreferenceControllerTest extends AbstractContainerTest {
         // 테스트용 가게 생성
         Store testStore = Store.builder()
                 .name("테스트 음식점")
-                .categoryId(koreanCategory.getCategoryId())
+                .categoryIds(java.util.List.of(koreanCategory.getCategoryId()))
                 .sellerId(1L)
                 .address("서울특별시 강남구 테헤란로 100")
                 .lotNumberAddress("서울특별시 강남구 역삼동 100-10")

@@ -81,7 +81,7 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
         // 4. 가게 생성
         Store store1 = Store.builder()
                 .name("맛있는 한식집")
-                .categoryId(savedCategory.getCategoryId())
+                .categoryIds(java.util.List.of(savedCategory.getCategoryId()))
                 .sellerId(1L)
                 .address("서울시 강남구 테헤란로 123")
                 .latitude(new BigDecimal("37.5665"))
@@ -101,7 +101,7 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
 
         Store store2 = Store.builder()
                 .name("맛있는 중식집")
-                .categoryId(savedCategory.getCategoryId())
+                .categoryIds(java.util.List.of(savedCategory.getCategoryId()))
                 .sellerId(2L)
                 .address("서울시 강남구 테헤란로 456")
                 .latitude(new BigDecimal("37.5665"))

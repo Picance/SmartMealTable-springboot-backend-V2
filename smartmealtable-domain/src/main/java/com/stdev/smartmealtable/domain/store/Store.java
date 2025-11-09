@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 음식점(가게) 도메인 엔티티
@@ -36,9 +38,12 @@ public class Store {
     private String name;
     
     /**
-     * 카테고리 ID (외부 참조)
+     * 카테고리 ID 목록 (N:N 관계)
+     * 하나의 가게는 여러 카테고리를 가질 수 있습니다.
+     * 예: "한식당"이면서 "학생식당" 카테고리에도 속할 수 있음
      */
-    private Long categoryId;
+    @Builder.Default
+    private List<Long> categoryIds = new ArrayList<>();
     
     /**
      * 판매자 ID (외부 참조)
@@ -141,7 +146,7 @@ public class Store {
      */
     public static Store create(
             String name,
-            Long categoryId,
+            List<Long> categoryIds,
             String address,
             String lotNumberAddress,
             BigDecimal latitude,
@@ -156,7 +161,7 @@ public class Store {
     ) {
         return Store.builder()
                 .name(name)
-                .categoryId(categoryId)
+                .categoryIds(categoryIds != null ? categoryIds : new ArrayList<>())
                 .address(address)
                 .lotNumberAddress(lotNumberAddress)
                 .latitude(latitude)

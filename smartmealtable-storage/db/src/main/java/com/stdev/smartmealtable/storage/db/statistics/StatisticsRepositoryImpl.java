@@ -23,6 +23,7 @@ import static com.stdev.smartmealtable.storage.db.member.entity.QMemberAuthentic
 import static com.stdev.smartmealtable.storage.db.member.entity.QMemberJpaEntity.memberJpaEntity;
 import static com.stdev.smartmealtable.storage.db.member.entity.QSocialAccountJpaEntity.socialAccountJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
+import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
 
 /**
  * 통계 Repository 구현체
@@ -201,8 +202,8 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
                         storeJpaEntity.count()
                 )
                 .from(storeJpaEntity)
-                .innerJoin(categoryJpaEntity)
-                .on(storeJpaEntity.categoryId.eq(categoryJpaEntity.categoryId))
+                .innerJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
+                .innerJoin(categoryJpaEntity).on(storeCategoryJpaEntity.categoryId.eq(categoryJpaEntity.categoryId))
                 .where(storeJpaEntity.deletedAt.isNull())
                 .groupBy(categoryJpaEntity.categoryId, categoryJpaEntity.name)
                 .fetch();

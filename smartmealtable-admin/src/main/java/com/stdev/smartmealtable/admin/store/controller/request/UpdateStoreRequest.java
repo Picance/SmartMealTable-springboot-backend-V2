@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.admin.store.controller.request;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import jakarta.validation.constraints.*;
 
+import java.util.List;
+
 /**
  * 음식점 수정 요청 DTO (Controller) - v2.0
  * 
@@ -15,7 +17,7 @@ public record UpdateStoreRequest(
         String name,
 
         @NotNull(message = "카테고리 ID는 필수입니다.")
-        Long categoryId,
+        List<Long> categoryIds,
 
         @NotBlank(message = "도로명 주소는 필수입니다.")
         @Size(max = 200, message = "도로명 주소는 최대 200자까지 입력 가능합니다.")

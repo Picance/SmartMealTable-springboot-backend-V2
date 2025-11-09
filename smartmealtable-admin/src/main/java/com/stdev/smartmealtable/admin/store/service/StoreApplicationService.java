@@ -109,7 +109,7 @@ public class StoreApplicationService {
         // 2. Store 엔티티 생성 (좌표 자동 설정)
         Store store = Store.create(
                 request.name(),
-                request.categoryId(),
+                request.categoryIds(),
                 request.address(),
                 request.lotNumberAddress(),
                 latitude,  // 지오코딩 결과 사용
@@ -126,7 +126,7 @@ public class StoreApplicationService {
         // sellerId는 별도로 설정
         Store storeWithDetails = Store.builder()
                 .name(store.getName())
-                .categoryId(store.getCategoryId())
+                .categoryIds(store.getCategoryIds())
                 .sellerId(request.sellerId())
                 .address(store.getAddress())
                 .lotNumberAddress(store.getLotNumberAddress())
@@ -181,7 +181,7 @@ public class StoreApplicationService {
         Store updatedStore = Store.builder()
                 .storeId(existingStore.getStoreId())
                 .name(request.name())
-                .categoryId(request.categoryId())
+                .categoryIds(request.categoryIds())
                 .sellerId(existingStore.getSellerId()) // sellerId는 수정하지 않음
                 .address(request.address())
                 .lotNumberAddress(request.lotNumberAddress())

@@ -92,7 +92,7 @@ class StoreServiceTest {
         testStore = Store.builder()
                 .storeId(testStoreId)
                 .name("맛있는 한식당")
-                .categoryId(1L)
+                .categoryIds(java.util.List.of(1L))
                 .sellerId(1L)
                 .address("서울특별시 강남구 테헤란로 100")
                 .lotNumberAddress("서울특별시 강남구 역삼동 100-10")

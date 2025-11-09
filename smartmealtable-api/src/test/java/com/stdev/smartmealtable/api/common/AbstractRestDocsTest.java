@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.api.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.api.config.MockExpenditureServiceConfig;
+import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity;
+import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaRepository;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +50,9 @@ public abstract class AbstractRestDocsTest extends AbstractContainerTest {
     
     @Autowired
     protected JwtTokenProvider jwtTokenProvider;
+    
+    @Autowired
+    protected StoreCategoryJpaRepository storeCategoryJpaRepository;
     
     @BeforeEach
     void setUp(WebApplicationContext webApplicationContext,
@@ -118,5 +123,23 @@ public abstract class AbstractRestDocsTest extends AbstractContainerTest {
                 fieldWithPath("error.message").description("에러 메시지"),
                 fieldWithPath("error.data").description("에러 상세 정보 (optional)").optional()
         };
+    }
+    
+    /**
+     * Store-Category N:N 매핑 데이터 생성 헬퍼
+     * Store 생성 후 store_category 중간 테이블에 데이터를 저장합니다.
+     * 
+     * @param storeId 가게 ID
+     * @param categoryIds 카테고리 ID 목록
+     */
+    protected void createStoreCategories(Long storeId, java.util.List<Long> categoryIds) {
+        for (int i = 0; i < categoryIds.size(); i++) {
+            StoreCategoryJpaEntity mapping = StoreCategoryJpaEntity.builder()
+                    .storeId(storeId)
+                    .categoryId(categoryIds.get(i))
+                    .displayOrder(i)
+                    .build();
+            storeCategoryJpaRepository.save(mapping);
+        }
     }
 }

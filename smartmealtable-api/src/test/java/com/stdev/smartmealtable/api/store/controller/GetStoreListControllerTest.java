@@ -98,7 +98,7 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
         // 가게 1: 강남역 근처 한식당 (거리: 약 0.5km)
         Store store1 = Store.builder()
                 .name("강남 한정식")
-                .categoryId(1L)
+                .categoryIds(java.util.List.of())
                 .sellerId(1L)
                 .address("서울특별시 강남구 강남대로 400")
                 .lotNumberAddress("서울특별시 강남구 역삼동 826")
@@ -114,12 +114,13 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                 .imageUrl("https://example.com/store1.jpg")
                 .registeredAt(java.time.LocalDateTime.now())
                 .build();
-        storeRepository.save(store1);
+        store1 = storeRepository.save(store1);
+        createStoreCategories(store1.getStoreId(), java.util.List.of(1L));
         
         // 가게 2: 강남역 근처 분식집 (거리: 약 0.8km)
         Store store2 = Store.builder()
                 .name("김밥천국 강남점")
-                .categoryId(2L)
+                .categoryIds(java.util.List.of())
                 .sellerId(2L)
                 .address("서울특별시 강남구 강남대로 410")
                 .lotNumberAddress("서울특별시 강남구 역삼동 830")
@@ -135,12 +136,13 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                 .imageUrl("https://example.com/store2.jpg")
                 .registeredAt(java.time.LocalDateTime.now())
                 .build();
-        storeRepository.save(store2);
+        store2 = storeRepository.save(store2);
+        createStoreCategories(store2.getStoreId(), java.util.List.of(2L));
         
         // 가게 3: 학생식당 (거리: 약 1.2km)
         Store store3 = Store.builder()
                 .name("서울대 학생식당")
-                .categoryId(1L)
+                .categoryIds(java.util.List.of())
                 .sellerId(3L)
                 .address("서울특별시 관악구 관악로 1")
                 .lotNumberAddress("서울특별시 관악구 신림동 1")
@@ -156,12 +158,13 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                 .imageUrl("https://example.com/store3.jpg")
                 .registeredAt(LocalDateTime.now())
                 .build();
-        storeRepository.save(store3);
+        store3 = storeRepository.save(store3);
+        createStoreCategories(store3.getStoreId(), java.util.List.of(1L));
         
         // 가게 4: 강남역에서 먼 곳 (거리: 약 5km)
         Store store4 = Store.builder()
                 .name("신촌 맛집")
-                .categoryId(3L)
+                .categoryIds(java.util.List.of())
                 .sellerId(4L)
                 .address("서울특별시 서대문구 신촌로 100")
                 .lotNumberAddress("서울특별시 서대문구 창천동 100")
@@ -177,7 +180,8 @@ class GetStoreListControllerTest extends AbstractRestDocsTest {
                 .imageUrl("https://example.com/store4.jpg")
                 .registeredAt(LocalDateTime.now())
                 .build();
-        storeRepository.save(store4);
+        store4 = storeRepository.save(store4);
+        createStoreCategories(store4.getStoreId(), java.util.List.of(3L));
     }
     
     @Test

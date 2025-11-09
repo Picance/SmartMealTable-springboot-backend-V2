@@ -67,13 +67,14 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
      */
     private Store convertToStore(CrawledStoreDto dto, Store existing) {
         // Store 카테고리 ID 조회/생성 (매장 카테고리)
-        Long storeCategoryId = resolveStoreCategoryId(dto.getCategory());
+        // CSV 형식의 카테고리를 분리해서 처리
+        List<Long> storeCategoryIds = resolveStoreCategoryIds(dto.getCategory());
         
         return Store.builder()
                 .storeId(existing != null ? existing.getStoreId() : null)
                 .externalId(dto.getId())
                 .name(dto.getName())
-                .categoryId(storeCategoryId)
+                .categoryIds(storeCategoryIds)
                 .sellerId(null) // 크롤링 데이터에는 판매자 정보 없음
                 .address(dto.getAddress())
                 .lotNumberAddress(null) // 크롤링 데이터에는 지번주소 없음
@@ -339,7 +340,60 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
     }
     
     /**
-     * Store 카테고리 ID 조회/생성
+     * Store 카테고리 ID 조회/생성 (여러 개)
+     * 매장의 종류를 나타내는 카테고리 (예: 한식, 중식, 카페 등)
+     * CSV 형식 카테고리를 분리해서 각각 조회/생성
+     * 예: "한식,일식" → [한식_카테고리_ID, 일식_카테고리_ID]
+     */
+    private List<Long> resolveStoreCategoryIds(String storeCategoryNames) {
+        List<Long> categoryIds = new ArrayList<>();
+        
+        if (storeCategoryNames == null || storeCategoryNames.isEmpty()) {
+            // 기본 카테고리 ("기타")를 사용
+            categoryIds.add(resolveCategoryId("기타"));
+            return categoryIds;
+        }
+        
+        // CSV 형식 카테고리 분리
+        List<String> categoryNameList = splitCategories(storeCategoryNames);
+        
+        for (String categoryName : categoryNameList) {
+            Long categoryId = resolveCategoryId(categoryName);
+            categoryIds.add(categoryId);
+            log.debug("Resolved store category: {} (ID: {})", categoryName, categoryId);
+        }
+        
+        log.info("Resolved store categories: {} → {} (IDs: {})", 
+                storeCategoryNames, categoryNameList, categoryIds);
+        
+        return categoryIds;
+    }
+    
+    /**
+     * CSV 형식의 카테고리 문자열을 개별 카테고리로 분리
+     * 예: "한식,일식" → ["한식", "일식"]
+     * 예: "한식, 일식" → ["한식", "일식"] (공백 제거)
+     */
+    private List<String> splitCategories(String categoriesString) {
+        if (categoriesString == null || categoriesString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<String> categories = new ArrayList<>();
+        String[] parts = categoriesString.split(",");
+        
+        for (String part : parts) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                categories.add(trimmed);
+            }
+        }
+        
+        return categories;
+    }
+    
+    /**
+     * Store 카테고리 ID 조회/생성 (단일)
      * 매장의 종류를 나타내는 카테고리 (예: 한식, 중식, 카페 등)
      */
     private Long resolveStoreCategoryId(String storeCategoryName) {

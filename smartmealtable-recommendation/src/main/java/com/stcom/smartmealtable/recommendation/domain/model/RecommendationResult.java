@@ -79,10 +79,15 @@ public class RecommendationResult {
             double distance,
             ScoreDetail scoreDetail
     ) {
+        // 주 카테고리 ID (첫 번째 카테고리 사용)
+        Long primaryCategoryId = store.getCategoryIds() != null && !store.getCategoryIds().isEmpty() 
+                ? store.getCategoryIds().get(0) 
+                : null;
+
         return RecommendationResult.builder()
                 .storeId(store.getStoreId())
                 .storeName(store.getName())
-                .categoryId(store.getCategoryId())
+                .categoryId(primaryCategoryId)
                 .finalScore(finalScore)
                 .distance(distance)
                 .averagePrice(store.getAveragePrice())

@@ -80,7 +80,7 @@ class CartControllerTest extends AbstractRestDocsTest {
         // 4. 가게 생성
         Store store = Store.builder()
                 .name("맛있는 한식집")
-                .categoryId(savedCategory.getCategoryId())
+                .categoryIds(java.util.List.of(savedCategory.getCategoryId()))
                 .sellerId(1L)
                 .address("서울시 강남구 테헤란로 123")
                 .latitude(new BigDecimal("37.5665"))

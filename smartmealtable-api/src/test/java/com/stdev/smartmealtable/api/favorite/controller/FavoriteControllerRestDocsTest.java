@@ -90,7 +90,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
         // 가게 생성
         koreanStore = Store.builder()
                 .name("맛있는 한식당")
-                .categoryId(koreanCategory.getCategoryId())
+                .categoryIds(java.util.List.of(koreanCategory.getCategoryId()))
                 .address("서울특별시 관악구 봉천동 123")
                 .lotNumberAddress("서울특별시 관악구 봉천동 123-45")
                 .latitude(new BigDecimal("37.4783"))
@@ -108,7 +108,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
         
         chineseStore = Store.builder()
                 .name("중화요리 맛집")
-                .categoryId(chineseCategory.getCategoryId())
+                .categoryIds(java.util.List.of(chineseCategory.getCategoryId()))
                 .address("서울특별시 관악구 신림동 456")
                 .lotNumberAddress("서울특별시 관악구 신림동 456-78")
                 .latitude(new BigDecimal("37.4845"))
@@ -138,7 +138,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
         // 새로운 가게 생성
         Store newStore = Store.builder()
                 .name("새로운 맛집")
-                .categoryId(koreanCategory.getCategoryId())
+                .categoryIds(java.util.List.of(koreanCategory.getCategoryId()))
                 .address("서울특별시 관악구 남현동 789")
                 .lotNumberAddress("서울특별시 관악구 남현동 789-12")
                 .latitude(new BigDecimal("37.4700"))

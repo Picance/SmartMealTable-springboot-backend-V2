@@ -48,10 +48,11 @@ public record StoreDetailResponse(
             List<StoreTemporaryClosure> temporaryClosures,
             List<Food> foods
     ) {
+        Long primaryCategoryId = store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0);
         return new StoreDetailResponse(
                 store.getStoreId(),
                 store.getName(),
-                store.getCategoryId(),
+                primaryCategoryId,
                 null, // TODO: Category 조인 필요
                 store.getAddress(),
                 store.getLotNumberAddress(),

@@ -7,6 +7,7 @@ import com.stdev.smartmealtable.domain.store.StoreType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public record StoreServiceResponse(
         Long storeId,
         String name,
-        Long categoryId,
+        List<Long> categoryIds,
         Long sellerId,
         String address,
         String lotNumberAddress,
@@ -38,7 +39,7 @@ public record StoreServiceResponse(
         return new StoreServiceResponse(
                 store.getStoreId(),
                 store.getName(),
-                store.getCategoryId(),
+                store.getCategoryIds(),
                 store.getSellerId(),
                 store.getAddress(),
                 store.getLotNumberAddress(),
@@ -79,7 +80,7 @@ public record StoreServiceResponse(
         return new StoreServiceResponse(
                 store.getStoreId(),
                 store.getName(),
-                store.getCategoryId(),
+                store.getCategoryIds(),
                 store.getSellerId(),
                 store.getAddress(),
                 store.getLotNumberAddress(),

@@ -55,7 +55,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     private Store createStore(String name, String address) {
         return Store.builder()
                 .name(name)
-                .categoryId(1L)
+                .categoryIds(java.util.List.of(1L))
                 .sellerId(1L)
                 .address(address)
                 .lotNumberAddress(address)
