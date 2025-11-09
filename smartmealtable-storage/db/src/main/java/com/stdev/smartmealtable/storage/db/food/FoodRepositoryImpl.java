@@ -124,4 +124,22 @@ public class FoodRepositoryImpl implements FoodRepository {
     public boolean existsByStoreIdAndNotDeleted(Long storeId) {
         return foodJpaRepository.existsByStoreIdAndNotDeleted(storeId);
     }
+    
+    // ===== 자동완성 전용 메서드 (Phase 3) =====
+    
+    @Override
+    public List<Food> findByNameStartsWith(String prefix, int limit) {
+        return foodJpaRepository.findByNameStartingWith(prefix, limit)
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Food> findAllByIdIn(List<Long> foodIds) {
+        return foodJpaRepository.findByFoodIdIn(foodIds)
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

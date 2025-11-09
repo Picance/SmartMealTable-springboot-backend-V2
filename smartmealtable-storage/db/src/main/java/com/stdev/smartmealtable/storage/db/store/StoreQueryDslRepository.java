@@ -237,4 +237,47 @@ public class StoreQueryDslRepository {
                 .fetchFirst();
         return count != null;
     }
+    
+    // ===== 자동완성 전용 메서드 (Phase 3) =====
+    
+    /**
+     * 가게명 Prefix로 시작하는 가게 조회 (자동완성용)
+     * 삭제되지 않은 가게만 조회하며, popularity(favoriteCount) 높은 순으로 정렬
+     * 
+     * @param prefix 검색 접두사
+     * @param limit 결과 제한 수
+     * @return 가게 리스트
+     */
+    public List<StoreJpaEntity> findByNameStartingWith(String prefix, int limit) {
+        return queryFactory
+                .selectFrom(storeJpaEntity)
+                .where(
+                        storeJpaEntity.name.startsWithIgnoreCase(prefix)
+                                .and(storeJpaEntity.deletedAt.isNull())
+                )
+                .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast()) // popularity 높은 순
+                .limit(limit)
+                .fetch();
+    }
+    
+    /**
+     * 여러 가게 ID로 조회 (캐시에서 가져온 ID로 조회)
+     * 삭제되지 않은 가게만 조회
+     * 
+     * @param storeIds 가게 ID 리스트
+     * @return 가게 리스트
+     */
+    public List<StoreJpaEntity> findByStoreIdIn(List<Long> storeIds) {
+        if (storeIds == null || storeIds.isEmpty()) {
+            return List.of();
+        }
+        
+        return queryFactory
+                .selectFrom(storeJpaEntity)
+                .where(
+                        storeJpaEntity.storeId.in(storeIds)
+                                .and(storeJpaEntity.deletedAt.isNull())
+                )
+                .fetch();
+    }
 }

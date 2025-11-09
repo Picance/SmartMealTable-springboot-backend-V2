@@ -216,4 +216,46 @@ public class StoreRepositoryImpl implements StoreRepository {
     public void deleteTemporaryClosureById(Long storeTemporaryClosureId) {
         temporaryClosureJpaRepository.deleteById(storeTemporaryClosureId);
     }
+    
+    // ===== 자동완성 전용 메서드 (Phase 3) =====
+    
+    @Override
+    public List<Store> findByNameStartsWith(String prefix, int limit) {
+        return queryDslRepository.findByNameStartingWith(prefix, limit)
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Store> findAllByIdIn(List<Long> storeIds) {
+        return queryDslRepository.findByStoreIdIn(storeIds)
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
+    
+    @Override
+    public List<Store> findAll(int page, int size) {
+        return jpaRepository.findAll(
+                        org.springframework.data.domain.PageRequest.of(page, size)
+                ).getContent()
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
 }
