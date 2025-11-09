@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.store.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -31,8 +33,17 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     @Autowired
     private StoreRepository storeRepository;
     
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    private Long categoryId;
+    
     @BeforeEach
     void setUp() {
+        // 카테고리 먼저 생성 (FK 제약조건 충족)
+        Category category = categoryRepository.save(Category.create("한식"));
+        categoryId = category.getCategoryId();
+        
         // 테스트 데이터 생성
         createTestStores();
     }
@@ -55,7 +66,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     private Store createStore(String name, String address) {
         return Store.builder()
                 .name(name)
-                .categoryIds(java.util.List.of(1L))
+                .categoryIds(java.util.List.of(categoryId))  // 실제 생성된 카테고리 ID 사용
                 .sellerId(1L)
                 .address(address)
                 .lotNumberAddress(address)
