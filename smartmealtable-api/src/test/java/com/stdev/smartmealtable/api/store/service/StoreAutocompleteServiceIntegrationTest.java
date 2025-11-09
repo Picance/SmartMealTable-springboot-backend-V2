@@ -85,15 +85,28 @@ class StoreAutocompleteServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Redis 초기화 (안전하게 처리)
-        try {
-            Objects.requireNonNull(redisTemplate.getConnectionFactory())
-                    .getConnection()
-                    .serverCommands()
-                    .flushDb();
-        } catch (Exception e) {
-            // Redis 연결 실패 시 무시 (Fallback 동작 테스트)
-            System.err.println("Redis flushDb failed, continuing with fallback: " + e.getMessage());
+        // Redis 초기화 (더 안전하게 처리 - 재시도 로직 추가)
+        int maxRetries = 3;
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                Objects.requireNonNull(redisTemplate.getConnectionFactory())
+                        .getConnection()
+                        .serverCommands()
+                        .flushDb();
+                break;  // 성공하면 루프 종료
+            } catch (Exception e) {
+                if (i == maxRetries - 1) {
+                    // 마지막 시도 실패 시 무시 (Fallback 동작 테스트)
+                    System.err.println("Redis flushDb failed after " + maxRetries + " retries, continuing with fallback: " + e.getMessage());
+                } else {
+                    // 재시도 전 잠시 대기
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
         }
 
         // 카테고리 생성

@@ -658,7 +658,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
     void autocomplete_success_docs() throws Exception {
         // when & then
         mockMvc.perform(get("/api/v1/stores/autocomplete")
-                        .param("keyword", "한식")
+                        .param("keyword", "맛있는")  // 실제 가게 이름에 포함된 키워드 사용
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))

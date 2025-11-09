@@ -6,11 +6,13 @@ import com.stdev.smartmealtable.api.config.MockExpenditureServiceConfig;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaRepository;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
+import com.stdev.smartmealtable.support.search.cache.SearchCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -23,6 +25,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -54,12 +60,19 @@ public abstract class AbstractRestDocsTest extends AbstractContainerTest {
     @Autowired
     protected StoreCategoryJpaRepository storeCategoryJpaRepository;
     
+    @MockBean
+    protected SearchCacheService searchCacheService;  // Redis Mock 처리
+    
     @BeforeEach
     void setUp(WebApplicationContext webApplicationContext,
                RestDocumentationContextProvider restDocumentation) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .apply(MockMvcRestDocumentation.documentationConfiguration(restDocumentation))
                 .build();
+        
+        // Redis Mock 설정 - 모든 Redis 연산 무시
+        doNothing().when(searchCacheService).incrementSearchCount(anyString(), anyString());
+        doNothing().when(searchCacheService).cacheAutocompleteData(anyString(), any());
     }
     
     /**

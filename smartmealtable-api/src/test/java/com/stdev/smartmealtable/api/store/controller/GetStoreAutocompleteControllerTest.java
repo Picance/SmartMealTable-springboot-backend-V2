@@ -6,19 +6,15 @@ import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
-import com.stdev.smartmealtable.support.search.cache.SearchCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
@@ -40,15 +36,11 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     @Autowired
     private CategoryRepository categoryRepository;
     
-    @MockBean
-    private SearchCacheService searchCacheService;  // Redis 연결 없이 Mock 처리
-    
     private Long categoryId;
     
     @BeforeEach
     void setUp() {
-        // Redis Mock 설정 (모든 Redis 연산 무시)
-        doNothing().when(searchCacheService).incrementSearchCount(anyString(), anyString());
+        // AbstractRestDocsTest에서 Redis Mock 이미 설정됨
         
         // 카테고리 먼저 생성 (FK 제약조건 충족)
         Category category = categoryRepository.save(Category.create("한식"));
