@@ -24,7 +24,12 @@ FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`))]
 ```
 
 ### 근본 원인
-기존 테스트 코드들이 Store 생성 시 `categoryIds(List.of(1L))`처럼 하드코딩된 카테고리 ID를 사용하고 있으나, 테스트 DB에 해당 카테고리가 존재하지 않아 FK 제약조건 위반이 발생합니다.
+**프로젝트 정책**: 논리 FK만 사용하고 물리 FK 제약조건은 사용하지 않음
+
+**실제 상황**: JPA의 `@JoinColumn` 어노테이션은 기본적으로 **물리적 FK 제약조건을 자동 생성**합니다. StoreCategoryJpaEntity에서 Store와 Category를 참조할 때 의도하지 않은 FK 제약조건이 생성되어, 테스트에서 존재하지 않는 Category ID를 사용할 때 오류가 발생했습니다.
+
+### 해결 완료 ✅
+StoreCategoryJpaEntity에 `foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)` 추가하여 물리 FK 제약조건 제거 완료
 
 ### Phase 3 변경사항
 - **이전**: Store가 단일 Category와 N:1 관계

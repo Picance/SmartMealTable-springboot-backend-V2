@@ -90,8 +90,15 @@ Stage 3: DB Fallback (MySQL) → 5% 히트율, ~250ms
 
 ## ⚠️ Known Issues
 
-### 기존 API 테스트 FK 제약조건 오류 (57개 실패)
-**원인**: Store 엔티티의 Category 관계 변경 (N:1 → N:M)으로 인한 FK 제약조건 위반
+### 1. StoreCategoryJpaEntity FK 제약조건 오류 ✅ **해결 완료**
+**원인**: JPA `@JoinColumn`이 기본적으로 물리 FK 제약조건을 생성함
+
+**해결**: `foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)` 추가로 논리 FK만 사용
+
+**커밋**: `e5c37a9` - fix(storage): StoreCategoryJpaEntity FK 제약조건 제거
+
+### 2. 기존 API 테스트 응답 필드 불일치 (57개 실패)
+**원인**: Phase 3에서 응답 DTO 구조 변경으로 인한 REST Docs 테스트 실패
 
 **영향범위**:
 - Store Detail/List/Foods API 테스트
