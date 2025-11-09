@@ -292,7 +292,7 @@ class StoreControllerTest extends AbstractAdminContainerTest {
                         .content("""
                                 {
                                     "name": "학생식당",
-                                    "categoryId": %d,
+                                    "categoryIds": [%d],
                                     "address": "서울시 종로구 새로운주소 789",
                                     "lotNumberAddress": "서울시 종로구 새로운동 101",
                                     "phoneNumber": "02-9999-8888",

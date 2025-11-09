@@ -36,7 +36,7 @@ class StabilityScoreCalculatorTest {
     @DisplayName("선호 카테고리 점수 계산 - 좋아요(100) → 높은 점수")
     void calculatePreferenceScore_Liked() {
         // given
-        Store store = createStore(1L, "한식집", 1L, 50, 8000);
+        Store store = createStore(1L, "한식집", 50, 8000);
         
         Map<Long, Integer> preferences = new HashMap<>();
         preferences.put(1L, 100); // 카테고리 1번 좋아요
@@ -48,15 +48,15 @@ class StabilityScoreCalculatorTest {
         double score = calculator.calculate(store, userProfile, context);
 
         // then
-        // 선호도 40% 가중치, 리뷰 20% 가중치만 반영 (지출 내역 없음)
-        assertThat(score).isGreaterThan(30.0); // 최소 40점 (선호도 100 * 0.4)
+        // 선호도 100 * 0.4 + 리뷰 50 * 0.2 = 40 + 10 = 50점
+        assertThat(score).isGreaterThanOrEqualTo(49.0); // 약 50점
     }
 
     @Test
     @DisplayName("선호 카테고리 점수 계산 - 싫어요(-100) → 낮은 점수")
     void calculatePreferenceScore_Disliked() {
         // given
-        Store store = createStore(1L, "한식집", 1L, 50, 8000);
+        Store store = createStore(1L, "한식집", 50, 8000);
         
         Map<Long, Integer> preferences = new HashMap<>();
         preferences.put(1L, -100); // 카테고리 1번 싫어요
@@ -68,15 +68,15 @@ class StabilityScoreCalculatorTest {
         double score = calculator.calculate(store, userProfile, context);
 
         // then
-        // 싫어요는 0점, 선호도 가중치 40%가 0이 됨
-        assertThat(score).isLessThan(30.0);
+        // 선호도 0 * 0.4 + 리뷰 50 * 0.2 = 0 + 10 = 10점
+        assertThat(score).isLessThanOrEqualTo(11.0); // 약 10점
     }
 
     @Test
     @DisplayName("신규 사용자 (지출 내역 3건 미만) - 지출 점수 0 처리")
     void calculateExpenditureScore_NewUser() {
         // given
-        Store store = createStore(1L, "한식집", 1L, 50, 8000);
+        Store store = createStore(1L, "한식집", 50, 8000);
         
         Map<Long, Integer> preferences = new HashMap<>();
         preferences.put(1L, 50); // 중립
@@ -101,7 +101,7 @@ class StabilityScoreCalculatorTest {
     @DisplayName("과거 지출 기록 - 시간 감쇠 적용")
     void calculateExpenditureScore_WithTimeDecay() {
         // given
-        Store store = createStore(1L, "한식집", 1L, 100, 8000);
+        Store store = createStore(1L, "한식집", 100, 8000);
         
         Map<Long, Integer> preferences = new HashMap<>();
         preferences.put(1L, 100);
@@ -120,15 +120,16 @@ class StabilityScoreCalculatorTest {
         double score = calculator.calculate(store, userProfile, context);
 
         // then
-        assertThat(score).isGreaterThan(50.0); // 최근 지출이 있어 높은 점수
+        // 선호도 100 * 0.4 + 지출 비중 약 66% * 0.4 + 리뷰 50 * 0.2 ≈ 76점
+        assertThat(score).isGreaterThanOrEqualTo(70.0); // 최근 지출이 있어 높은 점수
     }
 
     @Test
     @DisplayName("리뷰 신뢰도 - 리뷰 많은 가게가 높은 점수")
     void calculateReviewScore_HighReviews() {
         // given
-        Store highReviewStore = createStore(1L, "인기 맛집", 1L, 500, 8000);
-        Store lowReviewStore = createStore(2L, "신규 가게", 1L, 10, 8000);
+        Store highReviewStore = createStore(1L, "인기 맛집", 500, 8000);
+        Store lowReviewStore = createStore(2L, "신규 가게", 10, 8000);
         
         Map<Long, Integer> preferences = new HashMap<>();
         preferences.put(1L, 0); // 중립
@@ -146,11 +147,11 @@ class StabilityScoreCalculatorTest {
 
     // ==================== Helper Methods ====================
 
-    private Store createStore(Long id, String name, Long categoryId, Integer reviewCount, Integer avgPrice) {
+    private Store createStore(Long id, String name, Integer reviewCount, Integer avgPrice) {
         return Store.builder()
                 .storeId(id)
                 .name(name)
-                .categoryId(categoryId)
+                .categoryIds(java.util.List.of(1L)) // 기본 카테고리 1 설정
                 .reviewCount(reviewCount)
                 .averagePrice(avgPrice)
                 .latitude(BigDecimal.valueOf(37.5665))

@@ -22,6 +22,9 @@ class StoreRepositoryImplTest {
     private StoreJpaRepository jpaRepository;
 
     @Mock
+    private StoreCategoryJpaRepository storeCategoryJpaRepository;
+
+    @Mock
     private StoreQueryDslRepository queryDslRepository;
 
     @Mock
@@ -35,7 +38,7 @@ class StoreRepositoryImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repository = new StoreRepositoryImpl(jpaRepository, queryDslRepository, openingHourJpaRepository, temporaryClosureJpaRepository);
+        repository = new StoreRepositoryImpl(jpaRepository, storeCategoryJpaRepository, queryDslRepository, openingHourJpaRepository, temporaryClosureJpaRepository);
     }
 
     @Test

@@ -106,7 +106,6 @@ class CafeteriaDataImportServiceTest {
         Store savedStore = Store.builder()
                 .storeId(1L)
                 .name("값찌개 (ST: Table)")
-                .categoryId(1L)
                 .address("서울 노원구 공릉로 232 1학생회관 1층")
                 .latitude(new BigDecimal("37.6335837919849"))
                 .longitude(new BigDecimal("127.07689204595525"))
@@ -144,7 +143,6 @@ class CafeteriaDataImportServiceTest {
             return Store.builder()
                     .storeId(1L)
                     .name(store.getName())
-                    .categoryId(store.getCategoryId())
                     .address(store.getAddress())
                     .latitude(store.getLatitude())
                     .longitude(store.getLongitude())
@@ -187,7 +185,6 @@ class CafeteriaDataImportServiceTest {
         Store savedStore = Store.builder()
                 .storeId(1L)
                 .name("값찌개 (ST: Table)")
-                .categoryId(1L)
                 .storeType(StoreType.CAMPUS_RESTAURANT)
                 .registeredAt(LocalDateTime.now())
                 .build();

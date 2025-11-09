@@ -265,6 +265,17 @@ class CategoryControllerTest extends AbstractAdminContainerTest {
         
         entityManager.persist(store);
         entityManager.flush();
+        
+        // 카테고리와 스토어를 store_category 중간 테이블로 연결
+        com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity storeCategory = 
+                com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity.builder()
+                        .storeId(store.getStoreId())
+                        .categoryId(category.getCategoryId())
+                        .displayOrder(0)
+                        .build();
+        
+        entityManager.persist(storeCategory);
+        entityManager.flush();
 
         // When & Then
         mockMvc.perform(delete("/api/v1/admin/categories/{categoryId}", category.getCategoryId()))
