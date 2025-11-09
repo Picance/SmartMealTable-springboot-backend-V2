@@ -113,13 +113,16 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
         int validCount = 0;
         int invalidCount = 0;
         
-        // 음식 카테고리는 "음식" 또는 JSON의 카테고리 기반으로 결정
-        Long foodCategoryId = resolveFoodCategoryId(dto.getCategory());
+        // 가게 카테고리를 CSV 분리 (음식 카테고리 매칭에 사용)
+        List<String> storeCategoryNames = splitCategories(dto.getCategory());
         
-        log.info("Processing {} menus for store: {} (storeId: {})", 
-                dto.getMenus().size(), dto.getName(), store.getStoreId());
+        log.info("Processing {} menus for store: {} (storeId: {}), store categories: {}", 
+                dto.getMenus().size(), dto.getName(), store.getStoreId(), storeCategoryNames);
         
         for (CrawledStoreDto.MenuInfo menuInfo : dto.getMenus()) {
+            // 음식별로 적합한 카테고리 결정 (음식 이름 기반 매칭)
+            Long foodCategoryId = resolveFoodCategoryForMenu(menuInfo.getName(), storeCategoryNames);
+            
             // storeId는 null로 둠 - Writer에서 저장된 storeId를 설정할 예정
             Food food = Food.builder()
                     .foodId(null) // 새로 생성
@@ -197,34 +200,75 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
      * 음식의 종류를 나타내는 카테고리 (예: 한식, 중식, 음료 등)
      * Store의 카테고리를 기반으로 Food 카테고리 결정
      */
-    private Long resolveFoodCategoryId(String storeCategory) {
-        // 음식 카테고리 이름을 매장 카테고리에서 유도
-        String foodCategoryName = "음식"; // 기본값
+    /**
+     * 음식 이름과 가게 카테고리 리스트를 기반으로 적합한 음식 카테고리 결정
+     * 
+     * 로직:
+     * 1. 가게 카테고리가 1개인 경우 → 해당 카테고리 사용
+     * 2. 가게 카테고리가 여러 개인 경우:
+     *    - 음식 이름에 카테고리 키워드가 포함되면 해당 카테고리 선택
+     *    - 매칭되는 것이 없으면 "알수없음" 카테고리 사용
+     * 
+     * 예: 가게 카테고리 ["곱창", "막창", "양"], 음식 이름 "곱창전골" → "곱창" 카테고리
+     * 
+     * @param foodName 음식 이름
+     * @param storeCategoryNames 가게 카테고리 리스트 (이미 CSV 분리됨)
+     * @return 음식 카테고리 ID
+     */
+    private Long resolveFoodCategoryForMenu(String foodName, List<String> storeCategoryNames) {
+        String selectedCategoryName;
         
-        if (storeCategory != null && !storeCategory.isEmpty()) {
-            // 매장 카테고리를 기반으로 음식 카테고리 결정 (예: "한식점" → "한식")
-            if (storeCategory.contains("한식")) {
-                foodCategoryName = "한식";
-            } else if (storeCategory.contains("중식")) {
-                foodCategoryName = "중식";
-            } else if (storeCategory.contains("일식")) {
-                foodCategoryName = "일식";
-            } else if (storeCategory.contains("양식")) {
-                foodCategoryName = "양식";
-            } else if (storeCategory.contains("카페")) {
-                foodCategoryName = "음료";
-            } else if (storeCategory.contains("피자")) {
-                foodCategoryName = "피자";
-            } else if (storeCategory.contains("치킨")) {
-                foodCategoryName = "치킨";
-            } else {
-                foodCategoryName = storeCategory;
+        // 카테고리가 없으면 "알수없음"
+        if (storeCategoryNames == null || storeCategoryNames.isEmpty()) {
+            selectedCategoryName = "알수없음";
+            log.debug("No store categories available. Using '알수없음' for food: {}", foodName);
+        }
+        // 카테고리가 1개면 그대로 사용
+        else if (storeCategoryNames.size() == 1) {
+            selectedCategoryName = storeCategoryNames.get(0);
+            log.debug("Single store category '{}' applied to food: {}", selectedCategoryName, foodName);
+        }
+        // 카테고리가 여러 개면 음식 이름 기반 매칭
+        else {
+            selectedCategoryName = matchCategoryByFoodName(foodName, storeCategoryNames);
+            log.debug("Matched category '{}' for food '{}' from categories: {}", 
+                    selectedCategoryName, foodName, storeCategoryNames);
+        }
+        
+        Long categoryId = resolveCategoryId(selectedCategoryName);
+        log.debug("Resolved food category: '{}' → ID: {}", selectedCategoryName, categoryId);
+        return categoryId;
+    }
+    
+    /**
+     * 음식 이름에서 가게 카테고리 키워드를 찾아 매칭
+     * 
+     * 예: 
+     * - 음식 이름 "곱창전골", 카테고리 ["곱창", "막창", "양"] → "곱창"
+     * - 음식 이름 "제육볶음", 카테고리 ["곱창", "막창", "양"] → "알수없음"
+     * 
+     * @param foodName 음식 이름
+     * @param storeCategoryNames 가게 카테고리 리스트
+     * @return 매칭된 카테고리명 (매칭 실패 시 "알수없음")
+     */
+    private String matchCategoryByFoodName(String foodName, List<String> storeCategoryNames) {
+        if (foodName == null || foodName.isEmpty()) {
+            log.warn("Empty food name. Using '알수없음' category.");
+            return "알수없음";
+        }
+        
+        // 음식 이름에 카테고리 키워드가 포함되어 있는지 확인
+        for (String categoryName : storeCategoryNames) {
+            if (categoryName != null && !categoryName.isEmpty() && foodName.contains(categoryName)) {
+                log.debug("✅ Keyword match: '{}' found in food name '{}'", categoryName, foodName);
+                return categoryName;
             }
         }
         
-        Long foodCategoryId = resolveCategoryId(foodCategoryName);
-        log.debug("Resolved food category: {} → {} (ID: {})", storeCategory, foodCategoryName, foodCategoryId);
-        return foodCategoryId;
+        // 매칭 실패
+        log.debug("❌ No keyword match for food '{}' in categories: {}. Using '알수없음'", 
+                foodName, storeCategoryNames);
+        return "알수없음";
     }
     
     /**
