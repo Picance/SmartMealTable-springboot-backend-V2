@@ -351,42 +351,72 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
         if (storeCategoryNames == null || storeCategoryNames.isEmpty()) {
             // 기본 카테고리 ("기타")를 사용
             categoryIds.add(resolveCategoryId("기타"));
+            log.warn("No categories provided. Using default category '기타'.");
             return categoryIds;
         }
         
         // CSV 형식 카테고리 분리
         List<String> categoryNameList = splitCategories(storeCategoryNames);
         
+        if (categoryNameList.isEmpty()) {
+            // 분리 후 빈 결과면 기본 카테고리 사용
+            log.warn("No valid categories found after splitting '{}'. Using default category '기타'.", storeCategoryNames);
+            categoryIds.add(resolveCategoryId("기타"));
+            return categoryIds;
+        }
+        
+        // 각 카테고리 ID 조회/생성
         for (String categoryName : categoryNameList) {
             Long categoryId = resolveCategoryId(categoryName);
             categoryIds.add(categoryId);
             log.debug("Resolved store category: {} (ID: {})", categoryName, categoryId);
         }
         
-        log.info("Resolved store categories: {} → {} (IDs: {})", 
-                storeCategoryNames, categoryNameList, categoryIds);
+        log.info("✅ Successfully resolved store categories: '{}' → {} categories (IDs: {})", 
+                storeCategoryNames, categoryNameList.size(), categoryIds);
         
         return categoryIds;
     }
     
     /**
      * CSV 형식의 카테고리 문자열을 개별 카테고리로 분리
-     * 예: "한식,일식" → ["한식", "일식"]
-     * 예: "한식, 일식" → ["한식", "일식"] (공백 제거)
+     * 
+     * 예시:
+     * - "한식,일식" → ["한식", "일식"]
+     * - "한식, 일식" → ["한식", "일식"] (공백 제거)
+     * - "한식" → ["한식"] (단일 카테고리)
+     * - "맥주,호프" → ["맥주", "호프"]
+     * - "" → [] (빈 문자열)
+     * 
+     * @param categoriesString CSV 형식의 카테고리 문자열
+     * @return 분리된 카테고리 이름 리스트 (공백 제거됨)
      */
     private List<String> splitCategories(String categoriesString) {
-        if (categoriesString == null || categoriesString.isEmpty()) {
+        if (categoriesString == null || categoriesString.isBlank()) {
             return new ArrayList<>();
         }
         
         List<String> categories = new ArrayList<>();
+        
+        // 콤마로 분리
         String[] parts = categoriesString.split(",");
         
         for (String part : parts) {
             String trimmed = part.trim();
-            if (!trimmed.isEmpty()) {
-                categories.add(trimmed);
+            
+            // 빈 문자열 제외
+            if (trimmed.isEmpty()) {
+                continue;
             }
+            
+            categories.add(trimmed);
+            log.debug("Split category: '{}'", trimmed);
+        }
+        
+        if (categories.isEmpty()) {
+            log.warn("No valid categories found after splitting: '{}'", categoriesString);
+        } else if (categories.size() > 1) {
+            log.info("Split {} categories from: '{}'", categories.size(), categoriesString);
         }
         
         return categories;
@@ -395,10 +425,25 @@ public class CrawledStoreProcessor implements ItemProcessor<CrawledStoreDto, Cra
     /**
      * Store 카테고리 ID 조회/생성 (단일)
      * 매장의 종류를 나타내는 카테고리 (예: 한식, 중식, 카페 등)
+     * 
+     * 주의: 카테고리명에 콤마가 포함되어 있으면 자동으로 분리합니다.
+     * 예: "맥주,호프" → ["맥주", "호프"] 로 분리 후 각각 처리
      */
     private Long resolveStoreCategoryId(String storeCategoryName) {
         if (storeCategoryName == null || storeCategoryName.isEmpty()) {
             storeCategoryName = "기타";
+        }
+        
+        // ⚠️ 카테고리명에 콤마가 포함되어 있으면 경고 로그 기록
+        // (이는 splitCategories() 메서드가 먼저 분리해야 하는 상황)
+        if (storeCategoryName.contains(",")) {
+            log.warn("⚠️ Category name contains comma and was not split: '{}'. " +
+                    "This should have been split by splitCategories() method. " +
+                    "Using first category only.", storeCategoryName);
+            
+            // 첫 번째 카테고리만 추출
+            String firstCategory = storeCategoryName.split(",")[0].trim();
+            storeCategoryName = firstCategory.isEmpty() ? "기타" : firstCategory;
         }
         
         // 캐시 확인
