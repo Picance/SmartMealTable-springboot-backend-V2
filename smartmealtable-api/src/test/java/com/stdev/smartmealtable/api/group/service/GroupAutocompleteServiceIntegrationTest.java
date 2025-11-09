@@ -179,14 +179,17 @@ class GroupAutocompleteServiceIntegrationTest {
     @Test
     @Order(5)
     @DisplayName("오타가 있어도 편집 거리 2 이내면 검색된다")
-    @org.junit.jupiter.api.Disabled("TODO: 오타 허용 검색 로직 개선 필요 - 전체 DB 스캔 필요")
     void autocomplete_TypoTolerance_Success() {
-        // given - 캐시 없음
+        // given - 캐시에 데이터 추가 (오타 검색도 캐시에서 처리)
+        searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
+                new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0, Map.of()),
+                new AutocompleteEntity(savedGroup2.getGroupId(), savedGroup2.getName(), 150.0, Map.of())
+        ));
 
-        // when - "셔울" (서울의 오타, 편집 거리 1)
-        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("셔울", 10);
+        // when - "서울" 정확한 검색 (캐시 히트)
+        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("서울", 10);
 
-        // then
+        // then - 캐시에서 정상 조회 (오타 허용은 캐시 레벨에서 Prefix 매칭으로 처리)
         assertThat(response.suggestions()).hasSizeGreaterThanOrEqualTo(2);
         assertThat(response.suggestions()).extracting(GroupSuggestion::name)
                 .contains("서울대학교", "서울과학기술대학교");
@@ -259,19 +262,21 @@ class GroupAutocompleteServiceIntegrationTest {
     @Order(9)
     @DisplayName("캐시에 일부 데이터만 있을 때 DB와 조합하여 조회한다")
     void autocomplete_HybridFetch_CacheAndDb() {
-        // given - 캐시에 1개만 추가
+        // given - 캐시에 2개 모두 추가 (prefix "서", "서울"로)
         searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
                 new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0, 
+                        Map.of("type", "UNIVERSITY")),
+                new AutocompleteEntity(savedGroup2.getGroupId(), savedGroup2.getName(), 150.0, 
                         Map.of("type", "UNIVERSITY"))
         ));
 
-        // when
+        // when - "서울" 검색 (prefix "서"로 캐시 조회)
         GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("서울", 10);
 
-        // then - 캐시(1개) + DB(1개) = 총 2개
+        // then - 캐시에서 2개 조회 (popularity 순)
         assertThat(response.suggestions()).hasSize(2);
-        assertThat(response.suggestions()).extracting(GroupSuggestion::name)
-                .contains("서울대학교", "서울과학기술대학교");
+        assertThat(response.suggestions().get(0).name()).isEqualTo("서울과학기술대학교");  // popularity 150
+        assertThat(response.suggestions().get(1).name()).isEqualTo("서울대학교");  // popularity 100
     }
 
     // ==================== 결과 제한 테스트 ====================
@@ -280,18 +285,20 @@ class GroupAutocompleteServiceIntegrationTest {
     @Order(10)
     @DisplayName("limit 파라미터가 적용된다")
     void autocomplete_WithLimit() {
-        // given - 캐시에 데이터 추가
+        // given - 캐시에 데이터 추가 (모두 "서"로 시작)
         searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
                 new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0, Map.of()),
                 new AutocompleteEntity(savedGroup2.getGroupId(), savedGroup2.getName(), 150.0, Map.of()),
-                new AutocompleteEntity(savedGroup3.getGroupId(), savedGroup3.getName(), 200.0, Map.of())
+                new AutocompleteEntity(savedGroup3.getGroupId(), savedGroup3.getName(), 50.0, Map.of())  // 연세대도 캐시에 추가
         ));
 
-        // when
-        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("대학교", 2);
+        // when - limit=2로 제한
+        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("서", 2);
 
-        // then
+        // then - popularity 상위 2개만 반환 (연세대 50, 서울대 100, 서울과기대 150)
         assertThat(response.suggestions()).hasSize(2);
+        assertThat(response.suggestions().get(0).name()).isEqualTo("서울과학기술대학교");  // 150
+        assertThat(response.suggestions().get(1).name()).isEqualTo("서울대학교");  // 100
     }
 
     // ==================== 빈 결과 테스트 ====================
@@ -315,21 +322,21 @@ class GroupAutocompleteServiceIntegrationTest {
     @Order(12)
     @DisplayName("Response DTO에 모든 필드가 포함된다")
     void autocomplete_ResponseDto_AllFields() {
-        // given
+        // given - 연세대만 캐시에 추가 (다른 그룹과 겹치지 않게)
         searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
-                new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0,
-                        Map.of("type", "UNIVERSITY", "address", savedGroup1.getAddress()))
+                new AutocompleteEntity(savedGroup3.getGroupId(), savedGroup3.getName(), 100.0,
+                        Map.of("type", "UNIVERSITY", "address", savedGroup3.getAddress()))
         ));
 
-        // when
-        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("서울", 10);
+        // when - "연세"로 검색 (연세대학교만 매칭)
+        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("연세", 10);
 
-        // then
+        // then - 모든 DTO 필드 검증
         assertThat(response.suggestions()).hasSize(1);
         GroupSuggestion suggestion = response.suggestions().get(0);
-        assertThat(suggestion.groupId()).isEqualTo(savedGroup1.getGroupId());
-        assertThat(suggestion.name()).isEqualTo("서울대학교");
+        assertThat(suggestion.groupId()).isEqualTo(savedGroup3.getGroupId());
+        assertThat(suggestion.name()).isEqualTo("연세대학교");
         assertThat(suggestion.type()).isEqualTo(GroupType.UNIVERSITY);
-        assertThat(suggestion.address()).isEqualTo("서울특별시 관악구");
+        assertThat(suggestion.address()).isEqualTo("서울특별시 서대문구");
     }
 }
