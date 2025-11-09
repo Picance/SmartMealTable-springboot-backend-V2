@@ -98,7 +98,7 @@ class GetFoodDetailRestDocsTest extends AbstractRestDocsTest {
         // 테스트 가게 데이터 생성
         testStore = Store.builder()
                 .name("교촌치킨 강남점")
-                .categoryId(5L)
+                .categoryIds(java.util.List.of(5L))
                 .sellerId(1L)
                 .address("서울특별시 강남구 테헤란로 123")
                 .lotNumberAddress("서울특별시 강남구 역삼동 456-78")
