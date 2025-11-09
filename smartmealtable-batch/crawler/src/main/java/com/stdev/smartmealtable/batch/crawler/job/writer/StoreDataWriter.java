@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 처리된 가게 데이터를 DB에 저장하는 Writer
- * Store, Food, StoreImage, StoreOpeningHour를 모두 저장
+ * Store, Food, StoreImage, StoreOpeningHour, StoreCategory를 모두 저장
  */
 @Slf4j
 @Component
@@ -24,6 +24,7 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
     private final FoodRepository foodRepository;
     private final StoreImageRepository storeImageRepository;
     private final StoreOpeningHourRepository openingHourRepository;
+    private final StoreCategoryRepository storeCategoryRepository;
     
     @Override
     @Transactional
@@ -51,16 +52,19 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
         log.debug("Saved store: {} (ID: {}, externalId: {})", 
                 savedStore.getName(), storeId, savedStore.getExternalId());
         
-        // 2. 기존 음식, 이미지, 영업시간 삭제 (새로 추가하기 위해)
+        // 2. 기존 음식, 이미지, 영업시간, 카테고리 삭제 (새로 추가하기 위해)
         deleteExistingRelations(storeId);
         
-        // 3. 음식 저장
+        // 3. 카테고리 저장 ✅ (이제 추가됨)
+        saveStoreCategories(storeId, data.getStore().getCategoryIds());
+        
+        // 4. 음식 저장
         saveFoods(storeId, data.getFoods());
         
-        // 4. 이미지 저장
+        // 5. 이미지 저장
         saveImages(storeId, data.getImages());
         
-        // 5. 영업시간 저장
+        // 6. 영업시간 저장
         saveOpeningHours(storeId, data.getOpeningHours());
     }
     
@@ -71,7 +75,33 @@ public class StoreDataWriter implements ItemWriter<ProcessedStoreData> {
         foodRepository.deleteByStoreId(storeId);
         storeImageRepository.deleteByStoreId(storeId);
         openingHourRepository.deleteByStoreId(storeId);
+        storeCategoryRepository.deleteByStoreId(storeId);  // ✅ 카테고리 삭제 추가
         log.debug("Deleted existing relations for store ID: {}", storeId);
+    }
+    
+    /**
+     * 가게 카테고리 저장
+     * CSV로 분리된 각 카테고리를 store_category 중간 테이블에 저장
+     * 
+     * @param storeId 가게 ID
+     * @param categoryIds CSV 분리로 얻은 카테고리 ID 리스트
+     */
+    private void saveStoreCategories(Long storeId, java.util.List<Long> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            log.warn("No categories to save for store ID: {}", storeId);
+            return;
+        }
+        
+        log.info("Saving {} store categories for store ID: {}", categoryIds.size(), storeId);
+        
+        int displayOrder = 0;
+        for (Long categoryId : categoryIds) {
+            storeCategoryRepository.save(storeId, categoryId, displayOrder++);
+            log.debug("Saved store-category mapping: storeId={}, categoryId={}, displayOrder={}", 
+                    storeId, categoryId, displayOrder - 1);
+        }
+        
+        log.info("✅ Successfully saved {} store categories for store ID: {}", categoryIds.size(), storeId);
     }
     
     /**
