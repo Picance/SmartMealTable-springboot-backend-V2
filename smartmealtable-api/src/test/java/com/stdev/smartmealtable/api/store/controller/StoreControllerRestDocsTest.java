@@ -662,7 +662,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
+                .andExpect(jsonPath("$.data.suggestions").isArray())
                 .andDo(document("store/autocomplete-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -680,20 +680,22 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data")
                                         .type(JsonFieldType.OBJECT)
                                         .description("응답 데이터"),
-                                fieldWithPath("data.stores")
+                                fieldWithPath("data.suggestions")
                                         .type(JsonFieldType.ARRAY)
                                         .description("자동완성 검색 결과"),
-                                fieldWithPath("data.stores[].storeId")
+                                fieldWithPath("data.suggestions[].storeId")
                                         .type(JsonFieldType.NUMBER)
                                         .description("가게 ID"),
-                                fieldWithPath("data.stores[].name")
+                                fieldWithPath("data.suggestions[].name")
                                         .type(JsonFieldType.STRING)
                                         .description("가게명"),
-                                fieldWithPath("data.stores[].categoryName")
+                                fieldWithPath("data.suggestions[].storeType")
                                         .type(JsonFieldType.STRING)
-                                        .description("카테고리명")
-                                        .optional(),
-                                fieldWithPath("data.stores[].address")
+                                        .description("가게 유형 (RESTAURANT, CAMPUS_RESTAURANT, CAFE)"),
+                                fieldWithPath("data.suggestions[].categoryNames")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("카테고리명 목록"),
+                                fieldWithPath("data.suggestions[].address")
                                         .type(JsonFieldType.STRING)
                                         .description("도로명 주소"),
                                 fieldWithPath("error")

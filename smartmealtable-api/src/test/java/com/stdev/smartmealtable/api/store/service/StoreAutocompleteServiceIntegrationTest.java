@@ -85,11 +85,16 @@ class StoreAutocompleteServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Redis 초기화
-        Objects.requireNonNull(redisTemplate.getConnectionFactory())
-                .getConnection()
-                .serverCommands()
-                .flushDb();
+        // Redis 초기화 (안전하게 처리)
+        try {
+            Objects.requireNonNull(redisTemplate.getConnectionFactory())
+                    .getConnection()
+                    .serverCommands()
+                    .flushDb();
+        } catch (Exception e) {
+            // Redis 연결 실패 시 무시 (Fallback 동작 테스트)
+            System.err.println("Redis flushDb failed, continuing with fallback: " + e.getMessage());
+        }
 
         // 카테고리 생성
         savedCategory1 = categoryRepository.save(Category.create("한식"));
