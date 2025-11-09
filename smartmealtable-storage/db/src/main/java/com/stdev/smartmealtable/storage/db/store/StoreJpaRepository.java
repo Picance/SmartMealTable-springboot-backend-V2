@@ -31,10 +31,12 @@ public interface StoreJpaRepository extends JpaRepository<StoreJpaEntity, Long> 
     /**
      * 키워드로 가게명 또는 카테고리명 검색 (자동완성용)
      * 가게명에 키워드가 포함되어 있거나, 가게의 카테고리명에 키워드가 포함된 가게를 검색합니다.
+     * Store-Category N:N 관계를 store_category 중간 테이블을 통해 구현
      */
     @Query("""
-            SELECT s FROM StoreJpaEntity s
-            LEFT JOIN CategoryJpaEntity c ON s.categoryId = c.categoryId
+            SELECT DISTINCT s FROM StoreJpaEntity s
+            LEFT JOIN StoreCategoryJpaEntity sc ON s.storeId = sc.storeId
+            LEFT JOIN CategoryJpaEntity c ON sc.categoryId = c.categoryId
             WHERE s.deletedAt IS NULL
               AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))

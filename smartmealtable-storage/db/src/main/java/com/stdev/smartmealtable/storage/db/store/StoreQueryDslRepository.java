@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.stdev.smartmealtable.storage.db.category.QCategoryJpaEntity.categoryJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
 
@@ -60,10 +59,9 @@ public class StoreQueryDslRepository {
         conditions.add(storeJpaEntity.deletedAt.isNull());
         
         if (keyword != null && !keyword.isBlank()) {
-            conditions.add(
-                    storeJpaEntity.name.containsIgnoreCase(keyword)
-                            .or(categoryJpaEntity.name.containsIgnoreCase(keyword))
-            );
+            // N:N 관계 변경으로 인해 가게명만 검색
+            // 카테고리명 검색은 별도로 필요시 구현
+            conditions.add(storeJpaEntity.name.containsIgnoreCase(keyword));
         }
         
         if (radiusKm != null) {
