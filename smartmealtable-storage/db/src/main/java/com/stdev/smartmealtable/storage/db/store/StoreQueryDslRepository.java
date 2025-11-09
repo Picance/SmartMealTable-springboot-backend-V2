@@ -84,9 +84,9 @@ public class StoreQueryDslRepository {
                 .reduce(BooleanExpression::and)
                 .orElse(null);
         
-        // Total count 조회
+        // Total count 조회 (distinct로 유니크한 store만 카운팅)
         Long totalCount = queryFactory
-                .select(storeJpaEntity.count())
+                .select(storeJpaEntity.storeId.countDistinct())
                 .from(storeJpaEntity)
                 .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
                 .where(finalCondition)

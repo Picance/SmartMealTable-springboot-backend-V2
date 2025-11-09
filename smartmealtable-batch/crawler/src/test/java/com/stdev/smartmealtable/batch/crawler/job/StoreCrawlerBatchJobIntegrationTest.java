@@ -214,26 +214,29 @@ class StoreCrawlerBatchJobIntegrationTest {
     void it_splits_csv_categories_with_spaces() throws Exception {
         // Given - 공백을 포함한 CSV 카테고리
         File csvJsonFile = File.createTempFile("test-store-csv-spaces-", ".json");
-        writeTestJsonWithCsvCategoriesWithSpaces(csvJsonFile);
+        try {
+            writeTestJsonWithCsvCategoriesWithSpaces(csvJsonFile);
 
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addString("inputFilePath", "file:" + csvJsonFile.getAbsolutePath())
-                .addLong("timestamp", System.currentTimeMillis())
-                .toJobParameters();
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addString("inputFilePath", "file:" + csvJsonFile.getAbsolutePath())
+                    .addLong("timestamp", System.currentTimeMillis())
+                    .toJobParameters();
 
-        // When
-        JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
+            // When
+            JobExecution jobExecution = jobLauncherTestUtils.launchJob(jobParameters);
 
-        // Then
-        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+            // Then
+            assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
 
-        // Store 조회
-        Optional<Store> store = storeRepository.findByExternalId("test_external_csv_spaces_001");
-        assertThat(store).isPresent();
-        assertThat(store.get().getCategoryIds()).isNotEmpty();
-
-        // Cleanup
-        csvJsonFile.delete();
+            // Store 조회
+            Optional<Store> store = storeRepository.findByExternalId("test_external_csv_spaces_001");
+            assertThat(store).isPresent();
+            
+            // 공백이 제거되고 정확히 3개의 카테고리로 분리되었는지 확인
+            assertThat(store.get().getCategoryIds()).hasSize(3); // "한식, 일식, 양식" = 3개
+        } finally {
+            csvJsonFile.delete();
+        }
     }
 
     @Test
