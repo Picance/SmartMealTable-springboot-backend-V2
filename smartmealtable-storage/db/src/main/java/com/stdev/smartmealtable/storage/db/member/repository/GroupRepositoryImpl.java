@@ -105,4 +105,35 @@ public class GroupRepositoryImpl implements GroupRepository {
     public void deleteById(Long groupId) {
         jpaRepository.deleteById(groupId);
     }
+    
+    // ==================== 검색 기능 강화 메서드 ====================
+    
+    @Override
+    public List<Group> findByNameStartsWith(String prefix) {
+        return jpaRepository.findByNameStartingWith(prefix).stream()
+                .map(GroupJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Group> findAllByIdIn(List<Long> groupIds) {
+        return jpaRepository.findByGroupIdIn(groupIds).stream()
+                .map(GroupJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
+    
+    @Override
+    public List<Group> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<GroupJpaEntity> jpaPage = jpaRepository.findAll(pageRequest);
+        
+        return jpaPage.getContent().stream()
+                .map(GroupJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

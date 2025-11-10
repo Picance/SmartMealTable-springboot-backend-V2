@@ -43,6 +43,48 @@ public interface StoreRepository {
      */
     List<Store> searchByKeywordForAutocomplete(String keyword, int limit);
     
+    // ===== 자동완성 전용 메서드 (Phase 3) =====
+    
+    /**
+     * 가게명 Prefix로 시작하는 가게 조회 (자동완성용)
+     * 
+     * @param prefix 검색 접두사 (예: "서울")
+     * @param limit 결과 제한 수
+     * @return 가게 리스트 (popularity 높은 순으로 정렬)
+     */
+    List<Store> findByNameStartsWith(String prefix, int limit);
+    
+    /**
+     * 여러 가게 ID로 조회 (캐시에서 가져온 ID로 조회)
+     * 
+     * @param storeIds 가게 ID 리스트
+     * @return 가게 리스트
+     */
+    List<Store> findAllByIdIn(List<Long> storeIds);
+    
+    /**
+     * 전체 가게 개수 조회 (캐시 워밍용)
+     * 
+     * @return 가게 개수
+     */
+    long count();
+    
+    /**
+     * 페이징으로 모든 가게 조회 (캐시 워밍용)
+     * 
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 가게 리스트
+     */
+    List<Store> findAll(int page, int size);
+    
+    /**
+     * 카테고리 정보를 포함하여 모든 가게 조회 (캐시 워밍용)
+     * 
+     * @return 가게 리스트 (카테고리 포함)
+     */
+    List<Store> findAllWithCategories();
+    
     /**
      * 조건에 맞는 가게 목록 조회 (복잡한 필터링 및 정렬 지원)
      * QueryDSL을 활용하여 동적 쿼리 구현

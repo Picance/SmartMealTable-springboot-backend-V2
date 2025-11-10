@@ -4,13 +4,16 @@ import com.stdev.smartmealtable.api.store.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreDetailResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
 import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
+import com.stdev.smartmealtable.api.store.service.StoreAutocompleteService;
 import com.stdev.smartmealtable.api.store.service.StoreService;
+import com.stdev.smartmealtable.api.store.service.dto.StoreTrendingKeywordsResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -32,6 +35,7 @@ import java.util.List;
 public class StoreController {
     
     private final StoreService storeService;
+    private final StoreAutocompleteService storeAutocompleteService;
     
     /**
      * 가게 목록 조회
@@ -138,31 +142,44 @@ public class StoreController {
         return ApiResponse.success(response);
     }
     
+    // ==================== 검색 기능 강화 API ====================
+    
     /**
-     * 가게 자동완성 검색
-     * GET /api/v1/stores/autocomplete
+     * 가게 자동완성 (검색 기능 강화)
+     * GET /api/v1/stores/autocomplete?keyword=떡볶&limit=10
      *
-     * @param keyword 검색어
-     * @param limit 조회 개수 (기본값: 10)
-     * @return 자동완성 검색 결과 목록
+     * @param keyword 검색 키워드 (필수, 1-50자)
+     * @param limit 결과 개수 제한 (기본값: 10, 최대: 20)
+     * @return 자동완성 제안 목록
      */
     @GetMapping("/autocomplete")
-    public ApiResponse<StoreAutocompleteListResponse> autocomplete(
-            @RequestParam String keyword,
-            @RequestParam(required = false) @Min(1) @Max(20) Integer limit
+    public ApiResponse<com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse> autocomplete(
+            @RequestParam @Size(min = 1, max = 50, message = "검색 키워드는 1-50자 이내여야 합니다.") String keyword,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
     ) {
-        log.info("가게 자동완성 검색 API 호출 - keyword: {}, limit: {}", keyword, limit);
-        
-        List<StoreAutocompleteResponse> stores = storeService.autocomplete(keyword, limit);
-        
-        return ApiResponse.success(new StoreAutocompleteListResponse(stores));
+        log.info("가게 자동완성 API 호출 - keyword: {}, limit: {}", keyword, limit);
+
+        com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse response =
+                storeAutocompleteService.autocomplete(keyword, limit);
+
+        return ApiResponse.success(response);
     }
     
     /**
-     * 자동완성 검색 응답 Wrapper
+     * 가게 인기 검색어 조회
+     * GET /api/v1/stores/trending?limit=10
+     *
+     * @param limit 결과 개수 (기본값: 10, 최대: 20)
+     * @return 인기 검색어 목록
      */
-    public record StoreAutocompleteListResponse(
-            List<StoreAutocompleteResponse> stores
+    @GetMapping("/trending")
+    public ApiResponse<StoreTrendingKeywordsResponse> getTrendingKeywords(
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
     ) {
+        log.info("가게 인기 검색어 조회 API 호출 - limit: {}", limit);
+        
+        StoreTrendingKeywordsResponse response = storeAutocompleteService.getTrendingKeywords(limit);
+        
+        return ApiResponse.success(response);
     }
 }

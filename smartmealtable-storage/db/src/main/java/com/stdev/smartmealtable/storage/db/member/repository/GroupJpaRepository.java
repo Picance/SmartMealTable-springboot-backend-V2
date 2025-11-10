@@ -54,4 +54,19 @@ public interface GroupJpaRepository extends JpaRepository<GroupJpaEntity, Long> 
      */
     @Query("SELECT COUNT(m) FROM MemberJpaEntity m WHERE m.groupId = :groupId")
     long countMembersByGroupId(@Param("groupId") Long groupId);
+    
+    // ==================== 검색 기능 강화 메서드 ====================
+    
+    /**
+     * 이름으로 시작하는 그룹 검색 (Prefix 검색)
+     * B-Tree 인덱스 활용 가능
+     */
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.name LIKE :prefix%")
+    List<GroupJpaEntity> findByNameStartingWith(@Param("prefix") String prefix);
+    
+    /**
+     * 여러 ID로 그룹 일괄 조회
+     */
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.groupId IN :groupIds")
+    List<GroupJpaEntity> findByGroupIdIn(@Param("groupIds") List<Long> groupIds);
 }

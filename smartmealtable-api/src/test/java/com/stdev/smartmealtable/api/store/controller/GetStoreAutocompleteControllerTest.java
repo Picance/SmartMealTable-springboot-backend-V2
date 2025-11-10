@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.store.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -31,8 +33,19 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     @Autowired
     private StoreRepository storeRepository;
     
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    private Long categoryId;
+    
     @BeforeEach
     void setUp() {
+        // AbstractRestDocsTest에서 Redis Mock 이미 설정됨
+        
+        // 카테고리 먼저 생성 (FK 제약조건 충족)
+        Category category = categoryRepository.save(Category.create("한식"));
+        categoryId = category.getCategoryId();
+        
         // 테스트 데이터 생성
         createTestStores();
     }
@@ -55,7 +68,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
     private Store createStore(String name, String address) {
         return Store.builder()
                 .name(name)
-                .categoryIds(java.util.List.of(1L))
+                .categoryIds(java.util.List.of(categoryId))  // 실제 생성된 카테고리 ID 사용
                 .sellerId(1L)
                 .address(address)
                 .lotNumberAddress(address)
@@ -82,9 +95,9 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores.length()").value(3))
-                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("강남"))))
+                .andExpect(jsonPath("$.data.suggestions").isArray())
+                .andExpect(jsonPath("$.data.suggestions.length()").value(3))
+                .andExpect(jsonPath("$.data.suggestions[*].name").value(everyItem(containsString("강남"))))
                 .andDo(document("store-autocomplete-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -94,11 +107,12 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                         ),
                         responseFields(
                                 fieldWithPath("result").description("요청 처리 결과 (SUCCESS)"),
-                                fieldWithPath("data.stores[]").description("자동완성 가게 목록"),
-                                fieldWithPath("data.stores[].storeId").description("가게 ID"),
-                                fieldWithPath("data.stores[].name").description("가게명"),
-                                fieldWithPath("data.stores[].address").description("주소"),
-                                fieldWithPath("data.stores[].categoryName").description("카테고리명").optional(),
+                                fieldWithPath("data.suggestions[]").description("자동완성 가게 목록"),
+                                fieldWithPath("data.suggestions[].storeId").description("가게 ID"),
+                                fieldWithPath("data.suggestions[].name").description("가게명"),
+                                fieldWithPath("data.suggestions[].storeType").description("가게 유형"),
+                                fieldWithPath("data.suggestions[].address").description("주소"),
+                                fieldWithPath("data.suggestions[].categoryNames[]").description("카테고리명 목록"),
                                 fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
@@ -113,9 +127,9 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores.length()").value(2))
-                .andExpect(jsonPath("$.data.stores[*].name").value(everyItem(containsString("신촌"))));
+                .andExpect(jsonPath("$.data.suggestions").isArray())
+                .andExpect(jsonPath("$.data.suggestions.length()").value(2))
+                .andExpect(jsonPath("$.data.suggestions[*].name").value(everyItem(containsString("신촌"))));
     }
     
     @Test
@@ -128,8 +142,8 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores.length()").value(lessThanOrEqualTo(2)));
+                .andExpect(jsonPath("$.data.suggestions").isArray())
+                .andExpect(jsonPath("$.data.suggestions.length()").value(lessThanOrEqualTo(2)));
     }
     
     @Test
@@ -141,8 +155,8 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores.length()").value(0));
+                .andExpect(jsonPath("$.data.suggestions").isArray())
+                .andExpect(jsonPath("$.data.suggestions.length()").value(0));
     }
     
     @Test
@@ -161,10 +175,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
         mockMvc.perform(get("/api/v1/stores/autocomplete")
                         .param("keyword", ""))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.stores").isArray())
-                .andExpect(jsonPath("$.data.stores.length()").value(0));
+                .andExpect(status().isBadRequest());
     }
     
     @Test

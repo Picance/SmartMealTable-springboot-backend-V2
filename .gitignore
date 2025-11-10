@@ -293,4 +293,11 @@ smartmealtable-key.pub
 # dataSources
 /districts_before
 
+# JMeter Performance Test Results
+performance-test/results/
+performance-test/results/**/*.jtl
+performance-test/results/**/*.csv
+performance-test/results/**/html-report/
+performance-test/results/backup/
+
 # End of https://www.toptal.com/developers/gitignore/api/java,react,gradle,maven,intellij

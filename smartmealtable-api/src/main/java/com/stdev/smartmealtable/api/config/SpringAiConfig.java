@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(
         name = "spring.ai.vertex.ai.gemini.enabled",
         havingValue = "true",
-        matchIfMissing = true  // 설정이 없으면 기본적으로 활성화
+        matchIfMissing = false  // 설정이 없으면 비활성화 (Test Profile 대응)
 )
 public class SpringAiConfig {
 

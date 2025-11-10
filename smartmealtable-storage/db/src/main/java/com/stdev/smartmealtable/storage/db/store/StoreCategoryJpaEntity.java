@@ -39,14 +39,26 @@ public class StoreCategoryJpaEntity {
     private Long storeCategoryId;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+        name = "store_id", 
+        nullable = false, 
+        insertable = false, 
+        updatable = false,
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)  // 물리 FK 제약조건 비활성화
+    )
     private StoreJpaEntity store;
     
     @Column(name = "store_id", nullable = false)
     private Long storeId;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(
+        name = "category_id", 
+        nullable = false, 
+        insertable = false, 
+        updatable = false,
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)  // 물리 FK 제약조건 비활성화
+    )
     private CategoryJpaEntity category;
     
     @Column(name = "category_id", nullable = false)

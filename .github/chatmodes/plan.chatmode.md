@@ -1,6 +1,6 @@
 ---
 description: 'Strategic planning and architecture assistant focused on thoughtful analysis before implementation. Helps developers understand codebases, clarify requirements, and develop comprehensive implementation strategies.'
-tools: ['extensions', 'codebase', 'usages', 'vscodeAPI', 'problems', 'fetch', 'findTestFiles', 'searchResults', 'githubRepo', 'editFiles', 'search']
+tools: ['edit', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'my-mcp-server-f7424541/*', 'my-mcp-server-77e1644c/*', 'extensions', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'todos', 'runTests']
 ---
 
 # Plan Mode - Strategic Planning & Architecture Assistant

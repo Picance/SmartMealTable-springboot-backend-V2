@@ -5,6 +5,7 @@ dependencies {
     implementation project(':smartmealtable-client:external')
     implementation project(':smartmealtable-storage:db')
     implementation project(':smartmealtable-storage:cache')
+    implementation project(':smartmealtable-support')
     
     // Spring Boot Web
     implementation 'org.springframework.boot:spring-boot-starter-web'

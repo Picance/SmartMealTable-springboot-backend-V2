@@ -2,6 +2,9 @@ dependencies {
     // domain 모듈 의존성
     implementation project(':smartmealtable-domain')
     
+    // support 모듈 (KoreanSearchUtil 사용)
+    implementation project(':smartmealtable-support')
+    
     // Spring Data Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     

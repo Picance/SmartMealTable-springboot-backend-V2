@@ -80,4 +80,34 @@ public interface GroupRepository {
      * @param groupId 삭제할 그룹 ID
      */
     void deleteById(Long groupId);
+    
+    // ==================== 검색 기능 강화 메서드 ====================
+    
+    /**
+     * 이름으로 시작하는 그룹 검색 (Prefix 검색)
+     * @param prefix 검색 prefix
+     * @return 검색된 그룹 목록
+     */
+    List<Group> findByNameStartsWith(String prefix);
+    
+    /**
+     * 여러 ID로 그룹 일괄 조회
+     * @param groupIds 그룹 ID 목록
+     * @return 조회된 그룹 목록
+     */
+    List<Group> findAllByIdIn(List<Long> groupIds);
+    
+    /**
+     * 전체 그룹 개수 조회
+     * @return 그룹 개수
+     */
+    long count();
+    
+    /**
+     * 모든 그룹 조회 (캐시 워밍용 - 페이징 필수)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 페이징된 그룹 목록
+     */
+    List<Group> findAll(int page, int size);
 }
