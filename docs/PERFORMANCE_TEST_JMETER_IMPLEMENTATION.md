@@ -61,9 +61,9 @@ performance-test/
 
 | 도메인 | API 엔드포인트 | 동시 사용자 | Ramp-up | 지속 시간 | 목표 TPS |
 |--------|----------------|-------------|---------|-----------|----------|
-| **Store** | `/api/v1/search/autocomplete/stores` | 100명 | 10초 | 120초 | 100/s |
-| **Food** | `/api/v1/search/autocomplete/foods` | 100명 | 10초 | 120초 | 100/s |
-| **Group** | `/api/v1/search/autocomplete/groups` | 100명 | 10초 | 120초 | 100/s |
+| **Store** | `/api/v1/stores/autocomplete` | 100명 | 10초 | 120초 | 100/s |
+| **Food** | `/api/v1/foods/autocomplete` | 100명 | 10초 | 120초 | 100/s |
+| **Group** | `/api/v1/groups/autocomplete` | 100명 | 10초 | 120초 | 100/s |
 | **합계** | - | **300명** | - | **120초** | **300/s** |
 
 ### 부하 프로필

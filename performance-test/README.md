@@ -17,17 +17,17 @@ SmartMealTable 자동완성 API의 성능을 측정하기 위한 JMeter 테스�
 
 이 성능 테스트는 다음 자동완성 API들을 대상으로 합니다:
 
-- **Store 자동완성**: `/api/v1/search/autocomplete/stores`
-- **Food 자동완성**: `/api/v1/search/autocomplete/foods`
-- **Group 자동완성**: `/api/v1/search/autocomplete/groups`
+- **Store 자동완성**: `/api/v1/stores/autocomplete`
+- **Food 자동완성**: `/api/v1/foods/autocomplete`
+- **Group 자동완성**: `/api/v1/groups/autocomplete`
 
 ### 테스트 시나리오
 
-| 도메인 | 동시 사용자 | Ramp-up | 지속 시간 | 목표 TPS |
-|--------|-------------|---------|-----------|----------|
-| Store  | 100명       | 10초    | 120초     | 100/s    |
-| Food   | 100명       | 10초    | 120초     | 100/s    |
-| Group  | 100명       | 10초    | 120초     | 100/s    |
+| 도메인 | API 엔드포인트 | 동시 사용자 | Ramp-up | 지속 시간 | 목표 TPS |
+|--------|----------------|-------------|---------|-----------|----------|
+| Store  | `/api/v1/stores/autocomplete` | 100명       | 10초    | 120초     | 100/s    |
+| Food   | `/api/v1/foods/autocomplete` | 100명       | 10초    | 120초     | 100/s    |
+| Group  | `/api/v1/groups/autocomplete` | 100명       | 10초    | 120초     | 100/s    |
 | **합계** | **300명** | -       | **120초** | **300/s** |
 
 ## 디렉터리 구조
@@ -106,19 +106,46 @@ curl http://localhost:8080/actuator/health
 
 ### 3. 테스트 데이터 준비
 
-테스트 데이터는 이미 `data/` 디렉터리에 준비되어 있습니다:
+**자동 준비 (권장)**: `run-test.sh` 스크립트가 자동으로 테스트 데이터를 확인하고 삽입합니다.
+
+**수동 준비 (필요 시)**:
+```bash
+# MySQL에 테스트 데이터 삽입
+docker exec -i smartmealtable-mysql mysql -uroot -proot123 smartmealtable < test-data.sql
+
+# 확인
+docker exec smartmealtable-mysql mysql -uroot -proot123 smartmealtable -e "SELECT COUNT(*) FROM store; SELECT COUNT(*) FROM food; SELECT COUNT(*) FROM member_group;"
+```
+
+**CSV 키워드 데이터** (`data/` 디렉터리):
 - `keywords-store.csv`: 20개 Store 검색 키워드
 - `keywords-food.csv`: 20개 Food 검색 키워드
 - `keywords-group.csv`: 20개 Group 검색 키워드
 
+**DB 테스트 데이터** (`test-data.sql`):
+- Store: 20개 (치킨집, 피자집, 맥도날드, 스타벅스 등)
+- Food: 22개 (치킨, 파스타, 떡볶이 등)
+- Group: 19개 (서울대학교, 삼성전자 등)
+
+> 💡 **자동화**: `run-test.sh`는 Store 테이블의 데이터가 10개 미만일 때 자동으로 `test-data.sql`을 실행합니다.
+
 ## 테스트 실행
 
-### 기본 실행
+### 기본 실행 (추천)
 
 ```bash
 cd performance-test
 ./run-test.sh
 ```
+
+**자동 실행 내용**:
+1. ✅ JMeter 설치 확인
+2. ✅ 애플리케이션 상태 확인 (http://localhost:8080)
+3. ✅ MySQL 연결 확인
+4. ✅ **테스트 데이터 자동 확인 및 삽입** ⬅️ 새로운 기능!
+5. ✅ 이전 결과 백업
+6. ✅ JMeter 테스트 실행
+7. ✅ HTML 리포트 생성
 
 ### 커스텀 파라미터로 실행
 
