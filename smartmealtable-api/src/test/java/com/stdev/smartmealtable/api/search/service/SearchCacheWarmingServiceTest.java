@@ -176,39 +176,29 @@ class SearchCacheWarmingServiceTest {
     // ===== Helper Methods =====
 
     private Store createMockStore(Long id, String name) {
-        Category category = Category.create("치킨");
-        Store store = Store.builder()
+        return Store.builder()
+                .storeId(id)
                 .name(name)
-                .phone("02-1234-5678")
+                .phoneNumber("02-1234-5678")
                 .address("서울특별시 강남구 테헤란로 123")
-                .latitude(37.5665)
-                .longitude(126.9780)
-                .isPartnered(true)
+                .latitude(java.math.BigDecimal.valueOf(37.5665))
+                .longitude(java.math.BigDecimal.valueOf(126.9780))
+                .categoryIds(List.of(1L))  // 카테고리 ID 추가
                 .build();
-        
-        // StoreCategory 추가 (리플렉션 없이 Mock)
-        StoreCategory storeCategory = StoreCategory.create(store, category);
-        store.getCategories().add(storeCategory);
-        
-        return store;
     }
 
     private Food createMockFood(Long id, String name) {
-        Category category = Category.create("치킨");
-        Food food = Food.builder()
-                .name(name)
+        return Food.builder()
+                .foodId(id)
+                .foodName(name)
                 .description("맛있는 후라이드치킨")
                 .price(18000)
+                .categoryId(1L)  // 카테고리 ID 추가
+                .storeId(1L)
                 .build();
-        
-        // FoodCategory 추가
-        FoodCategory foodCategory = FoodCategory.create(food, category);
-        food.getCategories().add(foodCategory);
-        
-        return food;
     }
 
     private Group createMockGroup(Long id, String name) {
-        return Group.reconstitute(id, name, GroupType.UNIVERSITY, "서울특별시 관악구");
+        return Group.create(name, com.stdev.smartmealtable.domain.member.entity.GroupType.UNIVERSITY, "서울특별시 관악구");
     }
 }

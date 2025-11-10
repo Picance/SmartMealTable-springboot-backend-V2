@@ -258,4 +258,15 @@ public class StoreRepositoryImpl implements StoreRepository {
                 })
                 .collect(Collectors.toList());
     }
+    
+    @Override
+    public List<Store> findAllWithCategories() {
+        return jpaRepository.findAll()
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
 }

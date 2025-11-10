@@ -142,4 +142,12 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
     }
+    
+    @Override
+    public List<Food> findAllWithCategories() {
+        return foodJpaRepository.findAll()
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

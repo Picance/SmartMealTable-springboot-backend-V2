@@ -105,4 +105,11 @@ public interface FoodRepository {
      * @return 음식 리스트
      */
     List<Food> findAllByIdIn(List<Long> foodIds);
+    
+    /**
+     * 카테고리 정보를 포함하여 모든 음식 조회 (캐시 워밍용)
+     * 
+     * @return 음식 리스트 (카테고리 포함)
+     */
+    List<Food> findAllWithCategories();
 }

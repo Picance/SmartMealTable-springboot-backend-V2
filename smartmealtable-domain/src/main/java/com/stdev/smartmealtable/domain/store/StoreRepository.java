@@ -79,6 +79,13 @@ public interface StoreRepository {
     List<Store> findAll(int page, int size);
     
     /**
+     * 카테고리 정보를 포함하여 모든 가게 조회 (캐시 워밍용)
+     * 
+     * @return 가게 리스트 (카테고리 포함)
+     */
+    List<Store> findAllWithCategories();
+    
+    /**
      * 조건에 맞는 가게 목록 조회 (복잡한 필터링 및 정렬 지원)
      * QueryDSL을 활용하여 동적 쿼리 구현
      * 
