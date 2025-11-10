@@ -106,7 +106,7 @@ public class StoreAutocompleteService {
      * 
      * Stage 1: Prefix 검색 (캐시)
      * Stage 2: 초성 검색 (캐시)
-     * Stage 3: 오타 허용 검색 (캐시 + DB)
+     * Stage 3: DB Fallback (캐시 미스 시)
      * 
      * @param keyword 검색 키워드
      * @param limit 결과 개수
@@ -125,7 +125,7 @@ public class StoreAutocompleteService {
                 return fetchStores(new ArrayList<>(storeIds));
             }
         } catch (Exception e) {
-            log.warn("Stage 1 (Prefix) 검색 실패, Stage 2로 진행", e);
+            log.warn("Stage 1 (Prefix) 검색 실패, DB Fallback으로 진행", e);
         }
         
         // Stage 2: 초성 검색 (초성 인덱스)
@@ -141,20 +141,15 @@ public class StoreAutocompleteService {
                     return fetchStores(new ArrayList<>(storeIds));
                 }
             } catch (Exception e) {
-                log.warn("Stage 2 (초성) 검색 실패, Stage 3로 진행", e);
+                log.warn("Stage 2 (초성) 검색 실패, DB Fallback으로 진행", e);
             }
         }
         
-        // Stage 3: 오타 허용 검색 (결과가 부족할 때만)
-        if (storeIds.size() < MIN_RESULTS_FOR_TYPO && keyword.length() >= 2) {
-            try {
-                List<Store> typoResults = searchWithTypoTolerance(keyword, limit);
-                typoResults.forEach(store -> storeIds.add(store.getStoreId()));
-                
-                log.debug("Stage 3 (오타 허용) 추가 결과: {}", typoResults.size());
-            } catch (Exception e) {
-                log.warn("Stage 3 (오타 허용) 검색 실패", e);
-            }
+        // Stage 3: DB Fallback (캐시 미스 또는 결과 부족)
+        // Redis가 빈 결과를 반환했거나, 결과가 부족한 경우 DB에서 직접 검색
+        if (storeIds.isEmpty() || storeIds.size() < MIN_RESULTS_FOR_TYPO) {
+            log.info("캐시 미스 또는 결과 부족, DB Fallback 검색 실행: keyword={}", keyword);
+            return searchWithTypoTolerance(keyword, limit);
         }
         
         return fetchStores(new ArrayList<>(storeIds));

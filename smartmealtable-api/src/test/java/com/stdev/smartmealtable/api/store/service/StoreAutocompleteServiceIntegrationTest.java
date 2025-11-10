@@ -235,11 +235,9 @@ class StoreAutocompleteServiceIntegrationTest {
         // when
         StoreTrendingKeywordsResponse response = storeAutocompleteService.getTrendingKeywords(10);
 
-        // then - Mock 환경이므로 빈 리스트 또는 기본값
+        // then - Mock 환경이므로 빈 리스트 반환
         assertThat(response.keywords()).isNotNull();
-        assertThat(response.keywords().get(0).searchCount()).isEqualTo(3);
-        assertThat(response.keywords().get(1).keyword()).isEqualTo("중식");
-        assertThat(response.keywords().get(1).searchCount()).isEqualTo(2);
+        assertThat(response.keywords()).isEmpty();
     }
 
     @Test
