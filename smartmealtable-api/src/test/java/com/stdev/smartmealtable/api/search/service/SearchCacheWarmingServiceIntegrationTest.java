@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.api.search.service;
 
+import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.food.Food;
@@ -10,9 +11,12 @@ import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder;
+import com.stdev.smartmealtable.storage.cache.SearchCacheService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +24,15 @@ import java.math.BigDecimal;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 
 /**
  * SearchCacheWarmingService 통합 테스트
- * 
- * <p>실제 Redis + DB 환경에서 캐시 워밍 동작을 검증합니다.</p>
- * 
+ *
+ * <p>실제 DB 환경과 Mock Redis를 사용하여 캐시 워밍 동작을 검증합니다.</p>
+ *
  * <h3>테스트 시나리오</h3>
  * <ul>
  *   <li>전체 캐시 워밍 성공 (warmAllCaches)</li>
@@ -39,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 @ActiveProfiles("test")
 @Transactional
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class SearchCacheWarmingServiceIntegrationTest {
+class SearchCacheWarmingServiceIntegrationTest extends AbstractContainerTest {
 
     @Autowired
     private SearchCacheWarmingService searchCacheWarmingService;
@@ -56,19 +63,30 @@ class SearchCacheWarmingServiceIntegrationTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    // Mock Redis 서비스
+    @MockBean
+    private SearchCacheService searchCacheService;
+
+    @MockBean
+    private ChosungIndexBuilder chosungIndexBuilder;
+
     // 테스트 데이터
     private Category savedCategory;
 
     @BeforeEach
     void setUp() {
+        // Redis Mock 설정
+        doNothing().when(searchCacheService).cacheAutocompleteData(anyString(), anyList());
+        doNothing().when(chosungIndexBuilder).buildChosungIndex(anyString(), anyList());
+
         // 테스트 카테고리 생성
         savedCategory = categoryRepository.save(Category.create("한식"));
     }
 
     /**
      * 테스트 1: 전체 캐시 워밍 성공
-     * 
-     * <p>Store, Food, Group 데이터를 Redis에 모두 로드하고 정상 동작하는지 검증합니다.</p>
+     *
+     * <p>Store, Food, Group 데이터를 로드하고 정상 동작하는지 검증합니다.</p>
      */
     @Test
     @Order(1)
@@ -142,7 +160,7 @@ class SearchCacheWarmingServiceIntegrationTest {
 
     /**
      * 테스트 5: 빈 데이터 상황에서 캐시 워밍
-     * 
+     *
      * <p>DB에 데이터가 없을 때 예외 없이 정상 동작하는지 검증합니다.</p>
      */
     @Test
@@ -158,7 +176,7 @@ class SearchCacheWarmingServiceIntegrationTest {
 
     /**
      * 테스트 6: 대량 데이터 페이징 처리
-     * 
+     *
      * <p>대량의 데이터(50개 이상)를 페이징으로 나누어 처리하고, 메모리 오버플로우 없이 정상 동작하는지 검증합니다.</p>
      */
     @Test

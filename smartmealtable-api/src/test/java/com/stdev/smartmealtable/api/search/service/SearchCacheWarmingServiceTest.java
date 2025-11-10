@@ -59,8 +59,15 @@ class SearchCacheWarmingServiceTest {
         Food food = createMockFood(1L, "후라이드치킨");
         Group group = createMockGroup(1L, "서울대학교 컴퓨터공학부");
 
-        given(storeRepository.findAllWithCategories()).willReturn(List.of(store));
-        given(foodRepository.findAllWithCategories()).willReturn(List.of(food));
+        // Store
+        given(storeRepository.count()).willReturn(1L);
+        given(storeRepository.findAll(0, 100)).willReturn(List.of(store));
+
+        // Food
+        given(foodRepository.count()).willReturn(1L);
+        given(foodRepository.findAll(0, 500)).willReturn(List.of(food));
+
+        // Group
         given(groupRepository.count()).willReturn(1L);
         given(groupRepository.findAll(0, 50)).willReturn(List.of(group));
 
@@ -68,8 +75,10 @@ class SearchCacheWarmingServiceTest {
         searchCacheWarmingService.warmAllCaches();
 
         // then
-        then(storeRepository).should(times(1)).findAllWithCategories();
-        then(foodRepository).should(times(1)).findAllWithCategories();
+        then(storeRepository).should(times(1)).count();
+        then(storeRepository).should(times(1)).findAll(anyInt(), anyInt());
+        then(foodRepository).should(times(1)).count();
+        then(foodRepository).should(times(1)).findAll(anyInt(), anyInt());
         then(groupRepository).should(times(1)).count();
         then(groupRepository).should(times(1)).findAll(anyInt(), anyInt());
 
@@ -82,13 +91,15 @@ class SearchCacheWarmingServiceTest {
     void warmStoreCache_Success() {
         // given
         Store store = createMockStore(1L, "교촌치킨 강남점");
-        given(storeRepository.findAllWithCategories()).willReturn(List.of(store));
+        given(storeRepository.count()).willReturn(1L);
+        given(storeRepository.findAll(0, 100)).willReturn(List.of(store));
 
         // when
         searchCacheWarmingService.warmStoreCache(100);
 
         // then
-        then(storeRepository).should(times(1)).findAllWithCategories();
+        then(storeRepository).should(times(1)).count();
+        then(storeRepository).should(times(1)).findAll(0, 100);
         then(searchCacheService).should(times(1)).cacheAutocompleteData(eq("store"), anyList());
         then(chosungIndexBuilder).should(times(1)).buildChosungIndex(eq("store"), anyList());
     }
@@ -98,13 +109,15 @@ class SearchCacheWarmingServiceTest {
     void warmFoodCache_Success() {
         // given
         Food food = createMockFood(1L, "후라이드치킨");
-        given(foodRepository.findAllWithCategories()).willReturn(List.of(food));
+        given(foodRepository.count()).willReturn(1L);
+        given(foodRepository.findAll(0, 500)).willReturn(List.of(food));
 
         // when
         searchCacheWarmingService.warmFoodCache(500);
 
         // then
-        then(foodRepository).should(times(1)).findAllWithCategories();
+        then(foodRepository).should(times(1)).count();
+        then(foodRepository).should(times(1)).findAll(0, 500);
         then(searchCacheService).should(times(1)).cacheAutocompleteData(eq("food"), anyList());
         then(chosungIndexBuilder).should(times(1)).buildChosungIndex(eq("food"), anyList());
     }
@@ -131,13 +144,14 @@ class SearchCacheWarmingServiceTest {
     @DisplayName("Store 캐시 워밍 - 데이터 없음 (스킵)")
     void warmStoreCache_NoData_Skip() {
         // given
-        given(storeRepository.findAllWithCategories()).willReturn(List.of());
+        given(storeRepository.count()).willReturn(0L);
 
         // when
         searchCacheWarmingService.warmStoreCache(100);
 
         // then
-        then(storeRepository).should(times(1)).findAllWithCategories();
+        then(storeRepository).should(times(1)).count();
+        then(storeRepository).should(times(0)).findAll(anyInt(), anyInt());
         then(searchCacheService).should(times(0)).cacheAutocompleteData(anyString(), anyList());
         then(chosungIndexBuilder).should(times(0)).buildChosungIndex(anyString(), anyList());
     }
@@ -146,13 +160,14 @@ class SearchCacheWarmingServiceTest {
     @DisplayName("Food 캐시 워밍 - 데이터 없음 (스킵)")
     void warmFoodCache_NoData_Skip() {
         // given
-        given(foodRepository.findAllWithCategories()).willReturn(List.of());
+        given(foodRepository.count()).willReturn(0L);
 
         // when
         searchCacheWarmingService.warmFoodCache(500);
 
         // then
-        then(foodRepository).should(times(1)).findAllWithCategories();
+        then(foodRepository).should(times(1)).count();
+        then(foodRepository).should(times(0)).findAll(anyInt(), anyInt());
         then(searchCacheService).should(times(0)).cacheAutocompleteData(anyString(), anyList());
         then(chosungIndexBuilder).should(times(0)).buildChosungIndex(anyString(), anyList());
     }

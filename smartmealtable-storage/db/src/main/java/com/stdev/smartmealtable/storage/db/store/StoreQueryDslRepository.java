@@ -249,15 +249,15 @@ public class StoreQueryDslRepository {
      * @return 가게 리스트
      */
     public List<StoreJpaEntity> findByNameStartingWith(String prefix, int limit) {
-        return queryFactory
-                .selectFrom(storeJpaEntity)
-                .where(
-                        storeJpaEntity.name.startsWithIgnoreCase(prefix)
-                                .and(storeJpaEntity.deletedAt.isNull())
-                )
-                .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast()) // popularity 높은 순
-                .limit(limit)
-                .fetch();
+    return queryFactory
+        .selectFrom(storeJpaEntity)
+        .where(
+            storeJpaEntity.name.like(prefix + "%")
+                .and(storeJpaEntity.deletedAt.isNull())
+        )
+        .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast()) // popularity 높은 순
+        .limit(limit)
+        .fetch();
     }
     
     /**
