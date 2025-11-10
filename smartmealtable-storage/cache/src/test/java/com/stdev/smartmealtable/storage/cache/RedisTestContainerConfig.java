@@ -1,4 +1,4 @@
-package com.stdev.smartmealtable.support.search.cache;
+package com.stdev.smartmealtable.storage.cache;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;

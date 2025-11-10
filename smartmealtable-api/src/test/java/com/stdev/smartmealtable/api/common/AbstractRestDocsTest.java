@@ -6,7 +6,7 @@ import com.stdev.smartmealtable.api.config.MockExpenditureServiceConfig;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaRepository;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
-import com.stdev.smartmealtable.support.search.cache.SearchCacheService;
+import com.stdev.smartmealtable.storage.cache.SearchCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

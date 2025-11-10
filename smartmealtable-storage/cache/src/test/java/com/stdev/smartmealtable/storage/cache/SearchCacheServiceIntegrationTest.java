@@ -1,7 +1,7 @@
-package com.stdev.smartmealtable.support.search.cache;
+package com.stdev.smartmealtable.storage.cache;
 
-import com.stdev.smartmealtable.support.search.cache.SearchCacheService.AutocompleteEntity;
-import com.stdev.smartmealtable.support.search.cache.SearchCacheService.TrendingKeyword;
+import com.stdev.smartmealtable.storage.cache.SearchCacheService.AutocompleteEntity;
+import com.stdev.smartmealtable.storage.cache.SearchCacheService.TrendingKeyword;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Redis Testcontainer를 사용한 실제 Redis 환경 테스트</p>
  * <p>캐시 CRUD 작업의 정상 동작을 검증합니다.</p>
  */
-@SpringBootTest
+@SpringBootTest(classes = {SearchCacheService.class, ChosungIndexBuilder.class})
 @Import(RedisTestContainerConfig.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

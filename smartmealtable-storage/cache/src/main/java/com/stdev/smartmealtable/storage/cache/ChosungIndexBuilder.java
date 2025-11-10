@@ -1,4 +1,4 @@
-package com.stdev.smartmealtable.support.search.cache;
+package com.stdev.smartmealtable.storage.cache;
 
 import com.stdev.smartmealtable.support.search.korean.KoreanSearchUtil;
 import lombok.RequiredArgsConstructor;

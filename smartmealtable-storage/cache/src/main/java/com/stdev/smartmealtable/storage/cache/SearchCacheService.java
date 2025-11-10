@@ -1,4 +1,4 @@
-package com.stdev.smartmealtable.support.search.cache;
+package com.stdev.smartmealtable.storage.cache;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
