@@ -2249,33 +2249,266 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 7.4 가게 검색 (자동완성)
+### 7.4 가게 자동완성 검색
 
 **Endpoint:** `GET /api/v1/stores/autocomplete?keyword=치킨&limit=10`
+
+**설명:**
+- 가게 이름을 기반으로 자동완성 제안 목록을 제공합니다.
+- Prefix 검색, 초성 검색, 오타 허용 검색을 지원합니다.
+- Redis 캐시를 우선 사용하며, 캐시 미스 시 DB에서 검색합니다.
+
+**Query Parameters:**
+- `keyword` (string, required): 검색 키워드 (1-50자)
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
 
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
-  "data": [
-    {
-      "storeId": 101,
-      "name": "교촌치킨 강남점",
-      "categoryName": "치킨"
-    },
-    {
-      "storeId": 102,
-      "name": "bhc치킨 역삼점",
-      "categoryName": "치킨"
-    }
-  ],
+  "data": {
+    "suggestions": [
+      {
+        "storeId": 101,
+        "name": "교촌치킨 강남점",
+        "storeType": "CAMPUS_RESTAURANT",
+        "address": "서울특별시 강남구 테헤란로 123",
+        "categoryNames": ["치킨", "한식"]
+      },
+      {
+        "storeId": 102,
+        "name": "bhc치킨 역삼점",
+        "storeType": "RESTAURANT",
+        "address": "서울특별시 강남구 역삼로 456",
+        "categoryNames": ["치킨"]
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `400`: 잘못된 요청 (키워드가 50자 초과)
+
+**검색 전략:**
+- **Stage 1**: Redis Prefix 캐시 검색 (정확한 prefix 매칭)
+- **Stage 2**: Redis 초성 인덱스 검색 (초성 검색)
+- **Stage 3**: DB Fallback 검색 (오타 허용, `LIKE` 검색)
+
+---
+
+### 7.5 가게 인기 검색어 조회
+
+**Endpoint:** `GET /api/v1/stores/trending?limit=10`
+
+**설명:**
+- 가게 검색에서 가장 많이 검색된 키워드 목록을 제공합니다.
+- Redis Sorted Set 기반으로 집계됩니다.
+
+**Query Parameters:**
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "keywords": [
+      {
+        "keyword": "치킨",
+        "searchCount": 1523,
+        "rank": 1
+      },
+      {
+        "keyword": "피자",
+        "searchCount": 982,
+        "rank": 2
+      },
+      {
+        "keyword": "중식",
+        "searchCount": 756,
+        "rank": 3
+      }
+    ]
+  },
   "error": null
 }
 ```
 
 ---
 
-### 7.5 메뉴 상세 조회
+### 7.6 음식(메뉴) 자동완성 검색
+
+**Endpoint:** `GET /api/v1/foods/autocomplete?keyword=치킨&limit=10`
+
+**설명:**
+- 음식(메뉴) 이름을 기반으로 자동완성 제안 목록을 제공합니다.
+- Prefix 검색, 초성 검색, 오타 허용 검색을 지원합니다.
+- Redis 캐시를 우선 사용하며, 캐시 미스 시 DB에서 검색합니다.
+
+**Query Parameters:**
+- `keyword` (string, required): 검색 키워드 (1-50자)
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "suggestions": [
+      {
+        "foodId": 201,
+        "foodName": "교촌 오리지널",
+        "storeId": 101,
+        "storeName": "교촌치킨 강남점",
+        "categoryName": "치킨",
+        "averagePrice": 18000,
+        "isMain": true
+      },
+      {
+        "foodId": 202,
+        "foodName": "레드 콤보",
+        "storeId": 101,
+        "storeName": "교촌치킨 강남점",
+        "categoryName": "치킨",
+        "averagePrice": 20000,
+        "isMain": false
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `400`: 잘못된 요청 (키워드가 50자 초과)
+
+---
+
+### 7.7 음식 인기 검색어 조회
+
+**Endpoint:** `GET /api/v1/foods/trending?limit=10`
+
+**설명:**
+- 음식 검색에서 가장 많이 검색된 키워드 목록을 제공합니다.
+- Redis Sorted Set 기반으로 집계됩니다.
+
+**Query Parameters:**
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "keywords": [
+      {
+        "keyword": "치킨",
+        "searchCount": 2341,
+        "rank": 1
+      },
+      {
+        "keyword": "피자",
+        "searchCount": 1823,
+        "rank": 2
+      },
+      {
+        "keyword": "짜장면",
+        "searchCount": 1456,
+        "rank": 3
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### 7.8 그룹(학교/회사) 자동완성 검색
+
+**Endpoint:** `GET /api/v1/groups/autocomplete?keyword=서울대&limit=10`
+
+**설명:**
+- 그룹(학교/회사) 이름을 기반으로 자동완성 제안 목록을 제공합니다.
+- Prefix 검색, 초성 검색, 오타 허용 검색을 지원합니다.
+- Redis 캐시를 우선 사용하며, 캐시 미스 시 DB에서 검색합니다.
+
+**Query Parameters:**
+- `keyword` (string, required): 검색 키워드 (1-50자)
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "suggestions": [
+      {
+        "groupId": 1,
+        "name": "서울대학교",
+        "type": "UNIVERSITY",
+        "address": "서울특별시 관악구 관악로 1"
+      },
+      {
+        "groupId": 2,
+        "name": "서울과학기술대학교",
+        "type": "UNIVERSITY",
+        "address": "서울특별시 노원구 공릉로 232"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `400`: 잘못된 요청 (키워드가 50자 초과)
+
+---
+
+### 7.9 그룹 인기 검색어 조회
+
+**Endpoint:** `GET /api/v1/groups/trending?limit=10`
+
+**설명:**
+- 그룹 검색에서 가장 많이 검색된 키워드 목록을 제공합니다.
+- Redis Sorted Set 기반으로 집계됩니다.
+
+**Query Parameters:**
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최대: 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "keywords": [
+      {
+        "keyword": "서울대학교",
+        "searchCount": 3245,
+        "rank": 1
+      },
+      {
+        "keyword": "연세대학교",
+        "searchCount": 2876,
+        "rank": 2
+      },
+      {
+        "keyword": "고려대학교",
+        "searchCount": 2543,
+        "rank": 3
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### 7.10 메뉴 상세 조회
 
 **Endpoint:** `GET /api/v1/foods/{foodId}`
 
