@@ -32,16 +32,16 @@ public class CacheRefreshScheduler {
      * Cron 표현식: "0 0 3 * * *"
      * - 초: 0
      * - 분: 0
-     * - 시: 3 (새벽 3시)
+     * - 시: 3 (새벽 3시, Asia/Seoul 타임존)
      * - 일: * (매일)
      * - 월: * (매월)
      * - 요일: * (모든 요일)
      * </p>
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void refreshCache() {
-        log.info("===== 스케줄 캐시 갱신 시작 (매일 새벽 3시) =====");
-        
+        log.info("===== 스케줄 캐시 갱신 시작 (매일 새벽 3시, Asia/Seoul) =====");
+
         try {
             cacheWarmingService.warmAllCaches();
             log.info("===== 스케줄 캐시 갱신 완료 =====");

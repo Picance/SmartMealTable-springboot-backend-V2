@@ -243,7 +243,7 @@ public class StoreQueryDslRepository {
     /**
      * 가게명 Prefix로 시작하는 가게 조회 (자동완성용)
      * 삭제되지 않은 가게만 조회하며, popularity(favoriteCount) 높은 순으로 정렬
-     * 
+     *
      * @param prefix 검색 접두사
      * @param limit 결과 제한 수
      * @return 가게 리스트
@@ -252,7 +252,7 @@ public class StoreQueryDslRepository {
     return queryFactory
         .selectFrom(storeJpaEntity)
         .where(
-            storeJpaEntity.name.like(prefix + "%")
+            storeJpaEntity.name.startsWithIgnoreCase(prefix)
                 .and(storeJpaEntity.deletedAt.isNull())
         )
         .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast()) // popularity 높은 순

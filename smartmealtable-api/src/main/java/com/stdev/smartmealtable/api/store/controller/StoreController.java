@@ -13,6 +13,7 @@ import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -153,19 +154,14 @@ public class StoreController {
      */
     @GetMapping("/autocomplete")
     public ApiResponse<com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse> autocomplete(
-            @RequestParam String keyword,
+            @RequestParam @Size(min = 1, max = 50, message = "검색 키워드는 1-50자 이내여야 합니다.") String keyword,
             @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
     ) {
         log.info("가게 자동완성 API 호출 - keyword: {}, limit: {}", keyword, limit);
-        
-        // 입력 검증 (간단한 길이 체크만, 상세 검증은 Service에서)
-        if (keyword.length() > 50) {
-            throw new IllegalArgumentException("검색 키워드는 50자 이하여야 합니다.");
-        }
-        
-        com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse response = 
+
+        com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse response =
                 storeAutocompleteService.autocomplete(keyword, limit);
-        
+
         return ApiResponse.success(response);
     }
     

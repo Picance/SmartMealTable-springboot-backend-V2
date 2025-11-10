@@ -175,10 +175,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
         mockMvc.perform(get("/api/v1/stores/autocomplete")
                         .param("keyword", ""))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.suggestions").isArray())
-                .andExpect(jsonPath("$.data.suggestions.length()").value(0));
+                .andExpect(status().isBadRequest());
     }
     
     @Test
