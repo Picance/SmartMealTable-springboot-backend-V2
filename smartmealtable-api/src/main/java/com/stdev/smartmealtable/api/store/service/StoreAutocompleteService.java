@@ -148,13 +148,23 @@ public class StoreAutocompleteService {
             }
         }
         
-        // Stage 3: DB Fallback (캐시 미스 또는 결과 부족)
-        // Redis가 빈 결과를 반환했거나, 결과가 부족한 경우 DB에서 직접 검색
-        if (storeIds.isEmpty() || storeIds.size() < MIN_RESULTS_FOR_TYPO) {
-            log.info("캐시 미스 또는 결과 부족, DB Fallback 검색 실행: keyword={}", keyword);
-            return searchWithTypoTolerance(keyword, limit);
+        // Stage 3: Substring 및 오타 허용 검색 (결과가 부족할 때)
+        // PREFIX 검색과 초성 검색으로 결과가 부족하면 더 넓은 검색 수행
+        if (storeIds.size() < limit) {
+            try {
+                List<Store> expandedResults = searchWithTypoTolerance(keyword, limit * 2);
+                expandedResults.forEach(store -> {
+                    if (!storeIds.contains(store.getStoreId())) {
+                        storeIds.add(store.getStoreId());
+                    }
+                });
+
+                log.debug("Stage 3 (Substring + 오타 허용) 추가 결과: {}", expandedResults.size());
+            } catch (Exception e) {
+                log.warn("Stage 3 (Substring + 오타 허용) 검색 실패", e);
+            }
         }
-        
+
         return fetchStores(new ArrayList<>(storeIds));
     }
     
