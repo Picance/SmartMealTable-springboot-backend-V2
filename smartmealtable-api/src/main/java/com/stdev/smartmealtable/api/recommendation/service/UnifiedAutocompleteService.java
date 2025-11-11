@@ -2,11 +2,10 @@ package com.stdev.smartmealtable.api.recommendation.service;
 
 import com.stdev.smartmealtable.api.food.service.FoodAutocompleteService;
 import com.stdev.smartmealtable.api.food.service.dto.FoodAutocompleteResponse;
-import com.stdev.smartmealtable.api.group.service.GroupAutocompleteService;
-import com.stdev.smartmealtable.api.group.service.dto.GroupAutocompleteResponse;
+import com.stdev.smartmealtable.api.store.service.StoreAutocompleteService;
+import com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.recommendation.service.dto.UnifiedAutocompleteResponse;
 import com.stdev.smartmealtable.api.recommendation.service.dto.UnifiedAutocompleteResponse.StoreShortcut;
-import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
  *
  * 성능:
  * - 두 서비스를 병렬로 호출하여 응답 시간 최소화
- * - 응답 시간 = max(food_time, group_time) + merge_time
+ * - 응답 시간 = max(food_time, store_time) + merge_time
  *
  * @author SmartMealTable Team
  * @since 2025-11-12
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
 public class UnifiedAutocompleteService {
 
     private final FoodAutocompleteService foodAutocompleteService;
-    private final GroupAutocompleteService groupAutocompleteService;
+    private final StoreAutocompleteService storeAutocompleteService;
     private final StoreRepository storeRepository;
 
     /**
@@ -69,17 +68,17 @@ public class UnifiedAutocompleteService {
 
             // 병렬로 음식과 가게 자동완성 호출
             FoodAutocompleteResponse foodResults = foodAutocompleteService.autocomplete(normalizedKeyword, limit);
-            GroupAutocompleteResponse groupResults = groupAutocompleteService.autocomplete(normalizedKeyword, limit);
+            StoreAutocompleteResponse storeResults = storeAutocompleteService.autocomplete(normalizedKeyword, limit);
 
             // 결과 병합: 키워드 목록 (음식/가게명 번갈아가며)
             List<String> suggestions = mergeKeywordsInterleaved(
                 foodResults,
-                groupResults,
+                storeResults,
                 limit
             );
 
             // 가게 바로가기 정보 생성
-            List<StoreShortcut> storeShortcuts = buildStoreShortcuts(groupResults);
+            List<StoreShortcut> storeShortcuts = buildStoreShortcuts(storeResults);
 
             long elapsedTime = System.currentTimeMillis() - startTime;
             log.info("통합 자동완성 완료: keyword={}, keywords={}, stores={}, time={}ms",
@@ -99,23 +98,23 @@ public class UnifiedAutocompleteService {
      * 예: 음식 [A, B, C], 가게 [X, Y, Z] → [A, X, B, Y, C, Z]
      *
      * @param foodResults 음식 자동완성 결과
-     * @param groupResults 가게 자동완성 결과
+     * @param storeResults 가게 자동완성 결과
      * @param limit 최대 결과 개수
      * @return 섞인 키워드 목록
      */
     private List<String> mergeKeywordsInterleaved(
         FoodAutocompleteResponse foodResults,
-        GroupAutocompleteResponse groupResults,
+        StoreAutocompleteResponse storeResults,
         int limit
     ) {
         List<String> foodKeywords = extractFoodKeywords(foodResults);
-        List<String> groupKeywords = extractGroupKeywords(groupResults);
+        List<String> storeKeywords = extractStoreKeywords(storeResults);
 
         Set<String> seen = new LinkedHashSet<>();
         List<String> merged = new ArrayList<>();
 
         // 음식과 가게 키워드를 번갈아가며 추가
-        int maxIndex = Math.max(foodKeywords.size(), groupKeywords.size());
+        int maxIndex = Math.max(foodKeywords.size(), storeKeywords.size());
         for (int i = 0; i < maxIndex && merged.size() < limit; i++) {
             // 음식 키워드 추가
             if (i < foodKeywords.size()) {
@@ -129,12 +128,12 @@ public class UnifiedAutocompleteService {
             }
 
             // 가게 키워드 추가 (limit 체크)
-            if (merged.size() < limit && i < groupKeywords.size()) {
-                String groupKeyword = groupKeywords.get(i);
-                if (groupKeyword != null && !groupKeyword.isBlank()) {
-                    String normalized = groupKeyword.toLowerCase().trim();
+            if (merged.size() < limit && i < storeKeywords.size()) {
+                String storeKeyword = storeKeywords.get(i);
+                if (storeKeyword != null && !storeKeyword.isBlank()) {
+                    String normalized = storeKeyword.toLowerCase().trim();
                     if (seen.add(normalized)) {
-                        merged.add(groupKeyword);
+                        merged.add(storeKeyword);
                     }
                 }
             }
@@ -160,12 +159,12 @@ public class UnifiedAutocompleteService {
     /**
      * 가게 결과에서 키워드 추출
      */
-    private List<String> extractGroupKeywords(GroupAutocompleteResponse groupResults) {
-        if (groupResults == null || groupResults.suggestions() == null) {
+    private List<String> extractStoreKeywords(StoreAutocompleteResponse storeResults) {
+        if (storeResults == null || storeResults.suggestions() == null) {
             return Collections.emptyList();
         }
 
-        return groupResults.suggestions().stream()
+        return storeResults.suggestions().stream()
             .map(suggestion -> suggestion.name())
             .filter(name -> name != null && !name.isBlank())
             .collect(Collectors.toList());
@@ -174,21 +173,21 @@ public class UnifiedAutocompleteService {
     /**
      * 가게 바로가기 정보 생성
      *
-     * 가게 자동완성 결과에서 가게 엔티티를 조회하여
+     * 가게 자동완성 결과에서 Store 엔티티를 조회하여
      * ID, 이름, 대표 이미지, 영업 상태를 포함한 바로가기 정보 생성
      *
-     * @param groupResults 가게 자동완성 결과
+     * @param storeResults 가게 자동완성 결과
      * @return 가게 바로가기 목록
      */
-    private List<StoreShortcut> buildStoreShortcuts(GroupAutocompleteResponse groupResults) {
-        if (groupResults == null || groupResults.suggestions() == null || groupResults.suggestions().isEmpty()) {
+    private List<StoreShortcut> buildStoreShortcuts(StoreAutocompleteResponse storeResults) {
+        if (storeResults == null || storeResults.suggestions() == null || storeResults.suggestions().isEmpty()) {
             return Collections.emptyList();
         }
 
         try {
             // 가게 ID 목록 추출
-            List<Long> storeIds = groupResults.suggestions().stream()
-                .map(suggestion -> suggestion.groupId())
+            List<Long> storeIds = storeResults.suggestions().stream()
+                .map(suggestion -> suggestion.storeId())
                 .collect(Collectors.toList());
 
             if (storeIds.isEmpty()) {

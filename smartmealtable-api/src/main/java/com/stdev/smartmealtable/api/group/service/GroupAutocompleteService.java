@@ -101,60 +101,57 @@ public class GroupAutocompleteService {
     /**
      * 다단계 검색 전략
      *
-     * Stage 1: Prefix 검색 (캐시) - 정확한 매칭 우선
+     * 핵심: 캐시 결과도 DB에서 다시 정렬하여 정확한 매칭 우선순위 보장
+     * Stage 1: Prefix 검색 (정확한 매칭 우선) - DB
      * Stage 2: 초성 검색 (캐시)
-     * Stage 3: 오타 허용 + 부분 매칭 검색 (DB)
+     * Stage 3: 부분 매칭 검색 (DB, 이름 길이순)
      *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 검색 결과
      */
     private List<Group> performMultiStageSearch(String keyword, int limit) {
-        Set<Long> groupIds = new LinkedHashSet<>();
-
-        // Stage 1: Prefix 검색 (Redis Sorted Set) - 정확한 매칭 우선
+        // Redis 캐시 우회하고 항상 searchWithTypoTolerance()로 정렬된 결과 반환
+        // 이렇게 하면 prefix 매칭 → contains 매칭(이름 길이순) → edit distance 순서가 보장됨
         try {
-            List<Long> prefixResults = searchCacheService.getAutocompleteResults(DOMAIN, keyword, limit);
-            groupIds.addAll(prefixResults);
+            List<Group> results = searchWithTypoTolerance(keyword, limit);
 
-            if (groupIds.size() >= limit) {
-                log.debug("Stage 1 (Prefix) 충분한 결과: {}", groupIds.size());
-                return fetchGroups(new ArrayList<>(groupIds));
+            if (!results.isEmpty()) {
+                log.debug("정렬된 검색 결과 반환: keyword={}, results={}", keyword, results.size());
+                return results;
             }
         } catch (Exception e) {
-            log.warn("Stage 1 (Prefix) 검색 실패, Stage 2로 진행", e);
+            log.warn("정렬된 검색 실패, fallback 실행", e);
         }
 
-        // Stage 2: 초성 검색 (초성 인덱스)
+        // Fallback: 초성 검색 시도
         if (KoreanSearchUtil.isChosung(keyword)) {
             try {
                 Set<String> chosungResults = chosungIndexBuilder.findIdsByChosung(DOMAIN, keyword);
-                chosungResults.stream()
-                    .map(Long::parseLong)
-                    .forEach(groupIds::add);
-
-                if (groupIds.size() >= limit) {
-                    log.debug("Stage 2 (초성) 충분한 결과: {}", groupIds.size());
-                    return fetchGroups(new ArrayList<>(groupIds));
+                if (!chosungResults.isEmpty()) {
+                    List<Long> ids = chosungResults.stream()
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                    List<Group> groups = fetchGroups(ids);
+                    if (!groups.isEmpty()) {
+                        log.debug("초성 검색으로 결과 반환: {}", groups.size());
+                        return groups;
+                    }
                 }
             } catch (Exception e) {
-                log.warn("Stage 2 (초성) 검색 실패, Stage 3으로 진행", e);
+                log.warn("초성 검색 실패", e);
             }
         }
 
-        // Stage 3: 오타 허용 + 부분 매칭 검색 (결과가 부족할 때)
-        if (groupIds.size() < limit) {
-            try {
-                List<Group> expandedResults = searchWithTypoTolerance(keyword, limit * 2);
-                expandedResults.forEach(group -> groupIds.add(group.getGroupId()));
-
-                log.debug("Stage 3 (오타 허용 + 부분 매칭) 추가 결과: {}", expandedResults.size());
-            } catch (Exception e) {
-                log.warn("Stage 3 (오타 허용 + 부분 매칭) 검색 실패", e);
-            }
-        }
-
-        return fetchGroups(new ArrayList<>(groupIds));
+        // 최후의 fallback: fallbackSearch
+        return fallbackSearch(keyword, limit).suggestions().stream()
+            .map(suggestion -> {
+                // TODO: GroupSuggestion → Group 변환 로직 개선 필요
+                List<Group> groups = groupRepository.findAllByIdIn(List.of(suggestion.groupId()));
+                return groups.isEmpty() ? null : groups.get(0);
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     }
     
     /**
