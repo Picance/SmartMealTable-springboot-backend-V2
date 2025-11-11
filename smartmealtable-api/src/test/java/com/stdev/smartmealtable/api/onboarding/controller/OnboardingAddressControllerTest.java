@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.api.onboarding.dto.request.OnboardingAddressRequest;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
@@ -73,7 +75,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME"
+                AddressType.HOME.name()
         );
 
         // when & then
@@ -89,7 +91,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.detailedAddress").value("101동 1001호"))
                 .andExpect(jsonPath("$.data.latitude").value(37.123456))
                 .andExpect(jsonPath("$.data.longitude").value(127.123456))
-                .andExpect(jsonPath("$.data.addressType").value("HOME"))
+                .andExpect(jsonPath("$.data.addressType").value(AddressType.HOME.name()))
                 .andExpect(jsonPath("$.data.isPrimary").value(true));  // 첫 주소는 자동으로 기본 주소
     }
 
@@ -111,7 +113,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "202동 2002호",
                 37.234567,
                 127.234567,
-                "HOME"
+                AddressType.HOME.name()
         );
 
         // when & then
@@ -146,7 +148,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME"
+                AddressType.HOME.name()
         );
 
         // when & then
@@ -175,7 +177,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "101동 1001호",
                 37.123456,
                 127.123456,
-                "HOME"
+                AddressType.HOME.name()
         );
 
         // when & then
@@ -233,7 +235,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 "5층",
                 37.345678,
                 126.987654,
-                "OFFICE"
+                AddressType.OFFICE.name()
         );
 
         // when & then
@@ -245,7 +247,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.alias").value("회사"))
-                .andExpect(jsonPath("$.data.addressType").value("OFFICE"))
+                .andExpect(jsonPath("$.data.addressType").value(AddressType.OFFICE.name()))
                 .andExpect(jsonPath("$.data.isPrimary").value(true));  // 첫 주소는 자동 기본 주소
     }
 
@@ -291,7 +293,7 @@ class OnboardingAddressControllerTest extends AbstractContainerTest {
                         "101동 1001호",
                         37.123456,
                         127.123456,
-                        "HOME"
+                        AddressType.HOME
                 ),
                 isPrimary
         );

@@ -5,6 +5,7 @@ import com.stdev.smartmealtable.api.member.dto.AddressServiceResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.member.service.AddressDomainService;
@@ -49,7 +50,7 @@ class AddressServiceTest {
         Long memberId = 1L;
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
+                "101동 1234호", 37.497942, 127.027621, AddressType.HOME
         );
         AddressHistory addressHistory = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -75,7 +76,7 @@ class AddressServiceTest {
         Long memberId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
+                "101동 1234호", 37.497942, 127.027621, AddressType.HOME
         );
         
         AddressHistory savedAddress = AddressHistory.reconstitute(
@@ -101,7 +102,7 @@ class AddressServiceTest {
         Long memberId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "회사", null, "서울특별시 강남구 테헤란로 456",
-                "5층", 37.497942, 127.027621, "OFFICE"
+                "5층", 37.497942, 127.027621, AddressType.OFFICE
         );
         
         AddressHistory savedAddress = AddressHistory.reconstitute(
@@ -128,7 +129,7 @@ class AddressServiceTest {
         Long addressHistoryId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME"
+                "202동 5678호", 37.497942, 127.027621, AddressType.HOME
         );
         
         AddressHistory updatedAddress = AddressHistory.reconstitute(
@@ -158,7 +159,7 @@ class AddressServiceTest {
         Long addressHistoryId = 999L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME"
+                "202동 5678호", 37.497942, 127.027621, AddressType.HOME
         );
         
         given(addressDomainService.updateAddress(
@@ -179,7 +180,7 @@ class AddressServiceTest {
         Long addressHistoryId = 1L;
         AddressServiceRequest request = new AddressServiceRequest(
                 "우리집(수정)", null, "서울특별시 강남구 테헤란로 789",
-                "202동 5678호", 37.497942, 127.027621, "HOME"
+                "202동 5678호", 37.497942, 127.027621, AddressType.HOME
         );
         
         given(addressDomainService.updateAddress(
@@ -233,7 +234,7 @@ class AddressServiceTest {
         Long addressHistoryId = 2L;
         Address address = Address.of(
                 "회사", null, "서울특별시 강남구 테헤란로 456",
-                "5층", 37.497942, 127.027621, "OFFICE"
+                "5층", 37.497942, 127.027621, AddressType.OFFICE
         );
         AddressHistory updatedAddress = AddressHistory.reconstitute(
                 addressHistoryId, memberId, address, true, null

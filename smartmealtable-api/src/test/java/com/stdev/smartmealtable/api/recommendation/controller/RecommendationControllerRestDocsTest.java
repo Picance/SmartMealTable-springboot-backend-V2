@@ -4,6 +4,7 @@ import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.*;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
@@ -155,7 +156,7 @@ class RecommendationControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUpTestData() {
         // 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
@@ -179,7 +180,7 @@ class RecommendationControllerRestDocsTest extends AbstractRestDocsTest {
                 null,                                   // detailedAddress
                 37.4783,                                // latitude
                 126.9516,                               // longitude
-                "HOME"                                  // addressType
+                AddressType.HOME                        // addressType
         );
         AddressHistory addressHistory = AddressHistory.create(
                 member.getMemberId(),

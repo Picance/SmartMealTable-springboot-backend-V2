@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.api.member.dto;
 
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,10 +14,10 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AddressServiceResponse {
-    
+
     private Long addressHistoryId;
     private String addressAlias;
-    private String addressType;
+    private AddressType addressType;
     private String lotNumberAddress;
     private String streetNameAddress;
     private String detailedAddress;
@@ -28,7 +29,7 @@ public class AddressServiceResponse {
     public AddressServiceResponse(
             Long addressHistoryId,
             String addressAlias,
-            String addressType,
+            AddressType addressType,
             String lotNumberAddress,
             String streetNameAddress,
             String detailedAddress,

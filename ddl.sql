@@ -4,16 +4,35 @@
 
 -- 그룹 테이블
 CREATE TABLE member_group (
-                          group_id      BIGINT        NOT NULL AUTO_INCREMENT COMMENT '그룹의 고유 식별자',
-                          address       VARCHAR(255)  NULL     COMMENT '그룹의 주소 (예: 학교, 회사 주소)',
-                          name          VARCHAR(50)   NOT NULL COMMENT '그룹의 명칭 (예: OO대학교, XX회사)',
-                          type          VARCHAR(20)   NOT NULL COMMENT '그룹의 유형 (예: 학교, 회사)',
-                          created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
-                          updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          group_id                BIGINT        NOT NULL AUTO_INCREMENT COMMENT '그룹의 고유 식별자',
+                          name                    VARCHAR(50)   NOT NULL COMMENT '그룹의 명칭 (예: OO대학교, XX회사)',
+                          type                    VARCHAR(20)   NOT NULL COMMENT '그룹의 유형 (예: 학교, 회사)',
+                          alias                   VARCHAR(50)   NULL     COMMENT '주소 별칭 (예: 우리집, 회사)',
+                          lot_number_address      VARCHAR(255)  NULL     COMMENT '지번 기준 주소',
+                          street_name_address     VARCHAR(255)  NULL     COMMENT '도로명 기준 주소',
+                          detailed_address        VARCHAR(255)  NULL     COMMENT '건물 호수 등 상세 주소',
+                          latitude                DOUBLE        NULL     COMMENT '주소의 위도 정보',
+                          longitude               DOUBLE        NULL     COMMENT '주소의 경도 정보',
+                          address_type            VARCHAR(20)   NULL     COMMENT '주소의 유형 (예: 집, 회사)',
+                          name_en                 VARCHAR(200)  NULL     COMMENT '그룹의 영문명 (대학 정보)',
+                          campus_type             VARCHAR(50)   NULL     COMMENT '본분교 구분 (대학 정보)',
+                          university_type         VARCHAR(50)   NULL     COMMENT '대학 구분 (대학 정보)',
+                          school_type             VARCHAR(50)   NULL     COMMENT '학교 종류 (대학 정보)',
+                          establishment_type      VARCHAR(50)   NULL     COMMENT '설립 형태 (대학 정보)',
+                          region_code             VARCHAR(10)   NULL     COMMENT '시도 코드 (대학 정보)',
+                          region_name             VARCHAR(50)   NULL     COMMENT '시도명 (대학 정보)',
+                          postal_code             VARCHAR(10)   NULL     COMMENT '우편번호',
+                          website                 VARCHAR(255)  NULL     COMMENT '홈페이지',
+                          phone_number            VARCHAR(50)   NULL     COMMENT '전화번호',
+                          fax_number              VARCHAR(50)   NULL     COMMENT '팩스번호',
+                          establishment_date      VARCHAR(20)   NULL     COMMENT '설립일자 (대학 정보)',
+                          created_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          updated_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                           PRIMARY KEY (group_id),
                           INDEX idx_name (name),
-                          INDEX idx_type_name (type, name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블';
+                          INDEX idx_type_name (type, name),
+                          INDEX idx_street_name_address (street_name_address(10))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블. Address VO와 대학 상세정보를 포함';
 
 -- 회원 테이블
 CREATE TABLE member (

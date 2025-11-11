@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.domain.member.service;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -69,7 +70,7 @@ class AddressDomainServiceTest {
             void it_sets_as_primary_automatically() {
                 // Given
                 Long memberId = 1L;
-                Address address = Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "HOME");
+                Address address = Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.HOME);
 
                 given(addressHistoryRepository.countByMemberId(memberId)).willReturn(0L);
                 given(addressHistoryRepository.save(any(AddressHistory.class)))
@@ -95,7 +96,7 @@ class AddressDomainServiceTest {
             void it_unmarks_existing_and_sets_new_as_primary() {
                 // Given
                 Long memberId = 1L;
-                Address address = Address.of("회사", "서울시 서초구 456", "서울시 서초구 강남대로 456", "5층", 37.456, 127.789, "OFFICE");
+                Address address = Address.of("회사", "서울시 서초구 456", "서울시 서초구 강남대로 456", "5층", 37.456, 127.789, AddressType.OFFICE);
 
                 given(addressHistoryRepository.countByMemberId(memberId)).willReturn(2L);
                 given(addressHistoryRepository.save(any(AddressHistory.class)))
@@ -122,7 +123,7 @@ class AddressDomainServiceTest {
             void it_adds_as_non_primary() {
                 // Given
                 Long memberId = 1L;
-                Address address = Address.of("할머니댁", "경기도 성남시 789", "경기도 성남시 분당구 123", null, null, null, "OTHER");
+                Address address = Address.of("할머니댁", "경기도 성남시 789", "경기도 성남시 분당구 123", null, null, null, AddressType.ETC);
 
                 given(addressHistoryRepository.countByMemberId(memberId)).willReturn(1L);
                 given(addressHistoryRepository.save(any(AddressHistory.class)))
@@ -155,12 +156,12 @@ class AddressDomainServiceTest {
                 // Given
                 Long memberId = 1L;
                 Long addressHistoryId = 1L;
-                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, "HOME");
+                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, AddressType.HOME);
 
                 AddressHistory existingAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "HOME"),
+                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.HOME),
                         false,
                         LocalDateTime.now()
                 );
@@ -192,12 +193,12 @@ class AddressDomainServiceTest {
                 // Given
                 Long memberId = 1L;
                 Long addressHistoryId = 2L;
-                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, "HOME");
+                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, AddressType.HOME);
 
                 AddressHistory existingAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "OFFICE"),
+                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.OFFICE),
                         false,
                         LocalDateTime.now()
                 );
@@ -230,12 +231,12 @@ class AddressDomainServiceTest {
                 // Given
                 Long memberId = 1L;
                 Long addressHistoryId = 1L;
-                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, "HOME");
+                Address newAddress = Address.of("우리집", "서울시 종로구 999", "서울시 종로구 세종대로 999", "202호", 37.999, 127.999, AddressType.HOME);
 
                 AddressHistory otherMemberAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         2L,  // 다른 회원의 주소
-                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "OFFICE"),
+                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.OFFICE),
                         false,
                         LocalDateTime.now()
                 );
@@ -274,7 +275,7 @@ class AddressDomainServiceTest {
                 AddressHistory nonPrimaryAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "OFFICE"),
+                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.OFFICE),
                         false,
                         LocalDateTime.now()
                 );
@@ -305,7 +306,7 @@ class AddressDomainServiceTest {
                 AddressHistory primaryAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "HOME"),
+                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.HOME),
                         true,
                         LocalDateTime.now()
                 );
@@ -338,7 +339,7 @@ class AddressDomainServiceTest {
                 AddressHistory lastPrimaryAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "HOME"),
+                        Address.of("우리집", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.HOME),
                         true,
                         LocalDateTime.now()
                 );
@@ -377,7 +378,7 @@ class AddressDomainServiceTest {
                 AddressHistory targetAddress = AddressHistory.reconstitute(
                         addressHistoryId,
                         memberId,
-                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, "OFFICE"),
+                        Address.of("회사", "서울시 강남구 123", "서울시 강남구 테헤란로 123", "101호", 37.123, 127.456, AddressType.OFFICE),
                         false,
                         LocalDateTime.now()
                 );

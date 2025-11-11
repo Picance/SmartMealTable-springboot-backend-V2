@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.expenditure.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.domain.category.Category;
@@ -86,7 +88,7 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 그룹 생성
-        Group group = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group group = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         Group savedGroup = groupRepository.save(group);
         
         // 회원 1 생성

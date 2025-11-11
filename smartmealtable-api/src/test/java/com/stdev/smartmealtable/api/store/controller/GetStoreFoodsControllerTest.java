@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.store.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
@@ -56,7 +58,7 @@ class GetStoreFoodsControllerTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         groupRepository.save(testGroup);
 
         // 테스트 가게 생성

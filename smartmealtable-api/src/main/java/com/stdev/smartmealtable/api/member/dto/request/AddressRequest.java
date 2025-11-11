@@ -56,6 +56,16 @@ public class AddressRequest {
      * Service Request DTO로 변환
      */
     public AddressServiceRequest toServiceRequest() {
+        com.stdev.smartmealtable.domain.common.vo.AddressType addressTypeEnum = null;
+        if (this.addressType != null && !this.addressType.isBlank()) {
+            try {
+                addressTypeEnum = com.stdev.smartmealtable.domain.common.vo.AddressType.valueOf(this.addressType.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // 유효하지 않은 주소 유형이면 null로 설정
+                addressTypeEnum = null;
+            }
+        }
+
         return new AddressServiceRequest(
                 this.addressAlias,
                 this.lotNumberAddress,
@@ -63,7 +73,7 @@ public class AddressRequest {
                 this.detailedAddress,
                 this.latitude,
                 this.longitude,
-                this.addressType
+                addressTypeEnum
         );
     }
 }

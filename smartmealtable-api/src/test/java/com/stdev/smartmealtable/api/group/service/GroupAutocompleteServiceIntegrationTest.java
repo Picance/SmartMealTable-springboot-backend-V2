@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.group.service;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.group.service.dto.GroupAutocompleteResponse;
 import com.stdev.smartmealtable.api.group.service.dto.GroupAutocompleteResponse.GroupSuggestion;
 import com.stdev.smartmealtable.api.group.service.dto.TrendingKeywordsResponse;
@@ -84,9 +86,9 @@ class GroupAutocompleteServiceIntegrationTest {
                 .flushDb();
 
         // 테스트 데이터 생성
-        savedGroup1 = groupRepository.save(Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구"));
-        savedGroup2 = groupRepository.save(Group.create("서울과학기술대학교", GroupType.UNIVERSITY, "서울특별시 노원구"));
-        savedGroup3 = groupRepository.save(Group.create("연세대학교", GroupType.UNIVERSITY, "서울특별시 서대문구"));
+        savedGroup1 = groupRepository.save(Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구", null, null, null, null)));
+        savedGroup2 = groupRepository.save(Group.create("서울과학기술대학교", GroupType.UNIVERSITY, Address.of("서울과학기술대학교", null, "서울특별시 노원구", null, null, null, null)));
+        savedGroup3 = groupRepository.save(Group.create("연세대학교", GroupType.UNIVERSITY, Address.of("연세대학교", null, "서울특별시 서대문구", null, null, null, null)));
     }
 
     // ==================== Stage 1: Prefix Cache 검색 테스트 ====================
@@ -97,10 +99,10 @@ class GroupAutocompleteServiceIntegrationTest {
     void autocomplete_CacheHit_Success() {
         // given - 캐시에 데이터 추가
         List<AutocompleteEntity> entities = List.of(
-                new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0, 
-                        Map.of("type", "UNIVERSITY", "address", savedGroup1.getAddress())),
+                new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 100.0,
+                        Map.of("type", "UNIVERSITY", "address", savedGroup1.getAddress() != null ? savedGroup1.getAddress().getFullAddress() : "")),
                 new AutocompleteEntity(savedGroup2.getGroupId(), savedGroup2.getName(), 150.0,
-                        Map.of("type", "UNIVERSITY", "address", savedGroup2.getAddress()))
+                        Map.of("type", "UNIVERSITY", "address", savedGroup2.getAddress() != null ? savedGroup2.getAddress().getFullAddress() : ""))
         );
         searchCacheService.cacheAutocompleteData(DOMAIN, entities);
 
@@ -325,7 +327,7 @@ class GroupAutocompleteServiceIntegrationTest {
         // given - 연세대만 캐시에 추가 (다른 그룹과 겹치지 않게)
         searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
                 new AutocompleteEntity(savedGroup3.getGroupId(), savedGroup3.getName(), 100.0,
-                        Map.of("type", "UNIVERSITY", "address", savedGroup3.getAddress()))
+                        Map.of("type", "UNIVERSITY", "address", savedGroup3.getAddress() != null ? savedGroup3.getAddress().getFullAddress() : ""))
         ));
 
         // when - "연세"로 검색 (연세대학교만 매칭)

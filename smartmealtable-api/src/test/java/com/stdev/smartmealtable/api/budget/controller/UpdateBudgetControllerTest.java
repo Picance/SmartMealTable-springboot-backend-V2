@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.budget.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.budget.controller.request.UpdateBudgetRequest;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.core.error.ErrorCode;
@@ -78,7 +80,7 @@ class UpdateBudgetControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // Given: 테스트 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // Given: 테스트 회원 생성
@@ -138,7 +140,7 @@ class UpdateBudgetControllerTest extends AbstractContainerTest {
     @DisplayName("월별 예산 수정 실패 - 예산 정보 없음 (404)")
     void updateBudget_Fail_BudgetNotFound() throws Exception {
         // Given: 새로운 회원 생성 (예산 없음)
-        Group newGroup = Group.create("새대학", GroupType.UNIVERSITY, "부산광역시");
+        Group newGroup = Group.create("새대학", GroupType.UNIVERSITY, Address.of("새대학", null, "부산광역시", null, null, null, null));
         newGroup = groupRepository.save(newGroup);  // 저장 후 반환값 받기
         
         Member newMember = Member.create(newGroup.getGroupId(), "새회원", null, RecommendationType.BALANCED);

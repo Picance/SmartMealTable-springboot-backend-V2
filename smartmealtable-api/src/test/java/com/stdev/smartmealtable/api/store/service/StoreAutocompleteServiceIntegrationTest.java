@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.store.service;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse.StoreSuggestion;
 import com.stdev.smartmealtable.api.store.service.dto.StoreTrendingKeywordsResponse;

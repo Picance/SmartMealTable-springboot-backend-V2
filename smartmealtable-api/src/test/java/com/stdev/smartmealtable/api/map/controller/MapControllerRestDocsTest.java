@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.map.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.map.AddressSearchResult;
 import com.stdev.smartmealtable.domain.map.MapService;

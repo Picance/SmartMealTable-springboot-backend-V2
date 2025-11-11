@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.home.service;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.home.service.dto.MonthlyBudgetConfirmServiceResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;

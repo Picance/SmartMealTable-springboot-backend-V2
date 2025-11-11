@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.member.dto;
 
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,14 +13,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AddressServiceRequest {
-    
+
     private String addressAlias;
     private String lotNumberAddress;
     private String streetNameAddress;
     private String detailedAddress;
     private Double latitude;
     private Double longitude;
-    private String addressType;
+    private AddressType addressType;
     
     public AddressServiceRequest(
             String addressAlias,
@@ -28,7 +29,7 @@ public class AddressServiceRequest {
             String detailedAddress,
             Double latitude,
             Double longitude,
-            String addressType
+            AddressType addressType
     ) {
         this.addressAlias = addressAlias;
         this.lotNumberAddress = lotNumberAddress;

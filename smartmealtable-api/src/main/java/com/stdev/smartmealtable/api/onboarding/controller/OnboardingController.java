@@ -106,6 +106,17 @@ public class OnboardingController {
         log.info("온보딩 주소 등록 API 호출 - memberId: {}, alias: {}", 
                 authenticatedUser.memberId(), request.alias());
 
+        // String addressType을 AddressType ENUM으로 변환
+        com.stdev.smartmealtable.domain.common.vo.AddressType addressTypeEnum = null;
+        if (request.addressType() != null && !request.addressType().isBlank()) {
+            try {
+                addressTypeEnum = com.stdev.smartmealtable.domain.common.vo.AddressType.valueOf(request.addressType().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // 유효하지 않은 주소 유형이면 null로 설정
+                addressTypeEnum = null;
+            }
+        }
+
         OnboardingAddressServiceRequest serviceRequest = OnboardingAddressServiceRequest.of(
                 authenticatedUser.memberId(),
                 request.alias(),
@@ -114,10 +125,14 @@ public class OnboardingController {
                 request.detailedAddress(),
                 request.latitude(),
                 request.longitude(),
-                request.addressType()
+                addressTypeEnum
         );
 
         OnboardingAddressServiceResponse serviceResponse = onboardingAddressService.registerAddress(serviceRequest);
+
+        String responseAddressType = serviceResponse.addressType() != null
+                ? serviceResponse.addressType().name()
+                : null;
 
         OnboardingAddressResponse response = new OnboardingAddressResponse(
                 serviceResponse.addressHistoryId(),
@@ -127,7 +142,7 @@ public class OnboardingController {
                 serviceResponse.detailedAddress(),
                 serviceResponse.latitude(),
                 serviceResponse.longitude(),
-                serviceResponse.addressType(),
+                responseAddressType,
                 serviceResponse.isPrimary()
         );
 

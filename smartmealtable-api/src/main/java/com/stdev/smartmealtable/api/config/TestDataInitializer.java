@@ -170,7 +170,16 @@ public class TestDataInitializer {
         
         for (GroupData groupData : groupsData) {
             try {
-                Group group = Group.create(groupData.name, groupData.type, groupData.address);
+                Address address = Address.of(
+                    groupData.name,      // alias
+                    null,                // lotNumberAddress
+                    groupData.address,   // streetNameAddress
+                    null,                // detailedAddress
+                    null,                // latitude
+                    null,                // longitude
+                    null                 // addressType
+                );
+                Group group = Group.create(groupData.name, groupData.type, address);
                 Group savedGroup = groupRepository.save(group);
                 log.debug("✓ 그룹 생성: {} - {} (ID: {})", groupData.type, groupData.name, savedGroup.getGroupId());
             } catch (Exception e) {
@@ -349,7 +358,16 @@ public class TestDataInitializer {
                 selectedGroup = universities.get(0);  // 첫 번째 대학 선택
             } else {
                 log.warn("⚠ 그룹이 없어 기본 그룹을 생성합니다.");
-                Group newGroup = Group.create("기본 그룹", GroupType.UNIVERSITY, "서울시");
+                Address address = Address.of(
+                    "기본 그룹",         // alias
+                    null,               // lotNumberAddress
+                    "서울시",           // streetNameAddress
+                    null,               // detailedAddress
+                    null,               // latitude
+                    null,               // longitude
+                    null                // addressType
+                );
+                Group newGroup = Group.create("기본 그룹", GroupType.UNIVERSITY, address);
                 selectedGroup = groupRepository.save(newGroup);
             }
             
@@ -423,7 +441,7 @@ public class TestDataInitializer {
                 "102호",
                 37.498095,      // 강남역 근처 위도
                 127.027610,     // 강남역 근처 경도
-                "HOME"
+                com.stdev.smartmealtable.domain.common.vo.AddressType.HOME
             );
             
             // 주소 생성 (isPrimary=true: 기본 주소)

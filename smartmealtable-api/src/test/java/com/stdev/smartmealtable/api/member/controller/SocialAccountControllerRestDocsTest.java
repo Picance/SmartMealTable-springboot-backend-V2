@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.member.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.member.service.social.AddSocialAccountServiceRequest;
 import com.stdev.smartmealtable.client.auth.oauth.dto.OAuthTokenResponse;
@@ -53,7 +55,7 @@ class SocialAccountControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUpTestData() {
         // 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
@@ -332,7 +334,7 @@ class SocialAccountControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("소셜 계정 연동 해제 실패 - 유일한 로그인 수단")
     void removeSocialAccount_lastLoginMethod_docs() throws Exception {
         // given - 비밀번호 없는 회원 생성
-        Group anotherGroup = Group.create("다른대학교", GroupType.UNIVERSITY, "서울특별시 강남구");
+        Group anotherGroup = Group.create("다른대학교", GroupType.UNIVERSITY, Address.of("다른대학교", null, "서울특별시 강남구", null, null, null, null));
         Group savedAnotherGroup = groupRepository.save(anotherGroup);
 
         Member socialOnlyMember = Member.create(savedAnotherGroup.getGroupId(), "소셜전용유저", null, RecommendationType.SAVER);

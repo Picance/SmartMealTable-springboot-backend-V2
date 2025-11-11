@@ -8,6 +8,7 @@ import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MealBudget;
 import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.expenditure.ExpenditureRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
@@ -63,7 +64,7 @@ class HomeDashboardQueryServiceTest {
         // 주소 데이터
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
+                "101동 1234호", 37.497942, 127.027621, AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -158,7 +159,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
+                "101동 1234호", 37.497942, 127.027621, AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -195,7 +196,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
-                "101동 1234호", 37.497942, 127.027621, "HOME"
+                "101동 1234호", 37.497942, 127.027621, AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -263,7 +264,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "회사", null, "서울특별시 강남구 삼성로 456",
-                "B동 10층", 37.508123, 127.062345, "OFFICE"
+                "B동 10층", 37.508123, 127.062345, AddressType.OFFICE
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 2L, memberId, address, true, null
@@ -313,7 +314,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "테스트주소", null, "서울특별시 종로구",
-                "1층", 37.5, 127.0, "ETC"
+                "1층", 37.5, 127.0, AddressType.ETC
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -352,7 +353,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구",
-                "101동", 37.5, 127.0, "HOME"
+                "101동", 37.5, 127.0, AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null
@@ -409,7 +410,7 @@ class HomeDashboardQueryServiceTest {
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구",
-                "101동", 37.5, 127.0, "HOME"
+                "101동", 37.5, 127.0, AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.reconstitute(
                 1L, memberId, address, true, null

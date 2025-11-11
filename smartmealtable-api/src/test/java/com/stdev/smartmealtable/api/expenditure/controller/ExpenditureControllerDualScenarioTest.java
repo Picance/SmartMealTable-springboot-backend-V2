@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.expenditure.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureFromCartRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
@@ -82,7 +84,7 @@ class ExpenditureControllerDualScenarioTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         testGroup = groupRepository.save(testGroup);
         
         // 테스트 회원 생성

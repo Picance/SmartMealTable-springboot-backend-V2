@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.settings.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
+import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -51,7 +52,7 @@ class NotificationSettingsControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트용 그룹 생성
-        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구 관악로 1");
+        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구 관악로 1", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트용 회원 생성

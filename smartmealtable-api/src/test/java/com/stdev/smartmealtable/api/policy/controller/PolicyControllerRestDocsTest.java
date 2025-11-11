@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.policy.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.policy.entity.Policy;
 import com.stdev.smartmealtable.domain.policy.entity.PolicyType;

@@ -257,8 +257,8 @@ public class GroupAutocompleteService {
             Map<String, String> attributes = new HashMap<>();
             attributes.put("name", group.getName());
             attributes.put("type", group.getType().name());
-            attributes.put("address", group.getAddress() != null ? group.getAddress() : "");
-            
+            attributes.put("address", group.getAddress() != null ? group.getAddress().getFullAddress() : "");
+
             searchCacheService.cacheDetailData(DOMAIN, group.getGroupId(), attributes);
         }
     }
@@ -380,7 +380,7 @@ public class GroupAutocompleteService {
             group.getGroupId(),
             group.getName(),
             group.getType(),
-            group.getAddress()
+            group.getAddress() != null ? group.getAddress().getFullAddress() : null
         );
     }
 }

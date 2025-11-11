@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.api.search.service;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.store.Store;
@@ -214,6 +216,6 @@ class SearchCacheWarmingServiceTest {
     }
 
     private Group createMockGroup(Long id, String name) {
-        return Group.create(name, com.stdev.smartmealtable.domain.member.entity.GroupType.UNIVERSITY, "서울특별시 관악구");
+        return Group.create(name, com.stdev.smartmealtable.domain.member.entity.GroupType.UNIVERSITY, Address.of(name, null, "서울특별시 관악구", null, null, null, null));
     }
 }

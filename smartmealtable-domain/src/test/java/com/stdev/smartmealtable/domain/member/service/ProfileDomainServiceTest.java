@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.domain.member.service;
 
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
 import com.stdev.smartmealtable.domain.member.entity.Member;
@@ -154,7 +155,8 @@ class ProfileDomainServiceTest {
             void it_returns_group_entity() {
                 // Given
                 Long groupId = 1L;
-                Group group = Group.create("대학생", GroupType.UNIVERSITY, "서울");
+                Address address = Address.of("대학생", null, "서울", null, null, null, null);
+                Group group = Group.create("대학생", GroupType.UNIVERSITY, address);
 
                 given(groupRepository.findById(groupId)).willReturn(Optional.of(group));
 
@@ -207,7 +209,8 @@ class ProfileDomainServiceTest {
                 Long groupId = 2L;
 
                 Member member = Member.create(groupId, "구닉네임", null, RecommendationType.BALANCED);
-                Group group = Group.create("대학생", GroupType.UNIVERSITY, "서울");
+                Address address = Address.of("대학생", null, "서울", null, null, null, null);
+                Group group = Group.create("대학생", GroupType.UNIVERSITY, address);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNicknameExcludingMemberId(nickname, memberId))
@@ -335,7 +338,8 @@ class ProfileDomainServiceTest {
                 Long groupId = 2L;
 
                 Member member = Member.create(null, "임시닉네임", null, RecommendationType.BALANCED);
-                Group group = Group.create("대학생", GroupType.UNIVERSITY, "서울");
+                Address address = Address.of("대학생", null, "서울", null, null, null, null);
+                Group group = Group.create("대학생", GroupType.UNIVERSITY, address);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNickname(nickname)).willReturn(false);

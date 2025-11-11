@@ -334,10 +334,22 @@ class GroupControllerTest extends AbstractAdminContainerTest {
     // ==================== Helper Methods ====================
 
     private GroupJpaEntity createTestGroup(String name, GroupType type, String address) {
+        // String address를 Address VO로 변환
+        com.stdev.smartmealtable.domain.common.vo.Address addressVO =
+                com.stdev.smartmealtable.domain.common.vo.Address.of(
+                        name,           // alias
+                        null,           // lotNumberAddress
+                        address,        // streetNameAddress
+                        null,           // detailedAddress
+                        null,           // latitude
+                        null,           // longitude
+                        null            // addressType
+                );
+
         // Domain 엔티티를 통해 생성
-        com.stdev.smartmealtable.domain.member.entity.Group domainGroup = 
-                com.stdev.smartmealtable.domain.member.entity.Group.create(name, type, address);
-        
+        com.stdev.smartmealtable.domain.member.entity.Group domainGroup =
+                com.stdev.smartmealtable.domain.member.entity.Group.create(name, type, addressVO);
+
         GroupJpaEntity jpaEntity = GroupJpaEntity.from(domainGroup);
         return groupJpaRepository.save(jpaEntity);
     }

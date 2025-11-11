@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.favorite.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.favorite.dto.AddFavoriteRequest;
 import com.stdev.smartmealtable.api.favorite.dto.ReorderFavoritesRequest;
@@ -61,7 +63,7 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUpTestData() {
         // 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
         
         // 회원 생성

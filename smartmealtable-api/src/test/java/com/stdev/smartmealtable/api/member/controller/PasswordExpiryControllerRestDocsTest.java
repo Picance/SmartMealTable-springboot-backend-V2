@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.member.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;

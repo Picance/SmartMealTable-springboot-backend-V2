@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.cart.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.budget.service.DailyBudgetQueryService;
 import com.stdev.smartmealtable.api.budget.service.MonthlyBudgetQueryService;
 import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse;
@@ -95,7 +97,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트 회원 생성

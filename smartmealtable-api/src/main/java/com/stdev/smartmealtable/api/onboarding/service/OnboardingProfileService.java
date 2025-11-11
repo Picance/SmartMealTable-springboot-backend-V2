@@ -51,7 +51,7 @@ public class OnboardingProfileService {
                         group.getGroupId(),
                         group.getName(),
                         group.getType(),
-                        group.getAddress()
+                        group.getAddress() != null ? group.getAddress().getFullAddress() : null
                 )
         );
     }

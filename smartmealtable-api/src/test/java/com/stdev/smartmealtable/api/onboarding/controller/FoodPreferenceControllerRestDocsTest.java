@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
@@ -82,7 +84,7 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
 
     @BeforeEach
     void setUpTestData() {
-        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         Member testMember = Member.create(savedGroup.getGroupId(), "테스트유저", null, RecommendationType.BALANCED);

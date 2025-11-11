@@ -19,7 +19,7 @@ public class QAddressEmbeddable extends BeanPath<AddressEmbeddable> {
 
     public static final QAddressEmbeddable addressEmbeddable = new QAddressEmbeddable("addressEmbeddable");
 
-    public final StringPath addressType = createString("addressType");
+    public final EnumPath<com.stdev.smartmealtable.domain.common.vo.AddressType> addressType = createEnum("addressType", com.stdev.smartmealtable.domain.common.vo.AddressType.class);
 
     public final StringPath alias = createString("alias");
 

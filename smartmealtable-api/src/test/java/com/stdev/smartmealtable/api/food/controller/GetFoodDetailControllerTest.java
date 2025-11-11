@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.api.food.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
@@ -79,7 +80,7 @@ class GetFoodDetailControllerTest extends AbstractRestDocsTest {
                 "101동 101호",
                 37.497952,
                 127.027619,
-                "HOME"
+                AddressType.HOME
         );
         AddressHistory testAddress = AddressHistory.create(
                 testMember.getMemberId(),

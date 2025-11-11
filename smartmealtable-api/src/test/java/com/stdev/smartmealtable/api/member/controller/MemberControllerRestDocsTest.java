@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.member.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
@@ -53,7 +55,7 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트용 그룹 생성
-        Group testGroup = Group.create("학생", GroupType.UNIVERSITY, "대학생 그룹");
+        Group testGroup = Group.create("학생", GroupType.UNIVERSITY, Address.of("학생", null, "대학생 그룹", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
         testGroupId = savedGroup.getGroupId();
 

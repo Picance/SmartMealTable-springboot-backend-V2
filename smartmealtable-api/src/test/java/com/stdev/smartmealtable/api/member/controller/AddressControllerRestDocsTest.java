@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.api.member.controller;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.member.dto.request.AddressRequest;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.member.entity.Group;
@@ -45,7 +46,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUpTestData() {
         // 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 회원 생성
@@ -72,7 +73,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "101동 101호",
                 37.4783,
                 126.9516,
-                "HOME"
+                AddressType.HOME
         );
         AddressHistory primaryAddress = AddressHistory.create(
                 member.getMemberId(),
@@ -90,7 +91,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "5층",
                 37.4979,
                 127.0276,
-                "WORK"
+                AddressType.OFFICE
         );
         AddressHistory workAddress = AddressHistory.create(
                 member.getMemberId(),
@@ -347,7 +348,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "1층",
                 37.5720,
                 126.9763,
-                "ETC"
+                AddressType.ETC
         );
         AddressHistory addressToDelete = AddressHistory.create(
                 member.getMemberId(),
@@ -410,7 +411,7 @@ class AddressControllerRestDocsTest extends AbstractRestDocsTest {
                 "201호",
                 37.4837,
                 127.0324,
-                "HOME"
+                AddressType.HOME
         );
         AddressHistory newAddress = AddressHistory.create(
                 member.getMemberId(),

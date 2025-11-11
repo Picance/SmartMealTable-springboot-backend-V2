@@ -5,6 +5,7 @@ import com.stdev.smartmealtable.api.member.dto.response.UpdateProfileResponse;
 import com.stdev.smartmealtable.api.member.service.dto.UpdateProfileServiceRequest;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.*;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
@@ -85,7 +86,8 @@ class MemberProfileServiceTest {
                         LocalDateTime.now().minusDays(30)
                 );
 
-                Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY, "서울");
+                Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY,
+                        Address.of("대학생", null, "서울", null, null, null, null));
 
                 SocialAccount kakaoAccount = SocialAccount.create(
                         auth.getMemberAuthenticationId(),
@@ -244,7 +246,8 @@ class MemberProfileServiceTest {
 
                 Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.BALANCED);
 
-                Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY, "서울");
+                Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY,
+                        Address.of("대학생", null, "서울", null, null, null, null));
 
                 given(profileDomainService.updateProfile(memberId, nickname, groupId))
                         .willReturn(updatedMember);

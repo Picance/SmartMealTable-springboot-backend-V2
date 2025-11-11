@@ -53,10 +53,14 @@ public class AddressResponse {
      * Service Response DTO에서 변환
      */
     public static AddressResponse from(AddressServiceResponse serviceResponse) {
+        String addressTypeString = serviceResponse.getAddressType() != null
+                ? serviceResponse.getAddressType().name()
+                : null;
+
         return new AddressResponse(
                 serviceResponse.getAddressHistoryId(),
                 serviceResponse.getAddressAlias(),
-                serviceResponse.getAddressType(),
+                addressTypeString,
                 serviceResponse.getLotNumberAddress(),
                 serviceResponse.getStreetNameAddress(),
                 serviceResponse.getDetailedAddress(),

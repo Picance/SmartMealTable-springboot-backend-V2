@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.api.onboarding.service.dto;
 
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 
 /**
@@ -14,7 +15,7 @@ public record OnboardingAddressServiceResponse(
         String detailedAddress,
         Double latitude,
         Double longitude,
-        String addressType,
+        AddressType addressType,
         Boolean isPrimary
 ) {
     public static OnboardingAddressServiceResponse from(AddressHistory addressHistory) {

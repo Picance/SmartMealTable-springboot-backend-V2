@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.admin.group.service;
 import com.stdev.smartmealtable.admin.group.service.dto.*;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupPageResult;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
@@ -84,19 +85,30 @@ public class GroupApplicationService {
     @Transactional
     public GroupServiceResponse createGroup(CreateGroupServiceRequest request) {
         log.info("그룹 생성 요청: name={}, type={}", request.name(), request.type());
-        
+
         // 중복 이름 검증
         validateDuplicateName(request.name());
-        
+
+        // Address VO 생성 (기본값: alias는 그룹명, 도로명 주소만 사용)
+        Address address = Address.of(
+            request.name(),           // alias
+            null,                     // lotNumberAddress
+            request.address(),        // streetNameAddress
+            null,                     // detailedAddress
+            null,                     // latitude
+            null,                     // longitude
+            null                      // addressType
+        );
+
         // 도메인 엔티티 생성
-        Group group = Group.create(request.name(), request.type(), request.address());
-        
+        Group group = Group.create(request.name(), request.type(), address);
+
         // 저장
         Group savedGroup = groupRepository.save(group);
-        
+
         // 캐시 업데이트 (검색 인덱스 추가)
         updateCacheAfterCreate(savedGroup);
-        
+
         log.info("그룹 생성 완료: groupId={}, name={}", savedGroup.getGroupId(), savedGroup.getName());
         return GroupServiceResponse.from(savedGroup);
     }
@@ -113,28 +125,39 @@ public class GroupApplicationService {
     @Transactional
     public GroupServiceResponse updateGroup(Long groupId, UpdateGroupServiceRequest request) {
         log.info("그룹 수정 요청: groupId={}, name={}, type={}", groupId, request.name(), request.type());
-        
+
         // 그룹 존재 확인
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new BusinessException(ErrorType.GROUP_NOT_FOUND));
-        
+
         // 중복 이름 검증 (자기 자신 제외)
         validateDuplicateNameForUpdate(request.name(), groupId);
-        
+
+        // Address VO 생성 (기본값: alias는 그룹명, 도로명 주소만 사용)
+        Address address = Address.of(
+            request.name(),           // alias
+            null,                     // lotNumberAddress
+            request.address(),        // streetNameAddress
+            null,                     // detailedAddress
+            null,                     // latitude
+            null,                     // longitude
+            null                      // addressType
+        );
+
         // 도메인 엔티티 재생성 (불변성 유지)
         Group updatedGroup = Group.reconstitute(
                 group.getGroupId(),
                 request.name(),
                 request.type(),
-                request.address()
+                address
         );
-        
+
         // 캐시 업데이트 (기존 캐시 제거 후 새 데이터로 추가)
         updateCacheAfterUpdate(group, updatedGroup);
-        
+
         // 저장
         Group savedGroup = groupRepository.save(updatedGroup);
-        
+
         log.info("그룹 수정 완료: groupId={}, name={}", savedGroup.getGroupId(), savedGroup.getName());
         return GroupServiceResponse.from(savedGroup);
     }
@@ -299,7 +322,7 @@ public class GroupApplicationService {
         Map<String, String> additionalData = new HashMap<>();
         additionalData.put("type", group.getType().name());
         if (group.getAddress() != null) {
-            additionalData.put("address", group.getAddress());
+            additionalData.put("address", group.getAddress().getFullAddress());
         }
         return additionalData;
     }

@@ -1,8 +1,11 @@
 package com.stdev.smartmealtable.storage.db.common.vo;
 
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,8 +36,9 @@ public class AddressEmbeddable {
     @Column(name = "longitude")
     private Double longitude;
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "address_type", length = 20)
-    private String addressType;
+    private AddressType addressType;
     
     /**
      * Domain VO → JPA Embeddable 변환

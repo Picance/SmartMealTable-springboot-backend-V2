@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.budget.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
@@ -68,7 +70,7 @@ class DailyBudgetQueryControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트용 그룹 생성
-        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group testGroup = Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트용 회원 생성

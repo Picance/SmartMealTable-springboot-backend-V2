@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.group.controller;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
@@ -36,12 +38,12 @@ class GroupControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트 데이터 생성
-        groupRepository.save(Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구"));
-        groupRepository.save(Group.create("연세대학교", GroupType.UNIVERSITY, "서울특별시 서대문구"));
-        groupRepository.save(Group.create("고려대학교", GroupType.UNIVERSITY, "서울특별시 성북구"));
-        groupRepository.save(Group.create("카카오", GroupType.COMPANY, "경기도 성남시"));
-        groupRepository.save(Group.create("네이버", GroupType.COMPANY, "경기도 성남시"));
-        groupRepository.save(Group.create("삼성전자", GroupType.COMPANY, "경기도 수원시"));
+        groupRepository.save(Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구", null, null, null, null)));
+        groupRepository.save(Group.create("연세대학교", GroupType.UNIVERSITY, Address.of("연세대학교", null, "서울특별시 서대문구", null, null, null, null)));
+        groupRepository.save(Group.create("고려대학교", GroupType.UNIVERSITY, Address.of("고려대학교", null, "서울특별시 성북구", null, null, null, null)));
+        groupRepository.save(Group.create("카카오", GroupType.COMPANY, Address.of("카카오", null, "경기도 성남시", null, null, null, null)));
+        groupRepository.save(Group.create("네이버", GroupType.COMPANY, Address.of("네이버", null, "경기도 성남시", null, null, null, null)));
+        groupRepository.save(Group.create("삼성전자", GroupType.COMPANY, Address.of("삼성전자", null, "경기도 수원시", null, null, null, null)));
     }
 
     @Test

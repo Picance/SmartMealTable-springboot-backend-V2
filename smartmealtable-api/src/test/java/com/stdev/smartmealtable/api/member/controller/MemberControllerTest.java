@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.auth.service.SignupService;
 import com.stdev.smartmealtable.api.auth.service.dto.SignupServiceRequest;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
@@ -69,7 +71,7 @@ class MemberControllerTest extends AbstractContainerTest {
     @BeforeEach
     void setUp() {
         // 테스트용 그룹 생성
-        Group group = Group.create("서울대학교", GroupType.UNIVERSITY, "서울특별시 관악구");
+        Group group = Group.create("서울대학교", GroupType.UNIVERSITY, Address.of("서울대학교", null, "서울특별시 관악구", null, null, null, null));
         Group savedGroup = groupRepository.save(group);
         testGroupId = savedGroup.getGroupId();
 
@@ -156,7 +158,7 @@ class MemberControllerTest extends AbstractContainerTest {
     @DisplayName("프로필 수정 성공 - 그룹만 변경 (200 OK)")
     void updateProfile_groupOnly_success() throws Exception {
         // given
-        Group newGroup = Group.create("연세대학교", GroupType.UNIVERSITY, "서울특별시 서대문구");
+        Group newGroup = Group.create("연세대학교", GroupType.UNIVERSITY, Address.of("연세대학교", null, "서울특별시 서대문구", null, null, null, null));
         Group savedNewGroup = groupRepository.save(newGroup);
         Long newGroupId = savedNewGroup.getGroupId();
 
@@ -182,7 +184,7 @@ class MemberControllerTest extends AbstractContainerTest {
     @DisplayName("프로필 수정 성공 - 닉네임과 그룹 모두 변경 (200 OK)")
     void updateProfile_both_success() throws Exception {
         // given
-        Group newGroup = Group.create("고려대학교", GroupType.UNIVERSITY, "서울특별시 성북구");
+        Group newGroup = Group.create("고려대학교", GroupType.UNIVERSITY, Address.of("고려대학교", null, "서울특별시 성북구", null, null, null, null));
         Group savedNewGroup = groupRepository.save(newGroup);
         Long newGroupId = savedNewGroup.getGroupId();
 

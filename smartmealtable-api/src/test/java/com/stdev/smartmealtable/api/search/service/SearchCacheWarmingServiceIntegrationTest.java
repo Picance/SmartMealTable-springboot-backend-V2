@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.search.service;
 
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
@@ -236,6 +238,6 @@ class SearchCacheWarmingServiceIntegrationTest extends AbstractContainerTest {
      * 테스트용 Group 생성
      */
     private Group createTestGroup(String name, Long memberId) {
-        return Group.create(name, GroupType.UNIVERSITY, "서울특별시");
+        return Group.create(name, GroupType.UNIVERSITY, Address.of(name, null, "서울특별시", null, null, null, null));
     }
 }

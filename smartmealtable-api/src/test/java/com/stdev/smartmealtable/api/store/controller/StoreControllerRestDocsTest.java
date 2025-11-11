@@ -15,6 +15,7 @@ import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
     @BeforeEach
     void setUp() {
         // 테스트 그룹 생성
-        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, "서울특별시");
+        Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
 
         // 테스트 회원 생성
@@ -88,7 +89,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                 "",  // detailedAddress
                 37.5012345,  // latitude
                 127.0398765,  // longitude
-                "HOME"  // addressType
+                com.stdev.smartmealtable.domain.common.vo.AddressType.HOME  // addressType
         );
         AddressHistory addressHistory = AddressHistory.create(
                 member.getMemberId(),

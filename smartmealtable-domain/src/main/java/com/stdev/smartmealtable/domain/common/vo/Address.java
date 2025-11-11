@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address {
-    
+
     private String alias;                    // 주소 별칭 (예: 우리집, 회사)
     private String lotNumberAddress;         // 지번 주소
     private String streetNameAddress;        // 도로명 주소
     private String detailedAddress;          // 상세 주소 (동/호수)
     private Double latitude;                 // 위도
     private Double longitude;                // 경도
-    private String addressType;              // 주소 유형 (예: HOME, OFFICE)
+    private AddressType addressType;         // 주소 유형 (HOME, OFFICE, SCHOOL, ETC)
     
     /**
      * 주소 생성 (정적 팩토리 메서드)
@@ -32,7 +32,7 @@ public class Address {
             String detailedAddress,
             Double latitude,
             Double longitude,
-            String addressType
+            AddressType addressType
     ) {
         Address address = new Address();
         address.alias = alias;

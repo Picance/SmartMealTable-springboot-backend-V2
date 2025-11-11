@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.onboarding.service.dto;
 
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 
 /**
  * 온보딩 - 주소 등록 Service Request DTO
@@ -18,7 +19,7 @@ public record OnboardingAddressServiceRequest(
             String detailedAddress,
             Double latitude,
             Double longitude,
-            String addressType
+            AddressType addressType
     ) {
         Address address = Address.of(
                 alias,

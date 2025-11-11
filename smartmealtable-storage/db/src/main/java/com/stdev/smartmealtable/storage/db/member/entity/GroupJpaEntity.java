@@ -2,6 +2,7 @@ package com.stdev.smartmealtable.storage.db.member.entity;
 
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
+import com.stdev.smartmealtable.storage.db.common.vo.AddressEmbeddable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,8 +29,8 @@ public class GroupJpaEntity {
     @Column(name = "type", nullable = false, length = 20)
     private GroupType type;
 
-    @Column(name = "address", length = 255)
-    private String address;
+    @Embedded
+    private AddressEmbeddable address;
 
     // 상세 정보 (대학 정보 등)
     @Column(name = "name_en", length = 200)
@@ -53,12 +54,6 @@ public class GroupJpaEntity {
     @Column(name = "region_name", length = 50)
     private String regionName;
 
-    @Column(name = "road_address", length = 255)
-    private String roadAddress;
-
-    @Column(name = "jibun_address", length = 255)
-    private String jibunAddress;
-
     @Column(name = "postal_code", length = 10)
     private String postalCode;
 
@@ -74,13 +69,15 @@ public class GroupJpaEntity {
     @Column(name = "establishment_date", length = 20)
     private String establishmentDate;
 
-    // Domain -> JPA Entity
+    /**
+     * Domain -> JPA Entity 변환
+     */
     public static GroupJpaEntity from(Group group) {
         GroupJpaEntity entity = new GroupJpaEntity();
         entity.groupId = group.getGroupId();
         entity.name = group.getName();
         entity.type = group.getType();
-        entity.address = group.getAddress();
+        entity.address = AddressEmbeddable.from(group.getAddress());
         entity.nameEn = group.getNameEn();
         entity.campusType = group.getCampusType();
         entity.universityType = group.getUniversityType();
@@ -88,8 +85,6 @@ public class GroupJpaEntity {
         entity.establishmentType = group.getEstablishmentType();
         entity.regionCode = group.getRegionCode();
         entity.regionName = group.getRegionName();
-        entity.roadAddress = group.getRoadAddress();
-        entity.jibunAddress = group.getJibunAddress();
         entity.postalCode = group.getPostalCode();
         entity.website = group.getWebsite();
         entity.phoneNumber = group.getPhoneNumber();
@@ -98,23 +93,27 @@ public class GroupJpaEntity {
         return entity;
     }
 
-    // JPA Entity -> Domain (간단 버전 - 하위 호환성 유지)
+    /**
+     * JPA Entity -> Domain 변환 (간단 버전 - 하위 호환성 유지)
+     */
     public Group toDomain() {
         return Group.reconstitute(
                 this.groupId,
                 this.name,
                 this.type,
-                this.address
+                this.address != null ? this.address.toDomain() : null
         );
     }
 
-    // JPA Entity -> Domain (상세 정보 포함)
+    /**
+     * JPA Entity -> Domain 변환 (상세 정보 포함)
+     */
     public Group toDomainWithDetails() {
         return Group.reconstituteWithDetails(
                 this.groupId,
                 this.name,
                 this.type,
-                this.address,
+                this.address != null ? this.address.toDomain() : null,
                 this.nameEn,
                 this.campusType,
                 this.universityType,
@@ -122,8 +121,6 @@ public class GroupJpaEntity {
                 this.establishmentType,
                 this.regionCode,
                 this.regionName,
-                this.roadAddress,
-                this.jibunAddress,
                 this.postalCode,
                 this.website,
                 this.phoneNumber,

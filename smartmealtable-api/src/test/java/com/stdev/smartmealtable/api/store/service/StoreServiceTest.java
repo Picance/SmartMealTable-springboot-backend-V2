@@ -7,6 +7,7 @@ import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
@@ -84,7 +85,7 @@ class StoreServiceTest {
                 "",
                 37.5012345,
                 127.0398765,
-                "HOME"
+                AddressType.HOME
         );
         testAddress = AddressHistory.create(testMemberId, address, true);
 

@@ -17,7 +17,7 @@ public record GroupServiceResponse(
                 group.getGroupId(),
                 group.getName(),
                 group.getType(),
-                group.getAddress()
+                group.getAddress() != null ? group.getAddress().getFullAddress() : null
         );
     }
 }
