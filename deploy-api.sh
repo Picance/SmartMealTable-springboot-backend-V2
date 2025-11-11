@@ -17,6 +17,12 @@ export RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
 export DB_USERNAME=$(terraform output -raw db_username)
 export DB_PASSWORD=$(terraform output -raw db_password)
 
+# .env 파일에서 추가 환경변수 로드 (로컬 .env 파일이 있는 경우)
+if [ -f .env ]; then
+    echo "로컬 .env 파일에서 환경변수 로드 중..."
+    export $(grep -v '^#' .env | xargs)
+fi
+
 # Admin 인스턴스의 Private IP 조회
 export ADMIN_PRIVATE_IP=$(aws ec2 describe-instances \
     --instance-ids ${ADMIN_INSTANCE_ID} \
@@ -73,12 +79,35 @@ ssh -i "$SSH_KEY_FILE" -o StrictHostKeyChecking=no ubuntu@${API_PUBLIC_IP} << EO
 cd ~/deployment
 
 # .env 파일 생성
-cat > .env << 'EOF'
+cat > .env << EOF
+# Database
 RDS_ENDPOINT=${RDS_ENDPOINT}
 DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
+
+# Redis
 REDIS_HOST=${ADMIN_PRIVATE_IP}
 REDIS_PORT=6379
+
+# OAuth
+KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+
+# Naver Map API
+NAVER_MAP_CLIENT_ID=${NAVER_MAP_CLIENT_ID}
+NAVER_MAP_CLIENT_SECRET=${NAVER_MAP_CLIENT_SECRET}
+
+# Vertex AI
+VERTEX_AI_PROJECT_ID=${VERTEX_AI_PROJECT_ID}
+VERTEX_AI_MODEL=${VERTEX_AI_MODEL:-gemini-2.5-flash}
+VERTEX_AI_TEMPERATURE=${VERTEX_AI_TEMPERATURE:-0.1}
+VERTEX_AI_LOCATION=${VERTEX_AI_LOCATION:-asia-northeast3}
+
+# JWT
+JWT_SECRET=${JWT_SECRET}
 EOF
 
 echo ".env 파일:"
