@@ -64,4 +64,22 @@ public interface CategoryRepository {
      * 카테고리가 음식점이나 음식에서 사용 중인지 확인
      */
     boolean isUsedInStoreOrFood(Long categoryId);
+
+    /**
+     * 카테고리 이름에 keyword가 포함되는 카테고리 ID 조회 (자동완성용)
+     *
+     * @param keyword 검색 키워드
+     * @param limit 결과 제한 수
+     * @return 카테고리 ID 리스트
+     */
+    List<Long> findByNameContains(String keyword, int limit);
+
+    /**
+     * 주어진 카테고리 ID 목록에 속하는 가게 ID 조회 (자동완성용)
+     *
+     * @param categoryIds 카테고리 ID 리스트
+     * @param limit 결과 제한 수
+     * @return 가게 ID 리스트
+     */
+    List<Long> findStoreIdsByCategories(List<Long> categoryIds, int limit);
 }

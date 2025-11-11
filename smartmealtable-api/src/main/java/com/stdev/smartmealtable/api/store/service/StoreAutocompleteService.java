@@ -156,34 +156,79 @@ public class StoreAutocompleteService {
     }
     
     /**
-     * 오타 허용 검색
-     * 
+     * 오타 허용 검색 + 카테고리 검색
+     *
+     * 검색 전략:
+     * 1. 가게명 Prefix 검색
+     * 2. 가게명 Substring 검색
+     * 3. 카테고리명 검색
+     * 4. 편집 거리 기반 Fallback 검색
+     *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 검색 결과
      */
     private List<Store> searchWithTypoTolerance(String keyword, int limit) {
-        // DB에서 prefix 검색
-        List<Store> candidates = storeRepository.findByNameStartsWith(keyword, limit * 2);
-        
-        // Prefix 매칭 결과가 충분하면 즉시 반환
-        if (!candidates.isEmpty()) {
-            return candidates.stream().limit(limit).collect(Collectors.toList());
+        Set<Long> resultIds = new LinkedHashSet<>();
+
+        // Stage 1: 가게명 Prefix 검색 (최고 우선순위)
+        List<Store> prefixCandidates = storeRepository.findByNameStartsWith(keyword, limit * 2);
+        prefixCandidates.forEach(store -> resultIds.add(store.getStoreId()));
+
+        if (resultIds.size() >= limit) {
+            return prefixCandidates.stream().limit(limit).collect(Collectors.toList());
         }
-        
-        // Prefix 매칭 실패 시, 편집 거리 기반 검색 (첫 2글자)
-        String prefix = keyword.substring(0, Math.min(2, keyword.length()));
-        candidates = storeRepository.findByNameStartsWith(prefix, limit * 3);
-        
-        return candidates.stream()
-            .filter(store -> {
-                int distance = KoreanSearchUtil.calculateEditDistance(keyword, store.getName());
-                return distance <= MAX_TYPO_DISTANCE;
-            })
-            .sorted(Comparator.comparingInt(store -> 
-                KoreanSearchUtil.calculateEditDistance(keyword, store.getName())
-            ))
+
+        // Stage 2: 가게명 Substring 검색 (이름 중간에 있는 키워드)
+        if (resultIds.size() < limit) {
+            List<Store> substringCandidates = storeRepository.findByNameContains(keyword, limit * 3);
+            for (Store store : substringCandidates) {
+                if (resultIds.size() >= limit) break;
+                resultIds.add(store.getStoreId());
+            }
+        }
+
+        // Stage 3: 카테고리명 검색
+        if (resultIds.size() < limit) {
+            try {
+                List<Long> categoryIds = categoryRepository.findByNameContains(keyword, limit);
+                List<Long> storesToAdd = categoryRepository.findStoreIdsByCategories(categoryIds, limit);
+                for (Long storeId : storesToAdd) {
+                    if (resultIds.size() >= limit) break;
+                    resultIds.add(storeId);
+                }
+            } catch (Exception e) {
+                log.warn("카테고리 검색 실패: keyword={}", keyword, e);
+            }
+        }
+
+        // Stage 4: 편집 거리 기반 검색 (Fallback)
+        if (resultIds.size() < limit) {
+            String prefix = keyword.substring(0, Math.min(2, keyword.length()));
+            List<Store> typoCandidates = storeRepository.findByNameStartsWith(prefix, limit * 3);
+
+            typoCandidates.stream()
+                .filter(store -> {
+                    int distance = KoreanSearchUtil.calculateEditDistance(keyword, store.getName());
+                    return distance <= MAX_TYPO_DISTANCE;
+                })
+                .sorted(Comparator.comparingInt(store ->
+                    KoreanSearchUtil.calculateEditDistance(keyword, store.getName())
+                ))
+                .forEach(store -> {
+                    if (resultIds.size() >= limit) return;
+                    resultIds.add(store.getStoreId());
+                });
+        }
+
+        // 결과 조회
+        return resultIds.stream()
             .limit(limit)
+            .map(storeId -> {
+                var storeOpt = storeRepository.findById(storeId);
+                return storeOpt.orElse(null);
+            })
+            .filter(store -> store != null)
             .collect(Collectors.toList());
     }
     

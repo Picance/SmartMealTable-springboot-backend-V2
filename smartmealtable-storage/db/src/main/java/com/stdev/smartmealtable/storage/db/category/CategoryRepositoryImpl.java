@@ -149,6 +149,43 @@ public class CategoryRepositoryImpl implements CategoryRepository {
         return foodCount != null;
     }
 
+    @Override
+    public List<Long> findByNameContains(String keyword, int limit) {
+        if (!StringUtils.hasText(keyword)) {
+            return List.of();
+        }
+
+        return queryFactory
+            .select(categoryJpaEntity.categoryId)
+            .from(categoryJpaEntity)
+            .where(categoryJpaEntity.name.containsIgnoreCase(keyword))
+            .orderBy(categoryJpaEntity.name.asc())
+            .limit(limit)
+            .fetch();
+    }
+
+    @Override
+    public List<Long> findStoreIdsByCategories(List<Long> categoryIds, int limit) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return List.of();
+        }
+
+        QStoreCategoryJpaEntity storeCategory = QStoreCategoryJpaEntity.storeCategoryJpaEntity;
+        QStoreJpaEntity store = QStoreJpaEntity.storeJpaEntity;
+
+        return queryFactory
+            .selectDistinct(storeCategory.storeId)
+            .from(storeCategory)
+            .innerJoin(store).on(storeCategory.storeId.eq(store.storeId))
+            .where(
+                storeCategory.categoryId.in(categoryIds)
+                    .and(store.deletedAt.isNull())
+            )
+            .orderBy(store.favoriteCount.desc().nullsLast())
+            .limit(limit)
+            .fetch();
+    }
+
     /**
      * 이름 검색 조건
      */

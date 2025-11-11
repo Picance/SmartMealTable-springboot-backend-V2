@@ -47,16 +47,26 @@ public interface StoreRepository {
     
     /**
      * 가게명 Prefix로 시작하는 가게 조회 (자동완성용)
-     * 
+     *
      * @param prefix 검색 접두사 (예: "서울")
      * @param limit 결과 제한 수
      * @return 가게 리스트 (popularity 높은 순으로 정렬)
      */
     List<Store> findByNameStartsWith(String prefix, int limit);
-    
+
+    /**
+     * 가게명에 keyword가 포함되는 가게 조회 (자동완성용)
+     * 가게 이름 중간에 있는 키워드 검색용
+     *
+     * @param keyword 검색 키워드
+     * @param limit 결과 제한 수
+     * @return 가게 리스트 (popularity 높은 순으로 정렬)
+     */
+    List<Store> findByNameContains(String keyword, int limit);
+
     /**
      * 여러 가게 ID로 조회 (캐시에서 가져온 ID로 조회)
-     * 
+     *
      * @param storeIds 가게 ID 리스트
      * @return 가게 리스트
      */

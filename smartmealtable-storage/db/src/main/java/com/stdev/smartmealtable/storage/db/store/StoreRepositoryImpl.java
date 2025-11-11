@@ -229,7 +229,18 @@ public class StoreRepositoryImpl implements StoreRepository {
                 })
                 .collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<Store> findByNameContains(String keyword, int limit) {
+        return queryDslRepository.findByNameContaining(keyword, limit)
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<Store> findAllByIdIn(List<Long> storeIds) {
         return queryDslRepository.findByStoreIdIn(storeIds)
