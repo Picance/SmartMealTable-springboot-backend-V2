@@ -112,19 +112,18 @@ jobs:
               'docker rm smartmealtable-admin smartmealtable-scheduler redis-smartmealtable || true',
               'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}',
               'docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-admin:${{ github.sha }}',
-              'docker network create smartmealtable-network 2>/dev/null || true',
-              'docker run -d --name redis-smartmealtable --network smartmealtable-network \\
+              'docker run -d --name redis-smartmealtable -p 6379:6379 \\
                 -e TZ=Asia/Seoul \\
                 redis:7-alpine redis-server --maxmemory 80mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000',
               'sleep 5',
-              'docker run -d --name smartmealtable-admin -p 8081:8081 --network smartmealtable-network \\
+              'docker run -d --name smartmealtable-admin -p 8081:8081 \\
                 -e SPRING_APPLICATION_NAME=smartmealtable-admin \\
                 -e SERVER_PORT=8081 \\
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
-                -e SPRING_DATA_REDIS_HOST=redis-smartmealtable \\
+                -e SPRING_DATA_REDIS_HOST=localhost \\
                 -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \\
                 -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \\
@@ -149,13 +148,13 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
               'docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-scheduler:${{ github.sha }}',
-              'docker run -d --name smartmealtable-scheduler --network smartmealtable-network \\
+              'docker run -d --name smartmealtable-scheduler \\
                 -e SPRING_APPLICATION_NAME=smartmealtable-scheduler \\
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
-                -e SPRING_DATA_REDIS_HOST=redis-smartmealtable \\
+                -e SPRING_DATA_REDIS_HOST=localhost \\
                 -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e NAVER_MAP_CLIENT_ID=${{ secrets.NAVER_MAP_CLIENT_ID }} \\
                 -e NAVER_MAP_CLIENT_SECRET=${{ secrets.NAVER_MAP_CLIENT_SECRET }} \\
