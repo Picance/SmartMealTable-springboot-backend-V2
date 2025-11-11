@@ -149,18 +149,21 @@ GitHub Actions의 `deploy.yml`은 다음 순서로 서비스를 배포합니다:
    - `SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }}`
    - Admin의 Private IP를 사용
 
-2. **Admin 배포** (Admin Instance)
-   - `SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }}`
-   - Redis 서비스도 함께 시작
-   - 다른 서비스가 사용할 Redis 준비
+2. **Admin + Redis 배포** (Admin Instance)
+   - Redis 컨테이너 시작 (`redis-smartmealtable`)
+   - Docker 네트워크 생성 (`smartmealtable-network`)
+   - Admin 컨테이너를 네트워크에 연결
+   - `SPRING_DATA_REDIS_HOST=redis-smartmealtable` (컨테이너명으로 접근)
 
 3. **Scheduler 배포** (Admin Instance)
-   - `SPRING_DATA_REDIS_HOST=localhost`
-   - 동일 인스턴스의 Redis에 연결
+   - 동일 네트워크 (`smartmealtable-network`)에 연결
+   - `SPRING_DATA_REDIS_HOST=redis-smartmealtable`
+   - Redis 컨테이너와 같은 네트워크에서 실행되므로 컨테이너명으로 접근 가능
 
 4. **Crawler 배포** (Batch Instance - 선택적)
    - `SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }}`
    - Admin의 Private IP를 사용
+   - 다른 인스턴스이므로 Private IP로 접근
 
 ### GitHub Secrets 설정 필요 항목
 ```
@@ -255,6 +258,40 @@ docker exec <service-container> nc -zv <admin-private-ip> 6379
 - **네트워크 통신**: 인스턴스 간 네트워크 통신 필요 (지연 가능)
 - **확장성 제한**: Redis 성능 상한선이 고정
 
+## Redis 수동 시작 (GitHub Actions 외)
+
+### Admin 인스턴스에서 Redis 수동 시작
+```bash
+# Admin 인스턴스에 접속
+ssh -i <key> ubuntu@<admin-public-ip>
+
+# 네트워크 생성 (이미 있으면 무시)
+docker network create smartmealtable-network 2>/dev/null || true
+
+# Redis 컨테이너 시작
+docker run -d --name redis-smartmealtable \
+  --network smartmealtable-network \
+  -e TZ=Asia/Seoul \
+  redis:7-alpine \
+  redis-server \
+    --maxmemory 80mb \
+    --maxmemory-policy allkeys-lru \
+    --save 900 1 \
+    --save 300 10 \
+    --save 60 10000
+
+# Redis 상태 확인
+docker logs redis-smartmealtable
+docker exec redis-smartmealtable redis-cli ping
+# 응답: PONG
+```
+
+### 기존 Redis 컨테이너 제거
+```bash
+docker stop redis-smartmealtable
+docker rm redis-smartmealtable
+```
+
 ## 트러블슈팅
 
 ### Redis 연결 실패
@@ -270,6 +307,26 @@ docker exec <service-container> nc -zv <admin-private-ip> 6379
 3. 네트워크 연결 테스트
    ```bash
    nc -zv <admin-private-ip> 6379
+   ```
+
+### GitHub Actions 배포 실패
+1. Admin 배포 후 Redis가 실행되지 않았을 경우
+   ```bash
+   # Admin 인스턴스에서 수동으로 Redis 시작
+   docker network create smartmealtable-network 2>/dev/null || true
+   docker run -d --name redis-smartmealtable --network smartmealtable-network \
+     -e TZ=Asia/Seoul \
+     redis:7-alpine redis-server --maxmemory 80mb --maxmemory-policy allkeys-lru
+   ```
+
+2. Admin/Scheduler가 Redis에 연결 안 될 경우
+   ```bash
+   # 동일 네트워크인지 확인
+   docker network inspect smartmealtable-network
+
+   # Admin/Scheduler가 네트워크에 속해있는지 확인
+   docker inspect smartmealtable-admin | grep smartmealtable-network
+   docker inspect smartmealtable-scheduler | grep smartmealtable-network
    ```
 
 ### Redis 메모리 부족

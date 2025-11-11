@@ -103,23 +103,28 @@ jobs:
                 ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-api:${{ github.sha }}'
             ]"
           
-          # Admin 서비스 배포
+          # Admin 서비스 배포 (Redis 포함)
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_ADMIN_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'docker stop smartmealtable-admin || true',
-              'docker rm smartmealtable-admin || true',
+              'docker stop smartmealtable-admin smartmealtable-scheduler redis-smartmealtable || true',
+              'docker rm smartmealtable-admin smartmealtable-scheduler redis-smartmealtable || true',
               'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}',
               'docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-admin:${{ github.sha }}',
-              'docker run -d --name smartmealtable-admin -p 8081:8081 \\
+              'docker network create smartmealtable-network 2>/dev/null || true',
+              'docker run -d --name redis-smartmealtable --network smartmealtable-network \\
+                -e TZ=Asia/Seoul \\
+                redis:7-alpine redis-server --maxmemory 80mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000',
+              'sleep 5',
+              'docker run -d --name smartmealtable-admin -p 8081:8081 --network smartmealtable-network \\
                 -e SPRING_APPLICATION_NAME=smartmealtable-admin \\
                 -e SERVER_PORT=8081 \\
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
-                -e SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
+                -e SPRING_DATA_REDIS_HOST=redis-smartmealtable \\
                 -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \\
                 -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \\
@@ -143,20 +148,22 @@ jobs:
             --instance-ids ${{ secrets.EC2_ADMIN_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'docker stop smartmealtable-scheduler || true',
-              'docker rm smartmealtable-scheduler || true',
-              'aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}',
               'docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-scheduler:${{ github.sha }}',
-              'docker run -d --name smartmealtable-scheduler \\
+              'docker run -d --name smartmealtable-scheduler --network smartmealtable-network \\
                 -e SPRING_APPLICATION_NAME=smartmealtable-scheduler \\
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
-                -e SPRING_DATA_REDIS_HOST=localhost \\
+                -e SPRING_DATA_REDIS_HOST=redis-smartmealtable \\
                 -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e NAVER_MAP_CLIENT_ID=${{ secrets.NAVER_MAP_CLIENT_ID }} \\
                 -e NAVER_MAP_CLIENT_SECRET=${{ secrets.NAVER_MAP_CLIENT_SECRET }} \\
+                -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \\
+                -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \\
+                -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \\
+                -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \\
+                -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \\
                 -e VERTEX_AI_PROJECT_ID=${{ secrets.VERTEX_AI_PROJECT_ID }} \\
                 -e VERTEX_AI_MODEL=${{ secrets.VERTEX_AI_MODEL }} \\
                 -e VERTEX_AI_TEMPERATURE=${{ secrets.VERTEX_AI_TEMPERATURE }} \\
