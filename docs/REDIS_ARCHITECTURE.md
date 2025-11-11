@@ -148,22 +148,23 @@ GitHub Actions의 `deploy.yml`은 다음 순서로 서비스를 배포합니다:
 1. **API 배포** (API Instance)
    - `SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }}`
    - Admin의 Private IP를 사용
+   - Redis: 10.0.4.140:6379
 
 2. **Admin + Redis 배포** (Admin Instance)
-   - Redis 컨테이너 시작 (`redis-smartmealtable`)
-   - Docker 네트워크 생성 (`smartmealtable-network`)
-   - Admin 컨테이너를 네트워크에 연결
-   - `SPRING_DATA_REDIS_HOST=redis-smartmealtable` (컨테이너명으로 접근)
+   - Redis 컨테이너 시작 (`-p 6379:6379` 호스트 포트 바인딩)
+   - Admin 컨테이너 시작
+   - Admin: `SPRING_DATA_REDIS_HOST=localhost` (호스트의 localhost)
+   - Redis: 호스트의 6379 포트에서 수신
 
 3. **Scheduler 배포** (Admin Instance)
-   - 동일 네트워크 (`smartmealtable-network`)에 연결
-   - `SPRING_DATA_REDIS_HOST=redis-smartmealtable`
-   - Redis 컨테이너와 같은 네트워크에서 실행되므로 컨테이너명으로 접근 가능
+   - Admin과 동일 호스트에서 실행
+   - `SPRING_DATA_REDIS_HOST=localhost`
+   - Redis: 호스트의 6379 포트 사용
 
 4. **Crawler 배포** (Batch Instance - 선택적)
    - `SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }}`
-   - Admin의 Private IP를 사용
-   - 다른 인스턴스이므로 Private IP로 접근
+   - Admin의 Private IP 사용
+   - Redis: 10.0.4.140:6379
 
 ### GitHub Secrets 설정 필요 항목
 ```
@@ -265,12 +266,9 @@ docker exec <service-container> nc -zv <admin-private-ip> 6379
 # Admin 인스턴스에 접속
 ssh -i <key> ubuntu@<admin-public-ip>
 
-# 네트워크 생성 (이미 있으면 무시)
-docker network create smartmealtable-network 2>/dev/null || true
-
-# Redis 컨테이너 시작
+# Redis 컨테이너 시작 (호스트 포트 6379에 바인딩)
 docker run -d --name redis-smartmealtable \
-  --network smartmealtable-network \
+  -p 6379:6379 \
   -e TZ=Asia/Seoul \
   redis:7-alpine \
   redis-server \
@@ -283,6 +281,14 @@ docker run -d --name redis-smartmealtable \
 # Redis 상태 확인
 docker logs redis-smartmealtable
 docker exec redis-smartmealtable redis-cli ping
+# 응답: PONG
+
+# 호스트에서 Redis 연결 확인
+redis-cli -h localhost ping
+# 응답: PONG
+
+# 다른 인스턴스에서 Admin의 Private IP로 Redis 연결 확인
+redis-cli -h 10.0.4.140 ping
 # 응답: PONG
 ```
 
@@ -313,20 +319,35 @@ docker rm redis-smartmealtable
 1. Admin 배포 후 Redis가 실행되지 않았을 경우
    ```bash
    # Admin 인스턴스에서 수동으로 Redis 시작
-   docker network create smartmealtable-network 2>/dev/null || true
-   docker run -d --name redis-smartmealtable --network smartmealtable-network \
+   docker run -d --name redis-smartmealtable \
+     -p 6379:6379 \
      -e TZ=Asia/Seoul \
      redis:7-alpine redis-server --maxmemory 80mb --maxmemory-policy allkeys-lru
    ```
 
 2. Admin/Scheduler가 Redis에 연결 안 될 경우
    ```bash
-   # 동일 네트워크인지 확인
-   docker network inspect smartmealtable-network
+   # Redis 컨테이너가 포트 6379에 바인딩되었는지 확인
+   docker ps | grep redis
 
-   # Admin/Scheduler가 네트워크에 속해있는지 확인
-   docker inspect smartmealtable-admin | grep smartmealtable-network
-   docker inspect smartmealtable-scheduler | grep smartmealtable-network
+   # 포트 상태 확인
+   netstat -tlnp | grep 6379
+
+   # Redis 로그 확인
+   docker logs redis-smartmealtable
+   ```
+
+3. API가 Admin의 Redis에 연결 안 될 경우
+   ```bash
+   # Admin의 보안 그룹이 6379 포트를 허용하는지 확인
+   # AWS Console에서 확인: Security Group > Inbound Rules > 6379 TCP
+
+   # API 인스턴스에서 네트워크 연결 테스트
+   nc -zv 10.0.4.140 6379
+
+   # 방화벽 확인 (Ubuntu)
+   sudo ufw status
+   sudo ufw allow 6379/tcp
    ```
 
 ### Redis 메모리 부족

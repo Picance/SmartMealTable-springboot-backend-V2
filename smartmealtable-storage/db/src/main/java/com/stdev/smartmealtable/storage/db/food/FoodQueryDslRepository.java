@@ -34,12 +34,22 @@ public interface FoodQueryDslRepository {
     /**
      * 음식명 Prefix로 시작하는 음식 조회 (자동완성용)
      * 삭제되지 않은 음식만 조회하며, 대표 메뉴 우선, 이름 순으로 정렬
-     * 
+     *
      * @param prefix 검색 접두사
      * @param limit 결과 제한 수
      * @return 음식 리스트
      */
     java.util.List<FoodJpaEntity> findByNameStartingWith(String prefix, int limit);
+
+    /**
+     * 음식명에 포함된 키워드로 검색 (자동완성용 부분 매칭)
+     * 삭제되지 않은 음식만 조회하며, 대표 메뉴 우선, 최신 등록순으로 정렬
+     *
+     * @param keyword 검색 키워드
+     * @param limit 결과 제한 수
+     * @return 음식 리스트 (키워드를 포함하는 모든 음식)
+     */
+    java.util.List<FoodJpaEntity> findByNameContaining(String keyword, int limit);
     
     /**
      * 여러 음식 ID로 조회 (캐시에서 가져온 ID로 조회)

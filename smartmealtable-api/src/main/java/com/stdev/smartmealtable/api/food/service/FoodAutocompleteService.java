@@ -153,51 +153,77 @@ public class FoodAutocompleteService {
             }
         }
         
-        // Stage 3: 오타 허용 검색 (결과가 부족할 때만)
-        if (foodIds.size() < MIN_RESULTS_FOR_TYPO && keyword.length() >= 2) {
+        // Stage 3: Substring 및 오타 허용 검색 (결과가 부족할 때)
+        // PREFIX 검색과 초성 검색으로 결과가 부족하면 더 넓은 검색 수행
+        if (foodIds.size() < limit) {
             try {
-                List<Food> typoResults = searchWithTypoTolerance(keyword, limit);
-                typoResults.forEach(food -> foodIds.add(food.getFoodId()));
-                
-                log.debug("Stage 3 (오타 허용) 추가 결과: {}", typoResults.size());
+                List<Food> expandedResults = searchWithTypoTolerance(keyword, limit * 2);
+                expandedResults.forEach(food -> {
+                    if (!foodIds.contains(food.getFoodId())) {
+                        foodIds.add(food.getFoodId());
+                    }
+                });
+
+                log.debug("Stage 3 (Substring + 오타 허용) 추가 결과: {}", expandedResults.size());
             } catch (Exception e) {
-                log.warn("Stage 3 (오타 허용) 검색 실패", e);
+                log.warn("Stage 3 (Substring + 오타 허용) 검색 실패", e);
             }
         }
-        
+
         return fetchFoods(new ArrayList<>(foodIds));
     }
     
     /**
-     * 오타 허용 검색
-     * 
+     * 오타 허용 및 부분 매칭 검색
+     *
+     * 검색 전략:
+     * 1. 키워드를 포함하는 음식명 substring 검색
+     * 2. 편집 거리 기반 검색 (첫 2글자 prefix)
+     * 3. 결과를 관련성으로 정렬
+     *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 검색 결과
      */
     private List<Food> searchWithTypoTolerance(String keyword, int limit) {
-        // DB에서 prefix 검색
-        List<Food> candidates = foodRepository.findByNameStartsWith(keyword, limit * 2);
-        
-        // Prefix 매칭 결과가 충분하면 즉시 반환
-        if (!candidates.isEmpty()) {
-            return candidates.stream().limit(limit).collect(Collectors.toList());
+        Set<Long> resultIds = new LinkedHashSet<>();
+
+        // Stage 1: Substring 검색 (키워드를 포함하는 모든 음식)
+        // 예: "카츠" 검색 시 "돈카츠", "카츠동", "카츠산도" 모두 매칭
+        try {
+            List<Food> substringCandidates = foodRepository.findByNameContains(keyword, limit * 3);
+            substringCandidates.forEach(food -> resultIds.add(food.getFoodId()));
+
+            if (resultIds.size() >= limit) {
+                log.debug("Substring 검색으로 충분한 결과: {}", resultIds.size());
+                return fetchFoods(new ArrayList<>(resultIds));
+            }
+        } catch (Exception e) {
+            log.warn("Substring 검색 실패: keyword={}", keyword, e);
         }
-        
-        // Prefix 매칭 실패 시, 편집 거리 기반 검색 (첫 2글자)
-        String prefix = keyword.substring(0, Math.min(2, keyword.length()));
-        candidates = foodRepository.findByNameStartsWith(prefix, limit * 3);
-        
-        return candidates.stream()
-            .filter(food -> {
-                int distance = KoreanSearchUtil.calculateEditDistance(keyword, food.getFoodName());
-                return distance <= MAX_TYPO_DISTANCE;
-            })
-            .sorted(Comparator.comparingInt(food -> 
-                KoreanSearchUtil.calculateEditDistance(keyword, food.getFoodName())
-            ))
-            .limit(limit)
-            .collect(Collectors.toList());
+
+        // Stage 2: 편집 거리 기반 검색 (첫 2글자)
+        // 예: "고추장" 입력 시 "고추"로 시작하는 음식들 중 거리 2 이내
+        if (resultIds.size() < limit && keyword.length() >= 2) {
+            try {
+                String prefix = keyword.substring(0, Math.min(2, keyword.length()));
+                List<Food> typoCandidates = foodRepository.findByNameStartsWith(prefix, limit * 3);
+
+                typoCandidates.stream()
+                    .filter(food -> {
+                        int distance = KoreanSearchUtil.calculateEditDistance(keyword, food.getFoodName());
+                        return distance <= MAX_TYPO_DISTANCE && !resultIds.contains(food.getFoodId());
+                    })
+                    .forEach(food -> resultIds.add(food.getFoodId()));
+
+                log.debug("편집 거리 검색 추가 결과: {}", typoCandidates.size());
+            } catch (Exception e) {
+                log.warn("편집 거리 검색 실패: keyword={}", keyword, e);
+            }
+        }
+
+        // 결과 조회
+        return fetchFoods(new ArrayList<>(resultIds));
     }
     
     /**

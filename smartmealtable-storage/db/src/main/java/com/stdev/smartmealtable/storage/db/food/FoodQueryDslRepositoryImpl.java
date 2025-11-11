@@ -123,6 +123,32 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
                 .limit(limit)
                 .fetch();
     }
+
+    /**
+     * 음식명에 포함된 키워드로 검색 (자동완성용 부분 매칭)
+     * 삭제되지 않은 음식만 조회하며, 대표 메뉴(isMain=true) 우선, 최신 등록순으로 정렬
+     *
+     * 예: "카츠" 검색 시 "돈카츠", "카츠동", "카츠산도" 모두 매칭
+     *
+     * @param keyword 검색 키워드
+     * @param limit 결과 제한 수
+     * @return 음식 리스트 (키워드를 포함하는 모든 음식)
+     */
+    @Override
+    public List<FoodJpaEntity> findByNameContaining(String keyword, int limit) {
+        return queryFactory
+                .selectFrom(foodJpaEntity)
+                .where(
+                        foodJpaEntity.foodName.containsIgnoreCase(keyword)
+                                .and(foodJpaEntity.deletedAt.isNull())
+                )
+                .orderBy(
+                        foodJpaEntity.isMain.desc().nullsLast(), // 대표 메뉴 우선
+                        foodJpaEntity.registeredDt.desc() // 최신 등록순
+                )
+                .limit(limit)
+                .fetch();
+    }
     
     /**
      * 여러 음식 ID로 조회 (캐시에서 가져온 ID로 조회)

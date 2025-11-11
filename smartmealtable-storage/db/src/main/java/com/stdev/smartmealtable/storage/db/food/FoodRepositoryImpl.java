@@ -134,7 +134,15 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<Food> findByNameContains(String keyword, int limit) {
+        return foodJpaRepository.findByNameContaining(keyword, limit)
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<Food> findAllByIdIn(List<Long> foodIds) {
         return foodJpaRepository.findByFoodIdIn(foodIds)
