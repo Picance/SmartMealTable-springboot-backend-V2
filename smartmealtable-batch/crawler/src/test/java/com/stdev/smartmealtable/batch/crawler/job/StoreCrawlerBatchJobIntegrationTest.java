@@ -58,6 +58,9 @@ class StoreCrawlerBatchJobIntegrationTest {
     private JobLauncherTestUtils jobLauncherTestUtils;
 
     @Autowired
+    private Job importCrawledStoreJob;
+
+    @Autowired
     private StoreRepository storeRepository;
 
     @Autowired
@@ -67,6 +70,9 @@ class StoreCrawlerBatchJobIntegrationTest {
 
     @BeforeEach
     void setUp() throws IOException {
+        // Job 설정
+        jobLauncherTestUtils.setJob(importCrawledStoreJob);
+
         // 테스트용 JSON 파일 생성
         testJsonFile = File.createTempFile("test-store-", ".json");
         writeTestJson(testJsonFile);

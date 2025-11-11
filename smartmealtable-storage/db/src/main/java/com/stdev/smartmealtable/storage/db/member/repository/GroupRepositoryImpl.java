@@ -30,13 +30,13 @@ public class GroupRepositoryImpl implements GroupRepository {
     public Group save(Group group) {
         GroupJpaEntity jpaEntity = GroupJpaEntity.from(group);
         GroupJpaEntity saved = jpaRepository.save(jpaEntity);
-        return saved.toDomain();
+        return saved.toDomainWithDetails();
     }
 
     @Override
     public Optional<Group> findById(Long groupId) {
         return jpaRepository.findById(groupId)
-                .map(GroupJpaEntity::toDomain);
+                .map(GroupJpaEntity::toDomainWithDetails);
     }
 
     @Override
