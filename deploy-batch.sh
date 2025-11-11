@@ -7,14 +7,59 @@ echo "=== SmartMealTable 배치 시스템 배포 시작 ==="
 
 # 환경 변수 설정
 export RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
+export ADMIN_INSTANCE_ID=$(terraform output -raw admin_instance_id)
 export ADMIN_PRIVATE_IP=$(aws ec2 describe-instances \
-    --instance-ids $(terraform output -raw admin_instance_id) \
+    --instance-ids ${ADMIN_INSTANCE_ID} \
     --query 'Reservations[0].Instances[0].PrivateIpAddress' \
     --output text)
-export DB_PASSWORD=${DB_PASSWORD:-"your_db_password_here"}
+export DB_USERNAME=$(terraform output -raw db_username)
+export DB_PASSWORD=$(terraform output -raw db_password)
 
+echo "=========================================="
+echo "배포 정보"
+echo "=========================================="
 echo "RDS Endpoint: $RDS_ENDPOINT"
 echo "Admin Private IP: $ADMIN_PRIVATE_IP"
+echo "Redis Host (Admin Private IP): $ADMIN_PRIVATE_IP"
+echo "=========================================="
+
+# .env 파일 생성 (필요한 환경변수 설정)
+echo "=========================================="
+echo "환경변수 설정 중..."
+echo "=========================================="
+
+cat > .env << EOF
+# Database
+RDS_ENDPOINT=${RDS_ENDPOINT}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
+
+# Redis (Admin 인스턴스의 로컬 Redis 사용)
+REDIS_HOST=${ADMIN_PRIVATE_IP}
+REDIS_PORT=6379
+
+# OAuth
+KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+
+# Naver Map API
+NAVER_MAP_CLIENT_ID=${NAVER_MAP_CLIENT_ID}
+NAVER_MAP_CLIENT_SECRET=${NAVER_MAP_CLIENT_SECRET}
+
+# Vertex AI
+VERTEX_AI_PROJECT_ID=${VERTEX_AI_PROJECT_ID}
+VERTEX_AI_MODEL=${VERTEX_AI_MODEL:-gemini-2.5-flash}
+VERTEX_AI_TEMPERATURE=${VERTEX_AI_TEMPERATURE:-0.1}
+VERTEX_AI_LOCATION=${VERTEX_AI_LOCATION:-asia-northeast3}
+
+# JWT
+JWT_SECRET=${JWT_SECRET}
+EOF
+
+echo "✅ .env 파일 생성 완료"
 
 # Docker 이미지 빌드 및 태그
 echo "Docker 이미지 빌드 중..."
