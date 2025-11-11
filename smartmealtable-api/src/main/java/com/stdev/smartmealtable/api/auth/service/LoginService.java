@@ -41,8 +41,11 @@ public class LoginService {
         // 3. JWT 토큰 생성 (memberId 기반)
         String accessToken = jwtTokenProvider.createToken(member.getMemberId());
         String refreshToken = jwtTokenProvider.createToken(member.getMemberId());
+
+        // 4. 온보딩 완료 여부 확인 (필수 약관 동의 기반)
+        boolean isOnboardingComplete = memberDomainService.isOnboardingComplete(member.getMemberId());
         
-        // 4. 응답 DTO 생성
-        return LoginServiceResponse.of(member, authentication, accessToken, refreshToken);
+        // 5. 응답 DTO 생성
+        return LoginServiceResponse.of(member, authentication, accessToken, refreshToken, isOnboardingComplete);
     }
 }

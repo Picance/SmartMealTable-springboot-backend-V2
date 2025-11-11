@@ -2,7 +2,11 @@ package com.stdev.smartmealtable.api.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.common.AbstractContainerTest;
+import com.stdev.smartmealtable.domain.policy.entity.Policy;
+import com.stdev.smartmealtable.domain.policy.entity.PolicyType;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
+import com.stdev.smartmealtable.storage.db.policy.PolicyJpaEntity;
+import com.stdev.smartmealtable.storage.db.policy.repository.PolicyJpaRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +44,25 @@ class LoginControllerTest extends AbstractContainerTest {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+    
+    @Autowired
+    private PolicyJpaRepository policyJpaRepository;
 
     @Test
     @DisplayName("로그인 성공 - 200 OK")
     void login_success() throws Exception {
+        // given - 필수 약관 등록 (미동의 상태)
+        policyJpaRepository.deleteAll();
+        policyJpaRepository.save(PolicyJpaEntity.from(
+                Policy.create(
+                        "서비스 이용약관",
+                        "필수 이용 약관 본문",
+                        PolicyType.REQUIRED,
+                        "v1.0",
+                        true
+                )
+        ));
+
         // given - 먼저 회원가입
         Map<String, String> signupRequest = new HashMap<>();
         signupRequest.put("name", "홍길동");

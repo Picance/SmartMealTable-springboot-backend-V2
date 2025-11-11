@@ -8,9 +8,17 @@ import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.domain.policy.entity.Policy;
+import com.stdev.smartmealtable.domain.policy.entity.PolicyAgreement;
+import com.stdev.smartmealtable.domain.policy.repository.PolicyAgreementRepository;
+import com.stdev.smartmealtable.domain.policy.repository.PolicyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 회원 도메인 서비스
@@ -23,6 +31,8 @@ public class MemberDomainService {
 
     private final MemberRepository memberRepository;
     private final MemberAuthenticationRepository memberAuthenticationRepository;
+    private final PolicyRepository policyRepository;
+    private final PolicyAgreementRepository policyAgreementRepository;
 
     /**
      * 이메일 중복 검증
@@ -84,6 +94,34 @@ public class MemberDomainService {
     public Member getMemberById(Long memberId) {
         return memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorType.MEMBER_NOT_FOUND));
+    }
+
+    /**
+     * 온보딩 완료 여부 확인
+     *
+     * @param memberId 회원 ID
+     * @return 필수 약관 동의 여부
+     */
+    public boolean isOnboardingComplete(Long memberId) {
+        MemberAuthentication authentication = memberAuthenticationRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorType.MEMBER_NOT_FOUND));
+
+        List<Long> mandatoryPolicyIds = policyRepository.findAllActive().stream()
+                .filter(policy -> Boolean.TRUE.equals(policy.getIsMandatory()))
+                .map(Policy::getPolicyId)
+                .collect(Collectors.toList());
+
+        if (mandatoryPolicyIds.isEmpty()) {
+            return true;
+        }
+
+        Set<Long> agreedPolicyIds = policyAgreementRepository.findByMemberAuthenticationId(authentication.getMemberAuthenticationId())
+                .stream()
+                .filter(policyAgreement -> Boolean.TRUE.equals(policyAgreement.getIsAgreed()))
+                .map(PolicyAgreement::getPolicyId)
+                .collect(Collectors.toSet());
+
+        return agreedPolicyIds.containsAll(mandatoryPolicyIds);
     }
 
     /**

@@ -352,8 +352,10 @@ public ExpenditureDetail getExpenditureDetail(Long memberId, Long expenditureId)
 ```
 
 **Note:** 
-- 신규 가입 시 `isNewMember: true`, `isOnboardingComplete: false`
-- 기존 회원 시 `isNewMember: false`, `isOnboardingComplete: true`
+- 온보딩 완료(`isOnboardingComplete: true`)의 기준은 "필수 이용 약관에 모두 동의한 경우"입니다.
+  즉, 닉네임/프로필 입력 등만으로는 온보딩이 완료되지 않으며, 필수 약관 동의가 반드시 필요합니다.
+  신규 가입 시 `isNewMember: true`, `isOnboardingComplete: false` (필수 약관 동의 전)
+  기존 회원 시 `isNewMember: false`, `isOnboardingComplete: true` (필수 약관 동의 완료)
 
 **Error Cases:**
 

@@ -8,6 +8,11 @@ import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.domain.policy.entity.Policy;
+import com.stdev.smartmealtable.domain.policy.entity.PolicyAgreement;
+import com.stdev.smartmealtable.domain.policy.entity.PolicyType;
+import com.stdev.smartmealtable.domain.policy.repository.PolicyAgreementRepository;
+import com.stdev.smartmealtable.domain.policy.repository.PolicyRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +44,12 @@ class MemberDomainServiceTest {
 
     @Mock
     private MemberAuthenticationRepository memberAuthenticationRepository;
+
+    @Mock
+    private PolicyRepository policyRepository;
+
+    @Mock
+    private PolicyAgreementRepository policyAgreementRepository;
 
     @InjectMocks
     private MemberDomainService memberDomainService;
@@ -223,6 +235,125 @@ class MemberDomainServiceTest {
 
                 then(memberRepository).should(times(1)).findById(memberId);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("isOnboardingComplete 메서드는")
+    class Describe_isOnboardingComplete {
+
+        @Test
+        @DisplayName("모든 필수 약관에 동의했다면 true를 반환한다")
+        void it_returns_true_when_all_mandatory_policies_are_agreed() {
+            // Given
+            Long memberId = 1L;
+            MemberAuthentication authentication = MemberAuthentication.reconstitute(
+                    10L,
+                    memberId,
+                    "test@example.com",
+                    null,
+                    0,
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusDays(90),
+                    "홍길동",
+                    null,
+                    LocalDateTime.now()
+            );
+
+            Policy mandatoryPolicy = Policy.reconstitute(
+                    100L,
+                    "필수 이용약관",
+                    "내용",
+                    PolicyType.REQUIRED,
+                    "v1.0",
+                    true,
+                    true
+            );
+            Policy optionalPolicy = Policy.reconstitute(
+                    200L,
+                    "선택 약관",
+                    "내용",
+                    PolicyType.OPTIONAL,
+                    "v1.0",
+                    false,
+                    true
+            );
+
+            PolicyAgreement agreement = PolicyAgreement.reconstitute(
+                    1000L,
+                    mandatoryPolicy.getPolicyId(),
+                    authentication.getMemberAuthenticationId(),
+                    true,
+                    LocalDateTime.now()
+            );
+
+            given(memberAuthenticationRepository.findByMemberId(memberId))
+                    .willReturn(Optional.of(authentication));
+            given(policyRepository.findAllActive())
+                    .willReturn(List.of(mandatoryPolicy, optionalPolicy));
+            given(policyAgreementRepository.findByMemberAuthenticationId(authentication.getMemberAuthenticationId()))
+                    .willReturn(List.of(agreement));
+
+            // When
+            boolean result = memberDomainService.isOnboardingComplete(memberId);
+
+            // Then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("필수 약관에 미동의가 있으면 false를 반환한다")
+        void it_returns_false_when_missing_mandatory_agreement() {
+            // Given
+            Long memberId = 1L;
+            MemberAuthentication authentication = MemberAuthentication.reconstitute(
+                    10L,
+                    memberId,
+                    "test@example.com",
+                    null,
+                    0,
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusDays(90),
+                    "홍길동",
+                    null,
+                    LocalDateTime.now()
+            );
+
+            Policy mandatoryPolicy = Policy.reconstitute(
+                    100L,
+                    "필수 이용약관",
+                    "내용",
+                    PolicyType.REQUIRED,
+                    "v1.0",
+                    true,
+                    true
+            );
+
+            given(memberAuthenticationRepository.findByMemberId(memberId))
+                    .willReturn(Optional.of(authentication));
+            given(policyRepository.findAllActive())
+                    .willReturn(List.of(mandatoryPolicy));
+            given(policyAgreementRepository.findByMemberAuthenticationId(authentication.getMemberAuthenticationId()))
+                    .willReturn(List.of());
+
+            // When
+            boolean result = memberDomainService.isOnboardingComplete(memberId);
+
+            // Then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("회원 인증 정보를 찾을 수 없으면 MEMBER_NOT_FOUND 예외를 던진다")
+        void it_throws_when_member_authentication_not_found() {
+            // Given
+            Long memberId = 999L;
+            given(memberAuthenticationRepository.findByMemberId(memberId)).willReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> memberDomainService.isOnboardingComplete(memberId))
+                    .isInstanceOf(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorType", ErrorType.MEMBER_NOT_FOUND);
         }
     }
 
