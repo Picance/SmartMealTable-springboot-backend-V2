@@ -102,8 +102,8 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     /**
      * 음식명 Prefix로 시작하는 음식 조회 (자동완성용)
-     * 삭제되지 않은 음식만 조회하며, 대표 메뉴(isMain=true) 우선, 이름 순으로 정렬
-     * 
+     * 삭제되지 않은 음식만 조회하며, 대표 메뉴(isMain=true) 우선, 최신 등록순으로 정렬
+     *
      * @param prefix 검색 접두사
      * @param limit 결과 제한 수
      * @return 음식 리스트
@@ -118,7 +118,7 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
                 )
                 .orderBy(
                         foodJpaEntity.isMain.desc().nullsLast(), // 대표 메뉴 우선
-                        foodJpaEntity.foodName.asc() // 이름 오름차순
+                        foodJpaEntity.registeredDt.desc() // 최신 등록순 (인기도 대리지표)
                 )
                 .limit(limit)
                 .fetch();
