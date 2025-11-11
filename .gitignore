@@ -292,6 +292,7 @@ smartmealtable-key.pub
 
 # dataSources
 /districts_before
+/group-data
 
 # JMeter Performance Test Results
 performance-test/results/
