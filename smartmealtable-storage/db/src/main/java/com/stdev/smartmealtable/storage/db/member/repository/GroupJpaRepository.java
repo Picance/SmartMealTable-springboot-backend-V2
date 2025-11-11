@@ -69,4 +69,16 @@ public interface GroupJpaRepository extends JpaRepository<GroupJpaEntity, Long> 
      */
     @Query("SELECT g FROM GroupJpaEntity g WHERE g.groupId IN :groupIds")
     List<GroupJpaEntity> findByGroupIdIn(@Param("groupIds") List<Long> groupIds);
+
+    /**
+     * 이름에 포함된 키워드로 검색 (이름 길이순으로 정렬)
+     * UI/UX 개선: 짧은 이름을 먼저 표시하여 더 많은 정보 노출
+     *
+     * 예: "과학기술대" 검색 시
+     *   1. "서울과학기술대학교" (O, contains)
+     *   2. "과학기술대" (O, contains)
+     *   등을 이름 길이 짧은 순으로 정렬해서 반환
+     */
+    @Query("SELECT g FROM GroupJpaEntity g WHERE g.name LIKE %:keyword% ORDER BY CHAR_LENGTH(g.name) ASC")
+    List<GroupJpaEntity> findByNameContainingOrderByNameLength(@Param("keyword") String keyword);
 }

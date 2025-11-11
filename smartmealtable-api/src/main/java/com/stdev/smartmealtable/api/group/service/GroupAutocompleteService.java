@@ -100,23 +100,23 @@ public class GroupAutocompleteService {
     
     /**
      * 다단계 검색 전략
-     * 
-     * Stage 1: Prefix 검색 (캐시)
+     *
+     * Stage 1: Prefix 검색 (캐시) - 정확한 매칭 우선
      * Stage 2: 초성 검색 (캐시)
-     * Stage 3: 오타 허용 검색 (캐시 + DB)
-     * 
+     * Stage 3: 오타 허용 + 부분 매칭 검색 (DB)
+     *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 검색 결과
      */
     private List<Group> performMultiStageSearch(String keyword, int limit) {
         Set<Long> groupIds = new LinkedHashSet<>();
-        
-        // Stage 1: Prefix 검색 (Redis Sorted Set)
+
+        // Stage 1: Prefix 검색 (Redis Sorted Set) - 정확한 매칭 우선
         try {
             List<Long> prefixResults = searchCacheService.getAutocompleteResults(DOMAIN, keyword, limit);
             groupIds.addAll(prefixResults);
-            
+
             if (groupIds.size() >= limit) {
                 log.debug("Stage 1 (Prefix) 충분한 결과: {}", groupIds.size());
                 return fetchGroups(new ArrayList<>(groupIds));
@@ -124,7 +124,7 @@ public class GroupAutocompleteService {
         } catch (Exception e) {
             log.warn("Stage 1 (Prefix) 검색 실패, Stage 2로 진행", e);
         }
-        
+
         // Stage 2: 초성 검색 (초성 인덱스)
         if (KoreanSearchUtil.isChosung(keyword)) {
             try {
@@ -132,61 +132,112 @@ public class GroupAutocompleteService {
                 chosungResults.stream()
                     .map(Long::parseLong)
                     .forEach(groupIds::add);
-                
+
                 if (groupIds.size() >= limit) {
                     log.debug("Stage 2 (초성) 충분한 결과: {}", groupIds.size());
                     return fetchGroups(new ArrayList<>(groupIds));
                 }
             } catch (Exception e) {
-                log.warn("Stage 2 (초성) 검색 실패, Stage 3로 진행", e);
+                log.warn("Stage 2 (초성) 검색 실패, Stage 3으로 진행", e);
             }
         }
-        
-        // Stage 3: 오타 허용 검색 (결과가 부족할 때만)
-        if (groupIds.size() < MIN_RESULTS_FOR_TYPO && keyword.length() >= 2) {
+
+        // Stage 3: 오타 허용 + 부분 매칭 검색 (결과가 부족할 때)
+        if (groupIds.size() < limit) {
             try {
-                List<Group> typoResults = searchWithTypoTolerance(keyword, limit);
-                typoResults.forEach(group -> groupIds.add(group.getGroupId()));
-                
-                log.debug("Stage 3 (오타 허용) 추가 결과: {}", typoResults.size());
+                List<Group> expandedResults = searchWithTypoTolerance(keyword, limit * 2);
+                expandedResults.forEach(group -> groupIds.add(group.getGroupId()));
+
+                log.debug("Stage 3 (오타 허용 + 부분 매칭) 추가 결과: {}", expandedResults.size());
             } catch (Exception e) {
-                log.warn("Stage 3 (오타 허용) 검색 실패", e);
+                log.warn("Stage 3 (오타 허용 + 부분 매칭) 검색 실패", e);
             }
         }
-        
+
         return fetchGroups(new ArrayList<>(groupIds));
     }
     
     /**
-     * 오타 허용 검색
-     * 
+     * 오타 허용 + 부분 매칭 검색
+     *
+     * 검색 전략:
+     * 1. Prefix 검색 (정확한 매칭)
+     * 2. Contains 검색 (부분 매칭, 이름 길이순)
+     * 3. Edit Distance 검색 (오타 허용)
+     *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 검색 결과
      */
     private List<Group> searchWithTypoTolerance(String keyword, int limit) {
-        // DB에서 prefix 검색
-        List<Group> candidates = groupRepository.findByNameStartsWith(keyword);
-        
-        // Prefix 매칭 결과가 충분하면 즉시 반환
-        if (!candidates.isEmpty()) {
-            return candidates.stream().limit(limit).collect(Collectors.toList());
+        Set<Long> resultIds = new LinkedHashSet<>();
+        List<Group> results = new ArrayList<>();
+
+        // Stage 1: Prefix 검색 (정확한 매칭 우선)
+        try {
+            List<Group> prefixResults = groupRepository.findByNameStartsWith(keyword);
+            prefixResults.forEach(group -> {
+                if (resultIds.add(group.getGroupId())) {
+                    results.add(group);
+                }
+            });
+
+            if (results.size() >= limit) {
+                log.debug("Prefix 검색으로 충분한 결과: {}", results.size());
+                return results.stream().limit(limit).collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            log.warn("Prefix 검색 실패", e);
         }
-        
-        // Prefix 매칭 실패 시, 편집 거리 기반 검색 (첫 2글자)
-        String prefix = keyword.substring(0, Math.min(2, keyword.length()));
-        candidates = groupRepository.findByNameStartsWith(prefix);
-        
-        return candidates.stream()
-            .filter(group -> {
-                int distance = KoreanSearchUtil.calculateEditDistance(keyword, group.getName());
-                return distance <= MAX_TYPO_DISTANCE;
-            })
-            .sorted(Comparator.comparingInt(group -> 
-                KoreanSearchUtil.calculateEditDistance(keyword, group.getName())
-            ))
-            .limit(limit)
-            .collect(Collectors.toList());
+
+        // Stage 2: Contains 검색 (부분 매칭, 이름 길이순 - UI/UX 개선)
+        if (results.size() < limit) {
+            try {
+                List<Group> containsResults = groupRepository.findByNameContainsOrderByLength(keyword);
+
+                containsResults.forEach(group -> {
+                    if (resultIds.add(group.getGroupId())) {
+                        results.add(group);
+                    }
+                });
+
+                if (results.size() >= limit) {
+                    log.debug("Contains 검색으로 충분한 결과: {}", results.size());
+                    return results.stream().limit(limit).collect(Collectors.toList());
+                }
+            } catch (Exception e) {
+                log.warn("Contains 검색 실패", e);
+            }
+        }
+
+        // Stage 3: Edit Distance 기반 검색 (오타 허용)
+        if (results.size() < limit && keyword.length() >= 2) {
+            try {
+                String prefix = keyword.substring(0, Math.min(2, keyword.length()));
+                List<Group> candidates = groupRepository.findByNameStartsWith(prefix);
+
+                candidates.stream()
+                    .filter(group -> {
+                        int distance = KoreanSearchUtil.calculateEditDistance(keyword, group.getName());
+                        return distance <= MAX_TYPO_DISTANCE && !resultIds.contains(group.getGroupId());
+                    })
+                    .sorted(Comparator.comparingInt(group ->
+                        KoreanSearchUtil.calculateEditDistance(keyword, group.getName())
+                    ))
+                    .limit(limit - results.size())
+                    .forEach(group -> {
+                        if (resultIds.add(group.getGroupId())) {
+                            results.add(group);
+                        }
+                    });
+
+                log.debug("Edit Distance 검색 추가 결과: {}", candidates.size());
+            } catch (Exception e) {
+                log.warn("Edit Distance 검색 실패", e);
+            }
+        }
+
+        return results;
     }
     
     /**
@@ -265,42 +316,61 @@ public class GroupAutocompleteService {
     
     /**
      * Fallback 검색 (Redis 장애 시)
-     * 
+     *
+     * 검색 전략:
+     * 1. 정확한 매칭 (Exact match): 이름이 정확히 일치 또는 대부분 일치
+     * 2. 부분 매칭 (Contains match): 이름 길이 짧은 순으로 정렬
+     *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
      * @return 자동완성 응답
      */
     private GroupAutocompleteResponse fallbackSearch(String keyword, int limit) {
         log.warn("Fallback 검색 실행: keyword={}", keyword);
-        
+
         try {
             List<Group> groups;
-            
+
             // 초성 검색 여부 확인
             if (KoreanSearchUtil.isChosung(keyword)) {
                 // 초성 검색: DB에서 모든 그룹 조회 후 필터링
                 groups = groupRepository.findByNameStartsWith(keyword.substring(0, 1));
                 groups = groups.stream()
                     .filter(group -> KoreanSearchUtil.matchesChosung(keyword, group.getName()))
+                    .sorted(Comparator.comparingInt(group -> group.getName().length())) // 이름 길이순 정렬
                     .limit(limit)
                     .collect(Collectors.toList());
             } else {
-                // 일반 검색
-                groups = groupRepository.findByNameStartsWith(keyword);
+                // 일반 검색: 정확한 매칭 → 부분 매칭 순서
+                groups = new ArrayList<>();
+
+                // Stage 1: Prefix 검색 (정확한 매칭 우선)
+                List<Group> prefixResults = groupRepository.findByNameStartsWith(keyword);
+                groups.addAll(prefixResults);
+
                 if (groups.size() < limit) {
-                    // Prefix 검색 결과가 부족하면 Contains 검색
-                    List<Group> containsResults = groupRepository.findByNameContaining(keyword);
-                    groups = mergeResults(groups, containsResults, limit);
+                    // Stage 2: Contains 검색 (이름 길이순으로 정렬 - UI/UX 개선)
+                    List<Group> containsResults = groupRepository.findByNameContainsOrderByLength(keyword);
+
+                    // 중복 제거 후 추가
+                    Set<Long> existingIds = groups.stream()
+                        .map(Group::getGroupId)
+                        .collect(Collectors.toSet());
+
+                    containsResults.stream()
+                        .filter(group -> !existingIds.contains(group.getGroupId()))
+                        .forEach(groups::add);
                 }
             }
-            
+
             List<GroupSuggestion> suggestions = groups.stream()
                 .limit(limit)
                 .map(this::toSuggestion)
                 .collect(Collectors.toList());
-            
+
+            log.debug("Fallback 검색 완료: keyword={}, results={}", keyword, suggestions.size());
             return new GroupAutocompleteResponse(suggestions);
-            
+
         } catch (Exception e) {
             log.error("Fallback 검색 실패", e);
             return new GroupAutocompleteResponse(Collections.emptyList());

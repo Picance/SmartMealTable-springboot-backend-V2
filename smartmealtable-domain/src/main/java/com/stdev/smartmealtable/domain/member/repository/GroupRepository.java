@@ -34,6 +34,15 @@ public interface GroupRepository {
     List<Group> findByNameContaining(String name);
 
     /**
+     * 그룹 이름에 포함된 키워드로 검색 (이름 길이순으로 정렬)
+     * UI/UX 개선: 짧은 이름을 먼저 표시
+     *
+     * @param keyword 검색 키워드
+     * @return 이름 길이순으로 정렬된 그룹 목록
+     */
+    List<Group> findByNameContainsOrderByLength(String keyword);
+
+    /**
      * 그룹 검색 (타입과 이름 조건으로 검색)
      * @param type 그룹 타입 (optional)
      * @param name 그룹 이름 검색어 (optional)
