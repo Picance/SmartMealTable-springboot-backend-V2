@@ -43,6 +43,19 @@ spring:
     time-zone: Asia/Seoul
     default-property-inclusion: always  # null 값도 JSON에 포함
 
+  # Redis 설정
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+
 # JWT 설정
 jwt:
   secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThatShouldBeLongEnough}

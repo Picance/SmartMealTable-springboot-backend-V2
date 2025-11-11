@@ -86,8 +86,8 @@ jobs:
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
                 -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \\
-                -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
-                -e SPRING_REDIS_PORT=6379 \\
+                -e SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
+                -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \\
                 -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \\
                 -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \\
@@ -152,8 +152,8 @@ jobs:
                 -e SPRING_DATASOURCE_URL=jdbc:mysql://${{ secrets.RDS_ENDPOINT }}/smartmealtable?useSSL=false\\&serverTimezone=Asia/Seoul\\&allowPublicKeyRetrieval=true \\
                 -e SPRING_DATASOURCE_USERNAME=${{ secrets.RDS_USERNAME }} \\
                 -e SPRING_DATASOURCE_PASSWORD=${{ secrets.RDS_PASSWORD }} \\
-                -e SPRING_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
-                -e SPRING_REDIS_PORT=6379 \\
+                -e SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }} \\
+                -e SPRING_DATA_REDIS_PORT=6379 \\
                 -e JAVA_OPTS=-Xmx256m \\
                 ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}-scheduler:${{ github.sha }}'
             ]"
