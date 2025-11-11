@@ -11,6 +11,7 @@ import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder;
 import com.stdev.smartmealtable.storage.cache.SearchCacheService;
 import com.stdev.smartmealtable.support.search.korean.KoreanSearchUtil;
+import com.stdev.smartmealtable.support.search.korean.SearchRelevanceCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -80,11 +81,13 @@ public class StoreAutocompleteService {
             searchCacheService.incrementSearchCount(DOMAIN, normalizedKeyword);
             
             // 3. 다단계 검색 전략 실행
-            List<Store> results = performMultiStageSearch(normalizedKeyword, limit);
-            
-            // 4. DTO 변환 (카테고리 이름 포함)
-            List<StoreSuggestion> suggestions = results.stream()
-                .limit(limit)
+            List<Store> results = performMultiStageSearch(normalizedKeyword, limit * 2); // 더 많이 조회 후 정렬
+
+            // 4. 관련성 기준으로 재정렬
+            List<Store> sortedResults = sortByRelevance(normalizedKeyword, results, limit);
+
+            // 5. DTO 변환 (카테고리 이름 포함)
+            List<StoreSuggestion> suggestions = sortedResults.stream()
                 .map(this::toSuggestion)
                 .collect(Collectors.toList());
             
@@ -334,8 +337,65 @@ public class StoreAutocompleteService {
     }
     
     /**
+     * 검색 결과를 관련성 기준으로 재정렬
+     *
+     * 정렬 규칙 (배달앱 방식):
+     * 1순위: 완전 일치 (모든 글자가 포함된 가장 짧은 항목)
+     * 2순위: 부분 일치 (일부 글자만 포함)
+     * 3순위: 같은 매칭 타입 내에서는 인기도순 (favoriteCount)
+     *
+     * @param keyword 검색 키워드
+     * @param stores 검색 결과 가게 목록
+     * @param limit 제한 개수
+     * @return 재정렬된 가게 목록
+     */
+    private List<Store> sortByRelevance(String keyword, List<Store> stores, int limit) {
+        if (stores.isEmpty() || keyword == null || keyword.isBlank()) {
+            return stores.stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+        }
+
+        return stores.stream()
+            .map(store -> new RelevanceScore(
+                store,
+                SearchRelevanceCalculator.calculateRelevance(
+                    keyword,
+                    store.getName(),
+                    store.getFavoriteCount() != null ? store.getFavoriteCount() : 0
+                )
+            ))
+            .filter(score -> score.relevanceScore > 0) // 매칭되지 않은 항목 제외
+            .sorted(Comparator.comparingInt(RelevanceScore::getRelevanceScore).reversed()) // 역순 정렬
+            .map(RelevanceScore::getStore)
+            .limit(limit)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 내부 클래스: 관련성 점수와 함께 Store 저장
+     */
+    private static class RelevanceScore {
+        private final Store store;
+        private final int relevanceScore;
+
+        RelevanceScore(Store store, int relevanceScore) {
+            this.store = store;
+            this.relevanceScore = relevanceScore;
+        }
+
+        Store getStore() {
+            return store;
+        }
+
+        int getRelevanceScore() {
+            return relevanceScore;
+        }
+    }
+
+    /**
      * Store → StoreSuggestion 변환
-     * 
+     *
      * @param store Store 엔티티
      * @return StoreSuggestion DTO
      */

@@ -13,6 +13,7 @@ import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder;
 import com.stdev.smartmealtable.storage.cache.SearchCacheService;
 import com.stdev.smartmealtable.support.search.korean.KoreanSearchUtil;
+import com.stdev.smartmealtable.support.search.korean.SearchRelevanceCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -84,11 +85,13 @@ public class FoodAutocompleteService {
             searchCacheService.incrementSearchCount(DOMAIN, normalizedKeyword);
             
             // 3. 다단계 검색 전략 실행
-            List<Food> results = performMultiStageSearch(normalizedKeyword, limit);
-            
-            // 4. DTO 변환 (Store 정보 포함)
-            List<FoodSuggestion> suggestions = results.stream()
-                .limit(limit)
+            List<Food> results = performMultiStageSearch(normalizedKeyword, limit * 2); // 더 많이 조회 후 정렬
+
+            // 4. 관련성 기준으로 재정렬
+            List<Food> sortedResults = sortByRelevance(normalizedKeyword, results, limit);
+
+            // 5. DTO 변환 (Store 정보 포함)
+            List<FoodSuggestion> suggestions = sortedResults.stream()
                 .map(this::toSuggestion)
                 .filter(Objects::nonNull) // Store 조회 실패한 경우 제외
                 .collect(Collectors.toList());
@@ -199,7 +202,7 @@ public class FoodAutocompleteService {
     
     /**
      * Food ID 목록으로 Food 엔티티 조회
-     * 
+     *
      * @param foodIds Food ID 목록
      * @return Food 엔티티 목록
      */
@@ -207,23 +210,94 @@ public class FoodAutocompleteService {
         if (foodIds.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         try {
             // 캐시에서 상세 데이터 조회 시도
             List<Food> foods = foodRepository.findAllByIdIn(foodIds);
-            
+
             // 원래 순서 유지 (대표 메뉴 우선 순서)
             Map<Long, Food> foodMap = foods.stream()
                 .collect(Collectors.toMap(Food::getFoodId, f -> f));
-            
+
             return foodIds.stream()
                 .map(foodMap::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-            
+
         } catch (Exception e) {
             log.error("Food 조회 실패", e);
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 검색 결과를 관련성 기준으로 재정렬
+     *
+     * 정렬 규칙 (배달앱 방식):
+     * 1순위: 완전 일치 (모든 글자가 포함된 가장 짧은 항목)
+     * 2순위: 부분 일치 (일부 글자만 포함)
+     * 3순위: 같은 매칭 타입 내에서는 인기도순
+     *
+     * @param keyword 검색 키워드
+     * @param foods 검색 결과 음식 목록
+     * @param limit 제한 개수
+     * @return 재정렬된 음식 목록
+     */
+    private List<Food> sortByRelevance(String keyword, List<Food> foods, int limit) {
+        if (foods.isEmpty() || keyword == null || keyword.isBlank()) {
+            return foods.stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+        }
+
+        return foods.stream()
+            .map(food -> new RelevanceScore(
+                food,
+                SearchRelevanceCalculator.calculateRelevance(
+                    keyword,
+                    food.getFoodName(),
+                    getPopularityScore(food)
+                )
+            ))
+            .filter(score -> score.relevanceScore > 0) // 매칭되지 않은 항목 제외
+            .sorted(Comparator.comparingInt(RelevanceScore::getRelevanceScore).reversed()) // 역순 정렬
+            .map(RelevanceScore::getFood)
+            .limit(limit)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 인기도 점수 계산 (0~1000)
+     *
+     * 현재는 대표메뉴 여부로 판단
+     * 향후: searchCount, favoriteCount 등을 활용하여 개선
+     */
+    private int getPopularityScore(Food food) {
+        // 대표 메뉴는 기본 점수 500
+        if (Boolean.TRUE.equals(food.getIsMain())) {
+            return 500;
+        }
+        return 0;
+    }
+
+    /**
+     * 내부 클래스: 관련성 점수와 함께 Food 저장
+     */
+    private static class RelevanceScore {
+        private final Food food;
+        private final int relevanceScore;
+
+        RelevanceScore(Food food, int relevanceScore) {
+            this.food = food;
+            this.relevanceScore = relevanceScore;
+        }
+
+        Food getFood() {
+            return food;
+        }
+
+        int getRelevanceScore() {
+            return relevanceScore;
         }
     }
     
