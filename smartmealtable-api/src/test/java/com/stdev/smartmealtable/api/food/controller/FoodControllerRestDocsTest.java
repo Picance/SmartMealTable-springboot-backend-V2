@@ -19,7 +19,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -59,7 +59,7 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
                 .andDo(document("food/autocomplete-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterWithName("keyword").description("자동완성 검색 키워드 (1~50자, 필수)"),
                                 parameterWithName("limit").optional().description("조회할 결과 개수 (기본값: 10, 최대: 20)")
                         ),
@@ -80,7 +80,7 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
                 .andDo(document("food/autocomplete-invalid-limit",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterWithName("keyword").description("자동완성 검색 키워드 (필수)"),
                                 parameterWithName("limit").description("허용 범위를 초과한 결과 개수 (최대 20)")
                         ),
@@ -109,7 +109,7 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
                 .andDo(document("food/trending-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterWithName("limit").optional().description("조회할 인기 검색어 개수 (기본값: 10, 최대: 20)")
                         ),
                         responseFields(getTrendingSuccessResponseFields())
@@ -128,7 +128,7 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
                 .andDo(document("food/trending-invalid-limit",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        requestParameters(
+                        queryParameters(
                                 parameterWithName("limit").description("허용 범위 미만의 인기 검색어 개수 (최소 1)")
                         ),
                         responseFields(getErrorResponseFields())
