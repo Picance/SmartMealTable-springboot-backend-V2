@@ -54,12 +54,22 @@ public class CartDomainService {
     /**
      * 특정 가게의 장바구니를 제외한 다른 장바구니 삭제
      * (다른 가게의 장바구니를 비우고 새 가게 장바구니 시작)
-     * 
+     *
      * @param memberId 회원 ID
      * @param keepStoreId 유지할 가게 ID
      */
     @Transactional
     public void clearOtherCarts(Long memberId, Long keepStoreId) {
         cartRepository.deleteByMemberIdAndStoreIdNot(memberId, keepStoreId);
+    }
+
+    /**
+     * 회원의 모든 장바구니 삭제 (전체 비우기)
+     *
+     * @param memberId 회원 ID
+     */
+    @Transactional
+    public void clearAllCarts(Long memberId) {
+        cartRepository.deleteByMemberId(memberId);
     }
 }

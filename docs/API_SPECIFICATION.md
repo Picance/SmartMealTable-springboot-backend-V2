@@ -3994,7 +3994,15 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 ---
 
-### 12.5 장바구니 전체 비우기
+### 12.5 장바구니 특정 가게 상품 삭제
+
+**Endpoint:** `DELETE /api/v1/cart/store/{storeId}`
+
+**Response (204):** No Content
+
+---
+
+### 12.6 장바구니 전체 비우기
 
 **Endpoint:** `DELETE /api/v1/cart`
 
@@ -4002,19 +4010,29 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 ---
 
-### 12.6 장바구니 → 지출 등록
+### 12.7 장바구니 → 지출 등록
 
 **Endpoint:** `POST /api/v1/cart/checkout`
 
 **Request:**
 ```json
 {
+  "storeId": 42,
   "mealType": "LUNCH",
   "discount": 1000,
   "expendedDate": "2025-10-08",
-  "expendedTime": "12:30:00"
+  "expendedTime": "12:30:00",
+  "memo": "점심 모임(필수 필드 아님)"
 }
 ```
+
+**Request Fields:**
+- `storeId` (Long, required): 지출을 생성할 가게 ID. 장바구니가 해당 가게 기준으로 정산됩니다.
+- `mealType` (enum, required): `BREAKFAST`, `LUNCH`, `DINNER`, `SNACK`.
+- `discount` (Long, optional, default 0): 전체 장바구니에 적용할 할인액. 0 이상.
+- `expendedDate` (ISO date, required): 지출 발생 날짜 (예: `2025-10-08`).
+- `expendedTime` (ISO time, required): 지출 발생 시간 (예: `12:30:00`).
+- `memo` (String, optional, ≤500자): 지출 메모. 필수는 아님
 
 **Response (201):**
 ```json

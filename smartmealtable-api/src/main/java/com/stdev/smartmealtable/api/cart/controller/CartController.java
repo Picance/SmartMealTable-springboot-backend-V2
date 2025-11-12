@@ -104,9 +104,9 @@ public class CartController {
     }
     
     /**
-     * 장바구니 전체 삭제 (비우기)
+     * 특정 가게 장바구니 삭제 (비우기)
      * DELETE /api/v1/cart/store/{storeId}
-     * 
+     *
      * @param user 인증된 사용자 정보
      * @param storeId 가게 ID
      * @return 성공 응답
@@ -118,11 +118,24 @@ public class CartController {
         cartService.clearCart(user.memberId(), storeId);
         return ApiResponse.success(null);
     }
-    
+
+    /**
+     * 장바구니 전체 비우기
+     * DELETE /api/v1/cart
+     *
+     * @param user 인증된 사용자 정보
+     * @return 성공 응답
+     */
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void clearAllCarts(@AuthUser AuthenticatedUser user) {
+        cartService.clearAllCarts(user.memberId());
+    }
+
     /**
      * 장바구니 체크아웃 (지출 등록)
      * POST /api/v1/cart/checkout
-     * 
+     *
      * @param user 인증된 사용자 정보
      * @param request 체크아웃 요청
      * @return 체크아웃 결과 (지출 정보 포함)

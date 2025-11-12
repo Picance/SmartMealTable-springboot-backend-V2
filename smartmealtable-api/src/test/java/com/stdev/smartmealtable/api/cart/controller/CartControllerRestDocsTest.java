@@ -26,6 +26,7 @@ import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -785,5 +786,22 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("error.message").type(JsonFieldType.STRING).description("에러 메시지")
                         )
                 ));
+    }
+
+    @Test
+    @DisplayName("전체 장바구니 비우기 성공")
+    void clearAllCarts_success_docs() throws Exception {
+        // given - 장바구니에 아이템 추가
+        Cart cart = Cart.create(member.getMemberId(), store.getStoreId());
+        cart.addItem(food1.getFoodId(), 2);
+        cartRepository.save(cart);
+
+        System.out.println("cart.getCartId() = " + cart.getCartId());
+        System.out.println("cart.getMemberId() = " + cart.getMemberId());
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/cart")
+                        .header("Authorization", accessToken))
+                .andExpect(status().isNoContent());
     }
 }

@@ -37,7 +37,12 @@ public interface CartRepository {
      * 회원의 특정 가게를 제외한 다른 장바구니 삭제
      */
     void deleteByMemberIdAndStoreIdNot(Long memberId, Long storeId);
-    
+
+    /**
+     * 회원의 모든 장바구니 삭제
+     */
+    void deleteByMemberId(Long memberId);
+
     /**
      * 장바구니 존재 여부 확인
      */

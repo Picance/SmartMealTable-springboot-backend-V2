@@ -337,13 +337,25 @@ public class CartService {
     
     /**
      * 장바구니 전체 삭제 (비우기)
-     * 
+     * 특정 가게의 장바구니만 삭제
+     *
      * @param memberId 회원 ID
      * @param storeId 가게 ID
      */
     @Transactional
     public void clearCart(Long memberId, Long storeId) {
         cartDomainService.clearCart(memberId, storeId);
+    }
+
+    /**
+     * 모든 장바구니 삭제 (전체 비우기)
+     * 회원의 모든 가게 장바구니를 삭제합니다.
+     *
+     * @param memberId 회원 ID
+     */
+    @Transactional
+    public void clearAllCarts(Long memberId) {
+        cartDomainService.clearAllCarts(memberId);
     }
     
     /**
