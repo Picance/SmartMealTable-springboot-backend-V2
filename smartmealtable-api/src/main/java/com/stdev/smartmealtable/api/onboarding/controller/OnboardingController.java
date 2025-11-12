@@ -203,16 +203,16 @@ public class OnboardingController {
     /**
      * 온보딩 - 음식 목록 조회 (이미지 그리드용)
      * GET /api/v1/onboarding/foods
+     * 다양한 카테고리에서 랜덤하게 음식을 제공하여 사용자의 실제 선호도 파악
      */
     @GetMapping("/foods")
     public ResponseEntity<ApiResponse<GetFoodsResponse>> getFoods(
-            @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        log.info("온보딩 음식 목록 조회 API 호출 - categoryId: {}, page: {}, size: {}", categoryId, page, size);
+        log.info("온보딩 음식 목록 조회 API 호출 - page: {}, size: {}", page, size);
 
-        GetFoodsServiceResponse serviceResponse = getFoodsService.getFoods(categoryId, page, size);
+        GetFoodsServiceResponse serviceResponse = getFoodsService.getFoods(page, size);
         GetFoodsResponse response = GetFoodsResponse.from(serviceResponse);
 
         return ResponseEntity.ok(ApiResponse.success(response));

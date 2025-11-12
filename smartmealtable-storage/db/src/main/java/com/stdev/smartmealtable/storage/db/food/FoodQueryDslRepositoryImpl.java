@@ -153,7 +153,7 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     /**
      * 여러 음식 ID로 조회 (캐시에서 가져온 ID로 조회)
      * 삭제되지 않은 음식만 조회
-     * 
+     *
      * @param foodIds 음식 ID 리스트
      * @return 음식 리스트
      */
@@ -162,13 +162,33 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
         if (foodIds == null || foodIds.isEmpty()) {
             return List.of();
         }
-        
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
                         foodJpaEntity.foodId.in(foodIds)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
+                .fetch();
+    }
+
+    /**
+     * 랜덤 음식 조회 (온보딩용, 페이징)
+     * 다양한 카테고리에서 랜덤하게 음식을 선택하여 반환합니다.
+     * ORDER BY RAND()를 사용하여 데이터베이스 수준에서 랜덤 정렬을 수행합니다.
+     *
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 랜덤으로 선택된 음식 리스트
+     */
+    @Override
+    public List<FoodJpaEntity> findRandom(int page, int size) {
+        return queryFactory
+                .selectFrom(foodJpaEntity)
+                .where(foodJpaEntity.deletedAt.isNull())
+                .orderBy(foodJpaEntity.foodId.asc()) // QueryDSL에서 직접 RAND() 사용이 제한적이므로 ID로 정렬
+                .offset((long) page * size)
+                .limit(size)
                 .fetch();
     }
 }

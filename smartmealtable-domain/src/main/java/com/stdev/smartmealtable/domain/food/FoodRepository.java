@@ -29,6 +29,12 @@ public interface FoodRepository {
     List<Food> findAll(int page, int size);
 
     /**
+     * 랜덤 음식 조회 (온보딩용, 페이징)
+     * 다양한 카테고리에서 랜덤하게 음식을 선택하여 반환합니다.
+     */
+    List<Food> findRandom(int page, int size);
+
+    /**
      * 카테고리별 음식 조회 (페이징은 Storage 계층에서 처리)
      */
     List<Food> findByCategoryId(Long categoryId, int page, int size);

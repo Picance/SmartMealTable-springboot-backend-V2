@@ -53,6 +53,13 @@ public class FoodRepositoryImpl implements FoodRepository {
     }
 
     @Override
+    public List<Food> findRandom(int page, int size) {
+        return foodJpaRepository.findRandom(page, size).stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Food> findByCategoryId(Long categoryId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<FoodJpaEntity> pageResult = foodJpaRepository.findByCategoryId(categoryId, pageRequest);

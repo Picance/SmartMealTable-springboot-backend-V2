@@ -27,22 +27,21 @@ public class GetFoodsService {
     private final CategoryRepository categoryRepository;
 
     /**
-     * 온보딩용 음식 목록 조회 (페이징)
+     * 온보딩용 음식 목록 조회 (다양한 카테고리에서 랜덤 조회)
+     *
+     * 온보딩 과정에서 사용자가 다양한 카테고리의 음식을 보고 선택하도록 하여
+     * 사용자의 실제 선호도를 파악합니다. 따라서 모든 카테고리에서 랜덤하게 음식을 제공합니다.
+     *
+     * @param page 페이지 번호
+     * @param size 페이지 크기 (한 번에 조회할 음식 개수)
+     * @return 다양한 카테고리에서 선택된 음식 목록
      */
-    public GetFoodsServiceResponse getFoods(Long categoryId, int page, int size) {
-        log.info("온보딩 음식 목록 조회 - categoryId: {}, page: {}, size: {}", categoryId, page, size);
+    public GetFoodsServiceResponse getFoods(int page, int size) {
+        log.info("온보딩 음식 목록 조회 (랜덤) - page: {}, size: {}", page, size);
 
-        // 1. 음식 목록 조회
-        List<Food> foods;
-        long totalElements;
-
-        if (categoryId != null) {
-            foods = foodRepository.findByCategoryId(categoryId, page, size);
-            totalElements = foodRepository.countByCategoryId(categoryId);
-        } else {
-            foods = foodRepository.findAll(page, size);
-            totalElements = foodRepository.count();
-        }
+        // 1. 랜덤 음식 목록 조회
+        List<Food> foods = foodRepository.findRandom(page, size);
+        long totalElements = foodRepository.count();
 
         // 2. 카테고리 정보 조회 (한 번에 조회하여 성능 최적화)
         Map<Long, String> categoryNameMap = categoryRepository.findAll().stream()

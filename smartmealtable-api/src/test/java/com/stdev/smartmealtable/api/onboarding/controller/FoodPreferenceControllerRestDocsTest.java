@@ -141,7 +141,6 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("음식 목록 조회 API 문서화")
     void getFoods_docs() throws Exception {
         mockMvc.perform(get("/api/v1/onboarding/foods")
-                        .param("categoryId", categoryId1.toString())
                         .param("page", "0")
                         .param("size", "20")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -149,9 +148,8 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(status().isOk())
                 .andDo(document("onboarding-foods-get",
                         queryParameters(
-                                parameterWithName("categoryId").description("카테고리 ID (선택)").optional(),
                                 parameterWithName("page").description("페이지 번호 (기본값: 0)"),
-                                parameterWithName("size").description("페이지 크기 (기본값: 20)")
+                                parameterWithName("size").description("페이지 크기 (기본값: 20, 최대: 100)")
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (SUCCESS/ERROR)"),

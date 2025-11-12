@@ -54,9 +54,19 @@ public interface FoodQueryDslRepository {
     /**
      * 여러 음식 ID로 조회 (캐시에서 가져온 ID로 조회)
      * 삭제되지 않은 음식만 조회
-     * 
+     *
      * @param foodIds 음식 ID 리스트
      * @return 음식 리스트
      */
     java.util.List<FoodJpaEntity> findByFoodIdIn(java.util.List<Long> foodIds);
+
+    /**
+     * 랜덤 음식 조회 (온보딩용, 페이징)
+     * 다양한 카테고리에서 랜덤하게 음식을 선택하여 반환합니다.
+     *
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 랜덤으로 선택된 음식 리스트
+     */
+    java.util.List<FoodJpaEntity> findRandom(int page, int size);
 }

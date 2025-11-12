@@ -1092,12 +1092,11 @@ Authorization: Bearer {access_token}
 
 ### 4.9 온보딩용 음식 목록 조회 (REQ-ONBOARD-405)
 
-**Endpoint:** `GET /api/v1/onboarding/foods?categoryId={categoryId}&page=0&size=20`
+**Endpoint:** `GET /api/v1/onboarding/foods?page=0&size=20`
 
-**설명:** 온보딩 과정에서 사용자가 선호하는 개별 음식을 이미지 그리드로 선택할 수 있도록 음식 목록을 제공합니다.
+**설명:** 온보딩 과정에서 사용자가 선호하는 개별 음식을 이미지 그리드로 선택할 수 있도록 다양한 카테고리의 음식을 랜덤하게 제공합니다. 사용자가 여러 카테고리의 음식을 보고 선택함으로써 실제 선호도를 파악할 수 있습니다.
 
 **Query Parameters:**
-- `categoryId` (optional): 특정 카테고리의 음식만 조회 (선택한 카테고리 기반 필터링)
 - `page`: 페이지 번호 (기본값: 0)
 - `size`: 페이지 크기 (기본값: 20, 최대: 100)
 
@@ -1117,15 +1116,6 @@ Authorization: Bearer {access_token}
         "averagePrice": 8000
       },
       {
-        "foodId": 2,
-        "foodName": "된장찌개",
-        "categoryId": 1,
-        "categoryName": "한식",
-        "imageUrl": "https://cdn.smartmealtable.com/foods/doenjang-jjigae.jpg",
-        "description": "구수한 된장찌개",
-        "averagePrice": 7500
-      },
-      {
         "foodId": 15,
         "foodName": "짜장면",
         "categoryId": 2,
@@ -1133,6 +1123,15 @@ Authorization: Bearer {access_token}
         "imageUrl": "https://cdn.smartmealtable.com/foods/jjajangmyeon.jpg",
         "description": "고소한 짜장면",
         "averagePrice": 6000
+      },
+      {
+        "foodId": 32,
+        "foodName": "돈카츠",
+        "categoryId": 3,
+        "categoryName": "일식",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/donkatsu.jpg",
+        "description": "바삭한 돈카츠",
+        "averagePrice": 12000
       }
     ],
     "pageable": {
@@ -1169,8 +1168,13 @@ Authorization: Bearer {access_token}
 - `description`: 음식 설명
 - `averagePrice`: 평균 가격 (참고용)
 
+**특징:**
+- 다양한 카테고리에서 랜덤으로 선택된 음식 제공
+- 페이지마다 다른 음식 조합이 반환될 수 있음 (중복 최소화)
+- 사용자의 실제 선호도(카테고리 가중치) 파악에 유용
+
 **Error Cases:**
-- `400`: 잘못된 쿼리 파라미터
+- `400`: 잘못된 쿼리 파라미터 (page, size 범위 초과)
 
 ---
 
@@ -2510,7 +2514,70 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 7.10 메뉴 상세 조회
+### 7.10 통합 자동완성(키워드) 검색
+
+**Endpoint:** `GET /api/v1/autocomplete?keyword=치킨&limit=10`
+
+**설명:**
+- 음식/가게/그룹(학교·회사) 키워드를 한 번에 조회하는 통합 자동완성 API입니다.
+- 각 도메인 자동완성 결과를 번갈아가며 섞어 최대 `limit`개까지 키워드를 반환합니다.
+- 키워드 제안과 별도로, 추천 가게에 바로 들어갈 수 있는 `storeShortcuts` 섹션을 제공합니다.
+- Redis 기반 캐시 → DB Fallback 전략을 사용하는 하위 자동완성 서비스들을 병렬로 호출하여 응답 시간을 줄였습니다.
+
+**Query Parameters:**
+- `keyword` (string, required): 검색 키워드 (1-50자, 좌우 공백 자동 제거)
+- `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최소 1, 최대 20)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "suggestions": [
+      "교촌 오리지널",        // 음식
+      "교촌치킨 강남점",      // 가게
+      "레드콤보",             // 음식
+      "bhc 역삼점",           // 가게
+      "서울대학교 학생회관"    // 그룹
+    ],
+    "storeShortcuts": [
+      {
+        "storeId": 101,
+        "name": "교촌치킨 강남점",
+        "imageUrl": "https://cdn.smartmealtable.com/stores/101/cover.jpg",
+        "isOpen": true
+      },
+      {
+        "storeId": 205,
+        "name": "bhc 역삼점",
+        "imageUrl": "https://cdn.smartmealtable.com/stores/205/cover.jpg",
+        "isOpen": false
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Response Fields:**
+- `suggestions` (array\<string>): 음식명/가게명/그룹명이 섞인 자동완성 키워드 목록 (중복 제거, 최대 `limit`개)
+- `storeShortcuts` (array\<object>): 추천 가게 바로가기 카드 목록
+  - `storeId`: 가게 ID
+  - `name`: 가게 이름
+  - `imageUrl`: 대표 이미지 URL (없으면 null)
+  - `isOpen`: 영업 중 여부 (추후 실시간 영업 정보 연동 예정)
+
+**Error Cases:**
+- `400`: 키워드 길이 또는 limit 값이 제약을 위반한 경우
+
+**검색 전략 & UX 특징:**
+- 음식/가게/그룹 자동완성을 병렬 호출 후 인터리빙(교차) 방식으로 합쳐 배달앱과 유사한 탐색 경험 제공
+- 동일한 단어는 소문자 기준으로 한 번만 노출
+- 가게 바로가기 목록은 별도 카드형 UI에 매핑하여 즉시 이동 UX 제공 (그룹은 shortcut 미제공)
+
+---
+
+### 7.11 메뉴 상세 조회
 
 **Endpoint:** `GET /api/v1/foods/{foodId}`
 
