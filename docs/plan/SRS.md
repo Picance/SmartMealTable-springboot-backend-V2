@@ -286,6 +286,21 @@
     *   [REQ-PROFILE-401] 모든 카테고리에 대해 선호도를 설정할 수 있어야 합니다.
     *   [REQ-PROFILE-403] 선호도 변경 시 즉시 추천 결과에 반영되어야 합니다.
 
+*   **Type**: Functional (F)
+*   **ID**: F-PROFILE-005
+*   **Description**: 온보딩 과정에서 선택한 개별 음식 선호도를 다시 조회하여 복구할 수 있어야 합니다.
+*   **Priority**: Medium
+*   **Inputs**: 사용자 액세스 토큰, (내부) 사용자 ID
+*   **Processing**:
+    *   `food_preference` 테이블에서 `member_id`와 `is_preferred=true` 조건으로 데이터를 조회합니다.
+    *   해당 음식 ID 목록으로 `food`, `category` 테이블을 조인하여 이름, 이미지, 카테고리 정보를 구성합니다.
+    *   `GET /api/v1/onboarding/food-preferences` API를 통해 최신 선호도를 반환하며, 최근 선택 순서로 정렬합니다.
+*   **Outputs**: `totalCount`, `preferredFoodIds`, `preferredFoods[] {foodId, foodName, categoryName, imageUrl}`
+*   **Acceptance criteria**:
+    *   [REQ-ONBOARD-406] 저장된 선호도가 없으면 빈 배열과 `totalCount = 0`을 반환해야 합니다.
+    *   인증되지 않은 사용자는 HTTP 401을 반환해야 합니다.
+    *   최대 50개의 선호 음식까지 안정적으로 응답해야 합니다.
+
 ### 3.7. 배치 작업 (Batch Processing)
 
 ### 3.3. 음식 추천 시스템 (Food Recommendation System)

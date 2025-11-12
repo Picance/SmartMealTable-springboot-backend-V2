@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -207,6 +209,42 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.preferredFoods[].categoryName").type(JsonFieldType.STRING).description("카테고리 이름"),
                                 fieldWithPath("data.preferredFoods[].imageUrl").type(JsonFieldType.STRING).description("이미지 URL"),
                                 fieldWithPath("data.message").type(JsonFieldType.STRING).description("성공 메시지"),
+                                fieldWithPath("error").type(JsonFieldType.NULL).optional()
+                                        .description("에러 정보 (성공 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("개별 음식 선호도 조회 API 문서화")
+    void getFoodPreferences_docs() throws Exception {
+        Map<String, Object> request = new HashMap<>();
+        request.put("preferredFoodIds", foodIds);
+
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/onboarding/food-preferences")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andDo(document("onboarding-food-preferences-get",
+                        requestHeaders(
+                                headerWithName("Authorization").description("Bearer 액세스 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("result").type(JsonFieldType.STRING).description("응답 결과 (SUCCESS/ERROR)"),
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("저장된 선호 음식 개수"),
+                                fieldWithPath("data.preferredFoodIds").type(JsonFieldType.ARRAY).description("저장된 선호 음식 ID 목록"),
+                                fieldWithPath("data.preferredFoods[]").type(JsonFieldType.ARRAY).description("저장된 선호 음식 상세 목록"),
+                                fieldWithPath("data.preferredFoods[].foodId").type(JsonFieldType.NUMBER).description("음식 ID"),
+                                fieldWithPath("data.preferredFoods[].foodName").type(JsonFieldType.STRING).description("음식 이름"),
+                                fieldWithPath("data.preferredFoods[].categoryName").type(JsonFieldType.STRING).description("카테고리 이름"),
+                                fieldWithPath("data.preferredFoods[].imageUrl").type(JsonFieldType.STRING).description("이미지 URL").optional(),
                                 fieldWithPath("error").type(JsonFieldType.NULL).optional()
                                         .description("에러 정보 (성공 시 null)")
                         )

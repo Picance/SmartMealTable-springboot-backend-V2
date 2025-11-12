@@ -230,6 +230,36 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     }
 
     @Test
+    @DisplayName("개별 음식 선호도 조회 성공")
+    void getFoodPreferences_success() throws Exception {
+        // given
+        Map<String, Object> request = new HashMap<>();
+        request.put("preferredFoodIds", foodIds);
+
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // when & then
+        mockMvc.perform(get("/api/v1/onboarding/food-preferences")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.totalCount").value(foodIds.size()))
+                .andExpect(jsonPath("$.data.preferredFoodIds").isArray())
+                .andExpect(jsonPath("$.data.preferredFoodIds.length()").value(foodIds.size()))
+                .andExpect(jsonPath("$.data.preferredFoods").isArray())
+                .andExpect(jsonPath("$.data.preferredFoods.length()").value(foodIds.size()))
+                .andExpect(jsonPath("$.data.preferredFoods[0].foodId").exists())
+                .andExpect(jsonPath("$.data.preferredFoods[0].foodName").exists())
+                .andExpect(jsonPath("$.data.preferredFoods[0].categoryName").exists());
+    }
+
+    @Test
     @DisplayName("개별 음식 선호도 저장 실패 - 빈 배열")
     void saveFoodPreferences_fail_emptyList() throws Exception {
         // given

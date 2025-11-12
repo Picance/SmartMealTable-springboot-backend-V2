@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.api.onboarding.controller;
 
+import com.stdev.smartmealtable.api.onboarding.controller.dto.GetFoodPreferencesResponse;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.GetFoodsResponse;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SaveFoodPreferencesRequest;
 import com.stdev.smartmealtable.api.onboarding.controller.dto.SaveFoodPreferencesResponse;
@@ -13,6 +14,7 @@ import com.stdev.smartmealtable.api.onboarding.dto.request.PolicyAgreementReques
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingAddressResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.response.OnboardingProfileResponse;
 import com.stdev.smartmealtable.api.onboarding.dto.response.PolicyAgreementResponse;
+import com.stdev.smartmealtable.api.onboarding.service.GetFoodPreferencesService;
 import com.stdev.smartmealtable.api.onboarding.service.GetFoodsService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingAddressService;
 import com.stdev.smartmealtable.api.onboarding.service.OnboardingProfileService;
@@ -20,6 +22,7 @@ import com.stdev.smartmealtable.api.onboarding.service.PolicyAgreementService;
 import com.stdev.smartmealtable.api.onboarding.service.SaveFoodPreferencesService;
 import com.stdev.smartmealtable.api.onboarding.service.SetBudgetService;
 import com.stdev.smartmealtable.api.onboarding.service.SetPreferencesService;
+import com.stdev.smartmealtable.api.onboarding.service.dto.GetFoodPreferencesServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.GetFoodsServiceResponse;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceRequest;
 import com.stdev.smartmealtable.api.onboarding.service.dto.OnboardingAddressServiceResponse;
@@ -57,6 +60,7 @@ public class OnboardingController {
     private final SetBudgetService setBudgetService;
     private final SetPreferencesService setPreferencesService;
     private final GetFoodsService getFoodsService;
+    private final GetFoodPreferencesService getFoodPreferencesService;
     private final SaveFoodPreferencesService saveFoodPreferencesService;
     private final PolicyAgreementService policyAgreementService;
 
@@ -214,6 +218,24 @@ public class OnboardingController {
 
         GetFoodsServiceResponse serviceResponse = getFoodsService.getFoods(page, size);
         GetFoodsResponse response = GetFoodsResponse.from(serviceResponse);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 온보딩 - 저장된 개별 음식 선호도 조회
+     * GET /api/v1/onboarding/food-preferences
+     */
+    @GetMapping("/food-preferences")
+    public ResponseEntity<ApiResponse<GetFoodPreferencesResponse>> getFoodPreferences(
+            @AuthUser AuthenticatedUser authenticatedUser
+    ) {
+        log.info("개별 음식 선호도 조회 API 호출 - memberId: {}", authenticatedUser.memberId());
+
+        GetFoodPreferencesServiceResponse serviceResponse = getFoodPreferencesService.getFoodPreferences(
+                authenticatedUser.memberId()
+        );
+        GetFoodPreferencesResponse response = GetFoodPreferencesResponse.from(serviceResponse);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

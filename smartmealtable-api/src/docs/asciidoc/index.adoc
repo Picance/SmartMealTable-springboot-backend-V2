@@ -1492,6 +1492,24 @@ include::{snippets}/onboarding-food-preferences-put/http-response.adoc[]
 
 include::{snippets}/onboarding-food-preferences-put/response-fields.adoc[]
 
+=== 개별 음식 선호도 조회
+
+`GET /api/v1/onboarding/food-preferences`
+
+저장된 개별 음식 선호도를 다시 불러옵니다.
+
+==== 요청 헤더
+
+include::{snippets}/onboarding-food-preferences-get/request-headers.adoc[]
+
+==== 성공 응답 (200 OK)
+
+include::{snippets}/onboarding-food-preferences-get/http-response.adoc[]
+
+===== 응답 필드
+
+include::{snippets}/onboarding-food-preferences-get/response-fields.adoc[]
+
 [[budget]]
 = 예산 관리 (Budget)
 

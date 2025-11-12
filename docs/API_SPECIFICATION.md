@@ -1245,6 +1245,60 @@ Authorization: Bearer {access_token}
 
 ---
 
+#### 4.10.1 개별 음식 선호도 조회 (REQ-ONBOARD-406)
+
+**Endpoint:** `GET /api/v1/onboarding/food-preferences`
+
+**설명:** 온보딩 중 저장했던 개별 음식 선호도를 다시 불러와서 사용자가 이전 선택 내역을 확인하고 수정할 수 있도록 합니다.
+
+**Headers:**
+- `Authorization`: `Bearer {accessToken}` (필수)
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "totalCount": 5,
+    "preferredFoodIds": [1, 2, 5, 7, 12],
+    "preferredFoods": [
+      {
+        "foodId": 1,
+        "foodName": "김치찌개",
+        "categoryName": "한식",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/kimchi-jjigae.jpg"
+      },
+      {
+        "foodId": 2,
+        "foodName": "된장찌개",
+        "categoryName": "한식",
+        "imageUrl": "https://cdn.smartmealtable.com/foods/doenjang-jjigae.jpg"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Response Fields:**
+- `totalCount`: 저장된 선호 음식의 총 개수
+- `preferredFoodIds`: 저장된 선호 음식 ID 목록 (프론트엔드에서 체크 상태 복원용)
+- `preferredFoods`: 선호 음식 상세 목록 (선호 등록 시점 역순)
+- `preferredFoods[].foodId`: 음식 ID
+- `preferredFoods[].foodName`: 음식 이름
+- `preferredFoods[].categoryName`: 카테고리 이름
+- `preferredFoods[].imageUrl`: 음식 이미지 URL (없을 수 있음)
+
+**특징:**
+- 로그인한 사용자 본인의 데이터만 조회 가능
+- 데이터가 없으면 `totalCount=0`, 빈 배열 두 개가 반환됩니다
+- 저장된 순서(최근 선택 우선)를 기준으로 정렬됩니다
+
+**Error Cases:**
+- `401`: 인증 토큰 누락/만료
+
+---
+
 ### 4.11 약관 조회 (기존 4.8에서 번호 변경)
 
 #### 4.11.1 약관 목록 조회
