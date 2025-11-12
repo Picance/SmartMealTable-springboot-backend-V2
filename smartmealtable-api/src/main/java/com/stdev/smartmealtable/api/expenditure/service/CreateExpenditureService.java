@@ -116,10 +116,14 @@ public class CreateExpenditureService {
         dailyBudget.addUsedAmount(amount);
         dailyBudgetRepository.save(dailyBudget);
 
-        // 식사별 예산 업데이트
-        MealBudget mealBudget = mealBudgetRepository.findByDailyBudgetIdAndMealType(dailyBudget.getBudgetId(), mealType);
-        mealBudget.addUsedAmount(amount);
-        mealBudgetRepository.save(mealBudget);
+        // 식사별 예산 업데이트 (mealType이 null이 아닐 경우만 처리)
+        if (mealType != null) {
+            MealBudget mealBudget = mealBudgetRepository.findByDailyBudgetIdAndMealType(dailyBudget.getBudgetId(), mealType);
+            if (mealBudget != null) {
+                mealBudget.addUsedAmount(amount);
+                mealBudgetRepository.save(mealBudget);
+            }
+        }
 
         // 월별 예산 업데이트
         YearMonth expenditureMonth = YearMonth.from(expendedDate);

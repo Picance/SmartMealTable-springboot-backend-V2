@@ -12,6 +12,12 @@ import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import com.stdev.smartmealtable.domain.budget.DailyBudget;
+import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
+import com.stdev.smartmealtable.domain.budget.MealBudget;
+import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
+import com.stdev.smartmealtable.domain.budget.MonthlyBudget;
+import com.stdev.smartmealtable.domain.budget.MonthlyBudgetRepository;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
@@ -62,6 +68,15 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
     
     @Autowired
     private StoreRepository storeRepository;
+    
+    @Autowired
+    private DailyBudgetRepository dailyBudgetRepository;
+    
+    @Autowired
+    private MealBudgetRepository mealBudgetRepository;
+    
+    @Autowired
+    private MonthlyBudgetRepository monthlyBudgetRepository;
     
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -116,6 +131,29 @@ class CreateExpenditureControllerTest extends AbstractContainerTest {
         Food food2 = Food.reconstitute(null, "치킨버거 세트", savedStore.getStoreId(), categoryId, "바삭한 치킨 버거", "images/food2.jpg", 7000);
         Food savedFood2 = foodRepository.save(food2);
         food2Id = savedFood2.getFoodId();
+        
+        // 테스트용 예산 데이터 생성
+        setupBudgetsForTestDate(memberId, LocalDate.of(2025, 10, 8));
+    }
+    
+    /**
+     * 테스트용 예산 데이터 생성
+     */
+    private void setupBudgetsForTestDate(Long memberId, LocalDate testDate) {
+        // 월별 예산 생성
+        String budgetMonth = String.format("%04d-%02d", testDate.getYear(), testDate.getMonthValue());
+        MonthlyBudget monthlyBudget = MonthlyBudget.create(memberId, 500000, budgetMonth);
+        monthlyBudgetRepository.save(monthlyBudget);
+        
+        // 일별 예산 생성
+        DailyBudget dailyBudget = DailyBudget.create(memberId, 17000, testDate);
+        DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
+        
+        // 식사별 예산 생성
+        for (MealType mealType : MealType.values()) {
+            MealBudget mealBudget = MealBudget.create(savedDailyBudget.getBudgetId(), 3000, mealType, testDate);
+            mealBudgetRepository.save(mealBudget);
+        }
     }
     
     @Test
