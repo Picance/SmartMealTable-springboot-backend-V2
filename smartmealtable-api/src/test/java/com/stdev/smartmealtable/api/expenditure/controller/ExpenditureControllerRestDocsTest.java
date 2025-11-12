@@ -13,6 +13,8 @@ import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServi
 import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceResponse;
 import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
+import com.stdev.smartmealtable.domain.budget.MealBudget;
+import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.expenditure.Expenditure;
@@ -68,6 +70,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     private ExpenditureRepository expenditureRepository;
     @Autowired
     private DailyBudgetRepository dailyBudgetRepository;
+    @Autowired
+    private MealBudgetRepository mealBudgetRepository;
     
     @MockBean
     private ParseSmsService parseSmsService;
@@ -683,7 +687,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
         // given - 테스트 데이터 생성
         LocalDate startDate = LocalDate.of(2025, 10, 1);
         LocalDate endDate = LocalDate.of(2025, 10, 31);
-        
+
         // 예산 데이터 생성
         for (int day = 1; day <= 5; day++) {
             LocalDate date = LocalDate.of(2025, 10, day);
@@ -692,7 +696,23 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                     10000,
                     date
             );
-            dailyBudgetRepository.save(budget);
+            DailyBudget savedBudget = dailyBudgetRepository.save(budget);
+
+            // 끼니별 예산 데이터도 생성
+            MealBudget lunchBudget = MealBudget.create(
+                    savedBudget.getBudgetId(),
+                    5000,
+                    MealType.LUNCH,
+                    date
+            );
+            MealBudget dinnerBudget = MealBudget.create(
+                    savedBudget.getBudgetId(),
+                    5000,
+                    MealType.DINNER,
+                    date
+            );
+            mealBudgetRepository.save(lunchBudget);
+            mealBudgetRepository.save(dinnerBudget);
         }
         
         // 지출 데이터 생성
@@ -722,6 +742,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.startDate").value(startDate.toString()))
+                .andExpect(jsonPath("$.data.endDate").value(endDate.toString()))
                 .andExpect(jsonPath("$.data.dailyStatistics").isArray())
                 .andDo(document("expenditure/get-statistics-success",
                         requestHeaders(
@@ -736,28 +758,22 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("응답 결과 (SUCCESS/ERROR)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT)
                                         .description("통계 데이터"),
-                                fieldWithPath("data.totalAmount").type(JsonFieldType.NUMBER)
-                                        .description("기간 내 총 지출 금액"),
-                                fieldWithPath("data.categoryStatistics").type(JsonFieldType.ARRAY)
-                                        .description("카테고리별 통계 목록"),
-                                fieldWithPath("data.categoryStatistics[].categoryId").type(JsonFieldType.NUMBER)
-                                        .description("카테고리 ID"),
-                                fieldWithPath("data.categoryStatistics[].categoryName").type(JsonFieldType.STRING)
-                                        .description("카테고리 이름"),
-                                fieldWithPath("data.categoryStatistics[].amount").type(JsonFieldType.NUMBER)
-                                        .description("카테고리별 지출 금액"),
+                                fieldWithPath("data.startDate").type(JsonFieldType.STRING)
+                                        .description("조회 시작 날짜 (yyyy-MM-dd)"),
+                                fieldWithPath("data.endDate").type(JsonFieldType.STRING)
+                                        .description("조회 종료 날짜 (yyyy-MM-dd)"),
                                 fieldWithPath("data.dailyStatistics").type(JsonFieldType.ARRAY)
                                         .description("일별 통계 목록"),
                                 fieldWithPath("data.dailyStatistics[].date").type(JsonFieldType.STRING)
                                         .description("날짜 (yyyy-MM-dd)"),
-                                fieldWithPath("data.dailyStatistics[].amount").type(JsonFieldType.NUMBER)
+                                fieldWithPath("data.dailyStatistics[].totalSpentAmount").type(JsonFieldType.NUMBER)
                                         .description("해당 날짜의 총 지출 금액"),
-                                fieldWithPath("data.mealTypeStatistics").type(JsonFieldType.ARRAY)
-                                        .description("식사 유형별 통계 목록"),
-                                fieldWithPath("data.mealTypeStatistics[].mealType").type(JsonFieldType.STRING)
-                                        .description("식사 유형 (BREAKFAST, LUNCH, DINNER, OTHER)"),
-                                fieldWithPath("data.mealTypeStatistics[].amount").type(JsonFieldType.NUMBER)
-                                        .description("식사 유형별 지출 금액"),
+                                fieldWithPath("data.dailyStatistics[].budget").type(JsonFieldType.NUMBER)
+                                        .description("해당 날짜의 일일 예산"),
+                                fieldWithPath("data.dailyStatistics[].balance").type(JsonFieldType.NUMBER)
+                                        .description("예산 대비 잔액 (음수: 초과, 양수: 절약)"),
+                                fieldWithPath("data.dailyStatistics[].overBudget").type(JsonFieldType.BOOLEAN)
+                                        .description("예산 초과 여부"),
                                 fieldWithPath("error").type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")
                                         .optional()

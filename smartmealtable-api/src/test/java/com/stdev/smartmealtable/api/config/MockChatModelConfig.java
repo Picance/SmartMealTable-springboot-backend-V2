@@ -1,5 +1,7 @@
 package com.stdev.smartmealtable.api.config;
 
+import com.stdev.smartmealtable.client.external.sms.GeminiSmsParsingService;
+import com.stdev.smartmealtable.client.external.sms.SmsParsingService;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.StreamingChatModel;
@@ -20,7 +22,7 @@ public class MockChatModelConfig {
     
     /**
      * 테스트용 Mock ChatModel
-     * 
+     *
      * @Primary 어노테이션으로 실제 ChatModel보다 우선순위 높게 설정
      */
     @Bean
@@ -28,7 +30,21 @@ public class MockChatModelConfig {
     public ChatModel mockChatModel() {
         return new MockChatModel();
     }
-    
+
+    /**
+     * 테스트용 Mock GeminiSmsParsingService
+     * SMS 파싱 서비스 테스트를 위한 Mock 구현
+     */
+    @Bean
+    public SmsParsingService mockGeminiSmsParsingService() {
+        return new SmsParsingService() {
+            @Override
+            public com.stdev.smartmealtable.client.external.sms.SmsParsedResult parseSms(String smsMessage) {
+                return null;  // 테스트에서는 null 반환 (ParseSmsService에서 처리)
+            }
+        };
+    }
+
     /**
      * Mock ChatModel 구현체
      * 테스트에서는 실제 AI 호출이 필요없으므로 빈 응답 반환

@@ -96,7 +96,7 @@ public class GetExpenditureStatisticsService {
             try {
                 // 해당 날짜의 일일 예산 조회
                 DailyBudgetQueryServiceResponse budgetInfo = dailyBudgetQueryService.getDailyBudget(memberId, currentDate);
-                long budget = budgetInfo.totalBudget().longValue();
+                long budget = budgetInfo.totalBudget() != null ? budgetInfo.totalBudget().longValue() : 0L;
                 long balance = budget - spentAmount;
                 boolean overBudget = spentAmount > budget;
 
