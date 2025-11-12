@@ -1626,7 +1626,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Note:** 
-- `applyForward: true` 선택 시, 해당 날짜부터 미래의 모든 날짜(연말까지)에 대해 동일한 예산이 일괄 적용됩니다.
+- `applyForward: true` 선택 시, 해당 날짜부터 미래의 모든 날짜(월말까지)에 대해 동일한 예산이 일괄 적용됩니다.
 - 이미 개별 설정된 날짜가 있더라도 덮어씌워집니다.
 - SRD 요구사항 REQ-PROFILE-204e를 충족합니다.
 
@@ -1641,7 +1641,7 @@ Authorization: Bearer {access_token}
 **Request:**
 ```json
 {
-  "smsContent": "[국민카드] 10/08 12:30 맘스터치강남점 13,500원 일시불 승인"
+  "smsMessage": "[국민카드] 10/08 12:30 맘스터치강남점 13,500원 일시불 승인"
 }
 ```
 
@@ -1743,117 +1743,7 @@ Authorization: Bearer {access_token}
 ---
 
 ### 6.3 장바구니 → 지출 내역 등록 (새 엔드포인트)
-
-**Endpoint:** `POST /api/v1/expenditures/from-cart`
-
-**설명:** 장바구니에서 직접 지출 내역을 등록합니다. 가게 ID(`storeId`)와 음식 ID(`foodId`)를 포함하여 저장합니다.
-
-**Request:**
-```json
-{
-  "storeId": 123,
-  "storeName": "맘스터치강남점",
-  "amount": 13500,
-  "expendedDate": "2025-10-08",
-  "expendedTime": "12:30:00",
-  "categoryId": 5,
-  "mealType": "LUNCH",
-  "memo": "동료와 점심",
-  "items": [
-    {
-      "foodId": 456,
-      "foodName": "싸이버거 세트",
-      "quantity": 1,
-      "price": 6500
-    },
-    {
-      "foodId": 789,
-      "foodName": "치킨버거 세트",
-      "quantity": 1,
-      "price": 7000
-    }
-  ]
-}
-```
-
-**Validation:**
-- `storeId`: 필수
-- `amount` >= 0
-- `items` 총액 = `amount`
-
-**Response (201):**
-```json
-{
-  "result": "SUCCESS",
-  "data": {
-    "expenditureId": 790,
-    "storeId": 123,
-    "storeName": "맘스터치강남점",
-    "amount": 13500,
-    "expendedDate": "2025-10-08",
-    "categoryId": 5,
-    "categoryName": "패스트푸드",
-    "mealType": "LUNCH",
-    "items": [
-      {
-        "itemId": 1001,
-        "foodId": 456,
-        "foodName": "싸이버거 세트",
-        "quantity": 1,
-        "price": 6500,
-        "hasFoodLink": true
-      },
-      {
-        "itemId": 1002,
-        "foodId": 789,
-        "foodName": "치킨버거 세트",
-        "quantity": 1,
-        "price": 7000,
-        "hasFoodLink": true
-      }
-    ],
-    "createdAt": "2025-10-08T12:34:56.789Z",
-    "hasStoreLink": true
-  },
-  "error": null
-}
-```
-
-**Note:**
-- `hasStoreLink`: `true` (storeId 존재)
-- 모든 항목의 `hasFoodLink`: `true` (foodId 존재)
-- 프론트엔드는 이 플래그들을 기반으로 상세 페이지 링크 표시 여부 결정
-
-**Error Cases:**
-
-*400 Bad Request - 필수 필드 누락:*
-```json
-{
-  "result": "ERROR",
-  "data": null,
-  "error": {
-    "code": "E400",
-    "message": "storeId는 필수입니다.",
-    "data": null
-  }
-}
-```
-
-*422 Unprocessable Entity - 유효성 검증 실패:*
-```json
-{
-  "result": "ERROR",
-  "data": null,
-  "error": {
-    "code": "E422",
-    "message": "지출 항목의 총액이 지출 금액과 일치하지 않습니다.",
-    "data": {
-      "field": "items",
-      "reason": "총액 13000 ≠ 금액 13500"
-    }
-  }
-}
-```
+"12.7 장바구니 → 지출 등록"(`POST /api/v1/cart/checkout`)로 통합됨.
 
 ---
 
@@ -1960,7 +1850,7 @@ Authorization: Bearer {access_token}
 
 ### 6.8 일별 지출 통계 조회
 
-**Endpoint:** `GET /api/v1/expenditures/statistics/daily?year=2025&month=10`
+**Endpoint:** `GET /api/v1/expenditures/statistics?startDate=2025-11-01&endDate=2025-11-13`
 
 **Response (200):**
 ```json
@@ -1968,16 +1858,16 @@ Authorization: Bearer {access_token}
   "result": "SUCCESS",
   "data": {
     "year": 2025,
-    "month": 10,
+    "month": 11,
     "dailyStatistics": [
       {
-        "date": "2025-10-01",
+        "date": "2025-11-01",
         "totalAmount": 12500,
         "budget": 10000,
         "overBudget": true
       },
       {
-        "date": "2025-10-02",
+        "date": "2025-11-02",
         "totalAmount": 8500,
         "budget": 10000,
         "overBudget": false

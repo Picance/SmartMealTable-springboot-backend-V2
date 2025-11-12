@@ -438,6 +438,11 @@ public class CartService {
         );
         
         // 7. ExpenditureService를 통해 지출 내역 생성
+        // Store의 첫 번째 카테고리를 사용 (없으면 null)
+        Long categoryId = store.getCategoryIds() != null && !store.getCategoryIds().isEmpty()
+                ? store.getCategoryIds().get(0)
+                : null;
+
         CreateExpenditureServiceRequest expenditureRequest =
                 new CreateExpenditureServiceRequest(
                         memberId,
@@ -446,7 +451,7 @@ public class CartService {
                         (int) finalAmount,  // 할인이 적용된 최종 금액 저장 (type: Integer)
                         request.expendedDate(),
                         request.expendedTime(),
-                        null,  // categoryId는 cart checkout에서는 null
+                        categoryId,  // Store의 첫 번째 카테고리 사용
                         request.mealType(),
                         request.memo(),
                         discount,           // 할인액 전달
