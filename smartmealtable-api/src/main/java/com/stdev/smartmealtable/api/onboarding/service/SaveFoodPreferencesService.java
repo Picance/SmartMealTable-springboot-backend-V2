@@ -15,8 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -50,15 +53,12 @@ public class SaveFoodPreferencesService {
             throw new BusinessException(ErrorType.FOOD_NOT_FOUND);
         }
 
-        // 2. 기존 선호도 삭제
-        foodPreferenceRepository.deleteByMemberId(memberId);
-
-        // 3. 새로운 선호도 저장
-        List<FoodPreference> preferences = foodIds.stream()
-                .map(foodId -> FoodPreference.create(memberId, foodId))
-                .collect(Collectors.toList());
-
-        preferences.forEach(foodPreferenceRepository::save);
+        // 2. 기존 선호도와 동기화 (중복 insert 방지)
+        if (foodIds.isEmpty()) {
+            foodPreferenceRepository.deleteByMemberId(memberId);
+        } else {
+            syncFoodPreferences(memberId, foodIds);
+        }
 
         // 4. 응답 생성 (최대 10개만 반환)
         List<Food> responseFoods = foods.stream()
@@ -92,5 +92,37 @@ public class SaveFoodPreferencesService {
         return preferredFoodIds.stream()
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 기존 선호도와 요청 데이터를 동기화 (삭제 + 갱신 + 신규 추가)
+     */
+    private void syncFoodPreferences(Long memberId, List<Long> foodIds) {
+        List<FoodPreference> existingPreferences = foodPreferenceRepository.findByMemberId(memberId);
+        Map<Long, FoodPreference> existingPreferenceMap = existingPreferences.stream()
+                .collect(Collectors.toMap(
+                        FoodPreference::getFoodId,
+                        preference -> preference,
+                        (existing, duplicate) -> duplicate
+                ));
+        Set<Long> requestedFoodIds = new HashSet<>(foodIds);
+
+        existingPreferenceMap.keySet().stream()
+                .filter(foodId -> !requestedFoodIds.contains(foodId))
+                .forEach(foodId -> foodPreferenceRepository.deleteByMemberIdAndFoodId(memberId, foodId));
+        existingPreferenceMap.keySet().retainAll(requestedFoodIds);
+
+        List<FoodPreference> preferencesToSave = new ArrayList<>();
+        for (Long foodId : foodIds) {
+            FoodPreference existingPreference = existingPreferenceMap.get(foodId);
+            if (existingPreference != null) {
+                existingPreference.changePreference(true);
+                preferencesToSave.add(existingPreference);
+                continue;
+            }
+            preferencesToSave.add(FoodPreference.create(memberId, foodId));
+        }
+
+        preferencesToSave.forEach(foodPreferenceRepository::save);
     }
 }
