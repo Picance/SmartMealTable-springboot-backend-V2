@@ -33,14 +33,35 @@ public class HomeController {
     /**
      * 홈 대시보드 조회
      *
+     * 선택적으로 사용자의 현재 위치 좌표를 전달할 수 있습니다.
+     * 위치 정보가 있으면 해당 위치 기준으로 거리순 추천이 제공됩니다.
+     *
      * @param user 인증된 사용자
+     * @param latitude 사용자 위도 (선택사항)
+     * @param longitude 사용자 경도 (선택사항)
      * @return 홈 대시보드 정보
+     *
+     * @example GET /api/v1/home/dashboard
+     * @example GET /api/v1/home/dashboard?latitude=37.4979&longitude=127.0276
      */
     @GetMapping("/home/dashboard")
     public ApiResponse<HomeDashboardServiceResponse> getHomeDashboard(
-            @AuthUser AuthenticatedUser user
+            @AuthUser AuthenticatedUser user,
+            @RequestParam(name = "latitude", required = false) Double latitude,
+            @RequestParam(name = "longitude", required = false) Double longitude
     ) {
-        HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(user.memberId());
+        HomeDashboardServiceResponse response;
+
+        if (latitude != null && longitude != null) {
+            response = homeDashboardQueryService.getHomeDashboardWithLocation(
+                    user.memberId(),
+                    latitude,
+                    longitude
+            );
+        } else {
+            response = homeDashboardQueryService.getHomeDashboard(user.memberId());
+        }
+
         return ApiResponse.success(response);
     }
 

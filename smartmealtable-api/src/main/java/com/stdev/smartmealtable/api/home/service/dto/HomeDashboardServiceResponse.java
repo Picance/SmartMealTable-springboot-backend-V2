@@ -130,7 +130,8 @@ public record HomeDashboardServiceResponse(
             String storeName,
             Integer averagePrice,
             BigDecimal distance,
-            String distanceText
+            String distanceText,
+            List<String> tags
     ) {}
 
     public record RecommendedStoreInfo(
@@ -140,6 +141,7 @@ public record HomeDashboardServiceResponse(
             Integer averageFoodPrice,
             BigDecimal distance,
             String distanceText,
-            String businessHours
+            String businessHours,
+            String contextInfo
     ) {}
 }
