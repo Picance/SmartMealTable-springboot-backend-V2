@@ -41,21 +41,21 @@ public class PolicyAgreementService {
         
         // 2. 모든 활성화된 약관 조회
         List<Policy> allPolicies = policyRepository.findAllActive();
-        
-        // 2. 필수 약관 ID 목록 추출
+
+        // 3. 필수 약관 ID 목록 추출
         List<Long> mandatoryPolicyIds = allPolicies.stream()
                 .filter(policy -> Boolean.TRUE.equals(policy.getIsMandatory()))
                 .map(Policy::getPolicyId)
                 .collect(Collectors.toList());
 
-        // 3. 요청된 동의 항목을 Map으로 변환 (policyId -> isAgreed)
+        // 4. 요청된 동의 항목을 Map으로 변환 (policyId -> isAgreed)
         Map<Long, Boolean> agreementMap = requests.stream()
                 .collect(Collectors.toMap(
                         PolicyAgreementServiceRequest::getPolicyId,
                         PolicyAgreementServiceRequest::getIsAgreed
                 ));
 
-        // 4. 필수 약관 미동의 검증
+        // 5. 필수 약관 미동의 검증
         for (Long mandatoryPolicyId : mandatoryPolicyIds) {
             Boolean isAgreed = agreementMap.get(mandatoryPolicyId);
             if (isAgreed == null || !isAgreed) {

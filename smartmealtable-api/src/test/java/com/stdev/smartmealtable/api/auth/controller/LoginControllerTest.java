@@ -57,7 +57,7 @@ class LoginControllerTest extends AbstractContainerTest {
                 Policy.create(
                         "서비스 이용약관",
                         "필수 이용 약관 본문",
-                        PolicyType.REQUIRED,
+                        PolicyType.TERMS_OF_SERVICE,
                         "v1.0",
                         true
                 )

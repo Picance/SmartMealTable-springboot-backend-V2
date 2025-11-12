@@ -639,6 +639,63 @@
 | `DELETE`    | `/policies/{policyId}`         | 약관 삭제 (물리적)       |
 | `PATCH`     | `/policies/{policyId}/toggle`  | 약관 활성/비활성 토글    |
 
+#### `GET /policies`
+
+- **설명**: 약관 목록을 페이지네이션으로 조회합니다.
+- **Query Parameters**:
+  - `page` (number, optional, default: 0): 페이지 번호
+  - `size` (number, optional, default: 20): 페이지 크기
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": [
+      {
+        "policyId": 1,
+        "title": "서비스 이용약관",
+        "content": "약관 본문...",
+        "type": "TERMS_OF_SERVICE",
+        "version": "1.0",
+        "isMandatory": true,
+        "isActive": true,
+        "createdAt": "2025-01-01T10:00:00"
+      },
+      {
+        "policyId": 2,
+        "title": "개인정보 처리방침",
+        "content": "개인정보 처리방침 본문...",
+        "type": "PRIVACY_POLICY",
+        "version": "1.1",
+        "isMandatory": true,
+        "isActive": true,
+        "createdAt": "2025-01-01T10:05:00"
+      }
+    ],
+    "error": null
+  }
+  ```
+
+#### `GET /policies/{policyId}`
+
+- **설명**: 특정 약관의 상세 정보를 조회합니다.
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": {
+      "policyId": 1,
+      "title": "서비스 이용약관",
+      "content": "약관 본문...",
+      "type": "TERMS_OF_SERVICE",
+      "version": "1.0",
+      "isMandatory": true,
+      "isActive": true,
+      "createdAt": "2025-01-01T10:00:00"
+    },
+    "error": null
+  }
+  ```
+
 #### `POST /policies`
 
 - **설명**: 새로운 버전의 약관을 생성합니다.
@@ -648,13 +705,91 @@
     "title": "개인정보 처리방침",
     "content": "...",
     "version": "1.1",
-    "type": "REQUIRED",
+    "type": "PRIVACY_POLICY",
     "isMandatory": true
   }
   ```
-- **참고**: 
-  - `type`은 `REQUIRED` 또는 `OPTIONAL` 값 사용
+- **Response (201)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": {
+      "policyId": 2,
+      "title": "개인정보 처리방침",
+      "content": "...",
+      "type": "PRIVACY_POLICY",
+      "version": "1.1",
+      "isMandatory": true,
+      "isActive": true,
+      "createdAt": "2025-01-15T14:30:00"
+    },
+    "error": null
+  }
+  ```
+- **참고**:
+  - `type`은 `TERMS_OF_SERVICE`, `PRIVACY_POLICY`, `MARKETING_CONSENT` 중 하나
+    - `TERMS_OF_SERVICE`: 서비스 이용약관 (정책 분류)
+    - `PRIVACY_POLICY`: 개인정보 처리방침 (정책 분류)
+    - `MARKETING_CONSENT`: 마케팅 정보 수신 동의 (정책 분류)
+  - `isMandatory`는 약관의 필수/선택 여부 (`true`: 필수, `false`: 선택)
   - `isActive`는 서버에서 기본값 `true`로 자동 설정
+
+#### `PUT /policies/{policyId}`
+
+- **설명**: 약관 정보를 수정합니다.
+- **Request Body**:
+  ```json
+  {
+    "title": "서비스 이용약관 (개정)",
+    "content": "...",
+    "version": "1.1",
+    "type": "TERMS_OF_SERVICE",
+    "isMandatory": true
+  }
+  ```
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": {
+      "policyId": 1,
+      "title": "서비스 이용약관 (개정)",
+      "content": "...",
+      "type": "TERMS_OF_SERVICE",
+      "version": "1.1",
+      "isMandatory": true,
+      "isActive": true,
+      "createdAt": "2025-01-01T10:00:00"
+    },
+    "error": null
+  }
+  ```
+
+#### `DELETE /policies/{policyId}`
+
+- **설명**: 약관을 삭제합니다 (물리적 삭제).
+- **Response (204)**: No Content
+
+#### `PATCH /policies/{policyId}/toggle`
+
+- **설명**: 약관의 활성/비활성 상태를 토글합니다.
+- **Response (200)**:
+  ```json
+  {
+    "result": "SUCCESS",
+    "data": {
+      "policyId": 1,
+      "title": "서비스 이용약관",
+      "content": "약관 본문...",
+      "type": "TERMS_OF_SERVICE",
+      "version": "1.0",
+      "isMandatory": true,
+      "isActive": false,
+      "createdAt": "2025-01-01T10:00:00"
+    },
+    "error": null
+  }
+  ```
 
 ---
 

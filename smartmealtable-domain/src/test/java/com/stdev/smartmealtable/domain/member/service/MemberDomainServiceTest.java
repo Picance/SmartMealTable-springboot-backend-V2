@@ -264,7 +264,7 @@ class MemberDomainServiceTest {
                     100L,
                     "필수 이용약관",
                     "내용",
-                    PolicyType.REQUIRED,
+                    PolicyType.TERMS_OF_SERVICE,
                     "v1.0",
                     true,
                     true
@@ -273,7 +273,7 @@ class MemberDomainServiceTest {
                     200L,
                     "선택 약관",
                     "내용",
-                    PolicyType.OPTIONAL,
+                    PolicyType.MARKETING_CONSENT,
                     "v1.0",
                     false,
                     true
@@ -323,7 +323,7 @@ class MemberDomainServiceTest {
                     100L,
                     "필수 이용약관",
                     "내용",
-                    PolicyType.REQUIRED,
+                    PolicyType.TERMS_OF_SERVICE,
                     "v1.0",
                     true,
                     true

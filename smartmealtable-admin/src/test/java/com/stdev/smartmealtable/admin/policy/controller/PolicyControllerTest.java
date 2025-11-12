@@ -67,8 +67,8 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 목록 조회 - 성공")
     void getPolicies_Success() throws Exception {
         // given
-        PolicyJpaEntity policy1 = createPolicy("서비스 이용약관", "내용1", PolicyType.REQUIRED, "1.0", true, true);
-        PolicyJpaEntity policy2 = createPolicy("개인정보 처리방침", "내용2", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy1 = createPolicy("서비스 이용약관", "내용1", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
+        PolicyJpaEntity policy2 = createPolicy("개인정보 처리방침", "내용2", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         policyJpaRepository.save(policy1);
         policyJpaRepository.save(policy2);
 
@@ -90,8 +90,8 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 목록 조회 - 제목 검색")
     void getPolicies_WithTitleSearch() throws Exception {
         // given
-        PolicyJpaEntity policy1 = createPolicy("서비스 이용약관", "내용1", PolicyType.REQUIRED, "1.0", true, true);
-        PolicyJpaEntity policy2 = createPolicy("개인정보 처리방침", "내용2", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy1 = createPolicy("서비스 이용약관", "내용1", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
+        PolicyJpaEntity policy2 = createPolicy("개인정보 처리방침", "내용2", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         policyJpaRepository.save(policy1);
         policyJpaRepository.save(policy2);
 
@@ -111,8 +111,8 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 목록 조회 - 활성 상태 필터")
     void getPolicies_WithActiveFilter() throws Exception {
         // given
-        PolicyJpaEntity activePolicy = createPolicy("활성 약관", "내용1", PolicyType.REQUIRED, "1.0", true, true);
-        PolicyJpaEntity inactivePolicy = createPolicy("비활성 약관", "내용2", PolicyType.OPTIONAL, "1.0", false, false);
+        PolicyJpaEntity activePolicy = createPolicy("활성 약관", "내용1", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
+        PolicyJpaEntity inactivePolicy = createPolicy("비활성 약관", "내용2", PolicyType.MARKETING_CONSENT, "1.0", false, false);
         policyJpaRepository.save(activePolicy);
         policyJpaRepository.save(inactivePolicy);
 
@@ -133,7 +133,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 상세 조회 - 성공")
     void getPolicy_Success() throws Exception {
         // given
-        PolicyJpaEntity policy = createPolicy("서비스 이용약관", "상세 내용", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy = createPolicy("서비스 이용약관", "상세 내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         PolicyJpaEntity saved = policyJpaRepository.save(policy);
 
         // when & then
@@ -144,7 +144,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.policyId").value(saved.getPolicyId()))
                 .andExpect(jsonPath("$.data.title").value("서비스 이용약관"))
                 .andExpect(jsonPath("$.data.content").value("상세 내용"))
-                .andExpect(jsonPath("$.data.type").value("REQUIRED"))
+                .andExpect(jsonPath("$.data.type").value("TERMS_OF_SERVICE"))
                 .andExpect(jsonPath("$.data.version").value("1.0"))
                 .andExpect(jsonPath("$.data.isMandatory").value(true))
                 .andExpect(jsonPath("$.data.isActive").value(true));
@@ -168,7 +168,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
         CreatePolicyRequest request = new CreatePolicyRequest(
                 "서비스 이용약관",
                 "상세 내용",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "1.0",
                 true
         );
@@ -183,7 +183,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.policyId").isNumber())
                 .andExpect(jsonPath("$.data.title").value("서비스 이용약관"))
                 .andExpect(jsonPath("$.data.content").value("상세 내용"))
-                .andExpect(jsonPath("$.data.type").value("REQUIRED"))
+                .andExpect(jsonPath("$.data.type").value("TERMS_OF_SERVICE"))
                 .andExpect(jsonPath("$.data.version").value("1.0"))
                 .andExpect(jsonPath("$.data.isMandatory").value(true))
                 .andExpect(jsonPath("$.data.isActive").value(true));
@@ -193,13 +193,13 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 생성 - 중복된 제목 (409)")
     void createPolicy_DuplicateTitle() throws Exception {
         // given
-        PolicyJpaEntity existingPolicy = createPolicy("서비스 이용약관", "기존 내용", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity existingPolicy = createPolicy("서비스 이용약관", "기존 내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         policyJpaRepository.save(existingPolicy);
 
         CreatePolicyRequest request = new CreatePolicyRequest(
                 "서비스 이용약관",  // 중복된 제목
                 "새로운 내용",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "1.0",
                 true
         );
@@ -221,7 +221,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
         CreatePolicyRequest request = new CreatePolicyRequest(
                 "",  // 빈 제목
                 "내용",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "1.0",
                 true
         );
@@ -239,13 +239,13 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 수정 - 성공")
     void updatePolicy_Success() throws Exception {
         // given
-        PolicyJpaEntity policy = createPolicy("서비스 이용약관", "기존 내용", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy = createPolicy("서비스 이용약관", "기존 내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         PolicyJpaEntity saved = policyJpaRepository.save(policy);
 
         UpdatePolicyRequest request = new UpdatePolicyRequest(
                 "서비스 이용약관 (수정됨)",
                 "수정된 내용",
-                PolicyType.OPTIONAL,
+                PolicyType.MARKETING_CONSENT,
                 "2.0",
                 false
         );
@@ -260,7 +260,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
                 .andExpect(jsonPath("$.data.policyId").value(saved.getPolicyId()))
                 .andExpect(jsonPath("$.data.title").value("서비스 이용약관 (수정됨)"))
                 .andExpect(jsonPath("$.data.content").value("수정된 내용"))
-                .andExpect(jsonPath("$.data.type").value("OPTIONAL"))
+                .andExpect(jsonPath("$.data.type").value("MARKETING_CONSENT"))
                 .andExpect(jsonPath("$.data.version").value("2.0"))
                 .andExpect(jsonPath("$.data.isMandatory").value(false));
     }
@@ -272,7 +272,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
         UpdatePolicyRequest request = new UpdatePolicyRequest(
                 "수정된 제목",
                 "수정된 내용",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "2.0",
                 true
         );
@@ -291,15 +291,15 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 수정 - 중복된 제목 (409)")
     void updatePolicy_DuplicateTitle() throws Exception {
         // given
-        PolicyJpaEntity policy1 = createPolicy("약관1", "내용1", PolicyType.REQUIRED, "1.0", true, true);
-        PolicyJpaEntity policy2 = createPolicy("약관2", "내용2", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy1 = createPolicy("약관1", "내용1", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
+        PolicyJpaEntity policy2 = createPolicy("약관2", "내용2", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         PolicyJpaEntity saved1 = policyJpaRepository.save(policy1);
         policyJpaRepository.save(policy2);
 
         UpdatePolicyRequest request = new UpdatePolicyRequest(
                 "약관2",  // 다른 약관의 제목
                 "수정된 내용",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "2.0",
                 true
         );
@@ -318,7 +318,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 삭제 - 성공")
     void deletePolicy_Success() throws Exception {
         // given
-        PolicyJpaEntity policy = createPolicy("삭제할 약관", "내용", PolicyType.OPTIONAL, "1.0", false, true);
+        PolicyJpaEntity policy = createPolicy("삭제할 약관", "내용", PolicyType.MARKETING_CONSENT, "1.0", false, true);
         PolicyJpaEntity saved = policyJpaRepository.save(policy);
 
         // when & then
@@ -348,7 +348,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
         MemberJpaEntity member = createMember("test@example.com");
         MemberJpaEntity savedMember = memberJpaRepository.save(member);
         
-        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         PolicyJpaEntity savedPolicy = policyJpaRepository.save(policy);
         
         PolicyAgreementJpaEntity agreement = createAgreement(savedMember, savedPolicy);
@@ -367,7 +367,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 활성/비활성 토글 - 성공 (활성 → 비활성)")
     void togglePolicyActive_ActiveToInactive() throws Exception {
         // given
-        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.REQUIRED, "1.0", true, true);
+        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, true);
         PolicyJpaEntity saved = policyJpaRepository.save(policy);
 
         // when & then
@@ -383,7 +383,7 @@ class PolicyControllerTest extends AbstractAdminContainerTest {
     @DisplayName("약관 활성/비활성 토글 - 성공 (비활성 → 활성)")
     void togglePolicyActive_InactiveToActive() throws Exception {
         // given
-        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.REQUIRED, "1.0", true, false);
+        PolicyJpaEntity policy = createPolicy("약관", "내용", PolicyType.TERMS_OF_SERVICE, "1.0", true, false);
         PolicyJpaEntity saved = policyJpaRepository.save(policy);
 
         // when & then

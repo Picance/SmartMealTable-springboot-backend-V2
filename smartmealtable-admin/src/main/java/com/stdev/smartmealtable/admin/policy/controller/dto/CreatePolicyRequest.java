@@ -13,17 +13,17 @@ public record CreatePolicyRequest(
         @NotBlank(message = "약관 제목은 필수입니다")
         @Size(max = 100, message = "약관 제목은 100자를 초과할 수 없습니다")
         String title,
-        
+
         @NotBlank(message = "약관 내용은 필수입니다")
         String content,
-        
+
         @NotNull(message = "약관 타입은 필수입니다")
         PolicyType type,
-        
+
         @NotBlank(message = "약관 버전은 필수입니다")
         @Size(max = 20, message = "약관 버전은 20자를 초과할 수 없습니다")
         String version,
-        
+
         @NotNull(message = "필수 동의 여부는 필수입니다")
         Boolean isMandatory
 ) {

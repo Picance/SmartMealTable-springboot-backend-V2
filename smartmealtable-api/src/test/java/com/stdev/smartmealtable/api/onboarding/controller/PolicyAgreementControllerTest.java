@@ -98,7 +98,7 @@ class PolicyAgreementControllerTest extends AbstractContainerTest {
         mandatoryPolicy = Policy.create(
                 "서비스 이용약관",
                 "서비스 이용약관 내용입니다.",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "1.0",
                 true  // 필수 약관
         );
@@ -110,7 +110,7 @@ class PolicyAgreementControllerTest extends AbstractContainerTest {
         optionalPolicy = Policy.create(
                 "마케팅 정보 수신 동의",
                 "마케팅 정보 수신 동의 내용입니다.",
-                PolicyType.OPTIONAL,
+                PolicyType.MARKETING_CONSENT,
                 "1.0",
                 false  // 선택 약관
         );

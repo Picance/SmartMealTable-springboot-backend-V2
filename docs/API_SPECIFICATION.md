@@ -1034,6 +1034,7 @@ Authorization: Bearer {access_token}
     {
       "policyId": 1,
       "title": "서비스 이용 약관",
+      "type": "TERMS_OF_SERVICE",
       "version": "1.0",
       "isRequired": true,
       "summary": "알뜰식탁 서비스 이용에 관한 약관",
@@ -1043,6 +1044,7 @@ Authorization: Bearer {access_token}
     {
       "policyId": 2,
       "title": "개인정보 수집 및 이용 동의",
+      "type": "PRIVACY_POLICY",
       "version": "1.0",
       "isRequired": true,
       "summary": "개인정보 수집, 이용 및 제공에 관한 동의",
@@ -1052,6 +1054,7 @@ Authorization: Bearer {access_token}
     {
       "policyId": 3,
       "title": "푸시 알림 수신 동의",
+      "type": "MARKETING_CONSENT",
       "version": "1.0",
       "isRequired": false,
       "summary": "마케팅 및 서비스 알림 수신 동의",
@@ -1076,6 +1079,7 @@ Authorization: Bearer {access_token}
   "data": {
     "policyId": 1,
     "title": "서비스 이용 약관",
+    "type": "TERMS_OF_SERVICE",
     "version": "1.0",
     "isRequired": true,
     "content": "제1장 총칙\n제1조 (목적)...",

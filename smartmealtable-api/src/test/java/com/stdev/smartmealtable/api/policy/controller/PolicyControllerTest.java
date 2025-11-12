@@ -44,7 +44,7 @@ class PolicyControllerTest extends AbstractContainerTest {
         Policy policy1 = Policy.create(
                 "서비스 이용약관",
                 "본 약관은 알뜰식탁 서비스 이용에 관한 사항을 규정합니다...",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "1.0",
                 true  // 필수 약관
         );
@@ -54,7 +54,7 @@ class PolicyControllerTest extends AbstractContainerTest {
         Policy policy2 = Policy.create(
                 "개인정보 수집 및 이용 동의",
                 "개인정보 보호법에 따라 알뜰식탁은 다음과 같이 개인정보를 수집합니다...",
-                PolicyType.REQUIRED,
+                PolicyType.PRIVACY_POLICY,
                 "1.0",
                 true  // 필수 약관
         );
@@ -63,7 +63,7 @@ class PolicyControllerTest extends AbstractContainerTest {
         Policy policy3 = Policy.create(
                 "마케팅 정보 수신 동의",
                 "마케팅 정보 수신에 동의하시면 다양한 혜택을 받으실 수 있습니다...",
-                PolicyType.OPTIONAL,
+                PolicyType.MARKETING_CONSENT,
                 "1.0",
                 false  // 선택 약관
         );
@@ -73,7 +73,7 @@ class PolicyControllerTest extends AbstractContainerTest {
         Policy inactivePolicy = Policy.create(
                 "구 버전 약관",
                 "이전 버전의 약관입니다.",
-                PolicyType.REQUIRED,
+                PolicyType.TERMS_OF_SERVICE,
                 "0.9",
                 true
         );

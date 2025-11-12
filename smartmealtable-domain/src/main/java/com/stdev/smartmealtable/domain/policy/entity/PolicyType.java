@@ -2,15 +2,21 @@ package com.stdev.smartmealtable.domain.policy.entity;
 
 /**
  * 약관 유형 Enum
+ * 약관의 분류를 나타냄
  */
 public enum PolicyType {
     /**
-     * 필수 약관
+     * 서비스 이용약관
      */
-    REQUIRED,
+    TERMS_OF_SERVICE,
 
     /**
-     * 선택 약관
+     * 개인정보처리방침
      */
-    OPTIONAL
+    PRIVACY_POLICY,
+
+    /**
+     * 마케팅 동의
+     */
+    MARKETING_CONSENT
 }

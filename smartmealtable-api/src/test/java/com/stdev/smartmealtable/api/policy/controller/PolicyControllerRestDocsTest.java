@@ -33,9 +33,9 @@ class PolicyControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("약관 목록 조회 성공 - 200")
     void getPolicies_success_docs() throws Exception {
         // given
-        createPolicy("서비스 이용약관", PolicyType.REQUIRED, "1.0", "서비스 이용약관 내용입니다.", true);
-        createPolicy("개인정보 처리방침", PolicyType.REQUIRED, "1.0", "개인정보 처리방침 내용입니다.", true);
-        createPolicy("마케팅 정보 수신 동의", PolicyType.OPTIONAL, "1.0", "마케팅 정보 수신 동의 내용입니다.", false);
+        createPolicy("서비스 이용약관", PolicyType.TERMS_OF_SERVICE, "1.0", "서비스 이용약관 내용입니다.", true);
+        createPolicy("개인정보 처리방침", PolicyType.PRIVACY_POLICY, "1.0", "개인정보 처리방침 내용입니다.", true);
+        createPolicy("마케팅 정보 수신 동의", PolicyType.MARKETING_CONSENT, "1.0", "마케팅 정보 수신 동의 내용입니다.", false);
 
         // when & then
         mockMvc.perform(get("/api/v1/policies"))
@@ -60,7 +60,7 @@ class PolicyControllerRestDocsTest extends AbstractRestDocsTest {
     @DisplayName("약관 상세 조회 성공 - 200")
     void getPolicy_success_docs() throws Exception {
         // given
-        Policy policy = createPolicy("서비스 이용약관", PolicyType.REQUIRED, "1.0", "서비스 이용약관 상세 내용입니다.", true);
+        Policy policy = createPolicy("서비스 이용약관", PolicyType.TERMS_OF_SERVICE, "1.0", "서비스 이용약관 상세 내용입니다.", true);
 
         // when & then
         mockMvc.perform(get("/api/v1/policies/{policyId}", policy.getPolicyId()))
