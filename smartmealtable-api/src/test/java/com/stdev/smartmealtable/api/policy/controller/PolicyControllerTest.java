@@ -130,7 +130,7 @@ class PolicyControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.policyId").value(testPolicyId))
                 .andExpect(jsonPath("$.data.title").value("서비스 이용약관"))
                 .andExpect(jsonPath("$.data.content").exists())
-                .andExpect(jsonPath("$.data.type").value("REQUIRED"))
+                .andExpect(jsonPath("$.data.type").value("TERMS_OF_SERVICE"))
                 .andExpect(jsonPath("$.data.version").value("1.0"));
     }
 
