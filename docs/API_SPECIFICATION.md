@@ -1409,66 +1409,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 5.3 예산 수정
-
-**Endpoint:** `PUT /api/v1/budgets`
-
-**Request:**
-```json
-{
-  "monthlyBudget": 350000,
-  "dailyBudget": 12000,
-  "mealBudgets": {
-    "BREAKFAST": 3500,
-    "LUNCH": 5000,
-    "DINNER": 3500,
-    "OTHER": 2000
-  }
-}
-```
-
-**Response (200):**
-```json
-{
-  "result": "SUCCESS",
-  "data": {
-    "monthlyBudget": 350000,
-    "dailyBudget": 12000,
-    "updatedAt": "2025-10-08T12:34:56.789Z"
-  },
-  "error": null
-}
-```
-
-**Error Cases:**
-
-*401 Unauthorized - 유효하지 않은 토큰:*
-```json
-{
-  "result": "ERROR",
-  "data": null,
-  "error": {
-    "code": "E401",
-    "message": "유효하지 않은 토큰입니다."
-  }
-}
-```
-
-*422 Unprocessable Entity - 예산 유효성 실패:*
-```json
-{
-  "result": "ERROR",
-  "data": null,
-  "error": {
-    "code": "E422",
-    "message": "예산은 0 이상이어야 합니다."
-  }
-}
-```
-
----
-
-### 5.4 특정 날짜 예산 수정 및 일괄 적용
+### 5.3 특정 날짜 예산 수정 및 일괄 적용
 
 **Endpoint:** `PUT /api/v1/budgets/daily/{date}`
 
@@ -3635,8 +3576,13 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 **Endpoint:** `GET /api/v1/home/dashboard`
 
 **설명:** 
-- 사용자의 **기본 주소(primary address)**를 기준으로 홈 대시보드 정보를 제공합니다.
-- 기본 주소가 없는 경우 에러를 반환합니다.
+- 사용자의 **기본 주소(primary address)**를 기본 기준으로 홈 대시보드 정보를 제공합니다.
+- `latitude`와 `longitude`를 모두 전달하면 해당 좌표를 기준으로 거리순 추천을 제공합니다.
+- 기본 주소가 지정되어 있지 않는데, 좌표 정보도 제공되지 않는 경우에는 에러를 반환합니다.
+
+**Query Parameters (Optional):**
+- `latitude` (`Double`): 사용자 현재 위치 위도. `longitude`와 세트로 전달해야 적용됩니다.
+- `longitude` (`Double`): 사용자 현재 위치 경도. `latitude`와 세트로 전달해야 적용됩니다.
 
 **Response (200):**
 ```json
@@ -4220,8 +4166,8 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 **Status:** ⚠️ DEPRECATED - 이 API는 더 이상 사용되지 않습니다.
 
 **사유:** 
-- 홈 대시보드는 항상 기본 주소(primary address)를 기준으로 동작합니다.
-- 위치 기준 변경이 필요한 경우, 기본 주소 설정(`PUT /api/v1/members/me/addresses/{addressHistoryId}/primary`)을 사용하세요.
+- 홈 대시보드는 기본 주소(primary address)를 기준으로 동작하며, 필요한 경우 `latitude`/`longitude` 쿼리 파라미터로 현재 위치를 직접 전달할 수 있습니다.
+- 장기적인 기준 변경이 필요한 경우, 기본 주소 설정(`PUT /api/v1/members/me/addresses/{addressHistoryId}/primary`)을 사용하세요.
 
 **대체 API:**
 - `PUT /api/v1/members/me/addresses/{addressHistoryId}/primary` (10.7 기본 주소 설정)
