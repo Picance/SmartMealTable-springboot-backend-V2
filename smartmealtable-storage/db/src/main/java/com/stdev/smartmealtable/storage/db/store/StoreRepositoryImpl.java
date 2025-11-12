@@ -280,4 +280,30 @@ public class StoreRepositoryImpl implements StoreRepository {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<StoreWithDistance> findByDistanceOrderByDistance(
+            double userLatitude,
+            double userLongitude,
+            double radiusKm,
+            int limit
+    ) {
+        return queryDslRepository.findByDistanceOrderByDistance(
+                userLatitude,
+                userLongitude,
+                radiusKm,
+                limit
+        );
+    }
+
+    @Override
+    public List<Store> findByPopularity(int limit) {
+        return queryDslRepository.findByPopularity(limit)
+                .stream()
+                .map(entity -> {
+                    List<Long> categoryIds = storeCategoryJpaRepository.findCategoryIdsByStoreId(entity.getStoreId());
+                    return StoreEntityMapper.toDomain(entity, categoryIds);
+                })
+                .collect(Collectors.toList());
+    }
 }

@@ -7,6 +7,7 @@ import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreWithDistance;
 import com.stdev.smartmealtable.support.location.DistanceCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class DashboardRecommendationService {
     private final DistanceCalculator distanceCalculator;
     private final MenuTagService menuTagService;
     private final LocationContextService locationContextService;
+    private final BusinessHoursService businessHoursService;
 
     private static final int DEFAULT_RECOMMENDATION_LIMIT = 5; // 기본 추천 개수
     private static final BigDecimal DEFAULT_SEARCH_RADIUS_KM = new BigDecimal("3"); // 기본 검색 반경 3km
@@ -233,6 +235,9 @@ public class DashboardRecommendationService {
                 }
             }
 
+            // 영업 시간 정보 조회
+            String businessHours = businessHoursService.getTodayBusinessHours(store.getStoreId());
+
             return new HomeDashboardServiceResponse.RecommendedStoreInfo(
                     store.getStoreId(),
                     store.getName(),
@@ -240,7 +245,7 @@ public class DashboardRecommendationService {
                     store.getAveragePrice(),
                     distance,
                     distanceText,
-                    "영업 시간 미정",  // TODO: 영업 시간 정보 추가 필요
+                    businessHours,
                     contextInfo
             );
 
@@ -253,51 +258,108 @@ public class DashboardRecommendationService {
     /**
      * 거리별 메뉴 조회
      *
-     * TODO: 향후 QueryDSL을 이용한 지리적 쿼리로 개선
-     * SELECT food FROM Food food
-     * JOIN food.store store
-     * WHERE ST_Distance(store.location, ?) < ?
-     * ORDER BY ST_Distance(store.location, ?) ASC
+     * QueryDSL을 이용한 지리적 쿼리로 구현:
+     * 1. 사용자 위치 기준으로 거리 내 가게들을 검색
+     * 2. 각 가게별로 인기 메뉴(대표 메뉴 우선, 최신 등록순) 조회
+     * 3. 거리순 정렬된 메뉴 목록 반환
      */
     private List<Food> getMenusByDistance(Double latitude, Double longitude, int limit) {
-        log.debug("Fetching menus by distance (TODO: implement efficient geospatial query)");
-        // 현재는 추천 메뉴 없음 반환, 나중에 DB 지리적 쿼리로 개선 필요
-        return List.of();
+        try {
+            BigDecimal userLatitude = BigDecimal.valueOf(latitude);
+            BigDecimal userLongitude = BigDecimal.valueOf(longitude);
+
+            // 기본 검색 반경 3km 이내의 가게들을 거리순으로 조회
+            List<StoreWithDistance> storesWithDistance = storeRepository.findByDistanceOrderByDistance(
+                    latitude,
+                    longitude,
+                    DEFAULT_SEARCH_RADIUS_KM.doubleValue(),
+                    limit
+            );
+
+            // 조회된 가게들에서 인기 메뉴를 모아서 반환
+            List<Food> menus = new ArrayList<>();
+            for (StoreWithDistance storeWithDistance : storesWithDistance) {
+                Long storeId = storeWithDistance.store().getStoreId();
+                List<Food> storeMenus = foodRepository.findByStoreIdOrderByDistance(
+                        storeId,
+                        latitude,
+                        longitude,
+                        3  // 가게당 최대 3개 메뉴
+                );
+                menus.addAll(storeMenus);
+
+                if (menus.size() >= limit) {
+                    break;
+                }
+            }
+
+            log.debug("Fetched {} menus within {}km by distance", menus.size(), DEFAULT_SEARCH_RADIUS_KM);
+            return menus.stream().limit(limit).collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching menus by distance", e);
+            return List.of();
+        }
     }
 
     /**
      * 인기 메뉴 조회
      *
-     * TODO: 향후 Repository에서 인기도 기반 쿼리 추가
+     * 전국 인기 메뉴를 대표 메뉴 우선, 최신 등록순으로 반환합니다.
+     * 조회는 Repository의 인기도 기반 쿼리를 활용합니다.
      */
     private List<Food> getPopularMenus(int limit) {
-        log.debug("Fetching popular menus (TODO: implement popularity-based query)");
-        // 현재는 추천 메뉴 없음 반환, 나중에 Repository 메서드로 개선 필요
-        return List.of();
+        try {
+            List<Food> menus = foodRepository.findByPopularity(limit);
+            log.debug("Fetched {} popular menus", menus.size());
+            return menus;
+        } catch (Exception e) {
+            log.error("Error fetching popular menus", e);
+            return List.of();
+        }
     }
 
     /**
      * 거리별 가게 조회
      *
-     * TODO: 향후 QueryDSL을 이용한 지리적 쿼리로 개선
-     * SELECT store FROM Store store
-     * WHERE ST_Distance(store.location, ?) < ?
-     * ORDER BY ST_Distance(store.location, ?) ASC
+     * QueryDSL을 이용한 지리적 쿼리로 구현:
+     * Haversine 공식을 사용하여 사용자 위치에서 일정 반경 내의 가게들을
+     * 거리순으로 정렬하여 반환합니다.
      */
     private List<Store> getStoresByDistance(Double latitude, Double longitude, int limit) {
-        log.debug("Fetching stores by distance (TODO: implement efficient geospatial query)");
-        // 현재는 추천 가게 없음 반환, 나중에 DB 지리적 쿼리로 개선 필요
-        return List.of();
+        try {
+            List<StoreWithDistance> storesWithDistance = storeRepository.findByDistanceOrderByDistance(
+                    latitude,
+                    longitude,
+                    DEFAULT_SEARCH_RADIUS_KM.doubleValue(),
+                    limit
+            );
+
+            log.debug("Fetched {} stores within {}km by distance", storesWithDistance.size(), DEFAULT_SEARCH_RADIUS_KM);
+            return storesWithDistance.stream()
+                    .map(StoreWithDistance::store)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching stores by distance", e);
+            return List.of();
+        }
     }
 
     /**
      * 인기 가게 조회
      *
-     * TODO: 향후 Repository에서 인기도 기반 쿼리 추가
+     * 전국 인기 가게를 좋아요 > 리뷰 수 > 조회 수 순으로 반환합니다.
+     * 조회는 Repository의 인기도 기반 쿼리를 활용합니다.
      */
     private List<Store> getPopularStores(int limit) {
-        log.debug("Fetching popular stores (TODO: implement popularity-based query)");
-        // 현재는 추천 가게 없음 반환, 나중에 Repository 메서드로 개선 필요
-        return List.of();
+        try {
+            List<Store> stores = storeRepository.findByPopularity(limit);
+            log.debug("Fetched {} popular stores", stores.size());
+            return stores;
+        } catch (Exception e) {
+            log.error("Error fetching popular stores", e);
+            return List.of();
+        }
     }
 }

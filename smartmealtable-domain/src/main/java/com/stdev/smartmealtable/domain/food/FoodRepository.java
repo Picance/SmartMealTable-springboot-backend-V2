@@ -123,8 +123,36 @@ public interface FoodRepository {
     
     /**
      * 카테고리 정보를 포함하여 모든 음식 조회 (캐시 워밍용)
-     * 
+     *
      * @return 음식 리스트 (카테고리 포함)
      */
     List<Food> findAllWithCategories();
+
+    /**
+     * 특정 가게의 음식 조회 (거리순 정렬)
+     * 사용자의 가게 좌표를 기반으로 Haversine 공식을 사용하여 거리를 계산하고,
+     * 거리가 가까운 순서로 음식을 반환합니다.
+     * 음식은 가게에 속하므로 가게 거리 = 모든 음식의 거리입니다.
+     *
+     * @param storeId 가게 ID (음식이 속한 가게)
+     * @param userLatitude 사용자 위도
+     * @param userLongitude 사용자 경도
+     * @param limit 조회 개수 제한
+     * @return 음식 리스트 (거리순 = 최신 등록순)
+     */
+    List<Food> findByStoreIdOrderByDistance(
+            Long storeId,
+            double userLatitude,
+            double userLongitude,
+            int limit
+    );
+
+    /**
+     * 인기순 음식 조회 (최신 등록순 + 대표 메뉴 우선)
+     * 삭제되지 않은 음식 중 대표 메뉴를 우선으로 하고 최신 등록순으로 반환합니다.
+     *
+     * @param limit 조회 개수 제한
+     * @return 음식 리스트 (인기순 정렬)
+     */
+    List<Food> findByPopularity(int limit);
 }

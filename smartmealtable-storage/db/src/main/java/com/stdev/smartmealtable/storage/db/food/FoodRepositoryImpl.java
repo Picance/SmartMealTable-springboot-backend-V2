@@ -165,4 +165,25 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Food> findByStoreIdOrderByDistance(
+            Long storeId,
+            double userLatitude,
+            double userLongitude,
+            int limit
+    ) {
+        return foodJpaRepository.findByStoreIdOrderByDistance(storeId, userLatitude, userLongitude, limit)
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Food> findByPopularity(int limit) {
+        return foodJpaRepository.findByPopularity(limit)
+                .stream()
+                .map(FoodJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
 }

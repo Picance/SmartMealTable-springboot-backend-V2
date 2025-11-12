@@ -71,26 +71,54 @@ public interface StoreRepository {
      * @return 가게 리스트
      */
     List<Store> findAllByIdIn(List<Long> storeIds);
-    
+
+    /**
+     * 위치 기반 가게 조회 (거리순 정렬)
+     * 사용자 위치에서 일정 반경 내의 가게들을 거리순으로 반환합니다.
+     * Haversine 공식을 사용하여 거리를 계산합니다.
+     *
+     * @param userLatitude 사용자 위도
+     * @param userLongitude 사용자 경도
+     * @param radiusKm 검색 반경 (km)
+     * @param limit 조회 개수 제한
+     * @return 거리 정보를 포함한 가게 목록
+     */
+    List<StoreWithDistance> findByDistanceOrderByDistance(
+            double userLatitude,
+            double userLongitude,
+            double radiusKm,
+            int limit
+    );
+
+    /**
+     * 인기순 가게 조회 (좋아요 개수 기준)
+     * 삭제되지 않은 가게 중 인기도가 높은 순서로 반환합니다.
+     * 좋아요 > 리뷰 수 > 조회 수 순으로 정렬됩니다.
+     *
+     * @param limit 조회 개수 제한
+     * @return 가게 리스트 (인기순 정렬)
+     */
+    List<Store> findByPopularity(int limit);
+
     /**
      * 전체 가게 개수 조회 (캐시 워밍용)
-     * 
+     *
      * @return 가게 개수
      */
     long count();
-    
+
     /**
      * 페이징으로 모든 가게 조회 (캐시 워밍용)
-     * 
+     *
      * @param page 페이지 번호 (0부터 시작)
      * @param size 페이지 크기
      * @return 가게 리스트
      */
     List<Store> findAll(int page, int size);
-    
+
     /**
      * 카테고리 정보를 포함하여 모든 가게 조회 (캐시 워밍용)
-     * 
+     *
      * @return 가게 리스트 (카테고리 포함)
      */
     List<Store> findAllWithCategories();

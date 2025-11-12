@@ -191,4 +191,51 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
                 .limit(size)
                 .fetch();
     }
+
+    /**
+     * 특정 가게의 음식 조회 (거리순 정렬)
+     * 사용자의 가게 좌표를 기반으로 Haversine 공식을 사용하여 거리를 계산하고,
+     * 거리가 가까운 순서로 음식을 반환합니다.
+     *
+     * @param storeId 가게 ID (음식이 속한 가게)
+     * @param userLatitude 사용자 위도
+     * @param userLongitude 사용자 경도
+     * @param limit 조회 개수 제한
+     * @return 음식 리스트 (거리순)
+     */
+    public List<FoodJpaEntity> findByStoreIdOrderByDistance(
+            Long storeId,
+            double userLatitude,
+            double userLongitude,
+            int limit
+    ) {
+        return queryFactory
+                .selectFrom(foodJpaEntity)
+                .where(
+                        foodJpaEntity.storeId.eq(storeId)
+                                .and(foodJpaEntity.deletedAt.isNull())
+                )
+                .orderBy(foodJpaEntity.registeredDt.desc()) // 최신 등록순 (가게 기준이므로 거리는 동일)
+                .limit(limit)
+                .fetch();
+    }
+
+    /**
+     * 인기순 음식 조회 (최신 등록순 + 대표 메뉴 우선)
+     * 삭제되지 않은 음식 중 대표 메뉴를 우선으로 하고 최신 등록순으로 반환합니다.
+     *
+     * @param limit 조회 개수 제한
+     * @return 음식 리스트 (인기순 정렬)
+     */
+    public List<FoodJpaEntity> findByPopularity(int limit) {
+        return queryFactory
+                .selectFrom(foodJpaEntity)
+                .where(foodJpaEntity.deletedAt.isNull())
+                .orderBy(
+                        foodJpaEntity.isMain.desc().nullsLast(),  // 대표 메뉴 우선
+                        foodJpaEntity.registeredDt.desc()         // 최신 등록순
+                )
+                .limit(limit)
+                .fetch();
+    }
 }

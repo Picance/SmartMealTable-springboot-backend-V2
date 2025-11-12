@@ -317,4 +317,65 @@ public class StoreQueryDslRepository {
                 )
                 .fetch();
     }
+
+    /**
+     * 위치 기반 가게 조회 (거리순 정렬)
+     * 사용자 위치에서 일정 반경 내의 가게들을 거리순으로 반환합니다.
+     *
+     * @param userLatitude 사용자 위도
+     * @param userLongitude 사용자 경도
+     * @param radiusKm 검색 반경 (km)
+     * @param limit 조회 개수 제한
+     * @return 거리 정보를 포함한 가게 목록
+     */
+    public List<StoreWithDistance> findByDistanceOrderByDistance(
+            double userLatitude,
+            double userLongitude,
+            double radiusKm,
+            int limit
+    ) {
+        // Haversine 거리 계산 (km 단위)
+        NumberExpression<Double> distanceExpression = calculateDistance(userLatitude, userLongitude);
+
+        List<Tuple> tuples = queryFactory
+                .select(storeJpaEntity, distanceExpression)
+                .from(storeJpaEntity)
+                .where(
+                        distanceExpression.loe(radiusKm)
+                                .and(storeJpaEntity.deletedAt.isNull())
+                )
+                .orderBy(distanceExpression.asc())
+                .limit(limit)
+                .fetch();
+
+        return tuples.stream()
+                .map(tuple -> {
+                    StoreJpaEntity entity = tuple.get(storeJpaEntity);
+                    Double distance = tuple.get(distanceExpression);
+                    List<Long> categoryIds = queryCategoryIdsByStoreId(entity.getStoreId());
+                    Store store = StoreEntityMapper.toDomain(entity, categoryIds);
+                    return StoreWithDistance.of(store, distance);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 인기순 가게 조회 (좋아요 개수 기준)
+     * 삭제되지 않은 가게 중 인기도가 높은 순서로 반환합니다.
+     *
+     * @param limit 조회 개수 제한
+     * @return 가게 리스트 (인기순 정렬)
+     */
+    public List<StoreJpaEntity> findByPopularity(int limit) {
+        return queryFactory
+                .selectFrom(storeJpaEntity)
+                .where(storeJpaEntity.deletedAt.isNull())
+                .orderBy(
+                        storeJpaEntity.favoriteCount.desc().nullsLast(),
+                        storeJpaEntity.reviewCount.desc().nullsLast(),
+                        storeJpaEntity.viewCount.desc().nullsLast()
+                )
+                .limit(limit)
+                .fetch();
+    }
 }
