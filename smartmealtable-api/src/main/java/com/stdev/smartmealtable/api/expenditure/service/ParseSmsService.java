@@ -2,10 +2,13 @@ package com.stdev.smartmealtable.api.expenditure.service;
 
 import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceRequest;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceResponse;
+import com.stdev.smartmealtable.client.external.sms.GeminiSmsParsingService;
+import com.stdev.smartmealtable.client.external.sms.SmsParsedResult;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.expenditure.sms.ParsedSmsResult;
 import com.stdev.smartmealtable.domain.expenditure.sms.SmsParsingDomainService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +20,13 @@ import org.springframework.stereotype.Service;
 public class ParseSmsService {
     
     private final SmsParsingDomainService smsParsingDomainService;
-    
-    public ParseSmsService() {
+    private final GeminiSmsParsingService geminiSmsParsingService;
+
+    public ParseSmsService(final GeminiSmsParsingService geminiSmsParsingService) {
         this.smsParsingDomainService = new SmsParsingDomainService();
+        this.geminiSmsParsingService = geminiSmsParsingService;
     }
-    
+
     /**
      * 카드 결제 승인 SMS를 파싱하여 지출 정보를 추출합니다.
      */
@@ -31,8 +36,18 @@ public class ParseSmsService {
         ParsedSmsResult parsedResult = smsParsingDomainService.parse(request.smsMessage());
         
         if (!parsedResult.isParsed()) {
-            log.warn("SMS 파싱 실패 - 지원하지 않는 형식: {}", request.smsMessage());
-            throw new BusinessException(ErrorType.SMS_PARSING_FAILED);
+            SmsParsedResult smsParsedResult = geminiSmsParsingService.parseSms(request.smsMessage());
+            if (smsParsedResult == null) {
+                log.warn("SMS 파싱 실패 - 지원하지 않는 형식: {}", request.smsMessage());
+                throw new BusinessException(ErrorType.SMS_PARSING_FAILED);
+            }
+
+            return new ParseSmsServiceResponse(
+                    smsParsedResult.storeName(),
+                    smsParsedResult.amount(),
+                    smsParsedResult.transactionDateTime().toLocalDate(),
+                    smsParsedResult.transactionDateTime().toLocalTime(),
+                    true);
         }
         
         return new ParseSmsServiceResponse(
@@ -40,7 +55,7 @@ public class ParseSmsService {
                 parsedResult.getAmount(),
                 parsedResult.getDate(),
                 parsedResult.getTime(),
-                parsedResult.isParsed()
+                true
         );
     }
 }
