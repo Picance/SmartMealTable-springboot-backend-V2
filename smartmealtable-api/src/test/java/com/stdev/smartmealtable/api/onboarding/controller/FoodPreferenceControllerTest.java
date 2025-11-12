@@ -37,8 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -213,12 +212,12 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         request.put("preferredFoodIds", foodIds);
 
         // when & then
-        mockMvc.perform(post("/api/v1/onboarding/food-preferences")
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.savedCount").value(5))
                 .andExpect(jsonPath("$.data.preferredFoods").isArray())
@@ -238,12 +237,12 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         request.put("preferredFoodIds", Arrays.asList());
 
         // when & then
-        mockMvc.perform(post("/api/v1/onboarding/food-preferences")
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.savedCount").value(0));
     }
@@ -256,7 +255,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         request.put("preferredFoodIds", null);
 
         // when & then
-        mockMvc.perform(post("/api/v1/onboarding/food-preferences")
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -274,7 +273,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
         request.put("preferredFoodIds", foodIds);
 
         // when & then
-        mockMvc.perform(post("/api/v1/onboarding/food-preferences")
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())

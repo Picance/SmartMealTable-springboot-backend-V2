@@ -219,10 +219,10 @@ public class OnboardingController {
     }
 
     /**
-     * 온보딩 - 개별 음식 선호도 저장
-     * POST /api/v1/onboarding/food-preferences
+     * 온보딩 - 개별 음식 선호도 저장 (덮어쓰기)
+     * PUT /api/v1/onboarding/food-preferences
      */
-    @PostMapping("/food-preferences")
+    @PutMapping("/food-preferences")
     public ResponseEntity<ApiResponse<SaveFoodPreferencesResponse>> saveFoodPreferences(
             @Valid @RequestBody SaveFoodPreferencesRequest request,
             @AuthUser AuthenticatedUser authenticatedUser
@@ -241,7 +241,7 @@ public class OnboardingController {
 
         SaveFoodPreferencesResponse response = SaveFoodPreferencesResponse.from(serviceResponse);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     /**

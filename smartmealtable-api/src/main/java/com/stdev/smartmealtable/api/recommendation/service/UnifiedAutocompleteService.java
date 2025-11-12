@@ -51,10 +51,11 @@ public class UnifiedAutocompleteService {
      *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
+     * @param storeShortcutsLimit 가게 바로가기 개수
      * @return 통합 자동완성 응답 (키워드 섹션 + 가게 바로가기 섹션)
      */
-    public UnifiedAutocompleteResponse autocomplete(String keyword, int limit) {
-        log.debug("통합 자동완성 요청: keyword={}, limit={}", keyword, limit);
+    public UnifiedAutocompleteResponse autocomplete(String keyword, int limit, int storeShortcutsLimit) {
+        log.debug("통합 자동완성 요청: keyword={}, limit={}, storeShortcutsLimit={}", keyword, limit, storeShortcutsLimit);
 
         long startTime = System.currentTimeMillis();
 
@@ -77,8 +78,8 @@ public class UnifiedAutocompleteService {
                 limit
             );
 
-            // 가게 바로가기 정보 생성
-            List<StoreShortcut> storeShortcuts = buildStoreShortcuts(storeResults);
+            // 가게 바로가기 정보 생성 (storeShortcutsLimit 적용)
+            List<StoreShortcut> storeShortcuts = buildStoreShortcuts(storeResults, storeShortcutsLimit);
 
             long elapsedTime = System.currentTimeMillis() - startTime;
             log.info("통합 자동완성 완료: keyword={}, keywords={}, stores={}, time={}ms",
@@ -177,16 +178,18 @@ public class UnifiedAutocompleteService {
      * ID, 이름, 대표 이미지, 영업 상태를 포함한 바로가기 정보 생성
      *
      * @param storeResults 가게 자동완성 결과
-     * @return 가게 바로가기 목록
+     * @param limit 가게 바로가기 개수 제한
+     * @return 가게 바로가기 목록 (limit까지)
      */
-    private List<StoreShortcut> buildStoreShortcuts(StoreAutocompleteResponse storeResults) {
+    private List<StoreShortcut> buildStoreShortcuts(StoreAutocompleteResponse storeResults, int limit) {
         if (storeResults == null || storeResults.suggestions() == null || storeResults.suggestions().isEmpty()) {
             return Collections.emptyList();
         }
 
         try {
-            // 가게 ID 목록 추출
+            // 가게 ID 목록 추출 (limit 적용)
             List<Long> storeIds = storeResults.suggestions().stream()
+                .limit(limit)
                 .map(suggestion -> suggestion.storeId())
                 .collect(Collectors.toList());
 

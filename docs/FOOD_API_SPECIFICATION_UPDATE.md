@@ -183,7 +183,7 @@ smartmealtable-storage/src/main/java/com/stdev/smartmealtable/storage/db/.../Foo
 
 ### 음식 관련 보조 기능
 - ✅ `GET /api/v1/onboarding/foods` - 온보딩용 음식 목록 (Section 4.9)
-- ✅ `POST /api/v1/onboarding/food-preferences` - 음식 선호도 저장 (Section 4.10)
+- ✅ `PUT /api/v1/onboarding/food-preferences` - 음식 선호도 저장/덮어쓰기 (Section 4.10)
 - ✅ `PUT /api/v1/members/me/food-preferences` - 음식 선호도 수정 (Section 11)
 - ✅ `DELETE /api/v1/members/me/food-preferences/{foodId}` - 음식 선호도 삭제 (Section 11)
 
@@ -200,7 +200,7 @@ smartmealtable-storage/src/main/java/com/stdev/smartmealtable/storage/db/.../Foo
 ### 시나리오 2: 온보딩 중 음식 선택
 1. 온보딩용 음식 목록 조회 (`GET /api/v1/onboarding/foods`)
 2. 선호하는 음식 선택
-3. 선호도 저장 (`POST /api/v1/onboarding/food-preferences`)
+3. 선호도 저장/덮어쓰기 (`PUT /api/v1/onboarding/food-preferences`)
 
 ### 시나리오 3: 장바구니 추가
 1. 메뉴 상세 조회로 가격 및 예산 확인 (`GET /api/v1/foods/{foodId}`)

@@ -35,7 +35,7 @@ public class AutocompleteController {
 
     /**
      * 통합 자동완성 (음식 + 가게)
-     * GET /api/v1/autocomplete?keyword=김치&limit=10
+     * GET /api/v1/autocomplete?keyword=김치&limit=10&storeShortcutsLimit=5
      *
      * 응답 예시:
      * {
@@ -47,6 +47,14 @@ public class AutocompleteController {
      *       "김치나라",
      *       "김치국",
      *       "한식당"
+     *     ],
+     *     "storeShortcuts": [
+     *       {
+     *         "storeId": 101,
+     *         "name": "김치나라",
+     *         "imageUrl": "https://...",
+     *         "isOpen": true
+     *       }
      *     ]
      *   }
      * }
@@ -57,16 +65,18 @@ public class AutocompleteController {
      *
      * @param keyword 검색 키워드 (필수, 1-50자)
      * @param limit 결과 개수 제한 (기본값: 10, 최대: 20)
-     * @return 자동완성 키워드 목록 (음식명 + 가게명)
+     * @param storeShortcutsLimit 가게 바로가기 개수 제한 (기본값: 10, 최소 1, 최대 20)
+     * @return 자동완성 키워드 목록 (음식명 + 가게명) 및 가게 바로가기 목록
      */
     @GetMapping
     public ApiResponse<UnifiedAutocompleteResponse> autocomplete(
             @RequestParam @Size(min = 1, max = 50, message = "검색 키워드는 1-50자 이내여야 합니다.") String keyword,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int storeShortcutsLimit
     ) {
-        log.info("통합 자동완성 API 호출 - keyword: {}, limit: {}", keyword, limit);
+        log.info("통합 자동완성 API 호출 - keyword: {}, limit: {}, storeShortcutsLimit: {}", keyword, limit, storeShortcutsLimit);
 
-        UnifiedAutocompleteResponse response = unifiedAutocompleteService.autocomplete(keyword, limit);
+        UnifiedAutocompleteResponse response = unifiedAutocompleteService.autocomplete(keyword, limit, storeShortcutsLimit);
 
         return ApiResponse.success(response);
     }

@@ -42,8 +42,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -189,13 +188,13 @@ class FoodPreferenceControllerRestDocsTest extends AbstractRestDocsTest {
         Map<String, Object> request = new HashMap<>();
         request.put("preferredFoodIds", foodIds);
 
-        mockMvc.perform(post("/api/v1/onboarding/food-preferences")
+        mockMvc.perform(put("/api/v1/onboarding/food-preferences")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andDo(document("onboarding-food-preferences-post",
+                .andExpect(status().isOk())
+                .andDo(document("onboarding-food-preferences-put",
                         requestFields(
                                 fieldWithPath("preferredFoodIds").type(JsonFieldType.ARRAY).description("선호 음식 ID 목록 (최대 50개)")
                         ),

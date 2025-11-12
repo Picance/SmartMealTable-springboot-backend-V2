@@ -39,13 +39,14 @@ public class SaveFoodPreferencesService {
             Long memberId,
             SaveFoodPreferencesServiceRequest request
     ) {
-        log.info("개별 음식 선호도 저장 - memberId: {}, foodCount: {}", memberId, request.preferredFoodIds().size());
-
-        List<Long> foodIds = request.preferredFoodIds();
+        List<Long> foodIds = deduplicateFoodIds(request.preferredFoodIds());
+        log.info("개별 음식 선호도 저장 - memberId: {}, foodCount: {}", memberId, foodIds.size());
 
         // 1. 음식 존재 여부 검증
-        List<Food> foods = foodRepository.findByIdIn(foodIds);
-        if (foods.size() != foodIds.size()) {
+        List<Food> foods = foodIds.isEmpty()
+                ? List.of()
+                : foodRepository.findByIdIn(foodIds);
+        if (!foodIds.isEmpty() && foods.size() != foodIds.size()) {
             throw new BusinessException(ErrorType.FOOD_NOT_FOUND);
         }
 
@@ -82,5 +83,14 @@ public class SaveFoodPreferencesService {
                 preferredFoodInfos,
                 "선호 음식이 성공적으로 저장되었습니다."
         );
+    }
+
+    private List<Long> deduplicateFoodIds(List<Long> preferredFoodIds) {
+        if (preferredFoodIds == null || preferredFoodIds.isEmpty()) {
+            return List.of();
+        }
+        return preferredFoodIds.stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

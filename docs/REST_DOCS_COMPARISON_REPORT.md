@@ -74,7 +74,7 @@
 | 카테고리 목록 조회 | `/api/v1/categories` | GET | ✅ | ✅ | 일치 |
 | 약관 조회 | `/api/v1/policies` | GET | ✅ | ✅ | 일치 |
 | 온보딩용 음식 목록 조회 | `/api/v1/onboarding/foods` | GET | ✅ | ⚠️ | **스니펫 누락** |
-| 개별 음식 선호도 저장 | `/api/v1/onboarding/food-preferences` | POST | ✅ | ⚠️ | **스니펫 누락** |
+| 개별 음식 선호도 저장 | `/api/v1/onboarding/food-preferences` | PUT | ✅ | ⚠️ | **스니펫 누락** |
 
 #### 예산 관리 (Budget)
 
@@ -234,7 +234,7 @@
 #### ✅ 온보딩 API - **수정 완료**
 - **문제:** AsciiDoc에서 잘못된 스니펫 경로 참조
   - `/onboarding-foods-get/success/*` → 실제로는 `/onboarding-foods-get/*`
-  - `/onboarding-food-preferences-post/success/*` → 실제로는 `/onboarding-food-preferences-post/*`
+  - `/onboarding-food-preferences-put/success/*` → 실제로는 `/onboarding-food-preferences-put/*`
 - **수정 내용:** 올바른 스니펫 경로로 변경
 - **결과:** ✅ AsciiDoc 빌드 성공, 문서 생성 완료
 

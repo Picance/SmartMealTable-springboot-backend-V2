@@ -1180,21 +1180,21 @@ Authorization: Bearer {access_token}
 
 ### 4.10 개별 음식 선호도 저장 (REQ-ONBOARD-405)
 
-**Endpoint:** `POST /api/v1/onboarding/food-preferences`
+**Endpoint:** `PUT /api/v1/onboarding/food-preferences`
 
-**설명:** 온보딩 과정에서 사용자가 이미지 그리드에서 선택한 개별 음식 선호도를 저장합니다.
+**설명:** 온보딩 과정에서 사용자가 이미지 그리드에서 선택한 개별 음식 선호도를 저장/덮어씁니다. 동일한 요청을 여러 번 보내도 항상 마지막 요청 기준으로 선호도가 유지됩니다 (Idempotent).
 
 **Request:**
 ```json
-{
-  "preferredFoodIds": [1, 2, 5, 7, 12, 15, 23, 28, 35, 42]
-}
+  {
+    "preferredFoodIds": [1, 2, 5, 7, 12, 15, 23, 28, 35, 42]
+  }
 ```
 
 **Request Fields:**
 - `preferredFoodIds`: 사용자가 선호하는 음식의 ID 배열 (최소 0개, 최대 50개 권장)
 
-**Response (201):**
+**Response (200):**
 ```json
 {
   "result": "SUCCESS",
@@ -1232,14 +1232,15 @@ Authorization: Bearer {access_token}
 - `message`: 성공 메시지
 
 **Error Cases:**
-- `400`: 잘못된 요청 (예: 빈 배열, 너무 많은 항목)
+- `400`: 잘못된 요청 (예: JSON 구조 오류, 허용치 초과)
 - `404`: 존재하지 않는 음식 ID 포함
 - `422`: 유효성 검증 실패
 
 **비즈니스 규칙:**
-- 이미 저장된 선호도가 있을 경우, 기존 데이터를 삭제하고 새로운 데이터로 대체합니다 (Upsert)
+- 이미 저장된 선호도가 있을 경우, 기존 데이터를 삭제하고 새로운 데이터로 대체합니다 (Upsert & 덮어쓰기)
 - 빈 배열(`[]`)을 보내면 모든 음식 선호도를 삭제합니다
-- 중복된 `foodId`는 자동으로 제거됩니다
+- 중복된 `foodId`는 자동으로 제거되며 이후 로직은 고유한 ID 기준으로 처리됩니다
+- PUT 메서드로 호출할 때마다 동일 요청이라도 항상 최신 상태를 유지합니다 (Idempotent)
 - 카테고리 선호도(`POST /onboarding/preferences`)와 독립적으로 저장됩니다
 
 ---
@@ -2516,7 +2517,7 @@ Authorization: Bearer {access_token}
 
 ### 7.10 통합 자동완성(키워드) 검색
 
-**Endpoint:** `GET /api/v1/autocomplete?keyword=치킨&limit=10`
+**Endpoint:** `GET /api/v1/autocomplete?keyword=치킨&limit=10&storeShortcutsLimit=5`
 
 **설명:**
 - 음식/가게/그룹(학교·회사) 키워드를 한 번에 조회하는 통합 자동완성 API입니다.
@@ -2527,6 +2528,7 @@ Authorization: Bearer {access_token}
 **Query Parameters:**
 - `keyword` (string, required): 검색 키워드 (1-50자, 좌우 공백 자동 제거)
 - `limit` (number, optional): 결과 개수 제한 (기본값: 10, 최소 1, 최대 20)
+- `storeShortcutsLimit` (number, optional): 가게 바로가기 개수 제한 (기본값: 10, 최소 1, 최대 20)
 
 **Response (200):**
 ```json
@@ -2561,14 +2563,14 @@ Authorization: Bearer {access_token}
 
 **Response Fields:**
 - `suggestions` (array\<string>): 음식명/가게명/그룹명이 섞인 자동완성 키워드 목록 (중복 제거, 최대 `limit`개)
-- `storeShortcuts` (array\<object>): 추천 가게 바로가기 카드 목록
+- `storeShortcuts` (array\<object>): 추천 가게 바로가기 카드 목록 (최대 `storeShortcutsLimit`개)
   - `storeId`: 가게 ID
   - `name`: 가게 이름
   - `imageUrl`: 대표 이미지 URL (없으면 null)
   - `isOpen`: 영업 중 여부 (추후 실시간 영업 정보 연동 예정)
 
 **Error Cases:**
-- `400`: 키워드 길이 또는 limit 값이 제약을 위반한 경우
+- `400`: 키워드 길이, limit 값, 또는 storeShortcutsLimit 값이 제약을 위반한 경우
 
 **검색 전략 & UX 특징:**
 - 음식/가게/그룹 자동완성을 병렬 호출 후 인터리빙(교차) 방식으로 합쳐 배달앱과 유사한 탐색 경험 제공
