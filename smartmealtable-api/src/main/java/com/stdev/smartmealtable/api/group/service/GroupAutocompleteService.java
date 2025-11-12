@@ -177,7 +177,7 @@ public class GroupAutocompleteService {
      *
      * 검색 전략:
      * 1. Prefix 검색 (정확한 매칭)
-     * 2. Contains 검색 (부분 매칭, 이름 길이순)
+     * 2. Contains 검색 (부분 매칭, 정확도순: 위치 → 포함도 → 길이)
      * 3. Edit Distance 검색 (오타 허용)
      *
      * @param keyword 검색 키워드
@@ -205,12 +205,15 @@ public class GroupAutocompleteService {
             log.warn("Prefix 검색 실패", e);
         }
 
-        // Stage 2: Contains 검색 (부분 매칭, 이름 길이순 - UI/UX 개선)
+        // Stage 2: Contains 검색 (부분 매칭, 정확도 기반 정렬)
         if (results.size() < limit) {
             try {
                 List<Group> containsResults = groupRepository.findByNameContainsOrderByLength(keyword);
 
-                containsResults.forEach(group -> {
+                // 결과를 정확도순으로 다시 정렬: 위치 → 포함도 → 길이
+                List<Group> sortedContainsResults = sortByMatchPrecision(containsResults, keyword);
+
+                sortedContainsResults.forEach(group -> {
                     if (resultIds.add(group.getGroupId())) {
                         results.add(group);
                     }
@@ -255,6 +258,70 @@ public class GroupAutocompleteService {
         return results;
     }
     
+    /**
+     * Contains 검색 결과를 정확도순으로 정렬
+     *
+     * 정렬 기준 (우선순위 높음 → 낮음):
+     * 1. 검색어 위치: 앞부분 매칭 > 중간 매칭 > 뒷부분 매칭
+     * 2. 검색어 포함도: 검색어를 더 많이 포함 (긴 검색어)
+     * 3. 이름 길이: 짧은 이름 우선
+     *
+     * 예: "과학기술대" 검색
+     * - "과학기술대학교" → "서울과학기술대학교" → "한국과학기술원" 순
+     *
+     * @param groups 정렬 전 그룹 목록
+     * @param keyword 검색 키워드
+     * @return 정확도순으로 정렬된 그룹 목록
+     */
+    private List<Group> sortByMatchPrecision(List<Group> groups, String keyword) {
+        return groups.stream()
+            .sorted((g1, g2) -> {
+                String name1 = g1.getName();
+                String name2 = g2.getName();
+
+                // 1. 검색어 위치 비교 (앞부분 매칭 우선)
+                int index1 = name1.indexOf(keyword);
+                int index2 = name2.indexOf(keyword);
+
+                if (index1 != index2) {
+                    // 앞부분에서 발견된 것이 우선 (index 작을수록 좋음)
+                    return Integer.compare(index1, index2);
+                }
+
+                // 2. 검색어 포함도 비교 (검색어가 몇 번 포함되는가)
+                // 더 정확히는: 검색어 길이 대비 전체 이름 길이의 비율
+                // 더 많이 일치하는 것이 우선
+                int matchLength1 = calculateMatchLength(name1, keyword);
+                int matchLength2 = calculateMatchLength(name2, keyword);
+
+                if (matchLength1 != matchLength2) {
+                    return Integer.compare(matchLength2, matchLength1); // 역순 (큰 값이 우선)
+                }
+
+                // 3. 이름 길이 (짧은 것이 우선)
+                return Integer.compare(name1.length(), name2.length());
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 이름에서 검색어가 차지하는 길이 계산
+     * "서울과학기술대학교"에서 "과학기술대" 검색 시 → 5 (검색어 길이)
+     * "한국과학기술원"에서 "과학기술" 검색 시 → 4 (검색어 길이)
+     *
+     * @param name 그룹 이름
+     * @param keyword 검색 키워드
+     * @return 검색어 길이
+     */
+    private int calculateMatchLength(String name, String keyword) {
+        // 검색어가 포함된 연속 부분의 길이 (현재는 검색어 길이)
+        // 향후: 검색어 앞뒤의 추가 일치 문자도 고려 가능
+        if (name.contains(keyword)) {
+            return keyword.length();
+        }
+        return 0;
+    }
+
     /**
      * Group ID 목록으로 Group 엔티티 조회 (입력 순서 유지)
      *
@@ -346,15 +413,18 @@ public class GroupAutocompleteService {
                 groups.addAll(prefixResults);
 
                 if (groups.size() < limit) {
-                    // Stage 2: Contains 검색 (이름 길이순으로 정렬 - UI/UX 개선)
+                    // Stage 2: Contains 검색 (정확도 기반 정렬)
                     List<Group> containsResults = groupRepository.findByNameContainsOrderByLength(keyword);
+
+                    // 결과를 정확도순으로 다시 정렬: 위치 → 포함도 → 길이
+                    List<Group> sortedContainsResults = sortByMatchPrecision(containsResults, keyword);
 
                     // 중복 제거 후 추가
                     Set<Long> existingIds = groups.stream()
                         .map(Group::getGroupId)
                         .collect(Collectors.toSet());
 
-                    containsResults.stream()
+                    sortedContainsResults.stream()
                         .filter(group -> !existingIds.contains(group.getGroupId()))
                         .forEach(groups::add);
                 }
