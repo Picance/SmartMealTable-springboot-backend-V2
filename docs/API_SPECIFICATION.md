@@ -1409,20 +1409,51 @@ Authorization: Bearer {access_token}
 
 ---
 
-### 5.3 특정 날짜 예산 수정 및 일괄 적용
+### 5.3 월별 예산 수정
+
+**Endpoint:** `PUT /api/v1/budgets`
+
+**Request:**
+```json
+{
+  "monthlyFoodBudget": 300000,
+  "dailyFoodBudget": 10000
+}
+```
+
+**Validation Rules:**
+- `monthlyFoodBudget`: 정수, 최소 1,000원 이상, 필수
+- `dailyFoodBudget`: 정수, 최소 100원 이상, 필수
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "monthlyBudgetId": 12,
+    "monthlyFoodBudget": 300000,
+    "dailyFoodBudget": 10000,
+    "budgetMonth": "2025-10",
+    "message": "예산이 성공적으로 수정되었습니다."
+  },
+  "error": null
+}
+```
+
+**설명:**
+- 월별 예산 변경 시 해당 월의 일일 기본 예산(`dailyFoodBudget`)도 함께 갱신됩니다.
+- 요청에 인증 정보가 필요하며, 월/일일 예산 값은 모두 서버에서 검증합니다.
+
+---
+
+### 5.4 특정 날짜 예산 수정 및 일괄 적용
 
 **Endpoint:** `PUT /api/v1/budgets/daily/{date}`
 
 **Request:**
 ```json
 {
-  "dailyBudget": 12000,
-  "mealBudgets": {
-    "BREAKFAST": 3500,
-    "LUNCH": 5000,
-    "DINNER": 3500,
-    "OTHER": 2000
-  },
+  "dailyFoodBudget": 12000,
   "applyForward": true
 }
 ```
@@ -1433,46 +1464,24 @@ Authorization: Bearer {access_token}
 
 **Validation Rules:**
 - `date`: YYYY-MM-DD 형식, 필수
-- `dailyBudget`: 0 이상, 필수
-- `mealBudgets`: 각 식사 예산의 합계가 dailyBudget과 일치해야 함
-- `applyForward`: boolean, 선택 (기본값: false)
+- `dailyFoodBudget`: 정수, 최소 100원 이상, 필수
+- `applyForward`: boolean, 필수
 
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
   "data": {
-    "targetDate": "2025-10-08",
-    "dailyBudget": 12000,
-    "mealBudgets": [
-      {
-        "mealType": "BREAKFAST",
-        "budget": 3500
-      },
-      {
-        "mealType": "LUNCH",
-        "budget": 5000
-      },
-      {
-        "mealType": "DINNER",
-        "budget": 3500
-      },
-      {
-        "mealType": "OTHER",
-        "budget": 3500
-      }
-    ],
-    "applyForward": true,
-    "affectedDatesCount": 84,
-    "updatedAt": "2025-10-08T12:34:56.789Z"
+    "budgetId": 84,
+    "dailyFoodBudget": 12000,
+    "budgetDate": "2025-10-08",
+    "appliedForward": true,
+    "updatedCount": 84,
+    "message": "2025-10-08부터 이후 모든 예산이 수정되었습니다. (총 84개)"
   },
   "error": null
 }
 ```
-
-**Response Fields:**
-- `targetDate`: 예산을 설정한 기준 날짜
-- `affectedDatesCount`: 영향받은 날짜 수 (applyForward=true일 경우 해당 날짜부터 연말까지)
 
 **Error Cases:**
 
@@ -1507,12 +1516,8 @@ Authorization: Bearer {access_token}
   "data": null,
   "error": {
     "code": "E422",
-    "message": "식사별 예산의 합계가 일일 예산과 일치하지 않습니다.",
-    "data": {
-      "dailyBudget": 12000,
-      "mealBudgetsSum": 11000,
-      "difference": 1000
-    }
+    "message": "일일 예산은 최소 100원 이상이어야 합니다.",
+    "data": null
   }
 }
 ```

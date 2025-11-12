@@ -134,7 +134,7 @@ public class BudgetController {
         UpdateDailyBudgetServiceResponse serviceResponse = updateDailyBudgetService.updateDailyBudget(
                 user.memberId(),
                 date,
-                request.getDailyBudget(),
+                request.getDailyFoodBudget(),
                 request.getApplyForward()
         );
 
