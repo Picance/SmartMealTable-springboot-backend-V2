@@ -101,30 +101,36 @@ public class GroupAutocompleteService {
     /**
      * 다단계 검색 전략
      *
-     * 핵심: 캐시 결과도 DB에서 다시 정렬하여 정확한 매칭 우선순위 보장
-     * Stage 1: Prefix 검색 (정확한 매칭 우선) - DB
+     * 핵심: 캐시에서 popularity 순 정렬 데이터를 먼저 조회하고, 결과 개수와 상관없이 우선 반환
+     * Stage 1: Redis 캐시에서 Prefix 검색 (popularity 순 정렬) - 가장 높은 우선순위
      * Stage 2: 초성 검색 (캐시)
-     * Stage 3: 부분 매칭 검색 (DB, 이름 길이순)
+     * Stage 3: DB 기반 다단계 검색 (Prefix → Contains → Edit Distance)
      *
      * @param keyword 검색 키워드
      * @param limit 결과 개수
-     * @return 검색 결과
+     * @return 검색 결과 (limit만큼 제한됨)
      */
     private List<Group> performMultiStageSearch(String keyword, int limit) {
-        // Redis 캐시 우회하고 항상 searchWithTypoTolerance()로 정렬된 결과 반환
-        // 이렇게 하면 prefix 매칭 → contains 매칭(이름 길이순) → edit distance 순서가 보장됨
+        // Stage 1: Redis 캐시에서 Prefix 검색 (popularity 순으로 이미 정렬됨) - 최고 우선순위
         try {
-            List<Group> results = searchWithTypoTolerance(keyword, limit);
+            List<Long> cachedIds = searchCacheService.getAutocompleteResults(DOMAIN, keyword, limit);
 
-            if (!results.isEmpty()) {
-                log.debug("정렬된 검색 결과 반환: keyword={}, results={}", keyword, results.size());
-                return results;
+            if (!cachedIds.isEmpty()) {
+                log.debug("캐시에서 결과 조회: keyword={}, results={}", keyword, cachedIds.size());
+                List<Group> results = fetchGroups(cachedIds);
+
+                // 캐시 결과는 이미 popularity 순으로 정렬되어 있으므로, 결과가 있으면 바로 반환
+                // (limit보다 적을 수 있지만, 캐시된 데이터가 최고 우선순위)
+                if (!results.isEmpty()) {
+                    log.debug("캐시 결과 반환: {}", results.size());
+                    return results;
+                }
             }
         } catch (Exception e) {
-            log.warn("정렬된 검색 실패, fallback 실행", e);
+            log.warn("캐시 검색 실패", e);
         }
 
-        // Fallback: 초성 검색 시도
+        // Stage 2: 초성 검색 시도
         if (KoreanSearchUtil.isChosung(keyword)) {
             try {
                 Set<String> chosungResults = chosungIndexBuilder.findIdsByChosung(DOMAIN, keyword);
@@ -141,6 +147,18 @@ public class GroupAutocompleteService {
             } catch (Exception e) {
                 log.warn("초성 검색 실패", e);
             }
+        }
+
+        // Stage 3: DB 기반 다단계 검색 (정렬 로직 포함)
+        try {
+            List<Group> results = searchWithTypoTolerance(keyword, limit);
+
+            if (!results.isEmpty()) {
+                log.debug("DB 기반 검색 결과 반환: keyword={}, results={}", keyword, results.size());
+                return results;
+            }
+        } catch (Exception e) {
+            log.warn("DB 기반 검색 실패", e);
         }
 
         // 최후의 fallback: fallbackSearch
@@ -238,57 +256,39 @@ public class GroupAutocompleteService {
     }
     
     /**
-     * Group ID 목록으로 Group 엔티티 조회
-     * 
-     * @param groupIds Group ID 목록
-     * @return Group 엔티티 목록
+     * Group ID 목록으로 Group 엔티티 조회 (입력 순서 유지)
+     *
+     * @param groupIds Group ID 목록 (원하는 순서대로)
+     * @return Group 엔티티 목록 (입력 순서 유지)
      */
     private List<Group> fetchGroups(List<Long> groupIds) {
         if (groupIds.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         try {
-            // 1. Redis 캐시에서 상세 데이터 조회
-            Map<Long, Map<Object, Object>> cachedData = 
-                searchCacheService.getDetailDataBatch(DOMAIN, groupIds);
-            
-            // 2. 캐시 미스된 ID 목록
-            Set<Long> missedIds = new HashSet<>(groupIds);
-            missedIds.removeAll(cachedData.keySet());
-            
-            // 3. 캐시 미스된 데이터는 DB에서 조회
-            List<Group> groups = new ArrayList<>();
-            
-            if (!missedIds.isEmpty()) {
-                List<Group> dbGroups = groupRepository.findAllByIdIn(new ArrayList<>(missedIds));
-                groups.addAll(dbGroups);
-                
-                // DB에서 조회한 데이터를 캐시에 저장
-                cacheGroups(dbGroups);
-            }
-            
-            // 4. 캐시된 데이터 변환
-            for (Long groupId : cachedData.keySet()) {
-                Map<Object, Object> data = cachedData.get(groupId);
-                // 실제 환경에서는 Map → Group 변환 로직 필요
-                // 지금은 DB 조회로 대체
-            }
-            
-            if (groups.isEmpty() && !groupIds.isEmpty()) {
-                // 캐시에서 변환 실패 시 DB fallback
-                groups = groupRepository.findAllByIdIn(groupIds);
-            }
-            
-            // 5. 원래 순서 유지
-            Map<Long, Group> groupMap = groups.stream()
+            log.debug("fetchGroups 호출: groupIds={}", groupIds);
+
+            // 1. 먼저 모든 ID를 DB에서 조회 (캐시 활용)
+            List<Group> dbGroups = groupRepository.findAllByIdIn(groupIds);
+            log.debug("DB에서 조회한 그룹: {}", dbGroups.stream().map(g -> g.getGroupId() + ":" + g.getName()).collect(Collectors.toList()));
+
+            // DB에서 조회한 데이터를 캐시에 저장
+            cacheGroups(dbGroups);
+
+            // 2. 입력된 ID 순서대로 결과 정렬
+            Map<Long, Group> groupMap = dbGroups.stream()
                 .collect(Collectors.toMap(Group::getGroupId, g -> g));
-            
-            return groupIds.stream()
+
+            List<Group> result = groupIds.stream()
                 .map(groupMap::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-            
+
+            log.debug("최종 반환 결과: {}", result.stream().map(g -> g.getGroupId() + ":" + g.getName()).collect(Collectors.toList()));
+
+            return result;
+
         } catch (Exception e) {
             log.error("Group 조회 실패, DB fallback", e);
             return groupRepository.findAllByIdIn(groupIds);
