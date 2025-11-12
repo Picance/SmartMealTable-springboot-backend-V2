@@ -1,8 +1,18 @@
 # API Specification - SmartMealTable (알뜰식탁)
 
-**버전:** v1.0  
-**작성일:** 2025-10-08  
+**버전:** v1.1
+**작성일:** 2025-10-08
+**최종 업데이트:** 2025-11-13
 **Base URL:** `/api/v1`
+
+## 변경 이력
+
+### v1.1 (2025-11-13)
+- **온보딩 - 예산 설정 API 업데이트**
+  - 데이터베이스 저장 시 오늘부터 월말까지 모든 날짜의 예산이 생성되도록 변경
+  - API 응답에는 첫 번째 날(오늘)의 식사별 예산만 포함하도록 최적화
+  - OTHER 식사 타입 지원 추가
+  - 상세 설명 및 에러 케이스 추가
 
 ---
 
@@ -817,6 +827,11 @@ Authorization: Bearer {access_token}
 
 **Endpoint:** `POST /api/v1/onboarding/budget`
 
+**Description:**
+회원의 초기 예산을 설정합니다.
+- **데이터베이스 저장**: 오늘부터 월말까지 모든 날짜에 대한 일일 예산과 식사별 예산을 생성합니다.
+- **API 응답**: 응답에는 오늘(첫 번째 날)의 식사별 예산 정보만 포함됩니다. (API 응답 크기 최소화)
+
 **Request:**
 ```json
 {
@@ -825,8 +840,21 @@ Authorization: Bearer {access_token}
   "mealBudgets": {
     "BREAKFAST": 3000,
     "LUNCH": 4000,
+    "DINNER": 3000
+  }
+}
+```
+
+**Request with OTHER mealType:**
+```json
+{
+  "monthlyBudget": 300000,
+  "dailyBudget": 10000,
+  "mealBudgets": {
+    "BREAKFAST": 3000,
+    "LUNCH": 4000,
     "DINNER": 3000,
-    "OTHER": 3000
+    "OTHER": 2000
   }
 }
 ```
@@ -850,14 +878,89 @@ Authorization: Bearer {access_token}
       {
         "mealType": "DINNER",
         "budget": 3000
-      },
-      {
-        "mealType": "OTHER",
-        "budget": 3000
       }
     ]
   },
   "error": null
+}
+```
+
+**Response with OTHER mealType (201):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "monthlyBudget": 300000,
+    "dailyBudget": 10000,
+    "mealBudgets": [
+      {
+        "mealType": "BREAKFAST",
+        "budget": 3000
+      },
+      {
+        "mealType": "LUNCH",
+        "budget": 4000
+      },
+      {
+        "mealType": "DINNER",
+        "budget": 3000
+      },
+      {
+        "mealType": "OTHER",
+        "budget": 2000
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+**Enum Values:**
+- `mealType`: `BREAKFAST` (아침), `LUNCH` (점심), `DINNER` (저녁), `OTHER` (기타)
+
+**동작 상세:**
+| 항목 | 설명 |
+|------|------|
+| 월별 예산 | 현재 월의 월별 예산이 생성됩니다 |
+| 일일 예산 | 오늘부터 월말까지 모든 날짜에 대한 일일 예산이 생성됩니다 |
+| 식사별 예산 | 오늘부터 월말까지 요청한 식사 타입별로 예산이 생성됩니다 |
+| 응답 데이터 | 응답에는 오늘(첫 번째 날)의 식사별 예산만 포함됩니다 |
+
+**Error Cases:**
+
+*422 Unprocessable Entity - 필수 필드 누락:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E422",
+    "message": "월별 예산은 필수입니다."
+  }
+}
+```
+
+*422 Unprocessable Entity - 음수 예산:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E422",
+    "message": "예산은 0 이상이어야 합니다."
+  }
+}
+```
+
+*401 Unauthorized - JWT 토큰 없음:*
+```json
+{
+  "result": "ERROR",
+  "data": null,
+  "error": {
+    "code": "E401",
+    "message": "인증되지 않은 요청입니다."
+  }
 }
 ```
 

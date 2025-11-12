@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -99,7 +100,7 @@ class SetBudgetControllerTest extends AbstractContainerTest {
         Map<String, Object> request = new HashMap<>();
         request.put("monthlyBudget", 300000);
         request.put("dailyBudget", 10000);
-        
+
         Map<String, Integer> mealBudgets = new HashMap<>();
         mealBudgets.put("BREAKFAST", 3000);
         mealBudgets.put("LUNCH", 4000);
@@ -117,8 +118,10 @@ class SetBudgetControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.monthlyBudget").value(300000))
                 .andExpect(jsonPath("$.data.dailyBudget").value(10000))
                 .andExpect(jsonPath("$.data.mealBudgets").isArray())
-                .andExpect(jsonPath("$.data.mealBudgets[0].mealType").exists())
-                .andExpect(jsonPath("$.data.mealBudgets[0].budget").exists());
+                // 응답은 오늘의 요청된 식사별 예산만 포함 (API 응답 크기 최소화)
+                .andExpect(jsonPath("$.data.mealBudgets").value(hasSize(3)))
+                .andExpect(jsonPath("$.data.mealBudgets[*].mealType").isArray())
+                .andExpect(jsonPath("$.data.mealBudgets[*].budget").isArray());
     }
 
     @Test
@@ -267,6 +270,53 @@ class SetBudgetControllerTest extends AbstractContainerTest {
 
         assertThat(actualMealBudgetCount)
                 .as("오늘부터 월말까지의 식사별 예산 개수 (3개씩)")
+                .isEqualTo(expectedMealBudgetCount);
+    }
+
+    @Test
+    @DisplayName("예산 설정 성공 - OTHER 타입을 포함한 경우")
+    void setBudget_success_with_other_meal_type() throws Exception {
+        // given
+        Map<String, Object> request = new HashMap<>();
+        request.put("monthlyBudget", 300000);
+        request.put("dailyBudget", 10000);
+
+        Map<String, Integer> mealBudgets = new HashMap<>();
+        mealBudgets.put("BREAKFAST", 3000);
+        mealBudgets.put("LUNCH", 4000);
+        mealBudgets.put("DINNER", 3000);
+        mealBudgets.put("OTHER", 2000); // OTHER 타입 추가
+        request.put("mealBudgets", mealBudgets);
+
+        LocalDate today = LocalDate.now();
+        LocalDate endOfMonth = YearMonth.now().atEndOfMonth();
+        long expectedDayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
+        long expectedMealBudgetCount = expectedDayCount * 4; // 각 날짜마다 4개의 식사별 예산
+
+        // when & then - 응답 검증 (오늘의 4가지 식사별 예산만 포함)
+        mockMvc.perform(post("/api/v1/onboarding/budget")
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.monthlyBudget").value(300000))
+                .andExpect(jsonPath("$.data.dailyBudget").value(10000))
+                .andExpect(jsonPath("$.data.mealBudgets").value(hasSize(4))); // 요청한 4가지 식사별 예산이 응답에 포함
+
+        // then - 데이터베이스에서 생성된 예산 검증
+        long actualDailyBudgetCount = dailyBudgetJpaRepository.countByMemberIdAndBudgetDateBetween(
+                authenticatedMemberId, today, endOfMonth);
+        long actualMealBudgetCount = mealBudgetJpaRepository.countByBudgetDateBetween(
+                today, endOfMonth);
+
+        assertThat(actualDailyBudgetCount)
+                .as("오늘부터 월말까지의 일일 예산 개수")
+                .isEqualTo(expectedDayCount);
+
+        assertThat(actualMealBudgetCount)
+                .as("오늘부터 월말까지의 식사별 예산 개수 (4개씩)")
                 .isEqualTo(expectedMealBudgetCount);
     }
 

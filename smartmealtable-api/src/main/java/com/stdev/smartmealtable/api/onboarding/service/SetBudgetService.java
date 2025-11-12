@@ -24,8 +24,10 @@ public class SetBudgetService {
      * 회원의 예산 설정
      * Domain Service를 통한 비즈니스 로직 처리
      * - 현재 월의 월별 예산 생성
-     * - 오늘 날짜의 일일 예산 생성
-     * - 오늘 날짜의 식사별 예산 생성 (아침, 점심, 저녁)
+     * - 오늘부터 월말까지 일일 예산 생성
+     * - 오늘부터 월말까지 식사별 예산 생성 (아침, 점심, 저녁)
+     *
+     * 응답은 오늘 날짜의 식사별 예산 정보만 포함 (API 응답 크기 최소화)
      */
     @Transactional
     public SetBudgetServiceResponse setBudget(Long memberId, SetBudgetServiceRequest request) {
@@ -37,8 +39,10 @@ public class SetBudgetService {
                 request.getMealBudgets()
         );
 
-        // 응답 DTO 생성
+        // 응답 DTO 생성: 첫 번째 날(오늘)의 식사별 예산만 포함
+        Long firstDailyBudgetId = result.dailyBudget().getBudgetId();
         List<SetBudgetServiceResponse.MealBudgetInfo> mealBudgetInfos = result.mealBudgets().stream()
+                .filter(mb -> mb.getDailyBudgetId().equals(firstDailyBudgetId)) // 첫 번째 날의 식사 예산만
                 .map(mb -> new SetBudgetServiceResponse.MealBudgetInfo(
                         mb.getMealType(),
                         mb.getMealBudget()
