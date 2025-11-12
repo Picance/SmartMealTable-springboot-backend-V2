@@ -1,7 +1,8 @@
 package com.stdev.smartmealtable.api.expenditure.controller;
 
-import com.stdev.smartmealtable.domain.common.vo.Address;
-import com.stdev.smartmealtable.domain.common.vo.AddressType;
+import com.stdev.smartmealtable.api.budget.service.DailyBudgetQueryService;
+import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse;
+import com.stdev.smartmealtable.api.budget.service.dto.DailyBudgetQueryServiceResponse.MealBudgetInfo;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureFromCartRequest;
 import com.stdev.smartmealtable.api.expenditure.dto.request.CreateExpenditureRequest;
@@ -11,12 +12,15 @@ import com.stdev.smartmealtable.api.expenditure.service.ParseSmsService;
 import com.stdev.smartmealtable.api.expenditure.service.dto.CreateExpenditureServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureItemServiceResponse;
 import com.stdev.smartmealtable.api.expenditure.service.dto.ParseSmsServiceResponse;
+import com.stdev.smartmealtable.core.error.ErrorType;
+import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MealBudget;
 import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
+import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.expenditure.Expenditure;
 import com.stdev.smartmealtable.domain.expenditure.ExpenditureRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
@@ -39,8 +43,10 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -72,6 +78,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
     private DailyBudgetRepository dailyBudgetRepository;
     @Autowired
     private MealBudgetRepository mealBudgetRepository;
+    @Autowired
+    private DailyBudgetQueryService dailyBudgetQueryService;
     
     @MockBean
     private ParseSmsService parseSmsService;
@@ -732,6 +740,13 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
             );
             expenditureRepository.save(expenditure);
         }
+
+        // 일별 예산 조회 Mock: 저장된 예산은 그대로 응답, 없는 날짜는 BusinessException 발생
+        when(dailyBudgetQueryService.getDailyBudget(anyLong(), any(LocalDate.class)))
+                .thenAnswer(invocation -> buildDailyBudgetQueryResponse(
+                        invocation.getArgument(0, Long.class),
+                        invocation.getArgument(1, LocalDate.class)
+                ));
 
         // when & then
         mockMvc.perform(get("/api/v1/expenditures/statistics")
@@ -1886,5 +1901,35 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("에러 사유")
                         )
                 ));
+    }
+
+    private DailyBudgetQueryServiceResponse buildDailyBudgetQueryResponse(Long memberId, LocalDate date) {
+        DailyBudget dailyBudget = dailyBudgetRepository.findByMemberIdAndBudgetDate(memberId, date)
+                .orElseThrow(() -> new BusinessException(ErrorType.DAILY_BUDGET_NOT_FOUND));
+
+        List<MealBudget> mealBudgets = mealBudgetRepository.findByDailyBudgetId(dailyBudget.getBudgetId());
+        List<MealBudgetInfo> mealBudgetInfos = mealBudgets.stream()
+                .map(mealBudget -> {
+                    int usedAmount = Objects.requireNonNullElse(mealBudget.getUsedAmount(), 0);
+                    return new MealBudgetInfo(
+                            mealBudget.getMealType(),
+                            mealBudget.getMealBudget(),
+                            usedAmount,
+                            mealBudget.getMealBudget() - usedAmount
+                    );
+                })
+                .toList();
+
+        int totalBudget = Objects.requireNonNullElse(dailyBudget.getDailyFoodBudget(), 0);
+        int totalSpent = Objects.requireNonNullElse(dailyBudget.getDailyUsedAmount(), 0);
+        int remaining = totalBudget - totalSpent;
+
+        return new DailyBudgetQueryServiceResponse(
+                date,
+                totalBudget,
+                totalSpent,
+                remaining,
+                mealBudgetInfos
+        );
     }
 }
