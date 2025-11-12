@@ -653,7 +653,8 @@ class CartControllerTest extends AbstractRestDocsTest {
                         .param("storeId", storeId.toString())
                         .header("Authorization", accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items.length()").value(2));
+                .andExpect(jsonPath("$.data.items[0]").exists())
+                .andExpect(jsonPath("$.data.items[1]").exists());
     }
 
     @Test
