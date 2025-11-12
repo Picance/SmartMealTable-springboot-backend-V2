@@ -40,7 +40,10 @@ public class ExpenditureJpaEntity {
     
     @Column(name = "amount", nullable = false)
     private Integer amount;
-    
+
+    @Column(name = "discount", nullable = false)
+    private Long discount = 0L;           // ◆ 할인액
+
     @Column(name = "expended_date", nullable = false)
     private LocalDate expendedDate;
     
@@ -90,6 +93,7 @@ public class ExpenditureJpaEntity {
         entity.storeId = domain.getStoreId();        // ◆ 추가
         entity.storeName = domain.getStoreName();
         entity.amount = domain.getAmount();
+        entity.discount = domain.getDiscount();      // ◆ 할인액 추가
         entity.expendedDate = domain.getExpendedDate();
         entity.expendedTime = domain.getExpendedTime();
         entity.categoryId = domain.getCategoryId();
@@ -122,6 +126,7 @@ public class ExpenditureJpaEntity {
                 this.storeId,           // ◆ 추가
                 this.storeName,
                 this.amount,
+                this.discount,          // ◆ 할인액 추가
                 this.expendedDate,
                 this.expendedTime,
                 this.categoryId,

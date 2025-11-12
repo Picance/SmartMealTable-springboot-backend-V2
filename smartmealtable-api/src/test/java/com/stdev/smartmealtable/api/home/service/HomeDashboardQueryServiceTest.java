@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -53,6 +53,9 @@ class HomeDashboardQueryServiceTest {
 
     @Mock
     private ExpenditureRepository expenditureRepository;
+
+    @Mock
+    private DashboardRecommendationService dashboardRecommendationService;
 
     @Test
     @DisplayName("홈 대시보드 조회 - 성공 (모든 데이터 존재)")
@@ -106,6 +109,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(totalSpent);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -175,6 +182,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(null);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -225,6 +236,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(8000L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -294,6 +309,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(25000L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -334,6 +353,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(0L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -387,6 +410,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(largeSpent);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);
@@ -394,7 +421,7 @@ class HomeDashboardQueryServiceTest {
         // then
         assertThat(response.budget().todayBudget()).isEqualTo(largeBudget);
         assertThat(response.budget().todaySpent()).isEqualTo((int) largeSpent);
-        
+
         var breakfastInfo = response.budget().mealBudgets().stream()
                 .filter(mb -> mb.mealType().equals("BREAKFAST"))
                 .findFirst().orElseThrow();
@@ -430,6 +457,10 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(15000L); // 예산 초과
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+                .willReturn(List.of());
 
         // when
         HomeDashboardServiceResponse response = homeDashboardQueryService.getHomeDashboard(memberId);

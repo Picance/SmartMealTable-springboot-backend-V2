@@ -139,6 +139,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 "한식",
                 MealType.LUNCH,
                 "점심 식사",
+                0L,  // discount
                 List.of(
                         ExpenditureItemServiceResponse.builder()
                                 .expenditureItemId(1L).foodId(1L)
@@ -269,6 +270,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 "카테고리이름",
                 MealType.OTHER,
                 null,
+                0L,  // discount
                 List.of(),
                 java.time.LocalDateTime.now()
         );
@@ -705,6 +707,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                     categoryId,
                     MealType.LUNCH,
                     null,
+                    0L,  // discount
                     List.of()  // 빈 리스트로 수정
             );
             expenditureRepository.save(expenditure);
@@ -865,6 +868,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                     categoryId,
                     MealType.LUNCH,
                     day % 2 == 0 ? "메모" + day : null,
+                    0L,  // discount
                     List.of()
             );
             expenditureRepository.save(expenditure);
@@ -987,6 +991,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         expenditureRepository.save(lunchExpenditure);
@@ -1000,6 +1005,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.DINNER,
                 null,
+                0L,  // discount
                 List.of()
         );
         expenditureRepository.save(dinnerExpenditure);
@@ -1163,6 +1169,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 "동료와 점심",
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -1258,6 +1265,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -1304,6 +1312,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 "원래메모",
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -1312,6 +1321,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
         var updateRequest = new com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest(
                 "수정된가게",
                 15000,
+                0L,  // discount
                 LocalDate.of(2025, 10, 12),
                 LocalTime.of(12, 30),
                 categoryId,
@@ -1337,6 +1347,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("가게 이름 (최대 200자)"),
                                 fieldWithPath("amount").type(JsonFieldType.NUMBER)
                                         .description("총 금액 (0 이상)"),
+                                fieldWithPath("discount").type(JsonFieldType.NUMBER)
+                                        .description("할인액 (0 이상)").optional(),
                                 fieldWithPath("expendedDate").type(JsonFieldType.STRING)
                                         .description("지출 날짜 (yyyy-MM-dd)"),
                                 fieldWithPath("expendedTime").type(JsonFieldType.STRING)
@@ -1370,6 +1382,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
         var updateRequest = new com.stdev.smartmealtable.api.expenditure.dto.request.UpdateExpenditureRequest(
                 "수정된가게",
                 15000,
+                0L,  // discount
                 LocalDate.of(2025, 10, 12),
                 LocalTime.of(12, 30),
                 categoryId,
@@ -1396,6 +1409,8 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                         .description("가게 이름"),
                                 fieldWithPath("amount").type(JsonFieldType.NUMBER)
                                         .description("총 금액"),
+                                fieldWithPath("discount").type(JsonFieldType.NUMBER)
+                                        .description("할인액").optional(),
                                 fieldWithPath("expendedDate").type(JsonFieldType.STRING)
                                         .description("지출 날짜"),
                                 fieldWithPath("expendedTime").type(JsonFieldType.STRING)
@@ -1438,6 +1453,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -1500,6 +1516,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -1548,6 +1565,7 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                 "한식",
                 MealType.LUNCH,
                 "동료와 점심",
+                0L,  // discount
                 List.of(
                         ExpenditureItemServiceResponse.builder()
                                 .expenditureItemId(1L)

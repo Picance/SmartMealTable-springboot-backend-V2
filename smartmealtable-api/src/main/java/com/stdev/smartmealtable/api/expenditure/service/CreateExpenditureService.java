@@ -51,23 +51,24 @@ public class CreateExpenditureService {
                     request.categoryId(),
                     request.mealType(),
                     request.memo(),
+                    request.discount(),  // 할인액 전달
                     cartItems
             );
             
             return CreateExpenditureServiceResponse.from(result.expenditure(), result.categoryName());
         } else {
             // 수기 입력 시나리오: storeId 없음
-            List<ExpenditureDomainService.ExpenditureItemRequest> itemRequests = request.items() != null
+            List<ExpenditureDomainService.ManualExpenditureItemRequest> itemRequests = request.items() != null
                     ? request.items().stream()
-                    .map(itemReq -> new ExpenditureDomainService.ExpenditureItemRequest(
-                            itemReq.foodId(),
+                    .map(itemReq -> new ExpenditureDomainService.ManualExpenditureItemRequest(
+                            itemReq.foodName(),
                             itemReq.quantity(),
                             itemReq.price()
                     ))
                     .collect(Collectors.toList())
                     : List.of();
 
-            ExpenditureDomainService.ExpenditureCreationResult result = expenditureDomainService.createExpenditure(
+            ExpenditureDomainService.ExpenditureCreationResult result = expenditureDomainService.createExpenditureFromManualInput(
                     request.memberId(),
                     request.storeName(),
                     request.amount(),
@@ -76,9 +77,10 @@ public class CreateExpenditureService {
                     request.categoryId(),
                     request.mealType(),
                     request.memo(),
+                    request.discount(),  // 할인액 전달
                     itemRequests
             );
-            
+
             return CreateExpenditureServiceResponse.from(result.expenditure(), result.categoryName());
         }
     }

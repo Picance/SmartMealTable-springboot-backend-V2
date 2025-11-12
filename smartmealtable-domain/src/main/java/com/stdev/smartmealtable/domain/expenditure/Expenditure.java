@@ -23,6 +23,7 @@ public class Expenditure {
     private Long storeId;           // ◆ 새로 추가 (논리 FK, nullable)
     private String storeName;
     private Integer amount;
+    private Long discount;          // ◆ 할인액 (기본값: 0)
     private LocalDate expendedDate;
     private LocalTime expendedTime;
     private Long categoryId;
@@ -44,6 +45,7 @@ public class Expenditure {
             Long categoryId,
             MealType mealType,
             String memo,
+            Long discount,
             List<ExpenditureItem> items
     ) {
         Expenditure expenditure = new Expenditure();
@@ -51,6 +53,7 @@ public class Expenditure {
         expenditure.storeId = null;  // 기존 메서드는 storeId = NULL (호환성)
         expenditure.storeName = storeName;
         expenditure.amount = amount;
+        expenditure.discount = discount != null ? discount : 0L;
         expenditure.expendedDate = expendedDate;
         expenditure.expendedTime = expendedTime;
         expenditure.categoryId = categoryId;
@@ -58,11 +61,11 @@ public class Expenditure {
         expenditure.memo = memo;
         expenditure.items = new ArrayList<>(items);
         expenditure.deleted = false;
-        
+
         // 비즈니스 규칙 검증
         expenditure.validateAmount();
         expenditure.validateItemsTotalAmount();
-        
+
         return expenditure;
     }
     
@@ -79,6 +82,7 @@ public class Expenditure {
             Long categoryId,
             MealType mealType,
             String memo,
+            Long discount,
             List<ExpenditureItem> items
     ) {
         Expenditure expenditure = new Expenditure();
@@ -86,6 +90,7 @@ public class Expenditure {
         expenditure.storeId = storeId;      // ◆ 장바구니에서 넘어온 storeId
         expenditure.storeName = storeName;
         expenditure.amount = amount;
+        expenditure.discount = discount != null ? discount : 0L;
         expenditure.expendedDate = expendedDate;
         expenditure.expendedTime = expendedTime;
         expenditure.categoryId = categoryId;
@@ -93,11 +98,11 @@ public class Expenditure {
         expenditure.memo = memo;
         expenditure.items = new ArrayList<>(items);
         expenditure.deleted = false;
-        
+
         // 비즈니스 규칙 검증
         expenditure.validateAmount();
         expenditure.validateItemsTotalAmount();
-        
+
         return expenditure;
     }
     
@@ -113,6 +118,7 @@ public class Expenditure {
             Long categoryId,
             MealType mealType,
             String memo,
+            Long discount,
             List<ExpenditureItem> items
     ) {
         Expenditure expenditure = new Expenditure();
@@ -120,6 +126,7 @@ public class Expenditure {
         expenditure.storeId = null;         // ◆ 수기 입력은 storeId = NULL
         expenditure.storeName = storeName;
         expenditure.amount = amount;
+        expenditure.discount = discount != null ? discount : 0L;
         expenditure.expendedDate = expendedDate;
         expenditure.expendedTime = expendedTime;
         expenditure.categoryId = categoryId;
@@ -127,11 +134,11 @@ public class Expenditure {
         expenditure.memo = memo;
         expenditure.items = new ArrayList<>(items);
         expenditure.deleted = false;
-        
+
         // 비즈니스 규칙 검증
         expenditure.validateAmount();
         expenditure.validateItemsTotalAmount();
-        
+
         return expenditure;
     }
     
@@ -144,6 +151,7 @@ public class Expenditure {
             Long storeId,           // ◆ 새로 추가
             String storeName,
             Integer amount,
+            Long discount,
             LocalDate expendedDate,
             LocalTime expendedTime,
             Long categoryId,
@@ -159,6 +167,7 @@ public class Expenditure {
         expenditure.storeId = storeId;      // ◆ 복원
         expenditure.storeName = storeName;
         expenditure.amount = amount;
+        expenditure.discount = discount != null ? discount : 0L;
         expenditure.expendedDate = expendedDate;
         expenditure.expendedTime = expendedTime;
         expenditure.categoryId = categoryId;
@@ -167,7 +176,7 @@ public class Expenditure {
         expenditure.items = new ArrayList<>(items);
         expenditure.createdAt = createdAt;
         expenditure.deleted = deleted;
-        
+
         return expenditure;
     }
     
@@ -177,6 +186,7 @@ public class Expenditure {
     public void update(
             String storeName,
             Integer amount,
+            Long discount,
             LocalDate expendedDate,
             LocalTime expendedTime,
             Long categoryId,
@@ -186,13 +196,14 @@ public class Expenditure {
     ) {
         this.storeName = storeName;
         this.amount = amount;
+        this.discount = discount != null ? discount : 0L;
         this.expendedDate = expendedDate;
         this.expendedTime = expendedTime;
         this.categoryId = categoryId;
         this.mealType = mealType;
         this.memo = memo;
         this.items = new ArrayList<>(items);
-        
+
         // 비즈니스 규칙 검증
         validateAmount();
         validateItemsTotalAmount();
@@ -229,20 +240,24 @@ public class Expenditure {
     }
     
     /**
-     * 비즈니스 규칙: 항목들의 총액이 지출 금액과 일치해야 함
+     * 비즈니스 규칙: 항목들의 총액 - 할인액 = 지출 금액
+     * items[0].price * items[0].quantity + ... - discount = amount
      */
     private void validateItemsTotalAmount() {
         if (items == null || items.isEmpty()) {
             return; // 항목이 없는 경우는 허용 (간단한 지출 기록)
         }
-        
+
         int itemsTotal = items.stream()
                 .mapToInt(item -> item.getPrice() * item.getQuantity())
                 .sum();
-        
-        if (itemsTotal != amount) {
+
+        long discountAmount = discount != null ? discount : 0L;
+        long expectedAmount = itemsTotal - discountAmount;
+
+        if (expectedAmount != amount) {
             throw new IllegalArgumentException(
-                    String.format("항목 총액(%d)이 지출 금액(%d)과 일치하지 않습니다.", itemsTotal, amount)
+                    String.format("항목 총액(%d) - 할인액(%d) = 지출 금액(%d)과 일치하지 않습니다.", itemsTotal, discountAmount, amount)
             );
         }
     }

@@ -58,6 +58,7 @@ public class UpdateExpenditureService {
         expenditure.update(
                 request.storeName(),
                 request.amount(),
+                request.discount() != null ? request.discount() : 0L,
                 request.expendedDate(),
                 request.expendedTime(),
                 request.categoryId(),

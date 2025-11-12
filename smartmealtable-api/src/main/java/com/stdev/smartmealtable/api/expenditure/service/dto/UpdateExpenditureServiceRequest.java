@@ -12,6 +12,7 @@ import java.util.List;
 public record UpdateExpenditureServiceRequest(
         String storeName,
         Integer amount,
+        Long discount,
         LocalDate expendedDate,
         LocalTime expendedTime,
         Long categoryId,

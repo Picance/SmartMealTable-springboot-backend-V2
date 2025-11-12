@@ -19,6 +19,7 @@ public record CreateExpenditureServiceRequest(
         Long categoryId,
         MealType mealType,
         String memo,
+        Long discount,                      // ◆ 할인액
         List<ExpenditureItemServiceRequest> items
 ) {
     /**

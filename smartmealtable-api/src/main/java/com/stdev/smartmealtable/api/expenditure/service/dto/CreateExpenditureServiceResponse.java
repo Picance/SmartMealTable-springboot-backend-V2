@@ -23,6 +23,7 @@ public record CreateExpenditureServiceResponse(
         String categoryName,
         MealType mealType,
         String memo,
+        Long discount,                      // ◆ 할인액
         List<ExpenditureItemServiceResponse> items,
         LocalDateTime createdAt
 ) {
@@ -48,6 +49,7 @@ public record CreateExpenditureServiceResponse(
                 categoryName,
                 expenditure.getMealType(),
                 expenditure.getMemo(),
+                expenditure.getDiscount(),              // ◆ 할인액
                 itemResponses,
                 expenditure.getCreatedAt()
         );

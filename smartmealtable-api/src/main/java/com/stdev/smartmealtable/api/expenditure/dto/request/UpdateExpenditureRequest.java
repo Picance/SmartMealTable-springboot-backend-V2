@@ -15,23 +15,26 @@ public record UpdateExpenditureRequest(
         @NotBlank(message = "가게 이름은 필수입니다.")
         @Size(max = 200, message = "가게 이름은 200자를 초과할 수 없습니다.")
         String storeName,
-        
+
         @NotNull(message = "금액은 필수입니다.")
         @Min(value = 0, message = "금액은 0 이상이어야 합니다.")
         Integer amount,
-        
+
+        @Min(value = 0, message = "할인액은 0 이상이어야 합니다.")
+        Long discount,
+
         @NotNull(message = "지출 날짜는 필수입니다.")
         LocalDate expendedDate,
-        
+
         LocalTime expendedTime,
-        
+
         Long categoryId,
-        
+
         MealType mealType,
-        
+
         @Size(max = 500, message = "메모는 500자를 초과할 수 없습니다.")
         String memo,
-        
+
         @Valid
         List<ExpenditureItemRequest> items
 ) {

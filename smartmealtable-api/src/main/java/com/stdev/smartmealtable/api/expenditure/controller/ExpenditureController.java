@@ -266,6 +266,7 @@ public class ExpenditureController {
                 request.categoryId(),
                 request.mealType(),
                 request.memo(),
+                0L,                             // ◆ 수기 입력은 discount = 0
                 items
         );
     }
@@ -299,6 +300,7 @@ public class ExpenditureController {
                 request.categoryId(),
                 request.mealType(),
                 request.memo(),
+                0L,                             // ◆ 컨트롤러 수동 생성은 discount = 0
                 items
         );
     }
@@ -321,6 +323,7 @@ public class ExpenditureController {
         return new UpdateExpenditureServiceRequest(
                 request.storeName(),
                 request.amount(),
+                request.discount() != null ? request.discount() : 0L,
                 request.expendedDate(),
                 request.expendedTime(),
                 request.categoryId(),

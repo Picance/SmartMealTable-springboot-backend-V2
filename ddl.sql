@@ -305,6 +305,7 @@ CREATE TABLE expenditure (
                              store_id          BIGINT        NULL     COMMENT '지출이 발생한 음식점의 식별자 (논리 FK, 장바구니 또는 수기 입력 지원)',
                              store_name        VARCHAR(200)  NOT NULL COMMENT '가게 이름',
                              amount            INT           NOT NULL COMMENT '지출 금액',
+                             discount          BIGINT        NOT NULL DEFAULT 0 COMMENT '할인액',
                              expended_date     DATE          NOT NULL COMMENT '지출이 발생한 날짜 (비즈니스 필드)',
                              expended_time     TIME          NULL     COMMENT '지출이 발생한 시간 (비즈니스 필드)',
                              category_id       BIGINT        NULL     COMMENT '음식 카테고리 식별자',

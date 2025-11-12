@@ -521,6 +521,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                 null,  // categoryName
                 com.stdev.smartmealtable.domain.expenditure.MealType.BREAKFAST,  // mealType
                 "맛있게 먹었습니다",  // memo
+                1000L,  // discount
                 java.util.List.of(),  // items
                 LocalDateTime.now()  // createdAt
         );
@@ -640,12 +641,13 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                 null,  // categoryName
                 com.stdev.smartmealtable.domain.expenditure.MealType.LUNCH,  // mealType
                 null,  // memo
+                0L,  // discount
                 java.util.List.of(),  // items
                 LocalDateTime.now()  // createdAt
         );
         Mockito.when(createExpenditureService.createExpenditure(Mockito.any()))
                 .thenReturn(mockResponse);
-        
+
         // given - DailyBudgetQueryService mock 설정
         DailyBudgetQueryServiceResponse dailyBudgetMock = new DailyBudgetQueryServiceResponse(
                 java.time.LocalDate.parse("2025-01-10"),  // date

@@ -89,6 +89,7 @@ public class ExpenditureDomainService {
                 categoryId,
                 mealType,
                 memo,
+                0L,  // 기본값: 할인 없음
                 expenditureItems
         );
 
@@ -114,6 +115,7 @@ public class ExpenditureDomainService {
             Long categoryId,
             MealType mealType,
             String memo,
+            Long discount,                  // ◆ 할인액
             List<CartExpenditureItemRequest> items
     ) {
         // 1. 카테고리 검증
@@ -150,6 +152,7 @@ public class ExpenditureDomainService {
                 categoryId,
                 mealType,
                 memo,
+                discount != null ? discount : 0L,       // ◆ 할인액 포함
                 expenditureItems
         );
 
@@ -174,6 +177,7 @@ public class ExpenditureDomainService {
             Long categoryId,
             MealType mealType,
             String memo,
+            Long discount,                  // ◆ 할인액
             List<ManualExpenditureItemRequest> items
     ) {
         // 1. 카테고리 검증
@@ -208,6 +212,7 @@ public class ExpenditureDomainService {
                 categoryId,
                 mealType,
                 memo,
+                discount != null ? discount : 0L,       // ◆ 할인액 포함
                 expenditureItems
         );
 

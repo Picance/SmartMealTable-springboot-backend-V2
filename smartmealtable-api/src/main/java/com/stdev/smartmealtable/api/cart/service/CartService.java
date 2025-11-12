@@ -438,7 +438,7 @@ public class CartService {
         );
         
         // 7. ExpenditureService를 통해 지출 내역 생성
-        CreateExpenditureServiceRequest expenditureRequest = 
+        CreateExpenditureServiceRequest expenditureRequest =
                 new CreateExpenditureServiceRequest(
                         memberId,
                         request.storeId(),
@@ -449,6 +449,7 @@ public class CartService {
                         null,  // categoryId는 cart checkout에서는 null
                         request.mealType(),
                         request.memo(),
+                        discount,           // 할인액 전달
                         expenditureItems
                 );
         

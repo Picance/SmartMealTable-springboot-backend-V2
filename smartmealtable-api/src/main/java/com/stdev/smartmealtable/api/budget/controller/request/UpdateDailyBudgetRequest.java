@@ -14,13 +14,13 @@ public class UpdateDailyBudgetRequest {
 
     @NotNull(message = "일일 예산은 필수입니다.")
     @Min(value = 100, message = "일일 예산은 최소 100원 이상이어야 합니다.")
-    private Integer dailyBudget;
+    private Integer dailyFoodBudget;
 
     @NotNull(message = "이후 날짜 적용 여부는 필수입니다.")
     private Boolean applyForward;
 
-    public UpdateDailyBudgetRequest(Integer dailyBudget, Boolean applyForward) {
-        this.dailyBudget = dailyBudget;
+    public UpdateDailyBudgetRequest(Integer dailyFoodBudget, Boolean applyForward) {
+        this.dailyFoodBudget = dailyFoodBudget;
         this.applyForward = applyForward;
     }
 }

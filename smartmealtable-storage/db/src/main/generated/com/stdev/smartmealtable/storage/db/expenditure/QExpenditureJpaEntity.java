@@ -28,6 +28,8 @@ public class QExpenditureJpaEntity extends EntityPathBase<ExpenditureJpaEntity> 
 
     public final BooleanPath deleted = createBoolean("deleted");
 
+    public final NumberPath<Long> discount = createNumber("discount", Long.class);
+
     public final DatePath<java.time.LocalDate> expendedDate = createDate("expendedDate", java.time.LocalDate.class);
 
     public final TimePath<java.time.LocalTime> expendedTime = createTime("expendedTime", java.time.LocalTime.class);

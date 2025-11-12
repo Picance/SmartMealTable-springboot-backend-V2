@@ -155,6 +155,7 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
                 categoryId,
                 MealType.LUNCH,
                 "회식",
+                0L,  // discount
                 List.of(item1, item2)
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -206,6 +207,7 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);
@@ -233,6 +235,7 @@ class GetExpenditureDetailControllerTest extends AbstractContainerTest {
                 categoryId,
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 List.of()
         );
         Expenditure savedExpenditure = expenditureRepository.save(expenditure);

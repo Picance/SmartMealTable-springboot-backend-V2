@@ -77,6 +77,7 @@ class ExpenditureDomainServiceTest {
                         null,
                         storeName,
                         amount,
+                        0L,  // discount
                         expendedDate,
                         expendedTime,
                         categoryId,
@@ -184,6 +185,7 @@ class ExpenditureDomainServiceTest {
                         null,
                         storeName,
                         amount,
+                        0L,  // discount
                         expendedDate,
                         expendedTime,
                         categoryId,

@@ -87,6 +87,7 @@ class GetExpenditureListControllerTest extends AbstractContainerTest {
                 testCategory.getCategoryId(),
                 MealType.LUNCH,
                 "동료와 점심",
+                0L,  // discount
                 new ArrayList<>()
         );
         expenditureRepository.save(expenditure1);
@@ -100,6 +101,7 @@ class GetExpenditureListControllerTest extends AbstractContainerTest {
                 testCategory.getCategoryId(),
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 new ArrayList<>()
         );
         expenditureRepository.save(expenditure2);
@@ -136,6 +138,7 @@ class GetExpenditureListControllerTest extends AbstractContainerTest {
                 testCategory.getCategoryId(),
                 MealType.LUNCH,
                 null,
+                0L,  // discount
                 new ArrayList<>()
         );
         expenditureRepository.save(lunchExpenditure);
@@ -149,6 +152,7 @@ class GetExpenditureListControllerTest extends AbstractContainerTest {
                 testCategory.getCategoryId(),
                 MealType.DINNER,
                 null,
+                0L,  // discount
                 new ArrayList<>()
         );
         expenditureRepository.save(dinnerExpenditure);

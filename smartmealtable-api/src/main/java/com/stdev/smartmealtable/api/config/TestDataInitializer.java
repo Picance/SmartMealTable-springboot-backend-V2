@@ -653,6 +653,7 @@ public class TestDataInitializer {
                         category.getCategoryId(),
                         mealType,
                         "테스트 지출 내역",
+                        0L,  // discount: 할인 없음
                         new ArrayList<>()
                     );
                     
