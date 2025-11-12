@@ -36,4 +36,24 @@ public interface DailyBudgetJpaRepository extends JpaRepository<DailyBudgetJpaEn
             @Param("memberId") Long memberId,
             @Param("fromDate") LocalDate fromDate
     );
+
+    /**
+     * 회원 ID와 날짜 범위로 일일 예산 조회 (포함)
+     */
+    @Query("SELECT d FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId AND d.budgetDate BETWEEN :fromDate AND :toDate")
+    List<DailyBudgetJpaEntity> findByMemberIdAndBudgetDateBetween(
+            @Param("memberId") Long memberId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    /**
+     * 회원 ID와 날짜 범위로 일일 예산 개수 조회 (포함)
+     */
+    @Query("SELECT COUNT(d) FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId AND d.budgetDate BETWEEN :fromDate AND :toDate")
+    long countByMemberIdAndBudgetDateBetween(
+            @Param("memberId") Long memberId,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
 }

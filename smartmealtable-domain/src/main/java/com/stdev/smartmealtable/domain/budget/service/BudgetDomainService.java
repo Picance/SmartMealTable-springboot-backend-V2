@@ -29,14 +29,14 @@ public class BudgetDomainService {
     /**
      * 온보딩 시 초기 예산 설정
      * - 현재 월의 월별 예산 생성
-     * - 오늘 날짜의 일일 예산 생성
-     * - 오늘 날짜의 식사별 예산 생성 (아침, 점심, 저녁)
+     * - 오늘부터 월말까지 모든 날짜에 대한 일일 예산 생성
+     * - 오늘부터 월말까지 모든 날짜에 대한 식사별 예산 생성 (아침, 점심, 저녁)
      *
      * @param memberId      회원 ID
      * @param monthlyAmount 월별 예산 금액
      * @param dailyAmount   일일 예산 금액
      * @param mealBudgets   식사별 예산 (MealType → 금액)
-     * @return 생성된 월별, 일일, 식사별 예산 객체들
+     * @return 생성된 월별, 일일, 식사별 예산 객체들 (첫 번째 날짜의 일일/식사별 예산 반환)
      */
     public BudgetSetupResult setupInitialBudget(
             Long memberId,
@@ -48,6 +48,7 @@ public class BudgetDomainService {
         YearMonth currentMonth = YearMonth.now();
         String budgetMonth = currentMonth.toString(); // "YYYY-MM"
         LocalDate today = LocalDate.now();
+        LocalDate endOfMonth = currentMonth.atEndOfMonth();
 
         // 2. 월별 예산 생성
         MonthlyBudget monthlyBudget = MonthlyBudget.create(
@@ -57,31 +58,48 @@ public class BudgetDomainService {
         );
         monthlyBudget = monthlyBudgetRepository.save(monthlyBudget);
 
-        // 3. 일일 예산 생성
-        DailyBudget dailyBudget = DailyBudget.create(
-                memberId,
-                dailyAmount,
-                today
-        );
-        DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
+        // 3. 오늘부터 월말까지 모든 날짜에 대한 일일 예산 및 식사별 예산 생성
+        DailyBudget firstDailyBudget = null;
+        List<MealBudget> allMealBudgets = new java.util.ArrayList<>();
 
-        // 4. 식사별 예산 생성
-        List<MealBudget> createdMealBudgets = mealBudgets.entrySet().stream()
-                .map(entry -> {
-                    MealBudget mealBudget = MealBudget.create(
-                            savedDailyBudget.getBudgetId(),
-                            entry.getValue(),
-                            entry.getKey(),
-                            today
-                    );
-                    return mealBudgetRepository.save(mealBudget);
-                })
-                .toList();
+        for (LocalDate date = today; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
+            // 로컬 변수로 래핑하여 람다식 내에서 사용 가능하도록 함
+            final LocalDate currentDate = date;
+            
+            // 3-1. 일일 예산 생성
+            DailyBudget dailyBudget = DailyBudget.create(
+                    memberId,
+                    dailyAmount,
+                    currentDate
+            );
+            DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
 
-        log.info("초기 예산 설정 완료 - memberId: {}, monthly: {}, daily: {}, meals: {}",
-                memberId, monthlyAmount, dailyAmount, mealBudgets.size());
+            // 첫 번째 날짜의 일일 예산을 결과에 포함
+            if (firstDailyBudget == null) {
+                firstDailyBudget = savedDailyBudget;
+            }
 
-        return new BudgetSetupResult(monthlyBudget, savedDailyBudget, createdMealBudgets);
+            // 3-2. 식사별 예산 생성
+            List<MealBudget> createdMealBudgetsForDate = mealBudgets.entrySet().stream()
+                    .map(entry -> {
+                        MealBudget mealBudget = MealBudget.create(
+                                savedDailyBudget.getBudgetId(),
+                                entry.getValue(),
+                                entry.getKey(),
+                                currentDate
+                        );
+                        return mealBudgetRepository.save(mealBudget);
+                    })
+                    .toList();
+
+            allMealBudgets.addAll(createdMealBudgetsForDate);
+        }
+
+        long dayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
+        log.info("초기 예산 설정 완료 - memberId: {}, monthly: {}, daily: {}, meals: {}, days: {} (오늘 ~ 월말)",
+                memberId, monthlyAmount, dailyAmount, mealBudgets.size(), dayCount);
+
+        return new BudgetSetupResult(monthlyBudget, firstDailyBudget, allMealBudgets);
     }
 
     /**

@@ -54,7 +54,7 @@ class BudgetDomainServiceTest {
         class Context_with_valid_budget_info {
 
             @Test
-            @DisplayName("월별, 일별, 식사별 예산을 생성하고 저장한다")
+            @DisplayName("월별 예산과 오늘부터 월말까지의 일별, 식사별 예산을 생성하고 저장한다")
             void it_creates_and_saves_all_budgets() {
                 // Given
                 Long memberId = 1L;
@@ -69,6 +69,10 @@ class BudgetDomainServiceTest {
                 YearMonth currentMonth = YearMonth.now();
                 String budgetMonth = currentMonth.toString();
                 LocalDate today = LocalDate.now();
+                LocalDate endOfMonth = currentMonth.atEndOfMonth();
+
+                // 오늘부터 월말까지의 일 수 계산
+                long dayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
 
                 MonthlyBudget monthlyBudget = MonthlyBudget.create(memberId, monthlyAmount, budgetMonth);
                 DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, today);
@@ -90,11 +94,11 @@ class BudgetDomainServiceTest {
                 assertThat(result).isNotNull();
                 assertThat(result.monthlyBudget()).isNotNull();
                 assertThat(result.dailyBudget()).isNotNull();
-                assertThat(result.mealBudgets()).hasSize(3);
+                assertThat(result.mealBudgets()).hasSize((int) (dayCount * 3)); // 각 날짜마다 3개의 식사별 예산
 
                 then(monthlyBudgetRepository).should(times(1)).save(any(MonthlyBudget.class));
-                then(dailyBudgetRepository).should(times(1)).save(any(DailyBudget.class));
-                then(mealBudgetRepository).should(times(3)).save(any(MealBudget.class));
+                then(dailyBudgetRepository).should(times((int) dayCount)).save(any(DailyBudget.class));
+                then(mealBudgetRepository).should(times((int) (dayCount * 3))).save(any(MealBudget.class));
             }
         }
 
@@ -103,7 +107,7 @@ class BudgetDomainServiceTest {
         class Context_with_empty_meal_budgets {
 
             @Test
-            @DisplayName("월별, 일별 예산만 생성하고 식사별 예산은 생성하지 않는다")
+            @DisplayName("월별 예산과 오늘부터 월말까지의 일별 예산만 생성하고 식사별 예산은 생성하지 않는다")
             void it_creates_only_monthly_and_daily_budgets() {
                 // Given
                 Long memberId = 1L;
@@ -114,6 +118,10 @@ class BudgetDomainServiceTest {
                 YearMonth currentMonth = YearMonth.now();
                 String budgetMonth = currentMonth.toString();
                 LocalDate today = LocalDate.now();
+                LocalDate endOfMonth = currentMonth.atEndOfMonth();
+
+                // 오늘부터 월말까지의 일 수 계산
+                long dayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
 
                 MonthlyBudget monthlyBudget = MonthlyBudget.create(memberId, monthlyAmount, budgetMonth);
                 DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, today);
@@ -133,7 +141,7 @@ class BudgetDomainServiceTest {
                 assertThat(result.mealBudgets()).isEmpty();
 
                 then(monthlyBudgetRepository).should(times(1)).save(any(MonthlyBudget.class));
-                then(dailyBudgetRepository).should(times(1)).save(any(DailyBudget.class));
+                then(dailyBudgetRepository).should(times((int) dayCount)).save(any(DailyBudget.class));
                 then(mealBudgetRepository).should(times(0)).save(any(MealBudget.class));
             }
         }

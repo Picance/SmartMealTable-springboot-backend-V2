@@ -13,6 +13,8 @@ import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
+import com.stdev.smartmealtable.storage.db.budget.DailyBudgetJpaRepository;
+import com.stdev.smartmealtable.storage.db.budget.MealBudgetJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,9 +25,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,6 +61,12 @@ class SetBudgetControllerTest extends AbstractContainerTest {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private DailyBudgetJpaRepository dailyBudgetJpaRepository;
+
+    @Autowired
+    private MealBudgetJpaRepository mealBudgetJpaRepository;
 
     private Long authenticatedMemberId;
 
@@ -203,7 +214,7 @@ class SetBudgetControllerTest extends AbstractContainerTest {
         Map<String, Object> request = new HashMap<>();
         request.put("monthlyBudget", 300000);
         request.put("dailyBudget", 10000);
-        
+
         Map<String, Integer> mealBudgets = new HashMap<>();
         mealBudgets.put("BREAKFAST", 3000);
         request.put("mealBudgets", mealBudgets);
@@ -214,6 +225,49 @@ class SetBudgetControllerTest extends AbstractContainerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("예산 설정 성공 - 오늘부터 월말까지의 모든 날짜에 대해 일일 예산과 식사별 예산이 생성된다")
+    void setBudget_success_creates_budgets_until_end_of_month() throws Exception {
+        // given
+        Map<String, Object> request = new HashMap<>();
+        request.put("monthlyBudget", 300000);
+        request.put("dailyBudget", 10000);
+
+        Map<String, Integer> mealBudgets = new HashMap<>();
+        mealBudgets.put("BREAKFAST", 3000);
+        mealBudgets.put("LUNCH", 4000);
+        mealBudgets.put("DINNER", 3000);
+        request.put("mealBudgets", mealBudgets);
+
+        LocalDate today = LocalDate.now();
+        LocalDate endOfMonth = YearMonth.now().atEndOfMonth();
+        long expectedDayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
+        long expectedMealBudgetCount = expectedDayCount * 3; // 각 날짜마다 3개의 식사별 예산
+
+        // when
+        mockMvc.perform(post("/api/v1/onboarding/budget")
+                        .header("Authorization", createAuthorizationHeader(authenticatedMemberId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"));
+
+        // then - 데이터베이스에서 생성된 예산 검증
+        long actualDailyBudgetCount = dailyBudgetJpaRepository.countByMemberIdAndBudgetDateBetween(
+                authenticatedMemberId, today, endOfMonth);
+        long actualMealBudgetCount = mealBudgetJpaRepository.countByBudgetDateBetween(
+                today, endOfMonth);
+
+        assertThat(actualDailyBudgetCount)
+                .as("오늘부터 월말까지의 일일 예산 개수")
+                .isEqualTo(expectedDayCount);
+
+        assertThat(actualMealBudgetCount)
+                .as("오늘부터 월말까지의 식사별 예산 개수 (3개씩)")
+                .isEqualTo(expectedMealBudgetCount);
     }
 
     // === Helper Methods ===

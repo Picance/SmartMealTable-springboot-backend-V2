@@ -36,4 +36,24 @@ public interface MealBudgetJpaRepository extends JpaRepository<MealBudgetJpaEnti
     @Query("SELECT m FROM MealBudgetJpaEntity m " +
             "WHERE m.dailyBudgetId IN (SELECT d.budgetId FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId AND d.budgetDate = :budgetDate)")
     List<MealBudgetJpaEntity> findByMemberIdAndBudgetDate(@Param("memberId") Long memberId, @Param("budgetDate") LocalDate budgetDate);
+
+    /**
+     * 날짜 범위로 식사 예산 목록 조회 (포함)
+     */
+    @Query("SELECT m FROM MealBudgetJpaEntity m " +
+            "WHERE m.budgetDate BETWEEN :fromDate AND :toDate")
+    List<MealBudgetJpaEntity> findByBudgetDateBetween(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
+
+    /**
+     * 날짜 범위로 식사 예산 개수 조회 (포함)
+     */
+    @Query("SELECT COUNT(m) FROM MealBudgetJpaEntity m " +
+            "WHERE m.budgetDate BETWEEN :fromDate AND :toDate")
+    long countByBudgetDateBetween(
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate
+    );
 }
