@@ -156,7 +156,8 @@ class CartControllerTest extends AbstractRestDocsTest {
                         requestFields(
                                 fieldWithPath("storeId").description("가게 ID"),
                                 fieldWithPath("foodId").description("음식 ID"),
-                                fieldWithPath("quantity").description("수량")
+                                fieldWithPath("quantity").description("수량"),
+                                fieldWithPath("replaceCart").description("기존 장바구니 내용 교체 여부 (다른 가게의 상품이 있을 때 장바구니 초기화할지 여부)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").description("응답 결과 (SUCCESS/FAIL)"),
@@ -164,6 +165,7 @@ class CartControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.cartItemId").description("장바구니 아이템 ID"),
                                 fieldWithPath("data.foodId").description("음식 ID"),
                                 fieldWithPath("data.quantity").description("수량"),
+                                fieldWithPath("data.replacedCart").description("기존 장바구니가 교체되었는지 여부"),
                                 subsectionWithPath("error").description("에러 정보 (성공 시 null)").optional().type("Null")
                         )
                 ));

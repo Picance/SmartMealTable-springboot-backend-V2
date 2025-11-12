@@ -188,7 +188,8 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                         requestFields(
                                 fieldWithPath("storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
                                 fieldWithPath("foodId").type(JsonFieldType.NUMBER).description("음식 ID"),
-                                fieldWithPath("quantity").type(JsonFieldType.NUMBER).description("수량")
+                                fieldWithPath("quantity").type(JsonFieldType.NUMBER).description("수량"),
+                                fieldWithPath("replaceCart").type(JsonFieldType.BOOLEAN).description("기존 장바구니 내용 교체 여부 (다른 가게의 상품이 있을 때 장바구니 초기화할지 여부)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (SUCCESS/ERROR)"),
@@ -197,6 +198,7 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.cartItemId").type(JsonFieldType.NUMBER).description("장바구니 아이템 ID"),
                                 fieldWithPath("data.foodId").type(JsonFieldType.NUMBER).description("음식 ID"),
                                 fieldWithPath("data.quantity").type(JsonFieldType.NUMBER).description("수량"),
+                                fieldWithPath("data.replacedCart").type(JsonFieldType.BOOLEAN).description("기존 장바구니가 교체되었는지 여부"),
                                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
                         )
                 ));
@@ -227,7 +229,8 @@ class CartControllerRestDocsTest extends AbstractRestDocsTest {
                         requestFields(
                                 fieldWithPath("storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
                                 fieldWithPath("foodId").type(JsonFieldType.NUMBER).description("음식 ID"),
-                                fieldWithPath("quantity").type(JsonFieldType.NUMBER).description("수량")
+                                fieldWithPath("quantity").type(JsonFieldType.NUMBER).description("수량"),
+                                fieldWithPath("replaceCart").type(JsonFieldType.BOOLEAN).description("기존 장바구니 내용 교체 여부 (다른 가게의 상품이 있을 때 장바구니 초기화할지 여부)").optional()
                         ),
                         responseFields(
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("결과 코드 (ERROR)"),

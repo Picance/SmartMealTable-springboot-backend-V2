@@ -79,16 +79,30 @@ public class CartService {
         Food food = foodRepository.findById(foodId)
                 .orElseThrow(() -> new BusinessException(ErrorType.FOOD_NOT_FOUND));
 
-        // 4. 아이템 추가 (도메인 로직에서 중복 처리)
-        // 같은 storeId인 cart에 대해 replaceCart는 무의미
+        // 4. 다른 가게의 장바구니가 있는지 확인
         boolean cartWasReplaced = false;
+        List<Cart> memberCarts = cartRepository.findByMemberId(memberId);
+        boolean hasCartFromDifferentStore = memberCarts.stream()
+                .anyMatch(cart -> !cart.getStoreId().equals(storeId) && !cart.isEmpty());
+
+        if (hasCartFromDifferentStore) {
+            if (!replaceCart) {
+                // replaceCart=false인 경우 409 Conflict 에러 발생
+                throw new BusinessException(ErrorType.CART_CONFLICT);
+            }
+            // replaceCart=true인 경우 다른 가게의 장바구니 삭제
+            cartDomainService.clearOtherCarts(memberId, storeId);
+            cartWasReplaced = true;
+        }
+
+        // 5. 아이템 추가 (도메인 로직에서 중복 처리)
         Cart cart = cartDomainService.getOrCreateCart(memberId, storeId);
         cart.addItem(foodId, quantity);
 
-        // 5. 저장
+        // 6. 저장
         Cart savedCart = cartRepository.save(cart);
 
-        // 6. 추가된 아이템 찾기
+        // 7. 추가된 아이템 찾기
         CartItem addedItem = savedCart.getItems().stream()
                 .filter(item -> item.getFoodId().equals(foodId))
                 .findFirst()
