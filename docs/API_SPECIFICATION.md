@@ -1850,26 +1850,28 @@ Authorization: Bearer {access_token}
 
 ### 6.8 일별 지출 통계 조회
 
-**Endpoint:** `GET /api/v1/expenditures/statistics?startDate=2025-11-01&endDate=2025-11-13`
+**Endpoint:** `GET /api/v1/expenditures/statistics?startDate=2025-11-01&endDate=2025-11-02`
 
 **Response (200):**
 ```json
 {
   "result": "SUCCESS",
   "data": {
-    "year": 2025,
-    "month": 11,
+    "startDate": "2025-11-01",
+    "endDate": "2025-11-02",
     "dailyStatistics": [
       {
         "date": "2025-11-01",
-        "totalAmount": 12500,
+        "totalSpentAmount": 12500,
         "budget": 10000,
+        "balance": -2500,
         "overBudget": true
       },
       {
         "date": "2025-11-02",
-        "totalAmount": 8500,
+        "totalSpentAmount": 8500,
         "budget": 10000,
+        "balance": 1500,
         "overBudget": false
       }
     ]

@@ -148,10 +148,10 @@ public class ExpenditureController {
                 startDate,
                 endDate
         );
-        
+
         // Response 변환
-        GetExpenditureStatisticsResponse response = GetExpenditureStatisticsResponse.from(serviceResponse);
-        
+        GetExpenditureStatisticsResponse response = GetExpenditureStatisticsResponse.from(startDate, endDate, serviceResponse);
+
         return ApiResponse.success(response);
     }
     

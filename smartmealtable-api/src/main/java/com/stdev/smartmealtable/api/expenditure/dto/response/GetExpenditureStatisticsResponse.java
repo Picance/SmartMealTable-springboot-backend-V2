@@ -9,50 +9,41 @@ import java.util.stream.Collectors;
 
 /**
  * 지출 통계 조회 응답 Response DTO
+ * 캘린더 뷰용 일별 지출 및 예산 비교 정보
  */
 public record GetExpenditureStatisticsResponse(
-        Long totalAmount,
-        List<CategoryStatistics> categoryStatistics,
-        List<DailyStatistics> dailyStatistics,
-        List<MealTypeStatistics> mealTypeStatistics
+        LocalDate startDate,
+        LocalDate endDate,
+        List<DailyStatistics> dailyStatistics
 ) {
-    public record CategoryStatistics(
-            Long categoryId,
-            String categoryName,
-            Long amount
-    ) {
-    }
-    
     public record DailyStatistics(
             LocalDate date,
-            Long amount
+            Long totalSpentAmount,
+            Long budget,
+            Long balance,
+            Boolean overBudget
     ) {
     }
-    
-    public record MealTypeStatistics(
-            MealType mealType,
-            Long amount
+
+    public static GetExpenditureStatisticsResponse from(
+            LocalDate startDate,
+            LocalDate endDate,
+            ExpenditureStatisticsServiceResponse serviceResponse
     ) {
-    }
-    
-    public static GetExpenditureStatisticsResponse from(ExpenditureStatisticsServiceResponse serviceResponse) {
-        List<CategoryStatistics> categoryStatsList = serviceResponse.categoryStatistics().values().stream()
-                .map(stat -> new CategoryStatistics(stat.categoryId(), stat.categoryName(), stat.amount()))
+        List<DailyStatistics> dailyStatsList = serviceResponse.dailyStatistics().stream()
+                .map(stat -> new DailyStatistics(
+                        stat.date(),
+                        stat.totalSpentAmount(),
+                        stat.budget(),
+                        stat.balance(),
+                        stat.overBudget()
+                ))
                 .collect(Collectors.toList());
-        
-        List<DailyStatistics> dailyStatsList = serviceResponse.dailyStatistics().entrySet().stream()
-                .map(entry -> new DailyStatistics(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-        
-        List<MealTypeStatistics> mealTypeStatsList = serviceResponse.mealTypeStatistics().entrySet().stream()
-                .map(entry -> new MealTypeStatistics(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-        
+
         return new GetExpenditureStatisticsResponse(
-                serviceResponse.totalAmount(),
-                categoryStatsList,
-                dailyStatsList,
-                mealTypeStatsList
+                startDate,
+                endDate,
+                dailyStatsList
         );
     }
 }
