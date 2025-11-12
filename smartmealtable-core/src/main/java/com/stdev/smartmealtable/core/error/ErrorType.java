@@ -257,7 +257,14 @@ public enum ErrorType {
             "이미 즐겨찾기에 추가된 가게입니다.",
             LogLevel.WARN
     ),
-    
+
+    CART_CONFLICT(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "장바구니에 다른 가게의 상품이 있습니다. replaceCart=true로 설정하면 기존 장바구니를 비우고 추가할 수 있습니다.",
+            LogLevel.WARN
+    ),
+
     FORBIDDEN_ACCESS(
             HttpStatus.FORBIDDEN,
             ErrorCode.E403,

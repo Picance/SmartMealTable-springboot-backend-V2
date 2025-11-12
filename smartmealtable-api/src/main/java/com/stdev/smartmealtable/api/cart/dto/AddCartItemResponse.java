@@ -33,4 +33,10 @@ public class AddCartItemResponse {
      * 수량
      */
     private int quantity;
+
+    /**
+     * 기존 장바구니가 교체되었는지 여부
+     */
+    @Builder.Default
+    private Boolean replacedCart = false;
 }

@@ -51,50 +51,67 @@ public class CartService {
     
     /**
      * 장바구니에 아이템 추가
-     * 
+     * 다른 가게의 상품이 이미 담겨있을 때:
+     * - replaceCart=true: 기존 장바구니를 비우고 새 아이템 추가
+     * - replaceCart=false: 409 Conflict 에러 발생
+     *
      * @param memberId 회원 ID
      * @param request 장바구니 아이템 추가 요청
-     * @return 추가된 아이템 정보
+     * @return 추가된 아이템 정보 및 장바구니 교체 여부
      */
     @Transactional
     public AddCartItemResponse addCartItem(Long memberId, AddCartItemRequest request) {
         Long storeId = request.getStoreId();
         Long foodId = request.getFoodId();
         int quantity = request.getQuantity();
-        
+        boolean replaceCart = request.getReplaceCart() != null && request.getReplaceCart();
+
         // 1. 입력 유효성 검증
         if (quantity <= 0) {
             throw new BusinessException(ErrorType.INVALID_INPUT_VALUE);
         }
-        
+
         // 2. 가게 존재 여부 확인
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException(ErrorType.STORE_NOT_FOUND));
-        
+
         // 3. 음식 존재 여부 확인
         Food food = foodRepository.findById(foodId)
                 .orElseThrow(() -> new BusinessException(ErrorType.FOOD_NOT_FOUND));
-        
+
         // 4. 장바구니 조회 또는 생성
         Cart cart = cartDomainService.getOrCreateCart(memberId, storeId);
-        
-        // 5. 아이템 추가 (도메인 로직에서 중복 처리)
+
+        // 5. 다른 가게 상품 존재 여부 확인 및 처리
+        boolean cartWasReplaced = false;
+        if (cart.hasItemsFromDifferentStore(storeId)) {
+            if (!replaceCart) {
+                // replaceCart가 false일 때 다른 가게 상품이 있으면 에러
+                throw new BusinessException(ErrorType.CART_CONFLICT);
+            }
+            // replaceCart가 true일 때 기존 장바구니 비우기
+            cart.clear();
+            cartWasReplaced = true;
+        }
+
+        // 6. 아이템 추가 (도메인 로직에서 중복 처리)
         cart.addItem(foodId, quantity);
-        
-        // 6. 저장
+
+        // 7. 저장
         Cart savedCart = cartRepository.save(cart);
-        
-        // 7. 추가된 아이템 찾기
+
+        // 8. 추가된 아이템 찾기
         CartItem addedItem = savedCart.getItems().stream()
                 .filter(item -> item.getFoodId().equals(foodId))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorType.INTERNAL_SERVER_ERROR));
-        
+
         return AddCartItemResponse.builder()
                 .cartId(savedCart.getCartId())
                 .cartItemId(addedItem.getCartItemId())
                 .foodId(addedItem.getFoodId())
                 .quantity(addedItem.getQuantity())
+                .replacedCart(cartWasReplaced)
                 .build();
     }
     

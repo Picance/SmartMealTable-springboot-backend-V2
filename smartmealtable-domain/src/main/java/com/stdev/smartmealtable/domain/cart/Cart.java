@@ -120,10 +120,20 @@ public class Cart {
     public void clear() {
         items.clear();
     }
-    
+
+    /**
+     * 다른 가게의 상품이 담겨있는지 확인
+     *
+     * @param targetStoreId 확인할 가게 ID
+     * @return 다른 가게 상품이 있으면 true
+     */
+    public boolean hasItemsFromDifferentStore(Long targetStoreId) {
+        return !this.storeId.equals(targetStoreId) && !isEmpty();
+    }
+
     /**
      * 장바구니가 비어있는지 확인
-     * 
+     *
      * @return 비어있으면 true
      */
     public boolean isEmpty() {
