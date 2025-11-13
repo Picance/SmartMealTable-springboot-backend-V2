@@ -1632,6 +1632,102 @@ Authorization: Bearer {access_token}
 
 ---
 
+### 5.5 월별 예산 등록
+
+**Endpoint:** `POST /api/v1/budgets/monthly`
+
+**Description:**
+- 지정한 월(`budgetMonth`)의 월별 식비 예산을 최초로 등록합니다.
+- 동일 월 예산이 이미 존재하면 409(CONFLICT)을 반환합니다.
+
+**Request:**
+```json
+{
+  "monthlyFoodBudget": 300000,
+  "budgetMonth": "2025-10"
+}
+```
+
+**Validation Rules:**
+- `monthlyFoodBudget`: 정수, 최소 1,000원 이상, 필수
+- `budgetMonth`: 문자열, `YYYY-MM` 형식, 필수
+
+**Response (201):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "monthlyBudgetId": 57,
+    "monthlyFoodBudget": 300000,
+    "budgetMonth": "2025-10",
+    "message": "예산이 성공적으로 등록되었습니다."
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `409 E409` : 이미 해당 월 예산이 존재
+- `422 E422` : 필수 필드 누락/형식 오류
+
+---
+
+### 5.6 일일 예산 일괄 등록
+
+**Endpoint:** `POST /api/v1/budgets/daily/bulk`
+
+**Description:**
+- `startDate`부터 `endDate`까지(포함) 동일한 일일 예산과 끼니별 예산을 한 번에 등록합니다.
+- 대상 기간 중 하나라도 이미 일일 예산이 존재하면 409(CONFLICT)으로 실패합니다.
+
+**Request:**
+```json
+{
+  "startDate": "2025-10-01",
+  "endDate": "2025-10-07",
+  "dailyFoodBudget": 12000,
+  "mealBudgets": {
+    "BREAKFAST": 3000,
+    "LUNCH": 5000,
+    "DINNER": 3000,
+    "OTHER": 1000
+  }
+}
+```
+
+**Validation Rules:**
+- `startDate`, `endDate`: YYYY-MM-DD, 필수 (`startDate` ≤ `endDate`)
+- `dailyFoodBudget`: 정수, 최소 100원 이상, 필수
+- `mealBudgets`: 객체, 최소 1개 이상의 끼니 타입 필수, 값은 0 이상
+
+**Response (201):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "startDate": "2025-10-01",
+    "endDate": "2025-10-07",
+    "dailyBudgetCount": 7,
+    "dailyFoodBudget": 12000,
+    "mealBudgets": [
+      { "mealType": "BREAKFAST", "budget": 3000 },
+      { "mealType": "LUNCH", "budget": 5000 },
+      { "mealType": "DINNER", "budget": 3000 },
+      { "mealType": "OTHER", "budget": 1000 }
+    ],
+    "message": "2025-10-01부터 2025-10-07까지 일일 예산 7건이 생성되었습니다."
+  },
+  "error": null
+}
+```
+
+**Error Cases:**
+- `400 E400` : 시작일이 종료일보다 늦은 경우
+- `409 E409` : 생성 범위 내 기존 일일 예산 존재
+- `422 E422` : 필수 필드 누락/범위 오류
+
+---
+
 ## 6. 지출 내역 API
 
 ### 6.1 SMS 파싱

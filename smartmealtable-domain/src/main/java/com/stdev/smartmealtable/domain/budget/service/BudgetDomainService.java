@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -149,11 +150,72 @@ public class BudgetDomainService {
     }
 
     /**
+     * 특정 기간의 일일 예산 및 식사별 예산 생성
+     */
+    public DailyBudgetBatchResult createDailyBudgetsInRange(
+            Long memberId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer dailyAmount,
+            Map<MealType, Integer> mealBudgets
+    ) {
+        if (startDate.isAfter(endDate)) {
+            throw new BusinessException(ErrorType.INVALID_DATE_RANGE);
+        }
+
+        // 기간 내 중복 예산 존재 여부 확인
+        List<DailyBudget> existingBudgets = dailyBudgetRepository.findByMemberIdAndBudgetDateGreaterThanEqual(memberId, startDate)
+                .stream()
+                .filter(budget -> !budget.getBudgetDate().isAfter(endDate))
+                .toList();
+
+        if (!existingBudgets.isEmpty()) {
+            throw new BusinessException(ErrorType.DAILY_BUDGET_ALREADY_EXISTS);
+        }
+
+        List<DailyBudget> createdDailyBudgets = new ArrayList<>();
+        List<MealBudget> createdMealBudgets = new ArrayList<>();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, date);
+            DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
+            createdDailyBudgets.add(savedDailyBudget);
+
+            if (mealBudgets != null && !mealBudgets.isEmpty()) {
+                for (Map.Entry<MealType, Integer> entry : mealBudgets.entrySet()) {
+                    MealBudget mealBudget = MealBudget.create(
+                            savedDailyBudget.getBudgetId(),
+                            entry.getValue(),
+                            entry.getKey(),
+                            date
+                    );
+                    MealBudget savedMealBudget = mealBudgetRepository.save(mealBudget);
+                    createdMealBudgets.add(savedMealBudget);
+                }
+            }
+        }
+
+        log.info("일일 예산 일괄 생성 완료 - memberId: {}, start: {}, end: {}, count: {}",
+                memberId, startDate, endDate, createdDailyBudgets.size());
+
+        return new DailyBudgetBatchResult(createdDailyBudgets, createdMealBudgets);
+    }
+
+    /**
      * 예산 설정 결과 DTO
      */
     public record BudgetSetupResult(
             MonthlyBudget monthlyBudget,
             DailyBudget dailyBudget,
+            List<MealBudget> mealBudgets
+    ) {
+    }
+
+    /**
+     * 일괄 생성 결과 DTO
+     */
+    public record DailyBudgetBatchResult(
+            List<DailyBudget> dailyBudgets,
             List<MealBudget> mealBudgets
     ) {
     }

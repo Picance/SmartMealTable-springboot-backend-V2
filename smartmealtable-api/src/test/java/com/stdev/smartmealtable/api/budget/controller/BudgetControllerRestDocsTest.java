@@ -35,6 +35,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.headerWit
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
@@ -66,6 +67,7 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
     @Autowired
     private MealBudgetRepository mealBudgetRepository;
 
+    private Group testGroup;
     private Member member;
     private String accessToken;
 
@@ -74,6 +76,7 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
         // 테스트 그룹 생성
         Group testGroup = Group.create("테스트대학교", GroupType.UNIVERSITY, Address.of("테스트대학교", null, "서울특별시", null, null, null, null));
         Group savedGroup = groupRepository.save(testGroup);
+        this.testGroup = savedGroup;
 
         // 테스트 회원 생성
         member = Member.create(savedGroup.getGroupId(), "예산테스트회원", null, RecommendationType.BALANCED);
@@ -105,6 +108,174 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                 mealBudgetRepository.save(mealBudget);
             }
         }
+    }
+
+    @Test
+    @DisplayName("월별 예산 등록 성공")
+    void createMonthlyBudget_success_docs() throws Exception {
+        // given
+        String newMemberToken = createAccessTokenForNewMemberWithoutBudget("budget-docs@example.com");
+        String budgetMonth = YearMonth.now().toString();
+
+        String requestBody = """
+                {
+                    "monthlyFoodBudget": 300000,
+                    "budgetMonth": "%s"
+                }
+                """.formatted(budgetMonth);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/budgets/monthly")
+                        .header("Authorization", "Bearer " + newMemberToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("budget/create-monthly-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("Bearer {accessToken}")
+                        ),
+                        requestFields(
+                                fieldWithPath("monthlyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("등록할 월별 식비 예산 (최소 1,000원)"),
+                                fieldWithPath("budgetMonth")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예산 적용 월 (YYYY-MM)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.monthlyBudgetId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("생성된 월별 예산 ID"),
+                                fieldWithPath("data.monthlyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("등록된 월별 식비 예산"),
+                                fieldWithPath("data.budgetMonth")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예산 적용 월 (YYYY-MM)"),
+                                fieldWithPath("data.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("처리 결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("에러 정보 (성공 시 null)")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("일일 예산 일괄 등록 성공")
+    void bulkCreateDailyBudget_success_docs() throws Exception {
+        // given
+        String newMemberToken = createAccessTokenForNewMemberWithoutBudget("bulk-budget@example.com");
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = startDate.plusDays(2);
+
+        String requestBody = """
+                {
+                    "startDate": "%s",
+                    "endDate": "%s",
+                    "dailyFoodBudget": 12000,
+                    "mealBudgets": {
+                        "BREAKFAST": 3000,
+                        "LUNCH": 5000,
+                        "DINNER": 3000,
+                        "OTHER": 1000
+                    }
+                }
+                """.formatted(startDate, endDate);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/budgets/daily/bulk")
+                        .header("Authorization", "Bearer " + newMemberToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("budget/create-daily-bulk-success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("Bearer {accessToken}")
+                        ),
+                        requestFields(
+                                fieldWithPath("startDate")
+                                        .type(JsonFieldType.STRING)
+                                        .description("생성 시작일 (YYYY-MM-DD)"),
+                                fieldWithPath("endDate")
+                                        .type(JsonFieldType.STRING)
+                                        .description("생성 종료일 (YYYY-MM-DD)"),
+                                fieldWithPath("dailyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("일일 식비 예산 (최소 100원)"),
+                                fieldWithPath("mealBudgets")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("식사별 예산 설정"),
+                                fieldWithPath("mealBudgets.BREAKFAST")
+                                        .type(JsonFieldType.NUMBER)
+                                        .optional()
+                                        .description("아침 예산 (0 이상)"),
+                                fieldWithPath("mealBudgets.LUNCH")
+                                        .type(JsonFieldType.NUMBER)
+                                        .optional()
+                                        .description("점심 예산 (0 이상)"),
+                                fieldWithPath("mealBudgets.DINNER")
+                                        .type(JsonFieldType.NUMBER)
+                                        .optional()
+                                        .description("저녁 예산 (0 이상)"),
+                                fieldWithPath("mealBudgets.OTHER")
+                                        .type(JsonFieldType.NUMBER)
+                                        .optional()
+                                        .description("기타 예산 (0 이상)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("응답 결과 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.startDate")
+                                        .type(JsonFieldType.STRING)
+                                        .description("생성 시작일"),
+                                fieldWithPath("data.endDate")
+                                        .type(JsonFieldType.STRING)
+                                        .description("생성 종료일"),
+                                fieldWithPath("data.dailyBudgetCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("생성된 일일 예산 개수"),
+                                fieldWithPath("data.dailyFoodBudget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("일일 예산 금액"),
+                                fieldWithPath("data.mealBudgets")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("첫째 날의 식사별 예산"),
+                                fieldWithPath("data.mealBudgets[].mealType")
+                                        .type(JsonFieldType.STRING)
+                                        .description("식사 유형"),
+                                fieldWithPath("data.mealBudgets[].budget")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("식사별 예산 금액"),
+                                fieldWithPath("data.message")
+                                        .type(JsonFieldType.STRING)
+                                        .description("처리 결과 메시지"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .optional()
+                                        .description("에러 정보 (성공 시 null)")
+                        )
+                ));
     }
 
     @Test
@@ -609,5 +780,19 @@ class BudgetControllerRestDocsTest extends AbstractRestDocsTest {
                         )
                 ));
     }
-}
 
+    private String createAccessTokenForNewMemberWithoutBudget(String email) {
+        Member newMember = Member.create(testGroup.getGroupId(), "예산신규회원", null, RecommendationType.BALANCED);
+        newMember = memberRepository.save(newMember);
+
+        MemberAuthentication newAuth = MemberAuthentication.createEmailAuth(
+                newMember.getMemberId(),
+                email,
+                "hashedPassword",
+                "예산신규회원"
+        );
+        authenticationRepository.save(newAuth);
+
+        return jwtTokenProvider.createToken(newMember.getMemberId());
+    }
+}

@@ -166,10 +166,24 @@ public enum ErrorType {
             LogLevel.WARN
     ),
     
+    MONTHLY_BUDGET_ALREADY_EXISTS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 해당 월의 예산이 등록되어 있습니다.",
+            LogLevel.WARN
+    ),
+    
     DAILY_BUDGET_NOT_FOUND(
             HttpStatus.NOT_FOUND,
             ErrorCode.E404,
             "해당 날짜의 예산 정보를 찾을 수 없습니다.",
+            LogLevel.WARN
+    ),
+
+    DAILY_BUDGET_ALREADY_EXISTS(
+            HttpStatus.CONFLICT,
+            ErrorCode.E409,
+            "이미 해당 날짜의 일일 예산이 등록되어 있습니다.",
             LogLevel.WARN
     ),
     
@@ -327,6 +341,13 @@ public enum ErrorType {
             HttpStatus.BAD_REQUEST,
             ErrorCode.E400,
             "잘못된 요청입니다.",
+            LogLevel.WARN
+    ),
+
+    INVALID_DATE_RANGE(
+            HttpStatus.BAD_REQUEST,
+            ErrorCode.E400,
+            "시작일은 종료일보다 이후일 수 없습니다.",
             LogLevel.WARN
     ),
     

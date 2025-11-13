@@ -2,10 +2,18 @@ package com.stdev.smartmealtable.api.budget.controller;
 
 import com.stdev.smartmealtable.api.budget.controller.dto.DailyBudgetQueryResponse;
 import com.stdev.smartmealtable.api.budget.controller.dto.MonthlyBudgetQueryResponse;
+import com.stdev.smartmealtable.api.budget.controller.request.BulkCreateDailyBudgetRequest;
+import com.stdev.smartmealtable.api.budget.controller.request.CreateMonthlyBudgetRequest;
 import com.stdev.smartmealtable.api.budget.controller.request.UpdateBudgetRequest;
 import com.stdev.smartmealtable.api.budget.controller.request.UpdateDailyBudgetRequest;
+import com.stdev.smartmealtable.api.budget.controller.response.BulkCreateDailyBudgetResponse;
+import com.stdev.smartmealtable.api.budget.controller.response.CreateMonthlyBudgetResponse;
 import com.stdev.smartmealtable.api.budget.controller.response.UpdateBudgetResponse;
 import com.stdev.smartmealtable.api.budget.controller.response.UpdateDailyBudgetResponse;
+import com.stdev.smartmealtable.api.budget.service.BulkCreateDailyBudgetService;
+import com.stdev.smartmealtable.api.budget.service.BulkCreateDailyBudgetServiceResponse;
+import com.stdev.smartmealtable.api.budget.service.CreateMonthlyBudgetService;
+import com.stdev.smartmealtable.api.budget.service.CreateMonthlyBudgetServiceResponse;
 import com.stdev.smartmealtable.api.budget.service.DailyBudgetQueryService;
 import com.stdev.smartmealtable.api.budget.service.MonthlyBudgetQueryService;
 import com.stdev.smartmealtable.api.budget.service.UpdateBudgetService;
@@ -21,6 +29,8 @@ import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +50,8 @@ public class BudgetController {
 
     private final MonthlyBudgetQueryService monthlyBudgetQueryService;
     private final DailyBudgetQueryService dailyBudgetQueryService;
+    private final CreateMonthlyBudgetService createMonthlyBudgetService;
+    private final BulkCreateDailyBudgetService bulkCreateDailyBudgetService;
     private final UpdateBudgetService updateBudgetService;
     private final UpdateDailyBudgetService updateDailyBudgetService;
 
@@ -88,6 +100,39 @@ public class BudgetController {
         DailyBudgetQueryResponse response = DailyBudgetQueryResponse.from(serviceResponse);
 
         return ApiResponse.success(response);
+    }
+
+    /**
+     * 월별 예산 등록
+     */
+    @PostMapping("/monthly")
+    public ResponseEntity<ApiResponse<CreateMonthlyBudgetResponse>> createMonthlyBudget(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody CreateMonthlyBudgetRequest request
+    ) {
+        CreateMonthlyBudgetServiceResponse serviceResponse = createMonthlyBudgetService.createMonthlyBudget(
+                user.memberId(),
+                request.toServiceRequest()
+        );
+        CreateMonthlyBudgetResponse response = new CreateMonthlyBudgetResponse(serviceResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+    /**
+     * 일일 예산 일괄 등록
+     * - startDate부터 endDate까지의 일일 예산과 식사별 예산을 생성합니다.
+     */
+    @PostMapping("/daily/bulk")
+    public ResponseEntity<ApiResponse<BulkCreateDailyBudgetResponse>> createDailyBudgetsInRange(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody BulkCreateDailyBudgetRequest request
+    ) {
+        BulkCreateDailyBudgetServiceResponse serviceResponse = bulkCreateDailyBudgetService.createDailyBudgets(
+                user.memberId(),
+                request.toServiceRequest()
+        );
+        BulkCreateDailyBudgetResponse response = new BulkCreateDailyBudgetResponse(serviceResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
     /**
