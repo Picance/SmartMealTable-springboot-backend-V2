@@ -188,11 +188,77 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     }
 
     @Test
+    @DisplayName("닉네임 수정 성공 API 문서화")
+    void updateNickname_success_docs() throws Exception {
+        // given
+        Map<String, Object> request = new HashMap<>();
+        request.put("nickname", "새닉네임");
+
+        // when & then
+        mockMvc.perform(put("/api/v1/members/me/nickname")
+                        .header("Authorization", accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andDo(document("members/update-nickname/success",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestHeaders(
+                                headerWithName("Authorization")
+                                        .description("JWT 인증 토큰 (Bearer {token})")
+                        ),
+                        requestFields(
+                                fieldWithPath("nickname")
+                                        .type(JsonFieldType.STRING)
+                                        .description("변경할 닉네임 (2-50자)")
+                        ),
+                        responseFields(
+                                fieldWithPath("result")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결과 상태 (SUCCESS)"),
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("응답 데이터"),
+                                fieldWithPath("data.memberId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("회원 ID"),
+                                fieldWithPath("data.nickname")
+                                        .type(JsonFieldType.STRING)
+                                        .description("변경된 닉네임"),
+                                fieldWithPath("data.group")
+                                        .type(JsonFieldType.OBJECT)
+                                        .description("현재 그룹 정보")
+                                        .optional(),
+                                fieldWithPath("data.group.groupId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("그룹 ID")
+                                        .optional(),
+                                fieldWithPath("data.group.name")
+                                        .type(JsonFieldType.STRING)
+                                        .description("그룹 이름")
+                                        .optional(),
+                                fieldWithPath("data.group.type")
+                                        .type(JsonFieldType.STRING)
+                                        .description("그룹 타입")
+                                        .optional(),
+                                fieldWithPath("data.updatedAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("수정일시"),
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.NULL)
+                                        .description("에러 정보 (성공 시 null)")
+                                        .optional()
+                        )
+                ));
+    }
+
+    @Test
     @DisplayName("프로필 수정 성공 API 문서화")
     void updateProfile_success_docs() throws Exception {
         // given
         Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "새닉네임");
         request.put("groupId", testGroupId);
 
         // when & then
@@ -208,17 +274,12 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
                         getDocumentResponse(),
                         requestHeaders(
                                 headerWithName("Authorization")
-                                        .description("회원 ID (JWT 토큰에서 추출)")
+                                        .description("JWT 인증 토큰 (Bearer {token})")
                         ),
                         requestFields(
-                                fieldWithPath("nickname")
-                                        .type(JsonFieldType.STRING)
-                                        .description("변경할 닉네임 (2-20자)")
-                                        .optional(),
                                 fieldWithPath("groupId")
                                         .type(JsonFieldType.NUMBER)
                                         .description("변경할 그룹 ID")
-                                        .optional()
                         ),
                         responseFields(
                                 fieldWithPath("result")
@@ -262,26 +323,26 @@ class MemberControllerRestDocsTest extends AbstractRestDocsTest {
     }
 
     @Test
-    @DisplayName("프로필 수정 실패 - 유효하지 않은 닉네임 (422) API 문서화")
-    void updateProfile_invalidNickname_docs() throws Exception {
+    @DisplayName("닉네임 수정 실패 - 유효하지 않은 닉네임 (422) API 문서화")
+    void updateNickname_invalidNickname_docs() throws Exception {
         // given
         Map<String, Object> request = new HashMap<>();
         request.put("nickname", "a"); // 너무 짧은 닉네임
 
         // when & then
-        mockMvc.perform(put("/api/v1/members/me")
+        mockMvc.perform(put("/api/v1/members/me/nickname")
                         .header("Authorization", accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.result").value("ERROR"))
-                .andDo(document("members/update-profile/invalid-nickname",
+                .andDo(document("members/update-nickname/invalid",
                         getDocumentRequest(),
                         getDocumentResponse(),
                         requestHeaders(
                                 headerWithName("Authorization")
-                                        .description("회원 ID")
+                                        .description("JWT 인증 토큰 (Bearer {token})")
                         ),
                         requestFields(
                                 fieldWithPath("nickname")

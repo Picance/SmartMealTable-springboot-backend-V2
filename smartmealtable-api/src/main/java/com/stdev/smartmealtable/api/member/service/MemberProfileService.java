@@ -3,9 +3,12 @@ package com.stdev.smartmealtable.api.member.service;
 import com.stdev.smartmealtable.api.member.dto.response.MemberProfileResponse;
 import com.stdev.smartmealtable.api.member.dto.response.UpdateProfileResponse;
 import com.stdev.smartmealtable.api.member.service.dto.UpdateProfileServiceRequest;
-import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.core.error.ErrorType;
-import com.stdev.smartmealtable.domain.member.entity.*;
+import com.stdev.smartmealtable.core.exception.BusinessException;
+import com.stdev.smartmealtable.domain.member.entity.Group;
+import com.stdev.smartmealtable.domain.member.entity.Member;
+import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
+import com.stdev.smartmealtable.domain.member.entity.SocialAccount;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,32 +84,44 @@ public class MemberProfileService {
     }
 
     /**
-     * 10.2 프로필 수정 (닉네임, 그룹)
+     * 10.2.1 닉네임 수정
+     */
+    @Transactional
+    public UpdateProfileResponse updateNickname(Long memberId, String nickname) {
+        Member updatedMember = profileDomainService.updateNickname(memberId, nickname);
+        return buildUpdateProfileResponse(updatedMember);
+    }
+
+    /**
+     * 10.2.2 프로필 수정 (그룹 변경)
      * Domain Service를 통한 비즈니스 로직 처리
      */
     @Transactional
     public UpdateProfileResponse updateProfile(UpdateProfileServiceRequest request) {
-        // Domain Service를 통한 프로필 업데이트 (검증 + 도메인 로직 포함)
-        Member updatedMember = profileDomainService.updateProfile(
+        Member updatedMember = profileDomainService.updateGroup(
                 request.getMemberId(),
-                request.getNickname(),
                 request.getGroupId()
         );
 
-        // 그룹 정보 조회 (응답용)
-        Group group = groupRepository.findById(updatedMember.getGroupId())
-                .orElseThrow(() -> new BusinessException(ErrorType.GROUP_NOT_FOUND));
+        return buildUpdateProfileResponse(updatedMember);
+    }
 
-        // Response 생성
+    private UpdateProfileResponse buildUpdateProfileResponse(Member member) {
+        Group group = null;
+        if (member.getGroupId() != null) {
+            group = groupRepository.findById(member.getGroupId())
+                    .orElseThrow(() -> new BusinessException(ErrorType.GROUP_NOT_FOUND));
+        }
+
         return UpdateProfileResponse.builder()
-                .memberId(updatedMember.getMemberId())
-                .nickname(updatedMember.getNickname())
-                .group(UpdateProfileResponse.GroupInfo.builder()
+                .memberId(member.getMemberId())
+                .nickname(member.getNickname())
+                .group(group != null ? UpdateProfileResponse.GroupInfo.builder()
                         .groupId(group.getGroupId())
                         .name(group.getName())
                         .type(group.getType())
-                        .build())
-                .updatedAt(java.time.LocalDateTime.now())
+                        .build() : null)
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }

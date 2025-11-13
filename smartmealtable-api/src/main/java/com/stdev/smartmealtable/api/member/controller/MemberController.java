@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.api.member.controller;
 
 import com.stdev.smartmealtable.api.member.dto.request.ChangePasswordRequest;
+import com.stdev.smartmealtable.api.member.dto.request.UpdateNicknameRequest;
 import com.stdev.smartmealtable.api.member.dto.request.UpdateProfileRequest;
 import com.stdev.smartmealtable.api.member.dto.request.WithdrawMemberRequest;
 import com.stdev.smartmealtable.api.member.dto.response.ChangePasswordResponse;
@@ -41,7 +42,19 @@ public class MemberController {
     }
 
     /**
-     * 10.2 프로필 수정 (닉네임, 그룹)
+     * 10.2.1 닉네임 수정
+     */
+    @PutMapping("/me/nickname")
+    public ApiResponse<UpdateProfileResponse> updateNickname(
+            @AuthUser AuthenticatedUser user,
+            @Valid @RequestBody UpdateNicknameRequest request
+    ) {
+        UpdateProfileResponse response = memberProfileService.updateNickname(user.memberId(), request.getNickname());
+        return ApiResponse.success(response);
+    }
+
+    /**
+     * 10.2.2 프로필 수정 (그룹 변경)
      */
     @PutMapping("/me")
     public ApiResponse<UpdateProfileResponse> updateProfile(
@@ -50,7 +63,6 @@ public class MemberController {
     ) {
         UpdateProfileServiceRequest serviceRequest = UpdateProfileServiceRequest.of(
                 user.memberId(),
-                request.getNickname(),
                 request.getGroupId()
         );
         UpdateProfileResponse response = memberProfileService.updateProfile(serviceRequest);

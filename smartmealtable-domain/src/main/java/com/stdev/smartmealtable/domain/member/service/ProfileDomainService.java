@@ -57,15 +57,13 @@ public class ProfileDomainService {
     }
 
     /**
-     * 회원 프로필 업데이트 (닉네임, 그룹)
-     * 닉네임 중복 검증 + 그룹 존재 검증 + 도메인 로직 적용
+     * 닉네임 업데이트
      *
      * @param memberId 회원 ID
      * @param nickname 새 닉네임
-     * @param groupId  새 그룹 ID
      * @return 업데이트된 Member 엔티티
      */
-    public Member updateProfile(Long memberId, String nickname, Long groupId) {
+    public Member updateNickname(Long memberId, String nickname) {
         // 1. 회원 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(ErrorType.MEMBER_NOT_FOUND));
@@ -75,14 +73,33 @@ public class ProfileDomainService {
             throw new BusinessException(ErrorType.DUPLICATE_NICKNAME);
         }
 
-        // 3. 그룹 존재 검증
+        // 3. 도메인 로직 적용
+        member.changeNickname(nickname);
+
+        // 4. 저장 및 반환
+        return memberRepository.save(member);
+    }
+
+    /**
+     * 회원 프로필 업데이트 (그룹)
+     * 그룹 존재 검증 + 도메인 로직 적용
+     *
+     * @param memberId 회원 ID
+     * @param groupId  새 그룹 ID
+     * @return 업데이트된 Member 엔티티
+     */
+    public Member updateGroup(Long memberId, Long groupId) {
+        // 1. 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorType.MEMBER_NOT_FOUND));
+
+        // 2. 그룹 존재 검증
         validateAndGetGroup(groupId);
 
-        // 4. 도메인 로직 적용
-        member.changeNickname(nickname);
+        // 3. 도메인 로직 적용
         member.changeGroup(groupId);
 
-        // 5. 저장 및 반환
+        // 4. 저장 및 반환
         return memberRepository.save(member);
     }
 

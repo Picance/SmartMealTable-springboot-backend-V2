@@ -3336,13 +3336,16 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 ### 10.2 프로필 수정
 
-**Endpoint:** `PUT /api/v1/members/me`
+닉네임과 기본 프로필 정보(그룹)는 서로 다른 엔드포인트로 분리되었습니다. 필요한 항목만 변경하도록 아래 API를 선택해 호출하세요.
+
+#### 10.2.1 닉네임 수정
+
+**Endpoint:** `PUT /api/v1/members/me/nickname`
 
 **Request:**
 ```json
 {
-  "nickname": "새로운닉네임",
-  "groupId": 456
+  "nickname": "새로운닉네임"
 }
 ```
 
@@ -3353,6 +3356,35 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
   "data": {
     "memberId": 123,
     "nickname": "새로운닉네임",
+    "group": {
+      "groupId": 456,
+      "name": "고려대학교",
+      "type": "UNIVERSITY"
+    },
+    "updatedAt": "2025-10-08T12:34:56.789Z"
+  },
+  "error": null
+}
+```
+
+#### 10.2.2 프로필 수정 (그룹 변경)
+
+**Endpoint:** `PUT /api/v1/members/me`
+
+**Request:**
+```json
+{
+  "groupId": 456
+}
+```
+
+**Response (200):**
+```json
+{
+  "result": "SUCCESS",
+  "data": {
+    "memberId": 123,
+    "nickname": "기존닉네임",
     "group": {
       "groupId": 456,
       "name": "고려대학교",

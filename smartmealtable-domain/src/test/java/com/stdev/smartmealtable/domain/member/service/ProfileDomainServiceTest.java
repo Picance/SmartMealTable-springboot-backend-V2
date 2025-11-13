@@ -193,41 +193,38 @@ class ProfileDomainServiceTest {
     }
 
     @Nested
-    @DisplayName("updateProfile 메서드는")
-    class Describe_updateProfile {
+    @DisplayName("updateNickname 메서드는")
+    class Describe_updateNickname {
 
         @Nested
-        @DisplayName("유효한 닉네임과 그룹 ID가 주어지면")
-        class Context_with_valid_nickname_and_group_id {
+        @DisplayName("유효한 닉네임이 주어지면")
+        class Context_with_valid_nickname {
 
             @Test
-            @DisplayName("프로필을 업데이트하고 저장한다")
-            void it_updates_and_saves_profile() {
+            @DisplayName("닉네임을 업데이트하고 저장한다")
+            void it_updates_and_saves_nickname() {
                 // Given
                 Long memberId = 1L;
                 String nickname = "새닉네임";
                 Long groupId = 2L;
 
                 Member member = Member.create(groupId, "구닉네임", null, RecommendationType.BALANCED);
-                Address address = Address.of("대학생", null, "서울", null, null, null, null);
-                Group group = Group.create("대학생", GroupType.UNIVERSITY, address);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
                 given(memberRepository.existsByNicknameExcludingMemberId(nickname, memberId))
                         .willReturn(false);
-                given(groupRepository.findById(groupId)).willReturn(Optional.of(group));
                 given(memberRepository.save(any(Member.class))).willReturn(member);
 
                 // When
-                Member result = profileDomainService.updateProfile(memberId, nickname, groupId);
+                Member result = profileDomainService.updateNickname(memberId, nickname);
 
                 // Then
                 assertThat(result).isNotNull();
                 then(memberRepository).should(times(1)).findById(memberId);
                 then(memberRepository).should(times(1))
                         .existsByNicknameExcludingMemberId(nickname, memberId);
-                then(groupRepository).should(times(1)).findById(groupId);
                 then(memberRepository).should(times(1)).save(any(Member.class));
+                then(groupRepository).should(times(0)).findById(any());
             }
         }
 
@@ -241,12 +238,11 @@ class ProfileDomainServiceTest {
                 // Given
                 Long memberId = 999L;
                 String nickname = "새닉네임";
-                Long groupId = 2L;
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.empty());
 
                 // When & Then
-                assertThatThrownBy(() -> profileDomainService.updateProfile(memberId, nickname, groupId))
+                assertThatThrownBy(() -> profileDomainService.updateNickname(memberId, nickname))
                         .isInstanceOf(BusinessException.class)
                         .hasFieldOrPropertyWithValue("errorType", ErrorType.MEMBER_NOT_FOUND);
 
@@ -276,13 +272,72 @@ class ProfileDomainServiceTest {
                         .willReturn(true);
 
                 // When & Then
-                assertThatThrownBy(() -> profileDomainService.updateProfile(memberId, nickname, groupId))
+                assertThatThrownBy(() -> profileDomainService.updateNickname(memberId, nickname))
                         .isInstanceOf(BusinessException.class)
                         .hasFieldOrPropertyWithValue("errorType", ErrorType.DUPLICATE_NICKNAME);
 
                 then(memberRepository).should(times(1)).findById(memberId);
                 then(memberRepository).should(times(1))
                         .existsByNicknameExcludingMemberId(nickname, memberId);
+                then(groupRepository).should(times(0)).findById(any());
+                then(memberRepository).should(times(0)).save(any(Member.class));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("updateGroup 메서드는")
+    class Describe_updateGroup {
+
+        @Nested
+        @DisplayName("유효한 그룹 ID가 주어지면")
+        class Context_with_valid_group_id {
+
+            @Test
+            @DisplayName("그룹을 업데이트하고 저장한다")
+            void it_updates_and_saves_group() {
+                // Given
+                Long memberId = 1L;
+                Long groupId = 2L;
+
+                Member member = Member.create(1L, "구닉네임", null, RecommendationType.BALANCED);
+                Address address = Address.of("대학생", null, "서울", null, null, null, null);
+                Group group = Group.create("대학생", GroupType.UNIVERSITY, address);
+
+                given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+                given(groupRepository.findById(groupId)).willReturn(Optional.of(group));
+                given(memberRepository.save(any(Member.class))).willReturn(member);
+
+                // When
+                Member result = profileDomainService.updateGroup(memberId, groupId);
+
+                // Then
+                assertThat(result).isNotNull();
+                then(memberRepository).should(times(1)).findById(memberId);
+                then(groupRepository).should(times(1)).findById(groupId);
+                then(memberRepository).should(times(1)).save(any(Member.class));
+            }
+        }
+
+        @Nested
+        @DisplayName("존재하지 않는 회원 ID가 주어지면")
+        class Context_with_non_existing_member_id {
+
+            @Test
+            @DisplayName("MEMBER_NOT_FOUND 예외를 발생시킨다")
+            void it_throws_member_not_found_exception() {
+                // Given
+                Long memberId = 999L;
+                Long groupId = 2L;
+
+                given(memberRepository.findById(memberId)).willReturn(Optional.empty());
+
+                // When & Then
+                assertThatThrownBy(() -> profileDomainService.updateGroup(memberId, groupId))
+                        .isInstanceOf(BusinessException.class)
+                        .hasFieldOrPropertyWithValue("errorType", ErrorType.MEMBER_NOT_FOUND);
+
+                then(memberRepository).should(times(1)).findById(memberId);
                 then(groupRepository).should(times(0)).findById(any());
                 then(memberRepository).should(times(0)).save(any(Member.class));
             }
@@ -297,24 +352,19 @@ class ProfileDomainServiceTest {
             void it_throws_group_not_found_exception() {
                 // Given
                 Long memberId = 1L;
-                String nickname = "새닉네임";
                 Long groupId = 999L;
 
                 Member member = Member.create(2L, "구닉네임", null, RecommendationType.ADVENTURER);
 
                 given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
-                given(memberRepository.existsByNicknameExcludingMemberId(nickname, memberId))
-                        .willReturn(false);
                 given(groupRepository.findById(groupId)).willReturn(Optional.empty());
 
                 // When & Then
-                assertThatThrownBy(() -> profileDomainService.updateProfile(memberId, nickname, groupId))
+                assertThatThrownBy(() -> profileDomainService.updateGroup(memberId, groupId))
                         .isInstanceOf(BusinessException.class)
                         .hasFieldOrPropertyWithValue("errorType", ErrorType.GROUP_NOT_FOUND);
 
                 then(memberRepository).should(times(1)).findById(memberId);
-                then(memberRepository).should(times(1))
-                        .existsByNicknameExcludingMemberId(nickname, memberId);
                 then(groupRepository).should(times(1)).findById(groupId);
                 then(memberRepository).should(times(0)).save(any(Member.class));
             }

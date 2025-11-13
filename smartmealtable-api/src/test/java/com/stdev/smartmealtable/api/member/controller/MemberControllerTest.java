@@ -130,18 +130,17 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.error.message").value("존재하지 않는 회원입니다."));
     }
 
-    // ===== 10.2 프로필 수정 =====
+    // ===== 10.2 닉네임 수정 =====
 
     @Test
-    @DisplayName("프로필 수정 성공 - 닉네임만 변경 (200 OK)")
-    void updateProfile_nicknameOnly_success() throws Exception {
+    @DisplayName("닉네임 수정 성공 - 200 OK")
+    void updateNickname_success() throws Exception {
         // given
         Map<String, Object> request = new HashMap<>();
         request.put("nickname", "변경된닉네임");
-        request.put("groupId", testGroupId); // groupId는 필수 (기존 값 유지)
 
         // when & then
-        mockMvc.perform(put("/api/v1/members/me")
+        mockMvc.perform(put("/api/v1/members/me/nickname")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .header("Authorization", "Bearer " + accessToken))
@@ -150,20 +149,79 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.memberId").value(testMemberId))
                 .andExpect(jsonPath("$.data.nickname").value("변경된닉네임"))
-                .andExpect(jsonPath("$.data.group.groupId").value(testGroupId)) // 기존 그룹 유지
+                .andExpect(jsonPath("$.data.group.groupId").value(testGroupId))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
 
     @Test
-    @DisplayName("프로필 수정 성공 - 그룹만 변경 (200 OK)")
-    void updateProfile_groupOnly_success() throws Exception {
+    @DisplayName("닉네임 수정 실패 - 존재하지 않는 회원 (404 Not Found)")
+    void updateNickname_memberNotFound() throws Exception {
+        // given
+        Long invalidMemberId = 99999L;
+        String invalidToken = jwtTokenProvider.createToken(invalidMemberId);
+        Map<String, Object> request = new HashMap<>();
+        request.put("nickname", "변경된닉네임");
+
+        // when & then
+        mockMvc.perform(put("/api/v1/members/me/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + invalidToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E404"))
+                .andExpect(jsonPath("$.error.message").value("존재하지 않는 회원입니다."));
+    }
+
+    @Test
+    @DisplayName("닉네임 수정 실패 - 닉네임 길이 초과 (422 Unprocessable Entity)")
+    void updateNickname_nicknameTooLong() throws Exception {
+        // given
+        String longNickname = "a".repeat(51);
+        Map<String, Object> request = new HashMap<>();
+        request.put("nickname", longNickname);
+
+        // when & then
+        mockMvc.perform(put("/api/v1/members/me/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + accessToken))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E422"));
+    }
+
+    @Test
+    @DisplayName("닉네임 수정 실패 - 빈 닉네임 (422 Unprocessable Entity)")
+    void updateNickname_emptyNickname() throws Exception {
+        // given
+        Map<String, Object> request = new HashMap<>();
+        request.put("nickname", "");
+
+        // when & then
+        mockMvc.perform(put("/api/v1/members/me/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + accessToken))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.result").value("ERROR"))
+                .andExpect(jsonPath("$.error.code").value("E422"));
+    }
+
+    // ===== 10.2 프로필 수정 (그룹) =====
+
+    @Test
+    @DisplayName("프로필 수정 성공 - 그룹 변경 (200 OK)")
+    void updateProfile_groupChange_success() throws Exception {
         // given
         Group newGroup = Group.create("연세대학교", GroupType.UNIVERSITY, Address.of("연세대학교", null, "서울특별시 서대문구", null, null, null, null));
         Group savedNewGroup = groupRepository.save(newGroup);
         Long newGroupId = savedNewGroup.getGroupId();
 
         Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "초기닉네임"); // nickname은 필수 (기존 값 유지)
         request.put("groupId", newGroupId);
 
         // when & then
@@ -175,33 +233,7 @@ class MemberControllerTest extends AbstractContainerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.memberId").value(testMemberId))
-                .andExpect(jsonPath("$.data.nickname").value("초기닉네임")) // 기존 닉네임 유지
-                .andExpect(jsonPath("$.data.group.groupId").value(newGroupId))
-                .andExpect(jsonPath("$.error").value(nullValue()));
-    }
-
-    @Test
-    @DisplayName("프로필 수정 성공 - 닉네임과 그룹 모두 변경 (200 OK)")
-    void updateProfile_both_success() throws Exception {
-        // given
-        Group newGroup = Group.create("고려대학교", GroupType.UNIVERSITY, Address.of("고려대학교", null, "서울특별시 성북구", null, null, null, null));
-        Group savedNewGroup = groupRepository.save(newGroup);
-        Long newGroupId = savedNewGroup.getGroupId();
-
-        Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "새닉네임");
-        request.put("groupId", newGroupId);
-
-        // when & then
-        mockMvc.perform(put("/api/v1/members/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .header("Authorization", "Bearer " + accessToken))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.memberId").value(testMemberId))
-                .andExpect(jsonPath("$.data.nickname").value("새닉네임"))
+                .andExpect(jsonPath("$.data.nickname").value("초기닉네임"))
                 .andExpect(jsonPath("$.data.group.groupId").value(newGroupId))
                 .andExpect(jsonPath("$.error").value(nullValue()));
     }
@@ -213,7 +245,6 @@ class MemberControllerTest extends AbstractContainerTest {
         Long invalidMemberId = 99999L;
         String invalidToken = jwtTokenProvider.createToken(invalidMemberId);
         Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "변경된닉네임");
         request.put("groupId", testGroupId);
 
         // when & then
@@ -234,7 +265,6 @@ class MemberControllerTest extends AbstractContainerTest {
         // given
         Long invalidGroupId = 99999L;
         Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "변경된닉네임");
         request.put("groupId", invalidGroupId);
 
         // when & then
@@ -250,32 +280,10 @@ class MemberControllerTest extends AbstractContainerTest {
     }
 
     @Test
-    @DisplayName("프로필 수정 실패 - 닉네임 길이 초과 (422 Unprocessable Entity)")
-    void updateProfile_nicknameTooLong() throws Exception {
-        // given
-        String longNickname = "a".repeat(51); // 50자 초과
-        Map<String, Object> request = new HashMap<>();
-        request.put("nickname", longNickname);
-        request.put("groupId", null);
-
-        // when & then
-        mockMvc.perform(put("/api/v1/members/me")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                        .header("Authorization", "Bearer " + accessToken))
-                .andDo(print())
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.result").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("E422"));
-    }
-
-    @Test
-    @DisplayName("프로필 수정 실패 - 빈 닉네임 (422 Unprocessable Entity)")
-    void updateProfile_emptyNickname() throws Exception {
+    @DisplayName("프로필 수정 실패 - 그룹 ID 누락 (422 Unprocessable Entity)")
+    void updateProfile_missingGroupId() throws Exception {
         // given
         Map<String, Object> request = new HashMap<>();
-        request.put("nickname", "");
-        request.put("groupId", null);
 
         // when & then
         mockMvc.perform(put("/api/v1/members/me")

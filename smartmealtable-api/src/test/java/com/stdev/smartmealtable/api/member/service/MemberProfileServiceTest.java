@@ -223,24 +223,124 @@ class MemberProfileServiceTest {
     }
 
     @Nested
-    @DisplayName("updateProfile 메서드는")
-    class Describe_updateProfile {
+    @DisplayName("updateNickname 메서드는")
+    class Describe_updateNickname {
 
         @Nested
-        @DisplayName("유효한 프로필 수정 요청이 주어지면")
-        class Context_with_valid_update_request {
+        @DisplayName("유효한 닉네임이 주어지면")
+        class Context_with_valid_nickname {
 
             @Test
-            @DisplayName("프로필을 수정하고 결과를 반환한다")
-            void it_updates_and_returns_profile() {
+            @DisplayName("닉네임을 수정하고 결과를 반환한다")
+            void it_updates_and_returns_nickname() {
                 // Given
                 Long memberId = 1L;
                 String nickname = "새닉네임";
                 Long groupId = 2L;
 
+                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.BALANCED);
+
+                Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY,
+                        Address.of("대학생", null, "서울", null, null, null, null));
+
+                given(profileDomainService.updateNickname(memberId, nickname))
+                        .willReturn(updatedMember);
+                given(groupRepository.findById(groupId)).willReturn(Optional.of(group));
+
+                // When
+                UpdateProfileResponse response = memberProfileService.updateNickname(memberId, nickname);
+
+                // Then
+                assertThat(response).isNotNull();
+                assertThat(response.getMemberId()).isEqualTo(memberId);
+                assertThat(response.getNickname()).isEqualTo(nickname);
+                assertThat(response.getGroup()).isNotNull();
+                assertThat(response.getGroup().getGroupId()).isEqualTo(groupId);
+
+                then(profileDomainService).should(times(1))
+                        .updateNickname(memberId, nickname);
+                then(groupRepository).should(times(1)).findById(groupId);
+            }
+        }
+
+        @Nested
+        @DisplayName("그룹이 없는 회원 닉네임을 수정하면")
+        class Context_with_member_without_group {
+
+            @Test
+            @DisplayName("그룹 없이 응답을 반환한다")
+            void it_returns_response_without_group() {
+                // Given
+                Long memberId = 1L;
+                String nickname = "새닉네임";
+
+                Member updatedMember = Member.reconstitute(memberId, null, nickname, null, RecommendationType.BALANCED);
+
+                given(profileDomainService.updateNickname(memberId, nickname))
+                        .willReturn(updatedMember);
+
+                // When
+                UpdateProfileResponse response = memberProfileService.updateNickname(memberId, nickname);
+
+                // Then
+                assertThat(response).isNotNull();
+                assertThat(response.getMemberId()).isEqualTo(memberId);
+                assertThat(response.getGroup()).isNull();
+
+                then(profileDomainService).should(times(1))
+                        .updateNickname(memberId, nickname);
+                then(groupRepository).should(times(0)).findById(any());
+            }
+        }
+
+        @Nested
+        @DisplayName("닉네임 수정 후 그룹이 조회되지 않으면")
+        class Context_with_missing_group {
+
+            @Test
+            @DisplayName("GROUP_NOT_FOUND 예외를 발생시킨다")
+            void it_throws_group_not_found_exception() {
+                // Given
+                Long memberId = 1L;
+                String nickname = "새닉네임";
+                Long groupId = 2L;
+
+                Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.SAVER);
+
+                given(profileDomainService.updateNickname(memberId, nickname))
+                        .willReturn(updatedMember);
+                given(groupRepository.findById(groupId)).willReturn(Optional.empty());
+
+                // When & Then
+                assertThatThrownBy(() -> memberProfileService.updateNickname(memberId, nickname))
+                        .isInstanceOf(BusinessException.class)
+                        .hasFieldOrPropertyWithValue("errorType", ErrorType.GROUP_NOT_FOUND);
+
+                then(profileDomainService).should(times(1))
+                        .updateNickname(memberId, nickname);
+                then(groupRepository).should(times(1)).findById(groupId);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("updateProfile 메서드는")
+    class Describe_updateProfile {
+
+        @Nested
+        @DisplayName("유효한 그룹 변경 요청이 주어지면")
+        class Context_with_valid_group_update_request {
+
+            @Test
+            @DisplayName("그룹을 수정하고 결과를 반환한다")
+            void it_updates_and_returns_profile() {
+                // Given
+                Long memberId = 1L;
+                Long groupId = 2L;
+                String nickname = "현재닉네임";
+
                 UpdateProfileServiceRequest request = UpdateProfileServiceRequest.builder()
                         .memberId(memberId)
-                        .nickname(nickname)
                         .groupId(groupId)
                         .build();
 
@@ -249,7 +349,7 @@ class MemberProfileServiceTest {
                 Group group = Group.reconstitute(groupId, "대학생", GroupType.UNIVERSITY,
                         Address.of("대학생", null, "서울", null, null, null, null));
 
-                given(profileDomainService.updateProfile(memberId, nickname, groupId))
+                given(profileDomainService.updateGroup(memberId, groupId))
                         .willReturn(updatedMember);
                 given(groupRepository.findById(groupId)).willReturn(Optional.of(group));
 
@@ -264,7 +364,7 @@ class MemberProfileServiceTest {
                 assertThat(response.getGroup().getGroupId()).isEqualTo(groupId);
 
                 then(profileDomainService).should(times(1))
-                        .updateProfile(memberId, nickname, groupId);
+                        .updateGroup(memberId, groupId);
                 then(groupRepository).should(times(1)).findById(groupId);
             }
         }
@@ -278,18 +378,17 @@ class MemberProfileServiceTest {
             void it_throws_group_not_found_exception() {
                 // Given
                 Long memberId = 1L;
-                String nickname = "새닉네임";
                 Long groupId = 999L;
+                String nickname = "현재닉네임";
 
                 UpdateProfileServiceRequest request = UpdateProfileServiceRequest.builder()
                         .memberId(memberId)
-                        .nickname(nickname)
                         .groupId(groupId)
                         .build();
 
                 Member updatedMember = Member.reconstitute(memberId, groupId, nickname, null, RecommendationType.SAVER);
 
-                given(profileDomainService.updateProfile(memberId, nickname, groupId))
+                given(profileDomainService.updateGroup(memberId, groupId))
                         .willReturn(updatedMember);
                 given(groupRepository.findById(groupId)).willReturn(Optional.empty());
 
@@ -299,7 +398,7 @@ class MemberProfileServiceTest {
                         .hasFieldOrPropertyWithValue("errorType", ErrorType.GROUP_NOT_FOUND);
 
                 then(profileDomainService).should(times(1))
-                        .updateProfile(memberId, nickname, groupId);
+                        .updateGroup(memberId, groupId);
                 then(groupRepository).should(times(1)).findById(groupId);
             }
         }

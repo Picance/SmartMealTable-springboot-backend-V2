@@ -11,13 +11,11 @@ import lombok.Getter;
 public class UpdateProfileServiceRequest {
 
     private Long memberId;
-    private String nickname;
     private Long groupId;
 
-    public static UpdateProfileServiceRequest of(Long memberId, String nickname, Long groupId) {
+    public static UpdateProfileServiceRequest of(Long memberId, Long groupId) {
         return UpdateProfileServiceRequest.builder()
                 .memberId(memberId)
-                .nickname(nickname)
                 .groupId(groupId)
                 .build();
     }
