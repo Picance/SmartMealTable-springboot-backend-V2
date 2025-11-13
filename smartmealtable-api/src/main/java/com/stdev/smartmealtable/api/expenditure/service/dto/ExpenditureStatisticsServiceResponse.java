@@ -27,7 +27,8 @@ public record ExpenditureStatisticsServiceResponse(
             Long totalSpentAmount,
             Long budget,
             Long balance,
-            Boolean overBudget
+            Boolean overBudget,
+            Boolean budgetRegistered
     ) {
     }
 }

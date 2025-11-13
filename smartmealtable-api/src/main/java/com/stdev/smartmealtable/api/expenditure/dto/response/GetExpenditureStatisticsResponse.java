@@ -1,7 +1,6 @@
 package com.stdev.smartmealtable.api.expenditure.dto.response;
 
 import com.stdev.smartmealtable.api.expenditure.service.dto.ExpenditureStatisticsServiceResponse;
-import com.stdev.smartmealtable.domain.expenditure.MealType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +20,8 @@ public record GetExpenditureStatisticsResponse(
             Long totalSpentAmount,
             Long budget,
             Long balance,
-            Boolean overBudget
+            Boolean overBudget,
+            Boolean budgetRegistered
     ) {
     }
 
@@ -36,7 +36,8 @@ public record GetExpenditureStatisticsResponse(
                         stat.totalSpentAmount(),
                         stat.budget(),
                         stat.balance(),
-                        stat.overBudget()
+                        stat.overBudget(),
+                        stat.budgetRegistered()
                 ))
                 .collect(Collectors.toList());
 

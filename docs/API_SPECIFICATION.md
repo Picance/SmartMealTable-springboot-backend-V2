@@ -1961,20 +1961,24 @@ Authorization: Bearer {access_token}
         "totalSpentAmount": 12500,
         "budget": 10000,
         "balance": -2500,
-        "overBudget": true
+        "overBudget": true,
+        "budgetRegistered": true
       },
       {
         "date": "2025-11-02",
         "totalSpentAmount": 8500,
-        "budget": 10000,
-        "balance": 1500,
-        "overBudget": false
+        "budget": null,
+        "balance": null,
+        "overBudget": null,
+        "budgetRegistered": false
       }
     ]
   },
   "error": null
 }
 ```
+
+- `budgetRegistered`가 `false`인 날짜는 일일 예산이 아직 입력되지 않은 상태이며, 해당 날짜의 `budget`, `balance`, `overBudget` 값은 `null`로 전달됩니다. `totalSpentAmount`는 등록 여부와 무관하게 항상 반환됩니다.
 
 ---
 
@@ -3188,7 +3192,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 **Query Parameters:**
 ```
-?sortBy=displayOrder
+?sortBy=priority
 &isOpenOnly=false
 &categoryId=5
 &page=0
@@ -3197,7 +3201,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 **Parameters:**
 - `sortBy` (optional): 정렬 기준
-  - `displayOrder`: 사용자 지정 순서 (기본값)
+  - `priority`: 사용자 지정 순서 (기본값)
   - `name`: 이름 가나다순
   - `reviewCount`: 리뷰 많은 순
   - `distance`: 거리 순 (기본 주소 기준)

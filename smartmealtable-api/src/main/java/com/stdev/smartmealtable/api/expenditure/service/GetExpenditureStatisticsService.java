@@ -92,32 +92,32 @@ public class GetExpenditureStatisticsService {
         LocalDate currentDate = startDate;
         while (!currentDate.isAfter(endDate)) {
             long spentAmount = dailyExpenditureAmounts.getOrDefault(currentDate, 0L);
+            boolean budgetRegistered = true;
+            Long budget = null;
+            Long balance = null;
+            Boolean overBudget = null;
 
             try {
                 // 해당 날짜의 일일 예산 조회
                 DailyBudgetQueryServiceResponse budgetInfo = dailyBudgetQueryService.getDailyBudget(memberId, currentDate);
-                long budget = budgetInfo.totalBudget() != null ? budgetInfo.totalBudget().longValue() : 0L;
-                long balance = budget - spentAmount;
-                boolean overBudget = spentAmount > budget;
-
-                result.add(new ExpenditureStatisticsServiceResponse.DailyStatistics(
-                        currentDate,
-                        spentAmount,
-                        budget,
-                        balance,
-                        overBudget
-                ));
+                long resolvedBudget = budgetInfo.totalBudget() != null ? budgetInfo.totalBudget().longValue() : 0L;
+                budget = resolvedBudget;
+                balance = resolvedBudget - spentAmount;
+                overBudget = spentAmount > resolvedBudget;
             } catch (BusinessException e) {
-                // 예산이 설정되지 않은 날짜는 0으로 처리
+                // 예산이 설정되지 않은 날짜는 등록되지 않은 상태로 표시
                 log.debug("예산이 설정되지 않은 날짜: {}", currentDate);
-                result.add(new ExpenditureStatisticsServiceResponse.DailyStatistics(
-                        currentDate,
-                        spentAmount,
-                        0L,
-                        -spentAmount,
-                        spentAmount > 0
-                ));
+                budgetRegistered = false;
             }
+
+            result.add(new ExpenditureStatisticsServiceResponse.DailyStatistics(
+                    currentDate,
+                    spentAmount,
+                    budget,
+                    balance,
+                    overBudget,
+                    budgetRegistered
+            ));
 
             currentDate = currentDate.plusDays(1);
         }

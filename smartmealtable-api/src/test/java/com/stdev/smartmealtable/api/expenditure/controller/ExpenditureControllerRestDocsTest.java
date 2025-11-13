@@ -784,11 +784,16 @@ class ExpenditureControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.dailyStatistics[].totalSpentAmount").type(JsonFieldType.NUMBER)
                                         .description("해당 날짜의 총 지출 금액"),
                                 fieldWithPath("data.dailyStatistics[].budget").type(JsonFieldType.NUMBER)
-                                        .description("해당 날짜의 일일 예산"),
+                                        .optional()
+                                        .description("해당 날짜의 일일 예산 (예산 미등록 시 null)"),
                                 fieldWithPath("data.dailyStatistics[].balance").type(JsonFieldType.NUMBER)
-                                        .description("예산 대비 잔액 (음수: 초과, 양수: 절약)"),
+                                        .optional()
+                                        .description("예산 대비 잔액 (음수: 초과, 양수: 절약, 예산 미등록 시 null)"),
                                 fieldWithPath("data.dailyStatistics[].overBudget").type(JsonFieldType.BOOLEAN)
-                                        .description("예산 초과 여부"),
+                                        .optional()
+                                        .description("예산 초과 여부 (예산 미등록 시 null)"),
+                                fieldWithPath("data.dailyStatistics[].budgetRegistered").type(JsonFieldType.BOOLEAN)
+                                        .description("해당 날짜의 예산 등록 여부 (false이면 예산 정보 없음)"),
                                 fieldWithPath("error").type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")
                                         .optional()

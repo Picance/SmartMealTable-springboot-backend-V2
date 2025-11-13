@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, noRollbackFor = BusinessException.class)
 public class DailyBudgetQueryService {
 
     private final DailyBudgetRepository dailyBudgetRepository;
