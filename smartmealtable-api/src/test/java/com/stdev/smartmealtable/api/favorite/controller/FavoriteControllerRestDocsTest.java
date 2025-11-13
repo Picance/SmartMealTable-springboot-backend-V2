@@ -1,19 +1,22 @@
 package com.stdev.smartmealtable.api.favorite.controller;
 
-import com.stdev.smartmealtable.domain.common.vo.Address;
-import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.favorite.dto.AddFavoriteRequest;
 import com.stdev.smartmealtable.api.favorite.dto.ReorderFavoritesRequest;
+import com.stdev.smartmealtable.api.home.service.BusinessHoursService;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.favorite.Favorite;
 import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
 import com.stdev.smartmealtable.domain.member.entity.Group;
 import com.stdev.smartmealtable.domain.member.entity.GroupType;
+import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
+import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.member.repository.GroupRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
@@ -31,6 +35,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -50,6 +56,9 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private StoreRepository storeRepository;
     @Autowired private FavoriteRepository favoriteRepository;
+    @Autowired private AddressHistoryRepository addressHistoryRepository;
+    @SuppressWarnings("removal")
+    @MockBean private BusinessHoursService businessHoursService;
     
     private Member member;
     private String accessToken;
@@ -78,6 +87,18 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                 "테스트유저"
         );
         memberAuthenticationRepository.save(auth);
+
+        Address homeAddress = Address.of(
+                "우리집",
+                "서울특별시 관악구 봉천동 1",
+                "서울특별시 관악구 봉천동 1",
+                "101호",
+                37.4783,
+                126.9516,
+                AddressType.HOME
+        );
+        AddressHistory addressHistory = AddressHistory.create(member.getMemberId(), homeAddress, true);
+        addressHistoryRepository.save(addressHistory);
         
         // JWT 토큰 생성
         accessToken = createAccessToken(member.getMemberId());
@@ -125,6 +146,11 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                 .registeredAt(java.time.LocalDateTime.now())
                 .build();
         chineseStore = storeRepository.save(chineseStore);
+
+        when(businessHoursService.getOperationStatus(koreanStore.getStoreId()))
+                .thenReturn(new BusinessHoursService.StoreOperationStatus("영업중", true));
+        when(businessHoursService.getOperationStatus(chineseStore.getStoreId()))
+                .thenReturn(new BusinessHoursService.StoreOperationStatus("휴무", false));
         
         // 즐겨찾기 생성
         favorite1 = Favorite.create(member.getMemberId(), koreanStore.getStoreId(), 1L);
@@ -270,6 +296,9 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.data.favorites").isArray())
                 .andExpect(jsonPath("$.data.favorites.length()").value(2))
                 .andExpect(jsonPath("$.data.totalCount").value(2))
+                .andExpect(jsonPath("$.data.openCount").value(1))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.nextCursor").value(nullValue()))
                 .andDo(document("favorite-get-list-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -281,17 +310,22 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favorites[].favoriteId").type(JsonFieldType.NUMBER).description("즐겨찾기 ID"),
                                 fieldWithPath("data.favorites[].storeId").type(JsonFieldType.NUMBER).description("가게 ID"),
                                 fieldWithPath("data.favorites[].storeName").type(JsonFieldType.STRING).description("가게명"),
+                                fieldWithPath("data.favorites[].categoryId").type(JsonFieldType.NUMBER).description("대표 카테고리 ID").optional(),
                                 fieldWithPath("data.favorites[].categoryName").type(JsonFieldType.STRING).description("카테고리명"),
-                                fieldWithPath("data.favorites[].reviewCount").type(JsonFieldType.NUMBER).description("리뷰 수"),
-                                fieldWithPath("data.favorites[].averagePrice").type(JsonFieldType.NUMBER).description("평균 가격"),
                                 fieldWithPath("data.favorites[].address").type(JsonFieldType.STRING).description("주소"),
+                                fieldWithPath("data.favorites[].averagePrice").type(JsonFieldType.NUMBER).description("평균 가격").optional(),
+                                fieldWithPath("data.favorites[].reviewCount").type(JsonFieldType.NUMBER).description("리뷰 수").optional(),
+                                fieldWithPath("data.favorites[].distance").type(JsonFieldType.NUMBER).description("사용자 기준 거리(km)").optional(),
                                 fieldWithPath("data.favorites[].imageUrl").type(JsonFieldType.STRING).description("대표 이미지 URL").optional(),
-                                fieldWithPath("data.favorites[].priority").type(JsonFieldType.NUMBER).description("표시 순서"),
-                                fieldWithPath("data.favorites[].favoritedAt").type(JsonFieldType.STRING).description("즐겨찾기 등록 시각"),
-                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수"),
-                                fieldWithPath("error").type(JsonFieldType.NULL)
-                                        .description("에러 정보 (성공 시 null)")
-                                        .optional()
+                                fieldWithPath("data.favorites[].displayOrder").type(JsonFieldType.NUMBER).description("표시 순서"),
+                                fieldWithPath("data.favorites[].isOpenNow").type(JsonFieldType.BOOLEAN).description("영업 중 여부"),
+                                fieldWithPath("data.favorites[].createdAt").type(JsonFieldType.STRING).description("즐겨찾기 등록 시각"),
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("필터 조건을 만족하는 전체 즐겨찾기 수"),
+                                fieldWithPath("data.openCount").type(JsonFieldType.NUMBER).description("영업 중인 즐겨찾기 수"),
+                                fieldWithPath("data.size").type(JsonFieldType.NUMBER).description("요청한 페이지 크기"),
+                                fieldWithPath("data.hasNext").type(JsonFieldType.BOOLEAN).description("다음 페이지 존재 여부"),
+                                fieldWithPath("data.nextCursor").type(JsonFieldType.NUMBER).description("다음 페이지 커서").optional(),
+                                fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)")
                         )
                 ));
     }
@@ -312,6 +346,9 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.data.favorites").isArray())
                 .andExpect(jsonPath("$.data.favorites").isEmpty())
                 .andExpect(jsonPath("$.data.totalCount").value(0))
+                .andExpect(jsonPath("$.data.openCount").value(0))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.nextCursor").value(nullValue()))
                 .andDo(document("favorite-get-list-empty",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -320,7 +357,11 @@ class FavoriteControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("result").type(JsonFieldType.STRING).description("요청 처리 결과 (SUCCESS)"),
                                 fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
                                 fieldWithPath("data.favorites").type(JsonFieldType.ARRAY).description("즐겨찾기 목록 (빈 배열)"),
-                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("전체 즐겨찾기 개수 (0)"),
+                                fieldWithPath("data.totalCount").type(JsonFieldType.NUMBER).description("필터 조건을 만족하는 전체 즐겨찾기 수"),
+                                fieldWithPath("data.openCount").type(JsonFieldType.NUMBER).description("영업 중인 즐겨찾기 수"),
+                                fieldWithPath("data.size").type(JsonFieldType.NUMBER).description("요청한 페이지 크기"),
+                                fieldWithPath("data.hasNext").type(JsonFieldType.BOOLEAN).description("다음 페이지 존재 여부"),
+                                fieldWithPath("data.nextCursor").type(JsonFieldType.NUMBER).description("다음 페이지 커서").optional(),
                                 fieldWithPath("error").type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")
                                         .optional()

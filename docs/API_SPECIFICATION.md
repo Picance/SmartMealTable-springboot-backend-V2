@@ -3190,12 +3190,12 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 
 **Endpoint:** `GET /api/v1/favorites`
 
-**Query Parameters:**
+**Query Parameters (커서 기반 페이징):**
 ```
 ?sortBy=priority
 &isOpenOnly=false
 &categoryId=5
-&page=0
+&cursor=301
 &size=20
 ```
 
@@ -3208,7 +3208,8 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
   - `createdAt`: 최근 추가 순
 - `isOpenOnly` (optional): true면 현재 영업 중인 가게만 조회 (기본값: false)
 - `categoryId` (optional): 특정 카테고리 필터링
-- `page`, `size`: 페이징 (기본값: page=0, size=20)
+- `cursor` (optional): 이전 응답의 `nextCursor` 값을 전달하면 해당 항목 이후부터 조회 (첫 요청 시 생략)
+- `size` (optional): 조회할 항목 수 (기본값: 20, 최대 50)
 
 **Response (200):**
 ```json
@@ -3234,9 +3235,9 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
     ],
     "totalCount": 15,
     "openCount": 12,
-    "page": 0,
     "size": 20,
-    "totalPages": 1
+    "hasNext": false,
+    "nextCursor": null
   },
   "error": null
 }
@@ -3245,7 +3246,9 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 **Note:**
 - `distance`: 사용자의 기본 주소(primary address)를 기준으로 계산
 - `isOpenNow`: 현재 시간 기준 영업 여부
-- `openCount`: 전체 즐겨찾기 중 현재 영업 중인 가게 수
+- `openCount`: 현재 필터 조건(카테고리, 정렬 등)을 만족하는 즐겨찾기 중 영업 중인 가게 수
+- `cursor`가 없으면 첫 페이지를, 응답의 `nextCursor`를 전달하면 이어서 무한 스크롤 방식으로 조회
+- `hasNext=false`이면 추가 데이터가 없으므로 더 이상 요청할 필요가 없음
 
 ---
 

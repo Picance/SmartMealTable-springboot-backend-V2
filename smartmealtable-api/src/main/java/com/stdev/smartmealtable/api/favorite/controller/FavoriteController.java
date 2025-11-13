@@ -6,7 +6,10 @@ import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/favorites")
 @RequiredArgsConstructor
+@Validated
 public class FavoriteController {
     
     private final FavoriteService favoriteService;
@@ -45,8 +49,22 @@ public class FavoriteController {
      * @return 즐겨찾기 목록
      */
     @GetMapping
-    public ApiResponse<GetFavoritesResponse> getFavorites(@AuthUser AuthenticatedUser user) {
-        GetFavoritesResponse response = favoriteService.getFavorites(user.memberId());
+    public ApiResponse<GetFavoritesResponse> getFavorites(
+            @AuthUser AuthenticatedUser user,
+            @RequestParam(defaultValue = "priority") String sortBy,
+            @RequestParam(required = false) Boolean isOpenOnly,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(50) Integer size
+    ) {
+        GetFavoritesRequest request = GetFavoritesRequest.builder()
+                .sortBy(sortBy)
+                .isOpenOnly(isOpenOnly)
+                .categoryId(categoryId)
+                .cursor(cursor)
+                .size(size)
+                .build();
+        GetFavoritesResponse response = favoriteService.getFavorites(user.memberId(), request);
         return ApiResponse.success(response);
     }
     

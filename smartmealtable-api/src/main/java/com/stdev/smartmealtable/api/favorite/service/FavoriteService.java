@@ -1,20 +1,30 @@
 package com.stdev.smartmealtable.api.favorite.service;
 
 import com.stdev.smartmealtable.api.favorite.dto.*;
+import com.stdev.smartmealtable.api.home.service.BusinessHoursService;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.favorite.Favorite;
 import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
+import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
+import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.support.location.DistanceCalculator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;import java.util.List;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -24,11 +34,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class FavoriteService {
     
     private final FavoriteRepository favoriteRepository;
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
+    private final AddressHistoryRepository addressHistoryRepository;
+    private final BusinessHoursService businessHoursService;
+    private final DistanceCalculator distanceCalculator;
     
     /**
      * 즐겨찾기 추가
@@ -68,79 +82,288 @@ public class FavoriteService {
     }
     
     /**
-     * 즐겨찾기 목록 조회
-     * [REQ-FAV-102] 저장된 순서대로 가게 목록을 표시
-     * 
+     * 즐겨찾기 목록 조회 (커서 기반)
+     *
      * @param memberId 회원 ID
-     * @return 즐겨찾기 목록
+     * @param request 조회 조건
+     * @return 즐겨찾기 목록 + 커서 정보
      */
-    public GetFavoritesResponse getFavorites(Long memberId) {
-        // 1. 즐겨찾기 목록 조회 (우선순위 오름차순)
+    public GetFavoritesResponse getFavorites(Long memberId, GetFavoritesRequest request) {
+        if (request.isUnsupportedSort()) {
+            throw new BusinessException(ErrorType.INVALID_INPUT);
+        }
+
+        AddressHistory primaryAddress = addressHistoryRepository.findPrimaryByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorType.ADDRESS_NOT_FOUND));
+
         List<Favorite> favorites = favoriteRepository.findByMemberIdOrderByPriorityAsc(memberId);
-        
         if (favorites.isEmpty()) {
             return GetFavoritesResponse.builder()
                     .favorites(List.of())
                     .totalCount(0)
+                    .openCount(0)
+                    .size(request.pageSize())
+                    .hasNext(false)
+                    .nextCursor(null)
                     .build();
         }
-        
-        // 2. 가게 정보 조회
+
+        Map<Long, Store> storeMap = loadStores(favorites);
+        if (storeMap.isEmpty()) {
+            return GetFavoritesResponse.builder()
+                    .favorites(List.of())
+                    .totalCount(0)
+                    .openCount(0)
+                    .size(request.pageSize())
+                    .hasNext(false)
+                    .nextCursor(null)
+                    .build();
+        }
+
+        Map<Long, Category> categoryMap = loadCategories(storeMap);
+        List<FavoriteView> views = buildFavoriteViews(favorites, storeMap, categoryMap, primaryAddress);
+
+        // 카테고리 필터 적용
+        List<FavoriteView> categoryFiltered = filterByCategory(views, request.categoryId());
+
+        int openCount = (int) categoryFiltered.stream()
+                .filter(FavoriteView::isOpenNow)
+                .count();
+
+        List<FavoriteView> openFiltered = request.openOnly()
+                ? categoryFiltered.stream().filter(FavoriteView::isOpenNow).toList()
+                : categoryFiltered;
+
+        List<FavoriteView> sorted = sortViews(openFiltered, request.sortKey());
+        CursorResult cursorResult = applyCursor(sorted, request.cursor(), request.pageSize());
+
+        List<FavoriteStoreDto> responseDtos = cursorResult.items().stream()
+                .map(this::toDto)
+                .toList();
+
+        return GetFavoritesResponse.builder()
+                .favorites(responseDtos)
+                .totalCount(openFiltered.size())
+                .openCount(openCount)
+                .size(request.pageSize())
+                .hasNext(cursorResult.hasNext())
+                .nextCursor(cursorResult.nextCursor())
+                .build();
+    }
+
+    private Map<Long, Store> loadStores(List<Favorite> favorites) {
         List<Long> storeIds = favorites.stream()
                 .map(Favorite::getStoreId)
-                .collect(Collectors.toList());
-        
-        Map<Long, Store> storeMap = storeIds.stream()
-                .map(storeRepository::findById)
-                .filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())
-                .collect(Collectors.toMap(Store::getStoreId, store -> store));
-        
-        // 3. 카테고리 정보 조회
+                .distinct()
+                .toList();
+
+        if (storeIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return storeRepository.findByIdIn(storeIds).stream()
+                .collect(Collectors.toMap(Store::getStoreId, Function.identity()));
+    }
+
+    private Map<Long, Category> loadCategories(Map<Long, Store> storeMap) {
         List<Long> categoryIds = storeMap.values().stream()
-                .map(store -> store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0))
+                .flatMap(store -> store.getCategoryIds().stream())
                 .filter(Objects::nonNull)
                 .distinct()
-                .collect(Collectors.toList());
-        
-        Map<Long, Category> categoryMap = categoryIds.stream()
-                .map(categoryRepository::findById)
-                .filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())
-                .collect(Collectors.toMap(Category::getCategoryId, category -> category));
-        
-        // 4. DTO 변환
-        List<FavoriteStoreDto> favoriteStoreDtos = favorites.stream()
-                .map(favorite -> {
-                    Store store = storeMap.get(favorite.getStoreId());
-                    if (store == null) {
-                        return null;
-                    }
-                    
-                    Long primaryCategoryId = store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0);
-                    Category category = primaryCategoryId != null ? categoryMap.get(primaryCategoryId) : null;
-                    String categoryName = category != null ? category.getName() : "";
-                    
-                    return FavoriteStoreDto.builder()
-                            .favoriteId(favorite.getFavoriteId())
-                            .storeId(store.getStoreId())
-                            .storeName(store.getName())
-                            .categoryName(categoryName)
-                            .reviewCount(store.getReviewCount())
-                            .averagePrice(store.getAveragePrice())
-                            .address(store.getAddress())
-                            .imageUrl(store.getImageUrl())
-                            .priority(favorite.getPriority())
-                            .favoritedAt(favorite.getFavoritedAt())
-                            .build();
-                })
-                .filter(dto -> dto != null)
-                .collect(Collectors.toList());
-        
-        return GetFavoritesResponse.builder()
-                .favorites(favoriteStoreDtos)
-                .totalCount(favoriteStoreDtos.size())
+                .toList();
+
+        if (categoryIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return categoryRepository.findByIdIn(categoryIds).stream()
+                .collect(Collectors.toMap(Category::getCategoryId, Function.identity()));
+    }
+
+    private List<FavoriteView> buildFavoriteViews(
+            List<Favorite> favorites,
+            Map<Long, Store> storeMap,
+            Map<Long, Category> categoryMap,
+            AddressHistory primaryAddress
+    ) {
+        Double userLat = primaryAddress.getAddress() != null ? primaryAddress.getAddress().getLatitude() : null;
+        Double userLon = primaryAddress.getAddress() != null ? primaryAddress.getAddress().getLongitude() : null;
+
+        List<FavoriteView> views = new ArrayList<>();
+        for (Favorite favorite : favorites) {
+            Store store = storeMap.get(favorite.getStoreId());
+            if (store == null) {
+                log.debug("Skipping favorite {} because store {} not found", favorite.getFavoriteId(), favorite.getStoreId());
+                continue;
+            }
+
+            views.add(buildView(favorite, store, categoryMap, userLat, userLon));
+        }
+        return views;
+    }
+
+    private FavoriteView buildView(
+            Favorite favorite,
+            Store store,
+            Map<Long, Category> categoryMap,
+            Double userLat,
+            Double userLon
+    ) {
+        List<Long> categoryIds = store.getCategoryIds() != null ? store.getCategoryIds() : List.of();
+        Long primaryCategoryId = !categoryIds.isEmpty() ? categoryIds.get(0) : null;
+        String categoryName = primaryCategoryId != null && categoryMap.containsKey(primaryCategoryId)
+                ? categoryMap.get(primaryCategoryId).getName()
+                : "";
+
+        Double distance = calculateDistance(userLat, userLon, store);
+        boolean isOpenNow = businessHoursService.getOperationStatus(store.getStoreId()).isOpen();
+
+        return new FavoriteView(
+                favorite,
+                store,
+                categoryIds,
+                primaryCategoryId,
+                categoryName,
+                distance,
+                isOpenNow
+        );
+    }
+
+    private List<FavoriteView> filterByCategory(List<FavoriteView> views, Long categoryId) {
+        if (categoryId == null) {
+            return views;
+        }
+
+        return views.stream()
+                .filter(view -> view.categoryIds().contains(categoryId))
+                .toList();
+    }
+
+    private List<FavoriteView> sortViews(List<FavoriteView> views, String sortKey) {
+        if (views.isEmpty()) {
+            return views;
+        }
+
+        List<FavoriteView> sorted = new ArrayList<>(views);
+        sorted.sort(buildComparator(sortKey));
+        return sorted;
+    }
+
+    private Comparator<FavoriteView> buildComparator(String sortKey) {
+        Comparator<FavoriteView> comparator;
+        switch (sortKey) {
+            case "name" -> comparator = Comparator.comparing(
+                    (FavoriteView view) -> view.store().getName(),
+                    Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+            );
+            case "reviewcount" -> comparator = Comparator.comparingInt(
+                    (FavoriteView view) -> safeInt(view.store().getReviewCount())
+            ).reversed();
+            case "distance" -> comparator = Comparator.comparing(
+                    FavoriteView::distance,
+                    Comparator.nullsLast(Double::compareTo)
+            );
+            case "createdat" -> comparator = Comparator.comparing(
+                    (FavoriteView view) -> view.favorite().getFavoritedAt(),
+                    Comparator.nullsLast(Comparator.naturalOrder())
+            ).reversed();
+            case "priority" -> comparator = Comparator.comparing(
+                    (FavoriteView view) -> view.favorite().getPriority(),
+                    Comparator.nullsLast(Long::compareTo)
+            );
+            default -> comparator = Comparator.comparing(
+                    (FavoriteView view) -> view.favorite().getPriority(),
+                    Comparator.nullsLast(Long::compareTo)
+            );
+        }
+
+        return comparator.thenComparing((FavoriteView view) -> view.favorite().getFavoriteId());
+    }
+
+    private CursorResult applyCursor(List<FavoriteView> sorted, Long cursor, int size) {
+        if (sorted.isEmpty()) {
+            return new CursorResult(List.of(), false, null);
+        }
+
+        int startIndex = 0;
+        if (cursor != null) {
+            for (int i = 0; i < sorted.size(); i++) {
+                if (Objects.equals(sorted.get(i).favorite().getFavoriteId(), cursor)) {
+                    startIndex = i + 1;
+                    break;
+                }
+            }
+            if (startIndex >= sorted.size()) {
+                return new CursorResult(List.of(), false, null);
+            }
+        }
+
+        int endIndex = Math.min(sorted.size(), startIndex + size);
+        List<FavoriteView> slice = new ArrayList<>(sorted.subList(startIndex, endIndex));
+        boolean hasNext = endIndex < sorted.size();
+        Long nextCursor = hasNext && !slice.isEmpty()
+                ? slice.get(slice.size() - 1).favorite().getFavoriteId()
+                : null;
+
+        return new CursorResult(slice, hasNext, nextCursor);
+    }
+
+    private FavoriteStoreDto toDto(FavoriteView view) {
+        return FavoriteStoreDto.builder()
+                .favoriteId(view.favorite().getFavoriteId())
+                .storeId(view.store().getStoreId())
+                .storeName(view.store().getName())
+                .categoryId(view.primaryCategoryId())
+                .categoryName(view.primaryCategoryName())
+                .reviewCount(view.store().getReviewCount())
+                .averagePrice(view.store().getAveragePrice())
+                .address(view.store().getAddress())
+                .distance(view.distance())
+                .imageUrl(view.store().getImageUrl())
+                .displayOrder(view.favorite().getPriority())
+                .isOpenNow(view.isOpenNow())
+                .createdAt(view.favorite().getFavoritedAt())
                 .build();
+    }
+
+    private Double calculateDistance(Double userLat, Double userLon, Store store) {
+        if (userLat == null || userLon == null || store.getLatitude() == null || store.getLongitude() == null) {
+            return null;
+        }
+        try {
+            BigDecimal distanceKm = distanceCalculator.calculateDistanceKm(
+                    userLat,
+                    userLon,
+                    store.getLatitude().doubleValue(),
+                    store.getLongitude().doubleValue()
+            );
+            return distanceKm.doubleValue();
+        } catch (IllegalArgumentException e) {
+            log.debug("Failed to calculate distance for store {}", store.getStoreId(), e);
+            return null;
+        }
+    }
+
+    private int safeInt(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private record FavoriteView(
+            Favorite favorite,
+            Store store,
+            List<Long> categoryIds,
+            Long primaryCategoryId,
+            String primaryCategoryName,
+            Double distance,
+            boolean isOpenNow
+    ) {
+    }
+
+    private record CursorResult(
+            List<FavoriteView> items,
+            boolean hasNext,
+            Long nextCursor
+    ) {
     }
     
     /**

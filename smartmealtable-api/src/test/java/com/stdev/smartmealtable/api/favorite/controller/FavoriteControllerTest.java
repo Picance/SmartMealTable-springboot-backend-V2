@@ -3,15 +3,20 @@ package com.stdev.smartmealtable.api.favorite.controller;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.favorite.dto.AddFavoriteRequest;
 import com.stdev.smartmealtable.api.favorite.dto.ReorderFavoritesRequest;
+import com.stdev.smartmealtable.api.home.service.BusinessHoursService;
 import com.stdev.smartmealtable.domain.category.Category;
 import com.stdev.smartmealtable.domain.category.CategoryRepository;
+import com.stdev.smartmealtable.domain.common.vo.Address;
+import com.stdev.smartmealtable.domain.common.vo.AddressType;
 import com.stdev.smartmealtable.domain.favorite.Favorite;
 import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
+import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
-import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
+import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.member.repository.MemberAuthenticationRepository;
+import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
@@ -19,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
@@ -26,6 +32,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -53,6 +61,12 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private AddressHistoryRepository addressHistoryRepository;
+
+    @MockBean
+    private BusinessHoursService businessHoursService;
+
     private Long memberId;
     private Long storeId1;
     private Long storeId2;
@@ -78,7 +92,20 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
         );
         memberAuthenticationRepository.save(auth);
 
-        // 4. 가게 생성
+        // 4. 기본 주소 등록
+        Address homeAddress = Address.of(
+                "우리집",
+                "서울특별시 강남구 테헤란로 1",
+                "서울특별시 강남구 테헤란로 1",
+                "101호",
+                37.5665,
+                126.9780,
+                AddressType.HOME
+        );
+        AddressHistory addressHistory = AddressHistory.create(memberId, homeAddress, true);
+        addressHistoryRepository.save(addressHistory);
+
+        // 5. 가게 생성
         Store store1 = Store.builder()
                 .name("맛있는 한식집")
                 .categoryIds(java.util.List.of(savedCategory.getCategoryId()))
@@ -118,6 +145,11 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                 .build();
         Store savedStore2 = storeRepository.save(store2);
         storeId2 = savedStore2.getStoreId();
+
+        when(businessHoursService.getOperationStatus(storeId1))
+                .thenReturn(new BusinessHoursService.StoreOperationStatus("영업중", true));
+        when(businessHoursService.getOperationStatus(storeId2))
+                .thenReturn(new BusinessHoursService.StoreOperationStatus("휴무", false));
 
         // 5. JWT 토큰 생성
         accessToken = createAccessToken(memberId);
@@ -214,10 +246,16 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.data.favorites").isArray())
                 .andExpect(jsonPath("$.data.favorites.length()").value(2))
                 .andExpect(jsonPath("$.data.totalCount").value(2))
+                .andExpect(jsonPath("$.data.openCount").value(1))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.nextCursor").value(nullValue()))
+                .andExpect(jsonPath("$.data.size").value(20))
                 .andExpect(jsonPath("$.data.favorites[0].favoriteId").exists())
                 .andExpect(jsonPath("$.data.favorites[0].storeId").value(storeId1))
                 .andExpect(jsonPath("$.data.favorites[0].storeName").value("맛있는 한식집"))
-                .andExpect(jsonPath("$.data.favorites[0].priority").value(1))
+                .andExpect(jsonPath("$.data.favorites[0].displayOrder").value(1))
+                .andExpect(jsonPath("$.data.favorites[0].distance").isNumber())
+                .andExpect(jsonPath("$.data.favorites[0].isOpenNow").value(true))
                 .andDo(document("favorite-list-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -228,14 +266,21 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favorites[].favoriteId").description("즐겨찾기 ID"),
                                 fieldWithPath("data.favorites[].storeId").description("가게 ID"),
                                 fieldWithPath("data.favorites[].storeName").description("가게명"),
+                                fieldWithPath("data.favorites[].categoryId").description("대표 카테고리 ID").optional(),
                                 fieldWithPath("data.favorites[].categoryName").description("카테고리명"),
                                 fieldWithPath("data.favorites[].reviewCount").description("리뷰 수"),
                                 fieldWithPath("data.favorites[].averagePrice").description("평균 가격"),
                                 fieldWithPath("data.favorites[].address").description("가게 주소"),
-                                fieldWithPath("data.favorites[].imageUrl").description("가게 이미지 URL"),
-                                fieldWithPath("data.favorites[].priority").description("즐겨찾기 순서"),
-                                fieldWithPath("data.favorites[].favoritedAt").description("즐겨찾기 등록 시각"),
-                                fieldWithPath("data.totalCount").description("전체 즐겨찾기 개수"),
+                                fieldWithPath("data.favorites[].distance").description("사용자 기준 거리(km)").optional(),
+                                fieldWithPath("data.favorites[].imageUrl").description("가게 이미지 URL").optional(),
+                                fieldWithPath("data.favorites[].displayOrder").description("즐겨찾기 정렬 순서"),
+                                fieldWithPath("data.favorites[].isOpenNow").description("현재 영업 중 여부"),
+                                fieldWithPath("data.favorites[].createdAt").description("즐겨찾기 등록 시각"),
+                                fieldWithPath("data.totalCount").description("필터 조건을 만족하는 전체 즐겨찾기 개수"),
+                                fieldWithPath("data.openCount").description("현재 영업 중인 즐겨찾기 수"),
+                                fieldWithPath("data.size").description("요청한 페이지 크기"),
+                                fieldWithPath("data.hasNext").description("다음 페이지 존재 여부"),
+                                fieldWithPath("data.nextCursor").description("다음 페이지 커서 (없으면 null)").optional(),
                                 fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));
@@ -250,7 +295,47 @@ class FavoriteControllerTest extends AbstractRestDocsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.favorites").isEmpty())
-                .andExpect(jsonPath("$.data.totalCount").value(0));
+                .andExpect(jsonPath("$.data.totalCount").value(0))
+                .andExpect(jsonPath("$.data.openCount").value(0))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.nextCursor").value(nullValue()));
+    }
+
+    @Test
+    @DisplayName("즐겨찾기 목록 조회 - 커서 & 영업중 필터")
+    void getFavorites_cursorAndOpenFilter() throws Exception {
+        Favorite first = favoriteRepository.save(Favorite.create(memberId, storeId1, 1L));
+        Favorite second = favoriteRepository.save(Favorite.create(memberId, storeId2, 2L));
+
+        // 페이지 크기 1로 첫 요청
+        mockMvc.perform(get("/api/v1/favorites")
+                        .header("Authorization", accessToken)
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.favorites.length()").value(1))
+                .andExpect(jsonPath("$.data.hasNext").value(true))
+                .andExpect(jsonPath("$.data.nextCursor").value(first.getFavoriteId().intValue()));
+
+        // 커서를 전달하여 다음 데이터 조회
+        mockMvc.perform(get("/api/v1/favorites")
+                        .header("Authorization", accessToken)
+                        .param("size", "1")
+                        .param("cursor", String.valueOf(first.getFavoriteId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.favorites.length()").value(1))
+                .andExpect(jsonPath("$.data.favorites[0].storeId").value(storeId2))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.nextCursor").value(nullValue()));
+
+        // 영업 중인 가게만 필터
+        mockMvc.perform(get("/api/v1/favorites")
+                        .header("Authorization", accessToken)
+                        .param("isOpenOnly", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalCount").value(1))
+                .andExpect(jsonPath("$.data.favorites.length()").value(1))
+                .andExpect(jsonPath("$.data.favorites[0].storeId").value(storeId1))
+                .andExpect(jsonPath("$.data.openCount").value(1));
     }
 
     @Test

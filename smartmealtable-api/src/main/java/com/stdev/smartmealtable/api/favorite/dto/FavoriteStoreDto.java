@@ -30,6 +30,11 @@ public class FavoriteStoreDto {
      * 가게명
      */
     private String storeName;
+
+    /**
+     * 대표 카테고리 ID
+     */
+    private Long categoryId;
     
     /**
      * 카테고리명
@@ -50,6 +55,11 @@ public class FavoriteStoreDto {
      * 주소
      */
     private String address;
+
+    /**
+     * 사용자 기준 거리 (km)
+     */
+    private Double distance;
     
     /**
      * 대표 이미지 URL
@@ -57,12 +67,17 @@ public class FavoriteStoreDto {
     private String imageUrl;
     
     /**
-     * 표시 순서
+     * 표시 순서 (priority)
      */
-    private Long priority;
+    private Long displayOrder;
+    
+    /**
+     * 현재 영업 중 여부
+     */
+    private Boolean isOpenNow;
     
     /**
      * 즐겨찾기 등록 시각
      */
-    private LocalDateTime favoritedAt;
+    private LocalDateTime createdAt;
 }
