@@ -471,6 +471,22 @@ export JVM_ARGS="-Xms1024m -Xmx4096m"
 HEAP="-Xms1g -Xmx4g"
 ```
 
+## Finance 도메인 성능 자산
+
+- **대용량 데이터 로더**: `smartmealtable-performance` 모듈에서 실행. 사용 방법과 튜닝 포인트는 `docs/performance/PERFORMANCE_TEST_PLAN.md` 참고.
+- **SQL 워크로드**: `performance-test/scripts/run-sql-benchmarks.sh`  
+  ```bash
+  MEMBER_ID=100050 START_DATE=2025-01-01 END_DATE=2025-03-31 \
+  performance-test/scripts/run-sql-benchmarks.sh
+  ```
+  `EXPLAIN ANALYZE`를 한 번에 실행하여 Food/Expenditure/Budget 핵심 쿼리의 계획 및 실행 시간을 수집합니다.
+- **API 부하 (k6)**: `performance-test/k6/finance-scenarios.js`  
+  ```bash
+  JWT_TOKEN=<loader로 생성한 토큰>
+  k6 run performance-test/k6/finance-scenarios.js
+  ```
+  5개의 시나리오(자동완성, 지출 목록/통계, 월/일 예산)를 동시에 주입해 API SLA를 검증합니다.
+
 ## 참고 자료
 
 - [Apache JMeter 공식 문서](https://jmeter.apache.org/usermanual/index.html)
