@@ -257,6 +257,7 @@ CREATE TABLE food (
     INDEX idx_category_id (category_id),
     INDEX idx_food_name (food_name),
     INDEX idx_food_name_prefix (food_name(10)),
+    INDEX idx_food_name_deleted (food_name, deleted_at),
     INDEX idx_registered_dt (registered_dt),
     INDEX idx_store_main (store_id, is_main),
     INDEX idx_store_display (store_id, display_order)
@@ -318,6 +319,7 @@ CREATE TABLE expenditure (
                              INDEX idx_member_id (member_id),
                              INDEX idx_store_id (store_id),
                              INDEX idx_expended_date (expended_date),
+                             INDEX idx_expenditure_member_date (member_id, deleted, expended_date, expended_time, category_id),
                              INDEX idx_category_id (category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 음식 관련 지출 내역을 기록하는 테이블';
 
