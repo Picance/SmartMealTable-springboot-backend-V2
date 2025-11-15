@@ -14,7 +14,7 @@ public interface MonthlyBudgetJpaRepository extends JpaRepository<MonthlyBudgetJ
     /**
      * 회원 ID와 예산 월로 월별 예산 조회
      */
-    @Query("SELECT m FROM MonthlyBudgetJpaEntity m WHERE m.memberId = :memberId AND m.budgetMonth = :budgetMonth")
+    @Query("SELECT m FROM MonthlyBudgetJpaEntity m WHERE m.memberId = :memberId AND m.budgetMonth = :budgetMonth ORDER BY m.monthlyBudgetId DESC LIMIT 1")
     Optional<MonthlyBudgetJpaEntity> findByMemberIdAndBudgetMonth(
             @Param("memberId") Long memberId,
             @Param("budgetMonth") String budgetMonth

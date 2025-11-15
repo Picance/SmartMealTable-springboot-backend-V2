@@ -80,6 +80,10 @@ class BudgetDomainServiceTest {
                 MealBudget lunchBudget = MealBudget.create(1L, 4000, MealType.LUNCH, today);
                 MealBudget dinnerBudget = MealBudget.create(1L, 3000, MealType.DINNER, today);
 
+                given(monthlyBudgetRepository.findByMemberIdAndBudgetMonth(memberId, budgetMonth))
+                        .willReturn(Optional.empty());
+                given(dailyBudgetRepository.findByMemberIdAndBudgetDateGreaterThanEqual(memberId, today))
+                        .willReturn(List.of());
                 given(monthlyBudgetRepository.save(any(MonthlyBudget.class))).willReturn(monthlyBudget);
                 given(dailyBudgetRepository.save(any(DailyBudget.class))).willReturn(dailyBudget);
                 given(mealBudgetRepository.save(any(MealBudget.class)))
@@ -126,6 +130,10 @@ class BudgetDomainServiceTest {
                 MonthlyBudget monthlyBudget = MonthlyBudget.create(memberId, monthlyAmount, budgetMonth);
                 DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, today);
 
+                given(monthlyBudgetRepository.findByMemberIdAndBudgetMonth(memberId, budgetMonth))
+                        .willReturn(Optional.empty());
+                given(dailyBudgetRepository.findByMemberIdAndBudgetDateGreaterThanEqual(memberId, today))
+                        .willReturn(List.of());
                 given(monthlyBudgetRepository.save(any(MonthlyBudget.class))).willReturn(monthlyBudget);
                 given(dailyBudgetRepository.save(any(DailyBudget.class))).willReturn(dailyBudget);
 

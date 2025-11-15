@@ -13,7 +13,12 @@ import java.time.LocalDateTime;
  * 일일 예산 JPA 엔티티
  */
 @Entity
-@Table(name = "daily_budget")
+@Table(
+        name = "daily_budget",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_daily_budget_member_date", columnNames = {"member_id", "budget_date"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DailyBudgetJpaEntity {

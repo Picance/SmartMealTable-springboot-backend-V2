@@ -376,7 +376,8 @@ CREATE TABLE monthly_budget (
                                 updated_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                 PRIMARY KEY (monthly_budget_id),
                                 INDEX idx_member_id (member_id),
-                                INDEX idx_budget_month (budget_month)
+                                INDEX idx_budget_month (budget_month),
+                                UNIQUE KEY uq_monthly_budget_member_month (member_id, budget_month)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원이 설정한 월별 식비 예산을 관리하는 테이블';
 
 -- 일일 예산 테이블
@@ -390,7 +391,8 @@ CREATE TABLE daily_budget (
                               updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                               PRIMARY KEY (budget_id),
                               INDEX idx_member_id (member_id),
-                              INDEX idx_budget_date (budget_date)
+                              INDEX idx_budget_date (budget_date),
+                              UNIQUE KEY uq_daily_budget_member_date (member_id, budget_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원이 설정한 일일 식비 예산을 관리하는 테이블';
 
 -- 식사 예산 테이블
