@@ -113,7 +113,7 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.startsWithIgnoreCase(prefix)
+                        foodJpaEntity.foodName.startsWith(prefix)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
                 .orderBy(
@@ -139,7 +139,7 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.containsIgnoreCase(keyword)
+                        foodJpaEntity.foodName.contains(keyword)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
                 .orderBy(
