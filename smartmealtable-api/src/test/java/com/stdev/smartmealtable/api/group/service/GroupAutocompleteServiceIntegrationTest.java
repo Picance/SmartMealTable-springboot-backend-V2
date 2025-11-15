@@ -117,6 +117,27 @@ class GroupAutocompleteServiceIntegrationTest {
 
     @Test
     @Order(2)
+    @DisplayName("긴 키워드 검색 시 포함률이 높은 그룹이 우선 정렬된다")
+    void autocomplete_CacheHit_SortsByKeywordInclusion() {
+        // given - popularity가 낮아도 키워드 일치도가 높은 데이터 준비
+        searchCacheService.cacheAutocompleteData(DOMAIN, List.of(
+                new AutocompleteEntity(savedGroup1.getGroupId(), savedGroup1.getName(), 300.0,
+                        Map.of("type", "UNIVERSITY", "address", savedGroup1.getAddress() != null ? savedGroup1.getAddress().getFullAddress() : "")),
+                new AutocompleteEntity(savedGroup2.getGroupId(), savedGroup2.getName(), 50.0,
+                        Map.of("type", "UNIVERSITY", "address", savedGroup2.getAddress() != null ? savedGroup2.getAddress().getFullAddress() : ""))
+        ));
+
+        // when - 전체 이름을 검색 키워드로 사용
+        GroupAutocompleteResponse response = groupAutocompleteService.autocomplete("서울과학기술대학교", 10);
+
+        // then - popularity가 낮더라도 포함률 100%인 결과가 우선된다
+        assertThat(response.suggestions()).hasSize(2);
+        assertThat(response.suggestions().get(0).name()).isEqualTo("서울과학기술대학교");
+        assertThat(response.suggestions().get(1).name()).isEqualTo("서울대학교");
+    }
+
+    @Test
+    @Order(3)
     @DisplayName("캐시가 없을 때 DB에서 검색한다 (Cache Miss)")
     void autocomplete_CacheMiss_FallbackToDb() {
         // given - 캐시 없음 (setUp에서 flushDb 실행)
@@ -136,7 +157,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== Stage 2: 초성 검색 테스트 ====================
 
     @Test
-    @Order(3)
+    @Order(4)
     @DisplayName("초성 검색이 성공한다")
     void autocomplete_ChosungSearch_Success() {
         // given - 초성 인덱스 구축
@@ -157,7 +178,7 @@ class GroupAutocompleteServiceIntegrationTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("부분 초성 검색이 성공한다")
     void autocomplete_PartialChosungSearch_Success() {
         // given - 초성 인덱스 구축
@@ -179,7 +200,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== Stage 3: 오타 허용 검색 테스트 ====================
 
     @Test
-    @Order(5)
+    @Order(6)
     @DisplayName("오타가 있어도 편집 거리 2 이내면 검색된다")
     void autocomplete_TypoTolerance_Success() {
         // given - 캐시에 데이터 추가 (오타 검색도 캐시에서 처리)
@@ -198,7 +219,7 @@ class GroupAutocompleteServiceIntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("편집 거리가 2를 초과하면 검색되지 않는다")
     void autocomplete_TypoTolerance_ExceedsThreshold() {
         // given - 캐시 없음
@@ -213,7 +234,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== 인기 검색어 테스트 ====================
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("검색 시 검색 횟수가 증가한다")
     void autocomplete_IncrementSearchCount() {
         // given - 캐시 데이터 추가
@@ -234,7 +255,7 @@ class GroupAutocompleteServiceIntegrationTest {
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     @DisplayName("인기 검색어를 검색 횟수 순으로 조회한다")
     void getTrendingKeywords_SortedBySearchCount() {
         // given - 여러 키워드 검색
@@ -261,7 +282,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== 하이브리드 데이터 조회 테스트 ====================
 
     @Test
-    @Order(9)
+    @Order(10)
     @DisplayName("캐시에 일부 데이터만 있을 때 DB와 조합하여 조회한다")
     void autocomplete_HybridFetch_CacheAndDb() {
         // given - 캐시에 2개 모두 추가 (prefix "서", "서울"로)
@@ -284,7 +305,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== 결과 제한 테스트 ====================
 
     @Test
-    @Order(10)
+    @Order(11)
     @DisplayName("limit 파라미터가 적용된다")
     void autocomplete_WithLimit() {
         // given - 캐시에 데이터 추가 (모두 "서"로 시작)
@@ -306,7 +327,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== 빈 결과 테스트 ====================
 
     @Test
-    @Order(11)
+    @Order(12)
     @DisplayName("검색 결과가 없으면 빈 리스트를 반환한다")
     void autocomplete_NoResults_EmptyList() {
         // given - 캐시 없음
@@ -321,7 +342,7 @@ class GroupAutocompleteServiceIntegrationTest {
     // ==================== Response DTO 검증 ====================
 
     @Test
-    @Order(12)
+    @Order(13)
     @DisplayName("Response DTO에 모든 필드가 포함된다")
     void autocomplete_ResponseDto_AllFields() {
         // given - 연세대만 캐시에 추가 (다른 그룹과 겹치지 않게)

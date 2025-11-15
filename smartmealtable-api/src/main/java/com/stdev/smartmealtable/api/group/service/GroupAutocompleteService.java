@@ -119,10 +119,17 @@ public class GroupAutocompleteService {
                 log.debug("캐시에서 결과 조회: keyword={}, results={}", keyword, cachedIds.size());
                 List<Group> results = fetchGroups(cachedIds);
 
-                // 캐시 결과는 이미 popularity 순으로 정렬되어 있으므로, 결과가 있으면 바로 반환
-                // (limit보다 적을 수 있지만, 캐시된 데이터가 최고 우선순위)
                 if (!results.isEmpty()) {
                     log.debug("캐시 결과 반환: {}", results.size());
+
+                    if (shouldSortByKeywordRelevance(keyword)) {
+                        Map<Long, Integer> originalOrder = buildOriginalOrderIndex(cachedIds);
+                        List<Group> sortedResults = sortByKeywordRelevance(results, keyword, originalOrder);
+                        return sortedResults.stream()
+                            .limit(limit)
+                            .collect(Collectors.toList());
+                    }
+
                     return results;
                 }
             }
@@ -257,7 +264,111 @@ public class GroupAutocompleteService {
 
         return results;
     }
-    
+
+    private boolean shouldSortByKeywordRelevance(String keyword) {
+        String normalizedKeyword = normalizeForComparison(keyword);
+        // Prefix 캐시 키 길이(최대 2글자)를 초과하는 입력에 대해서만 재정렬
+        return normalizedKeyword.length() > 2;
+    }
+
+    private Map<Long, Integer> buildOriginalOrderIndex(List<Long> cachedIds) {
+        Map<Long, Integer> orderIndex = new HashMap<>();
+        for (int i = 0; i < cachedIds.size(); i++) {
+            orderIndex.put(cachedIds.get(i), i);
+        }
+        return orderIndex;
+    }
+
+    private List<Group> sortByKeywordRelevance(List<Group> groups, String keyword, Map<Long, Integer> originalOrder) {
+        if (groups.isEmpty() || keyword == null || keyword.trim().isEmpty()) {
+            return groups;
+        }
+
+        String normalizedKeyword = normalizeForComparison(keyword);
+
+        Comparator<Group> comparator = Comparator
+            .comparingDouble((Group group) -> calculateKeywordInclusionRatio(group.getName(), normalizedKeyword))
+            .reversed()
+            .thenComparingInt(group -> calculateKeywordPositionScore(group.getName(), keyword))
+            .thenComparingInt(group -> KoreanSearchUtil.calculateEditDistance(keyword, group.getName()))
+            .thenComparingInt(group -> group.getName().length());
+
+        if (originalOrder != null && !originalOrder.isEmpty()) {
+            comparator = comparator.thenComparingInt(group -> originalOrder.getOrDefault(group.getGroupId(), Integer.MAX_VALUE));
+        }
+
+        return groups.stream()
+            .sorted(comparator)
+            .collect(Collectors.toList());
+    }
+
+    private double calculateKeywordInclusionRatio(String name, String normalizedKeyword) {
+        if (name == null || normalizedKeyword.isEmpty()) {
+            return 0.0;
+        }
+
+        String normalizedName = normalizeForComparison(name);
+        if (normalizedName.isEmpty()) {
+            return 0.0;
+        }
+
+        if (normalizedName.contains(normalizedKeyword)) {
+            return 1.0;
+        }
+
+        int longestMatch = longestCommonSubstringLength(normalizedName, normalizedKeyword);
+        if (longestMatch == 0) {
+            return 0.0;
+        }
+
+        return (double) longestMatch / normalizedKeyword.length();
+    }
+
+    private int calculateKeywordPositionScore(String name, String keyword) {
+        if (name == null || keyword == null || keyword.isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+
+        int originalIndex = name.indexOf(keyword);
+        if (originalIndex >= 0) {
+            return originalIndex;
+        }
+
+        String normalizedName = normalizeForComparison(name);
+        String normalizedKeyword = normalizeForComparison(keyword);
+        int normalizedIndex = normalizedName.indexOf(normalizedKeyword);
+        return normalizedIndex >= 0 ? normalizedIndex + 1000 : Integer.MAX_VALUE;
+    }
+
+    private String normalizeForComparison(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replaceAll("\\s+", "").toLowerCase();
+    }
+
+    private int longestCommonSubstringLength(String text, String other) {
+        if (text.isEmpty() || other.isEmpty()) {
+            return 0;
+        }
+
+        int maxLength = 0;
+        int[][] dp = new int[text.length() + 1][other.length() + 1];
+
+        for (int i = 1; i <= text.length(); i++) {
+            for (int j = 1; j <= other.length(); j++) {
+                if (text.charAt(i - 1) == other.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                    if (dp[i][j] > maxLength) {
+                        maxLength = dp[i][j];
+                    }
+                }
+            }
+        }
+
+        return maxLength;
+    }
+
     /**
      * Contains 검색 결과를 정확도순으로 정렬
      *
