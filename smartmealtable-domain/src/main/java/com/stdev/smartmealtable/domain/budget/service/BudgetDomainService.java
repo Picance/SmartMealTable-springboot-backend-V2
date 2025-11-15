@@ -6,6 +6,7 @@ import com.stdev.smartmealtable.domain.budget.*;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -51,50 +52,39 @@ public class BudgetDomainService {
         LocalDate today = LocalDate.now();
         LocalDate endOfMonth = currentMonth.atEndOfMonth();
 
+        monthlyBudgetRepository.findByMemberIdAndBudgetMonth(memberId, budgetMonth)
+                .ifPresent(existing -> {
+                    throw new BusinessException(ErrorType.MONTHLY_BUDGET_ALREADY_EXISTS);
+                });
+
         // 2. 월별 예산 생성
         MonthlyBudget monthlyBudget = MonthlyBudget.create(
                 memberId,
                 monthlyAmount,
                 budgetMonth
         );
-        monthlyBudget = monthlyBudgetRepository.save(monthlyBudget);
 
-        // 3. 오늘부터 월말까지 모든 날짜에 대한 일일 예산 및 식사별 예산 생성
-        DailyBudget firstDailyBudget = null;
-        List<MealBudget> allMealBudgets = new java.util.ArrayList<>();
-
-        for (LocalDate date = today; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
-            // 로컬 변수로 래핑하여 람다식 내에서 사용 가능하도록 함
-            final LocalDate currentDate = date;
-            
-            // 3-1. 일일 예산 생성
-            DailyBudget dailyBudget = DailyBudget.create(
-                    memberId,
-                    dailyAmount,
-                    currentDate
-            );
-            DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
-
-            // 첫 번째 날짜의 일일 예산을 결과에 포함
-            if (firstDailyBudget == null) {
-                firstDailyBudget = savedDailyBudget;
+        try {
+            monthlyBudget = monthlyBudgetRepository.save(monthlyBudget);
+        } catch (DataIntegrityViolationException ex) {
+            if (isMonthlyBudgetUniqueConstraintViolation(ex)) {
+                throw new BusinessException(ErrorType.MONTHLY_BUDGET_ALREADY_EXISTS);
             }
-
-            // 3-2. 식사별 예산 생성
-            List<MealBudget> createdMealBudgetsForDate = mealBudgets.entrySet().stream()
-                    .map(entry -> {
-                        MealBudget mealBudget = MealBudget.create(
-                                savedDailyBudget.getBudgetId(),
-                                entry.getValue(),
-                                entry.getKey(),
-                                currentDate
-                        );
-                        return mealBudgetRepository.save(mealBudget);
-                    })
-                    .toList();
-
-            allMealBudgets.addAll(createdMealBudgetsForDate);
+            throw ex;
         }
+
+        DailyBudgetBatchResult dailyBudgetBatchResult = createDailyBudgetsInRange(
+                memberId,
+                today,
+                endOfMonth,
+                dailyAmount,
+                mealBudgets
+        );
+
+        DailyBudget firstDailyBudget = dailyBudgetBatchResult.dailyBudgets().isEmpty()
+                ? null
+                : dailyBudgetBatchResult.dailyBudgets().get(0);
+        List<MealBudget> allMealBudgets = dailyBudgetBatchResult.mealBudgets();
 
         long dayCount = java.time.temporal.ChronoUnit.DAYS.between(today, endOfMonth) + 1;
         log.info("초기 예산 설정 완료 - memberId: {}, monthly: {}, daily: {}, meals: {}, days: {} (오늘 ~ 월말)",
@@ -176,29 +166,50 @@ public class BudgetDomainService {
         List<DailyBudget> createdDailyBudgets = new ArrayList<>();
         List<MealBudget> createdMealBudgets = new ArrayList<>();
 
-        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, date);
-            DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
-            createdDailyBudgets.add(savedDailyBudget);
+        try {
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                DailyBudget dailyBudget = DailyBudget.create(memberId, dailyAmount, date);
+                DailyBudget savedDailyBudget = dailyBudgetRepository.save(dailyBudget);
+                createdDailyBudgets.add(savedDailyBudget);
 
-            if (mealBudgets != null && !mealBudgets.isEmpty()) {
-                for (Map.Entry<MealType, Integer> entry : mealBudgets.entrySet()) {
-                    MealBudget mealBudget = MealBudget.create(
-                            savedDailyBudget.getBudgetId(),
-                            entry.getValue(),
-                            entry.getKey(),
-                            date
-                    );
-                    MealBudget savedMealBudget = mealBudgetRepository.save(mealBudget);
-                    createdMealBudgets.add(savedMealBudget);
+                if (mealBudgets != null && !mealBudgets.isEmpty()) {
+                    for (Map.Entry<MealType, Integer> entry : mealBudgets.entrySet()) {
+                        MealBudget mealBudget = MealBudget.create(
+                                savedDailyBudget.getBudgetId(),
+                                entry.getValue(),
+                                entry.getKey(),
+                                date
+                        );
+                        MealBudget savedMealBudget = mealBudgetRepository.save(mealBudget);
+                        createdMealBudgets.add(savedMealBudget);
+                    }
                 }
             }
+        } catch (DataIntegrityViolationException ex) {
+            if (isDailyBudgetUniqueConstraintViolation(ex)) {
+                throw new BusinessException(ErrorType.DAILY_BUDGET_ALREADY_EXISTS);
+            }
+            throw ex;
         }
 
         log.info("일일 예산 일괄 생성 완료 - memberId: {}, start: {}, end: {}, count: {}",
                 memberId, startDate, endDate, createdDailyBudgets.size());
 
         return new DailyBudgetBatchResult(createdDailyBudgets, createdMealBudgets);
+    }
+
+    private boolean isMonthlyBudgetUniqueConstraintViolation(DataIntegrityViolationException ex) {
+        return containsConstraintName(ex, "uq_monthly_budget_member_month");
+    }
+
+    private boolean isDailyBudgetUniqueConstraintViolation(DataIntegrityViolationException ex) {
+        return containsConstraintName(ex, "uq_daily_budget_member_date");
+    }
+
+    private boolean containsConstraintName(DataIntegrityViolationException ex, String constraintName) {
+        Throwable root = ex.getMostSpecificCause();
+        String message = root != null ? root.getMessage() : ex.getMessage();
+        return message != null && message.contains(constraintName);
     }
 
     /**

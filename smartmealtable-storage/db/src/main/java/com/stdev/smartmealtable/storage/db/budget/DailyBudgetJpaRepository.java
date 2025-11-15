@@ -16,7 +16,7 @@ public interface DailyBudgetJpaRepository extends JpaRepository<DailyBudgetJpaEn
     /**
      * 회원 ID와 예산 날짜로 일일 예산 조회
      */
-    @Query("SELECT d FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId AND d.budgetDate = :budgetDate")
+    @Query("SELECT d FROM DailyBudgetJpaEntity d WHERE d.memberId = :memberId AND d.budgetDate = :budgetDate ORDER BY d.budgetId DESC LIMIT 1")
     Optional<DailyBudgetJpaEntity> findByMemberIdAndBudgetDate(
             @Param("memberId") Long memberId,
             @Param("budgetDate") LocalDate budgetDate
