@@ -1,3 +1,14 @@
+SET NAMES utf8mb4;
+
+CREATE DATABASE IF NOT EXISTS smartmealtable
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+USE smartmealtable;
+
+ALTER DATABASE smartmealtable
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+
 -- ================================================================================= --
 --                                     회원 관련
 -- ================================================================================= --
@@ -32,7 +43,7 @@ CREATE TABLE member_group (
                           INDEX idx_name (name),
                           INDEX idx_type_name (type, name),
                           INDEX idx_street_name_address (street_name_address(10))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블. Address VO와 대학 상세정보를 포함';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블. Address VO와 대학 상세정보를 포함';
 
 -- 회원 테이블
 CREATE TABLE member (
@@ -44,7 +55,7 @@ CREATE TABLE member (
                         created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         PRIMARY KEY (member_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='서비스를 이용하는 고객의 기본 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='서비스를 이용하는 고객의 기본 정보를 저장하는 테이블';
 
 -- 회원 인증 테이블
 CREATE TABLE member_authentication (
@@ -64,7 +75,7 @@ CREATE TABLE member_authentication (
                                        UNIQUE KEY uq_member_id (member_id),
                                        UNIQUE KEY uq_email (email),
                                        INDEX idx_deleted_at (deleted_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 서비스 자체 로그인 인증 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 서비스 자체 로그인 인증 정보를 저장하는 테이블';
 
 -- 소셜 계정 테이블
 CREATE TABLE social_account (
@@ -81,7 +92,7 @@ CREATE TABLE social_account (
                                 updated_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                 PRIMARY KEY (social_account_id),
                                 INDEX idx_member_authentication_id (member_authentication_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 소셜 로그인 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 소셜 로그인 정보를 관리하는 테이블';
 
 -- 주소 이력 테이블
 CREATE TABLE address_history (
@@ -100,7 +111,7 @@ CREATE TABLE address_history (
                                  updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                  PRIMARY KEY (address_history_id),
                                  INDEX idx_member_id (member_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 주소 변경 이력을 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 주소 변경 이력을 관리하는 테이블';
 
 -- 약관 테이블
 CREATE TABLE policy (
@@ -114,7 +125,7 @@ CREATE TABLE policy (
                         created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                         PRIMARY KEY (policy_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='서비스 이용에 필요한 약관 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='서비스 이용에 필요한 약관 정보를 관리하는 테이블';
 
 -- 약관 동의 테이블
 CREATE TABLE policy_agreement (
@@ -127,7 +138,7 @@ CREATE TABLE policy_agreement (
                                   updated_at               DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                   PRIMARY KEY (policy_agreement_id),
                                   UNIQUE KEY uq_policy_member_auth (policy_id, member_authentication_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 약관 동의 내역을 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 약관 동의 내역을 저장하는 테이블';
 
 
 -- ================================================================================= --
@@ -141,7 +152,7 @@ CREATE TABLE category (
                           created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                           updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                           PRIMARY KEY (category_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식의 종류를 분류하는 기준 (예: 한식, 중식) 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식의 종류를 분류하는 기준 (예: 한식, 중식) 정보를 관리하는 테이블';
 
 -- 음식점(가게) 테이블
 CREATE TABLE store (
@@ -149,6 +160,11 @@ CREATE TABLE store (
     external_id           VARCHAR(50)    NULL     COMMENT '외부 크롤링 시스템의 가게 ID (네이버 플레이스, 카카오맵 등)',
     seller_id             BIGINT         NULL     COMMENT '판매자 식별자 (논리 FK)',
     name                  VARCHAR(100)   NOT NULL COMMENT '음식점의 상호명',
+    name_normalized       VARCHAR(100) GENERATED ALWAYS AS (
+      LOWER(
+        REGEXP_REPLACE(name, '[^0-9a-z가-힣]', '')
+      )
+    ) STORED COMMENT '검색용 정규화 상호명',
     address               VARCHAR(200)   NOT NULL COMMENT '도로명 기준 주소',
     lot_number_address    VARCHAR(200)   NULL     COMMENT '지번 기준 주소',
     latitude              DECIMAL(10,7)  NOT NULL COMMENT '주소의 위도 정보',
@@ -170,13 +186,14 @@ CREATE TABLE store (
     INDEX idx_seller_id (seller_id),
     INDEX idx_name (name),
     INDEX idx_name_prefix (name(10)),
+    INDEX idx_name_normalized (name_normalized),
     INDEX idx_review_count (review_count),
     INDEX idx_average_price (average_price),
     INDEX idx_view_count (view_count),
     INDEX idx_store_type (store_type),
     INDEX idx_store_type_name (store_type, name(10)),
     INDEX idx_registered_at (registered_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
 
 -- 가게와 카테고리의 N:N 관계를 나타내는 중간 테이블
 CREATE TABLE store_category (
@@ -191,7 +208,7 @@ CREATE TABLE store_category (
     INDEX idx_store_id (store_id),
     INDEX idx_category_id (category_id),
     INDEX idx_display_order (display_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점(store)과 음식 카테고리(category)의 N:N 관계를 나타내는 중간 테이블 (각 가게는 여러 카테고리를 가질 수 있음)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점(store)과 음식 카테고리(category)의 N:N 관계를 나타내는 중간 테이블 (각 가게는 여러 카테고리를 가질 수 있음)';
 
 -- 가게 영업시간 테이블
 CREATE TABLE store_opening_hour (
@@ -207,7 +224,7 @@ CREATE TABLE store_opening_hour (
                                     updated_at            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                                     PRIMARY KEY (store_opening_hour_id),
                                     INDEX idx_store_id (store_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='가게의 요일별 영업 및 휴게 시간 등 상세 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 요일별 영업 및 휴게 시간 등 상세 정보를 관리하는 테이블';
 
 -- 가게 이미지 테이블
 CREATE TABLE store_image (
@@ -222,7 +239,7 @@ CREATE TABLE store_image (
     INDEX idx_store_id (store_id),
     INDEX idx_store_main (store_id, is_main),
     INDEX idx_store_display (store_id, display_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='가게의 이미지 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 이미지 정보를 저장하는 테이블';
 
 -- 판매자 테이블
 CREATE TABLE seller (
@@ -235,7 +252,7 @@ CREATE TABLE seller (
                         PRIMARY KEY (seller_id),
                         UNIQUE KEY uq_store_id (store_id),
                         INDEX idx_login_id (login_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점(가게)을 관리하는 판매자의 계정 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점(가게)을 관리하는 판매자의 계정 정보를 저장하는 테이블';
 
 -- 음식 테이블
 CREATE TABLE food (
@@ -243,6 +260,11 @@ CREATE TABLE food (
                       store_id      BIGINT         NOT NULL COMMENT '이 음식을 판매하는 가게의 식별자 (논리 FK)',
                       category_id   BIGINT         NOT NULL COMMENT '음식 카테고리 식별자 (논리 FK)',
                       food_name     VARCHAR(100)   NOT NULL COMMENT '음식의 이름',
+                      food_name_normalized VARCHAR(100) GENERATED ALWAYS AS (
+                        LOWER(
+                          REGEXP_REPLACE(food_name, '[^0-9a-z가-힣]', '')
+                        )
+                      ) STORED COMMENT '검색용 정규화 이름 (소문자 + 특수문자 제거)',
                       price         INT            NOT NULL COMMENT '음식의 판매 가격',
                       description   TEXT           NULL     COMMENT '음식에 대한 상세 설명/소개',
                       image_url     VARCHAR(500)   NULL     COMMENT '음식 이미지 주소',
@@ -258,10 +280,11 @@ CREATE TABLE food (
     INDEX idx_food_name (food_name),
     INDEX idx_food_name_prefix (food_name(10)),
     INDEX idx_food_name_deleted (food_name, deleted_at),
+    INDEX idx_food_name_normalized (food_name_normalized),
     INDEX idx_registered_dt (registered_dt),
     INDEX idx_store_main (store_id, is_main),
     INDEX idx_store_display (store_id, display_order)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='음식점에서 판매하는 개별 음식(메뉴)의 정보를 저장하는 테이블';-- 가게 조회 이력 테이블
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점에서 판매하는 개별 음식(메뉴)의 정보를 저장하는 테이블';-- 가게 조회 이력 테이블
 CREATE TABLE store_view_history (
                                     store_view_history_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '가게 조회 이력의 고유 식별자',
                                     member_id             BIGINT   NOT NULL COMMENT '조회한 회원의 식별자 (논리 FK)',
@@ -274,7 +297,7 @@ CREATE TABLE store_view_history (
                                     INDEX idx_store_id (store_id),
                                     INDEX idx_viewed_at (viewed_at),
                                     INDEX idx_store_viewed_at (store_id, viewed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자의 가게 조회 이력을 저장하는 테이블 (추천 알고리즘의 최근 관심도 계산 및 최근 7일 조회수 집계용)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자의 가게 조회 이력을 저장하는 테이블 (추천 알고리즘의 최근 관심도 계산 및 최근 7일 조회수 집계용)';
 
 -- 임시 휴무 테이블
 CREATE TABLE store_temporary_closure (
@@ -292,7 +315,7 @@ CREATE TABLE store_temporary_closure (
                                          INDEX idx_closure_date (closure_date),
                                          INDEX idx_store_closure_date (store_id, closure_date),
                                          INDEX idx_registered_at (registered_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='가게의 임시 휴무 정보를 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 임시 휴무 정보를 관리하는 테이블';
 
 
 -- ================================================================================= --
@@ -321,7 +344,7 @@ CREATE TABLE expenditure (
                              INDEX idx_expended_date (expended_date),
                              INDEX idx_expenditure_member_date (member_id, deleted, expended_date, expended_time, category_id),
                              INDEX idx_category_id (category_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 음식 관련 지출 내역을 기록하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 음식 관련 지출 내역을 기록하는 테이블';
 
 -- 지출 항목 테이블
 CREATE TABLE expenditure_item (
@@ -336,7 +359,7 @@ CREATE TABLE expenditure_item (
                                   PRIMARY KEY (expenditure_item_id),
                                   INDEX idx_expenditure_id (expenditure_id),
                                   INDEX idx_food_id (food_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='하나의 지출 내역에 포함된 개별 음식 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='하나의 지출 내역에 포함된 개별 음식 정보를 저장하는 테이블';
 
 -- 장바구니 테이블
 CREATE TABLE cart (
@@ -348,7 +371,7 @@ CREATE TABLE cart (
                       PRIMARY KEY (cart_id),
                       INDEX idx_member_id (member_id),
                       INDEX idx_store_id (store_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원이 선택한 음식들을 임시로 담아두는 공간';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 선택한 음식들을 임시로 담아두는 공간';
 
 -- 장바구니 항목 테이블
 CREATE TABLE cart_item (
@@ -360,7 +383,7 @@ CREATE TABLE cart_item (
                            updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
                            PRIMARY KEY (cart_item_id),
                            UNIQUE KEY uq_cart_food (cart_id, food_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='장바구니에 담긴 개별 음식의 정보를 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='장바구니에 담긴 개별 음식의 정보를 저장하는 테이블';
 
 
 -- ================================================================================= --
@@ -380,7 +403,7 @@ CREATE TABLE monthly_budget (
                                 INDEX idx_member_id (member_id),
                                 INDEX idx_budget_month (budget_month),
                                 UNIQUE KEY uq_monthly_budget_member_month (member_id, budget_month)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원이 설정한 월별 식비 예산을 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 설정한 월별 식비 예산을 관리하는 테이블';
 
 -- 일일 예산 테이블
 CREATE TABLE daily_budget (
@@ -395,7 +418,7 @@ CREATE TABLE daily_budget (
                               INDEX idx_member_id (member_id),
                               INDEX idx_budget_date (budget_date),
                               UNIQUE KEY uq_daily_budget_member_date (member_id, budget_date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원이 설정한 일일 식비 예산을 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 설정한 일일 식비 예산을 관리하는 테이블';
 
 -- 식사 예산 테이블
 CREATE TABLE meal_budget (
@@ -410,7 +433,7 @@ CREATE TABLE meal_budget (
                              PRIMARY KEY (meal_budget_id),
                              INDEX idx_daily_budget_id (daily_budget_id),
                              INDEX idx_budget_date (budget_date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 끼니별 식비 예산을 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 끼니별 식비 예산을 관리하는 테이블';
 
 -- 선호 테이블 (카테고리 기반)
 CREATE TABLE preference (
@@ -424,7 +447,7 @@ CREATE TABLE preference (
                             UNIQUE KEY uq_member_category (member_id, category_id),
                             INDEX idx_weight (weight),
                             CHECK (weight IN (-100, 0, 100))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자가 선호 또는 불호하는 음식 카테고리 정보를 저장하는 테이블 (추천 알고리즘의 안정성 점수 계산용)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 선호 또는 불호하는 음식 카테고리 정보를 저장하는 테이블 (추천 알고리즘의 안정성 점수 계산용)';
 
 -- 개별 음식 선호도 테이블 (REQ-ONBOARD-405)
 CREATE TABLE food_preference (
@@ -440,7 +463,7 @@ CREATE TABLE food_preference (
                                  INDEX idx_member_id (member_id),
                                  INDEX idx_food_id (food_id),
                                  INDEX idx_is_preferred (is_preferred)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자가 온보딩 시 이미지 그리드에서 선택한 개별 음식 선호도를 저장하는 테이블 (추천 알고리즘의 세밀한 개인화용)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 온보딩 시 이미지 그리드에서 선택한 개별 음식 선호도를 저장하는 테이블 (추천 알고리즘의 세밀한 개인화용)';
 
 -- 즐겨찾기 테이블
 CREATE TABLE favorite (
@@ -454,7 +477,7 @@ CREATE TABLE favorite (
                           PRIMARY KEY (favorite_id),
                           UNIQUE KEY uq_store_member (store_id, member_id),
                           INDEX idx_priority (priority)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자가 선호하는 음식점을 저장 및 관리하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 선호하는 음식점을 저장 및 관리하는 테이블';
 
 -- 월별 예산 확인 이력 테이블
 CREATE TABLE monthly_budget_confirmation (
@@ -470,7 +493,7 @@ CREATE TABLE monthly_budget_confirmation (
                                              UNIQUE KEY uq_member_year_month (member_id, year, month),
                                              INDEX idx_member_id (member_id),
                                              INDEX idx_confirmed_at (confirmed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='월별 예산 확인 이력을 저장하는 테이블 (매월 초 예산 확인 모달 처리용)';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='월별 예산 확인 이력을 저장하는 테이블 (매월 초 예산 확인 모달 처리용)';
 
 -- 사용자 조회 이력 (추천 알고리즘용) - 중복 제거
 -- 위의 store_view_history 테이블로 통합됨
@@ -505,7 +528,7 @@ CREATE TABLE monthly_budget_confirmation (
 --     UNIQUE KEY uq_member_food (member_id, food_id),
 --     INDEX idx_member_id (member_id),
 --     INDEX idx_food_id (food_id)
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci 
 -- COMMENT='사용자가 선호하는 개별 음식을 저장하는 테이블 (온보딩 REQ-ONBOARD-405)';
 
 
@@ -527,7 +550,7 @@ CREATE TABLE notification_settings (
     PRIMARY KEY (notification_settings_id),
     UNIQUE KEY uq_member_id (member_id),
     INDEX idx_member_id (member_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 알림 설정을 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 알림 설정을 저장하는 테이블';
 
 -- 앱 설정 테이블
 CREATE TABLE app_settings (
@@ -539,7 +562,7 @@ CREATE TABLE app_settings (
     PRIMARY KEY (app_settings_id),
     UNIQUE KEY uq_member_id (member_id),
     INDEX idx_member_id (member_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='회원의 앱 설정을 저장하는 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 앱 설정을 저장하는 테이블';
 
 -- ================================================================================= --
 --                              Spring Batch 메타데이터 테이블
@@ -552,7 +575,7 @@ CREATE TABLE BATCH_JOB_INSTANCE (
     JOB_KEY VARCHAR(32) NOT NULL COMMENT 'Job을 식별하는 고유 키',
     UNIQUE KEY UQ_BATCH_JOB_INSTANCE_JOB_NAME_JOB_KEY (JOB_NAME, JOB_KEY),
     INDEX IDX_BATCH_JOB_INSTANCE_JOB_NAME (JOB_NAME)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job Instance 메타데이터 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Instance 메타데이터 테이블';
 
 CREATE TABLE BATCH_JOB_EXECUTION (
     JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Job Execution의 고유 식별자',
@@ -567,7 +590,7 @@ CREATE TABLE BATCH_JOB_EXECUTION (
     LAST_UPDATED DATETIME COMMENT 'Job Execution 마지막 업데이트 시각',
     INDEX IDX_BATCH_JOB_EXECUTION_JOB_INSTANCE_ID (JOB_INSTANCE_ID),
     CONSTRAINT FK_BATCH_JOB_EXECUTION_JOB_INSTANCE_ID FOREIGN KEY (JOB_INSTANCE_ID) REFERENCES BATCH_JOB_INSTANCE (JOB_INSTANCE_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job Execution 메타데이터 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution 메타데이터 테이블';
 
 CREATE TABLE BATCH_JOB_EXECUTION_CONTEXT (
     JOB_EXECUTION_ID BIGINT NOT NULL COMMENT 'Job Execution ID (FK)',
@@ -575,7 +598,7 @@ CREATE TABLE BATCH_JOB_EXECUTION_CONTEXT (
     SERIALIZED_CONTEXT TEXT COMMENT 'Job Execution Context의 직렬화된 전체 데이터',
     PRIMARY KEY (JOB_EXECUTION_ID),
     CONSTRAINT FK_BATCH_JOB_EXECUTION_CONTEXT_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job Execution Context 저장 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution Context 저장 테이블';
 
 CREATE TABLE BATCH_STEP_EXECUTION (
     STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Step Execution의 고유 식별자',
@@ -599,7 +622,7 @@ CREATE TABLE BATCH_STEP_EXECUTION (
     LAST_UPDATED DATETIME COMMENT 'Step Execution 마지막 업데이트 시각',
     INDEX IDX_BATCH_STEP_EXECUTION_JOB_EXECUTION_ID (JOB_EXECUTION_ID),
     CONSTRAINT FK_BATCH_STEP_EXECUTION_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Step Execution 메타데이터 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution 메타데이터 테이블';
 
 CREATE TABLE BATCH_STEP_EXECUTION_CONTEXT (
     STEP_EXECUTION_ID BIGINT NOT NULL COMMENT 'Step Execution ID (FK)',
@@ -607,7 +630,7 @@ CREATE TABLE BATCH_STEP_EXECUTION_CONTEXT (
     SERIALIZED_CONTEXT TEXT COMMENT 'Step Execution Context의 직렬화된 전체 데이터',
     PRIMARY KEY (STEP_EXECUTION_ID),
     CONSTRAINT FK_BATCH_STEP_EXECUTION_CONTEXT_STEP_EXECUTION_ID FOREIGN KEY (STEP_EXECUTION_ID) REFERENCES BATCH_STEP_EXECUTION (STEP_EXECUTION_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Step Execution Context 저장 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution Context 저장 테이블';
 
 -- Spring Batch 시퀀스 테이블 (ID 생성용)
 CREATE TABLE BATCH_JOB_SEQ (
@@ -616,7 +639,7 @@ CREATE TABLE BATCH_JOB_SEQ (
     PRIMARY KEY (UNIQUE_KEY),
     UNIQUE KEY UQ_BATCH_JOB_SEQ_ID (ID),
     CHECK (UNIQUE_KEY='0')
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job ID 시퀀스 생성용 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job ID 시퀀스 생성용 테이블';
 
 CREATE TABLE BATCH_JOB_EXECUTION_SEQ (
     ID BIGINT NOT NULL,
@@ -624,7 +647,7 @@ CREATE TABLE BATCH_JOB_EXECUTION_SEQ (
     PRIMARY KEY (UNIQUE_KEY),
     UNIQUE KEY UQ_BATCH_JOB_EXECUTION_SEQ_ID (ID),
     CHECK (UNIQUE_KEY='0')
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job Execution ID 시퀀스 생성용 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution ID 시퀀스 생성용 테이블';
 
 CREATE TABLE BATCH_STEP_EXECUTION_SEQ (
     ID BIGINT NOT NULL,
@@ -632,7 +655,7 @@ CREATE TABLE BATCH_STEP_EXECUTION_SEQ (
     PRIMARY KEY (UNIQUE_KEY),
     UNIQUE KEY UQ_BATCH_STEP_EXECUTION_SEQ_ID (ID),
     CHECK (UNIQUE_KEY='0')
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Step Execution ID 시퀀스 생성용 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution ID 시퀀스 생성용 테이블';
 
 -- 초기 시퀀스 값 설정
 INSERT INTO BATCH_JOB_SEQ (ID) VALUES (0);
@@ -649,4 +672,4 @@ CREATE TABLE BATCH_JOB_EXECUTION_PARAMS (
     PRIMARY KEY (JOB_EXECUTION_ID, PARAMETER_NAME),
     INDEX IDX_BATCH_JOB_EXECUTION_PARAMS_JOB_EXECUTION_ID (JOB_EXECUTION_ID),
     CONSTRAINT FK_BATCH_JOB_EXECUTION_PARAMS_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Spring Batch Job Execution Parameters 저장 테이블';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution Parameters 저장 테이블';

@@ -481,11 +481,14 @@ HEAP="-Xms1g -Xmx4g"
   ```
   `EXPLAIN ANALYZE`를 한 번에 실행하여 Food/Expenditure/Budget 핵심 쿼리의 계획 및 실행 시간을 수집합니다.
 - **API 부하 (k6)**: `performance-test/k6/finance-scenarios.js`  
-  ```bash
-  JWT_TOKEN=<loader로 생성한 토큰>
-  k6 run performance-test/k6/finance-scenarios.js
-  ```
-  5개의 시나리오(자동완성, 지출 목록/통계, 월/일 예산)를 동시에 주입해 API SLA를 검증합니다.
+```bash
+JWT_TOKEN=<loader로 생성한 토큰> \
+FOOD_KEYWORDS=김치,곱창,버거,라멘,파스타,샐러드,초밥,비건,덮밥,커리 \
+RECO_KEYWORDS=김치찌개,초밥,샌드위치,비건,국밥,라면 \
+k6 run performance-test/k6/finance-scenarios.js
+```
+5개의 시나리오(자동완성, 지출 목록/통계, 월/일 예산)를 동시에 주입해 API SLA를 검증합니다.  
+`FOOD_KEYWORDS`/`RECO_KEYWORDS`는 콤마로 구분된 prefix 목록입니다. 데이터 분포나 테스트 시나리오에 맞춰 자유롭게 바꿀 수 있으며, 지정하지 않으면 실제 서비스와 비슷한 기본 목록이 사용됩니다.
 
 ## 참고 자료
 

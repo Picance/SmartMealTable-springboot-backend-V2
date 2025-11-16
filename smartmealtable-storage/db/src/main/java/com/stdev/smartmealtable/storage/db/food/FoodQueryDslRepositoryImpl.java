@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEntity;
@@ -21,6 +22,7 @@ import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEnt
 public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
+    private static final Pattern NORMALIZE_PATTERN = Pattern.compile("[^0-9a-zA-Z가-힣]");
     
     /**
      * 관리자용 음식 검색 (페이징, 삭제되지 않은 것만)
@@ -110,10 +112,15 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
      */
     @Override
     public List<FoodJpaEntity> findByNameStartingWith(String prefix, int limit) {
+        String normalized = normalizeForSearch(prefix);
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.startsWith(prefix)
+                        foodJpaEntity.foodNameNormalized.startsWith(normalized)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
                 .orderBy(
@@ -136,10 +143,15 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
      */
     @Override
     public List<FoodJpaEntity> findByNameContaining(String keyword, int limit) {
+        String normalized = normalizeForSearch(keyword);
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.contains(keyword)
+                        foodJpaEntity.foodNameNormalized.contains(normalized)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
                 .orderBy(
@@ -190,6 +202,14 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
                 .offset((long) page * size)
                 .limit(size)
                 .fetch();
+    }
+
+    private String normalizeForSearch(String keyword) {
+        if (keyword == null) {
+            return "";
+        }
+        String lowered = keyword.toLowerCase();
+        return NORMALIZE_PATTERN.matcher(lowered).replaceAll("");
     }
 
     /**

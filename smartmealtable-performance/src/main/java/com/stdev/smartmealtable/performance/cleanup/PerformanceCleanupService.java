@@ -24,7 +24,6 @@ public class PerformanceCleanupService {
 
         String memberPattern = RunTag.memberPattern(runId);
         String storePattern = RunTag.storePattern(runId);
-        String foodPattern = RunTag.foodPattern(runId);
         String expenditurePattern = RunTag.expenditurePattern(runId);
         String categoryPattern = RunTag.categoryPattern(runId);
 
@@ -60,10 +59,12 @@ public class PerformanceCleanupService {
                 memberPattern
         );
 
-        int foods = jdbcTemplate.update(
-                "DELETE FROM food WHERE food_name LIKE ?",
-                foodPattern
-        );
+        int foods = jdbcTemplate.update("""
+                DELETE FROM food
+                WHERE store_id IN (
+                    SELECT store_id FROM store WHERE external_id LIKE ?
+                )
+                """, storePattern);
 
         int stores = jdbcTemplate.update(
                 "DELETE FROM store WHERE external_id LIKE ?",

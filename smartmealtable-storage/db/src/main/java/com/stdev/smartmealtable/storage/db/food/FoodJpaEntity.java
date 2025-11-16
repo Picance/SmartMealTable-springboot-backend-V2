@@ -29,6 +29,14 @@ public class FoodJpaEntity {
     @Column(name = "food_name", nullable = false, length = 100)
     private String foodName;
 
+    @Column(
+            name = "food_name_normalized",
+            insertable = false,
+            updatable = false,
+            columnDefinition = "varchar(100) GENERATED ALWAYS AS (lower(regexp_replace(food_name, '[^0-9a-z가-힣]', ''))) STORED"
+    )
+    private String foodNameNormalized;
+
     @Column(name = "price", nullable = false)
     private Integer price;
 
@@ -116,4 +124,3 @@ public class FoodJpaEntity {
                 .build();
     }
 }
-

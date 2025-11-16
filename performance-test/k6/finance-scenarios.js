@@ -10,7 +10,7 @@ const END_DATE = __ENV.END_DATE || '2025-03-31';
 const DAILY_DATE = __ENV.DAILY_DATE || '2025-02-15';
 const BUDGET_YEAR = __ENV.BUDGET_YEAR || '2025';
 const BUDGET_MONTH = __ENV.BUDGET_MONTH || '02';
-const KEYWORDS = (__ENV.FOOD_KEYWORDS || 'PERF,BURGER,NOODLE')
+const KEYWORDS = (__ENV.FOOD_KEYWORDS || '김치,곱창,버거,라멘,파스타,샐러드,초밥,비건,덮밥,커리')
   .split(',')
   .map((value) => value.trim())
   .filter(Boolean);

@@ -96,6 +96,7 @@ PERFORMANCE_LOADER_BUDGET_DAILY_DAYS=100 \
 ```
 - 로그 마지막에 각 데이터셋별 row 수와 소요 시간이 표로 출력됩니다.
 - Run ID는 `PERF_<runId>_*` 형태로 모든 테스트 데이터에 각인되므로, cleanup 및 카운팅이 쉬워집니다.
+- 최근 로더는 매장/음식 이름을 실제 서비스와 비슷한 한국어·영어 조합으로 생성하므로, 자동완성/검색 인덱스 테스트에 활용할 수 있는 다양한 prefix가 자동으로 채워집니다. 별도의 CSV를 준비하지 않아도 고유 문자열 분포가 확보됩니다.
 
 ### 2.4 데이터 검증 SQL
 아래 쿼리로 목표치에 도달했는지 확인하세요 (`scale-2025Q1` Run ID 기준).
@@ -178,6 +179,7 @@ RECOMMEND_VUS=45 \
 RECO_LATITUDE=37.498 \
 RECO_LONGITUDE=127.028 \
 RECO_KEYWORDS=김치찌개,초밥,샌드위치,비건 \
+FOOD_KEYWORDS=김치,곱창,버거,라멘,파스타,샐러드,초밥,비건,덮밥,커리 \
 EXPENDITURE_RPS=90 \
 EXPENDITURE_VUS=35 \
 EXP_CRUD_RPS=60 \
@@ -194,6 +196,7 @@ AUTOCOMPLETE_VUS=40 \
 k6 run performance-test/k6/finance-scenarios.js
 ```
 - `RECO_KEYWORD_RATIO`, `EXP_CRUD_MIN_AMOUNT`, `BUDGET_CREATE_BASE_YEAR` 등 세부 변수도 필요에 따라 조정 가능합니다.
+- `FOOD_KEYWORDS` / `RECO_KEYWORDS`는 기본적으로 다양한 실제 음식명을 포함하도록 설정되어 있습니다. 특정 데이터셋이나 테스트 케이스에 맞춰 prefix/substring 분포를 조정하고 싶다면 콤마로 구분된 문자열을 덮어써 주세요. (예: `FOOD_KEYWORDS=김밥,비빔밥,돈까스`)
 - 실행 중 `k6`는 `recommendation_duration_ms`, `expenditure_create_duration_ms` 등 커스텀 Trend를 출력합니다.
 
 ### 4.4 결과 해석 가이드

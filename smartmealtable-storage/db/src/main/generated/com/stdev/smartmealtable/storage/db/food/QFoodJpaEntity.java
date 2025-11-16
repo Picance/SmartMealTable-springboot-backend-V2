@@ -33,6 +33,8 @@ public class QFoodJpaEntity extends EntityPathBase<FoodJpaEntity> {
 
     public final StringPath foodName = createString("foodName");
 
+    public final StringPath foodNameNormalized = createString("foodNameNormalized");
+
     public final StringPath imageUrl = createString("imageUrl");
 
     public final BooleanPath isMain = createBoolean("isMain");

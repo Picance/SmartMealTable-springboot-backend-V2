@@ -33,6 +33,40 @@ public class StoreAndFoodGenerator {
 
     private final JdbcTemplate jdbcTemplate;
 
+    private static final String[] STORE_AREAS = {
+            "강남", "홍대", "판교", "광화문", "압구정", "해운대", "서면", "분당", "일산", "대전 둔산",
+            "대구 동성로", "제주 애월", "수원 인계", "춘천 명동", "전주 한옥"
+    };
+    private static final String[] STORE_THEMES = {
+            "로컬", "트렌디", "힙한", "클래식", "프리미엄", "웰빙", "감성", "푸드랩", "스페셜티", "셀럽"
+    };
+    private static final String[] STORE_TYPES_DESCRIPTORS = {
+            "테이블", "주방", "다이닝", "키친", "식당", "카페", "포차", "그릴", "바", "라운지"
+    };
+    private static final String[] STORE_STORY_SNIPPETS = {
+            "제철 재료만 고집하는 공간", "야외 테라스가 인기인 매장", "지역 농가와 협업하는 식당",
+            "셰프의 시그니처 코스를 즐길 수 있는 곳", "스터디와 모임이 끊이지 않는 스폿",
+            "로스터리 바와 주방이 함께 있는 복합 공간", "비건과 글루텐 프리 메뉴를 확대 중",
+            "지역 청년 셰프들이 운영하는 실험적 공간", "장인 정신이 녹아 있는 메뉴 구성"
+    };
+    private static final String[] STREET_SUFFIXES = {
+            "로", "대로", "길", "거리", "대로길", "중앙로", "문화로"
+    };
+    private static final String[] FOOD_MODIFIERS = {
+            "직화", "트러플", "마라", "허브", "수비드", "크리스피", "비건", "스파이시",
+            "저온숙성", "버터갈릭", "시즈널", "노아일", "로우칼로리", "바질", "깊은맛"
+    };
+    private static final String[] FOOD_BASES = {
+            "덮밥", "라멘", "파스타", "스테이크", "샐러드", "비빔밥", "볶음밥", "샌드위치", "타코",
+            "커리", "수프", "플랫브레드", "만두", "쌀국수", "버거", "피자"
+    };
+    private static final String[] FOOD_STORY_SNIPPETS = {
+            "직접 배양한 스타터로 만든 메뉴", "발효 소스를 사용해 감칠맛을 더한 요리",
+            "로스팅한 채소 토핑을 듬뿍 올린 메뉴", "셰프의 시그니처 소스를 곁들인 요리",
+            "현지 조리법을 현대적으로 재해석한 메뉴", "주문 즉시 조리해 신선함을 살린 요리",
+            "식물성 원료만 사용한 메뉴", "고소한 버터와 허브향이 조화를 이루는 요리"
+    };
+
     private static final String INSERT_STORE_SQL = """
             INSERT INTO store (
                 external_id, name, address, lot_number_address,
@@ -187,8 +221,8 @@ public class StoreAndFoodGenerator {
         private Object[] buildStoreRow(long sequence, ThreadLocalRandom random) {
             double latitude = 37.0 + random.nextDouble(-0.8, 0.8);
             double longitude = 127.0 + random.nextDouble(-0.8, 0.8);
-            String name = "Perf Store " + sequence;
-            String address = "Seoul Performance-gu Data-ro " + (100 + random.nextInt(900));
+            String name = randomStoreName(sequence, random);
+            String address = randomAddress(random);
             Timestamp registeredAt = Timestamp.valueOf(LocalDateTime.now().minusDays(random.nextInt(365)));
             return new Object[]{
                     RunTag.storeExternalId(runId, sequence),
@@ -198,7 +232,7 @@ public class StoreAndFoodGenerator {
                     latitude,
                     longitude,
                     String.format("010-%04d-%04d", random.nextInt(10000), random.nextInt(10000)),
-                    "Performance seed store",
+                    randomStoreDescription(random),
                     5000 + random.nextInt(20000),
                     random.nextInt(5000),
                     random.nextInt(10_000, 200_000),
@@ -253,12 +287,13 @@ public class StoreAndFoodGenerator {
                     categoryIds.get(random.nextInt(categoryIds.size()));
             int price = random.nextInt(props.getMinPrice(), props.getMaxPrice());
             Timestamp registered = Timestamp.valueOf(LocalDateTime.now().minusDays(random.nextInt(180)));
+            String foodName = randomFoodName(random);
             return new Object[]{
                 store.storeId(),
                 categoryId,
-                RunTag.foodName(runId, store.storeId(), menuIndex),
+                foodName,
                 price,
-                "Performance dataset menu",
+                randomFoodDescription(random),
                 "https://img.smartmealtable/perf/menu/" + store.storeId() + '-' + menuIndex,
                 random.nextBoolean(),
                 menuIndex,
@@ -274,4 +309,37 @@ public class StoreAndFoodGenerator {
     private record FoodInsertResult(long inserted, DataLoadResult summary) {}
 
     public record StoreDataSet(List<StoreSummary> stores, DataLoadResult storeSummary, DataLoadResult foodSummary) {}
+
+    private static String pick(String[] source, ThreadLocalRandom random) {
+        return source[random.nextInt(source.length)];
+    }
+
+    private String randomStoreName(long sequence, ThreadLocalRandom random) {
+        String area = pick(STORE_AREAS, random);
+        String theme = pick(STORE_THEMES, random);
+        String type = pick(STORE_TYPES_DESCRIPTORS, random);
+        long branch = (sequence % 50) + 1;
+        return String.format("%s %s%s %d호", area, theme, type, branch);
+    }
+
+    private String randomAddress(ThreadLocalRandom random) {
+        String area = pick(STORE_AREAS, random).replace(" ", "");
+        String suffix = pick(STREET_SUFFIXES, random);
+        int number = 50 + random.nextInt(950);
+        return String.format("%s %s %d", area, suffix, number);
+    }
+
+    private String randomStoreDescription(ThreadLocalRandom random) {
+        return pick(STORE_STORY_SNIPPETS, random);
+    }
+
+    private String randomFoodName(ThreadLocalRandom random) {
+        String modifier = pick(FOOD_MODIFIERS, random);
+        String base = pick(FOOD_BASES, random);
+        return modifier + ' ' + base;
+    }
+
+    private String randomFoodDescription(ThreadLocalRandom random) {
+        return pick(FOOD_STORY_SNIPPETS, random);
+    }
 }
