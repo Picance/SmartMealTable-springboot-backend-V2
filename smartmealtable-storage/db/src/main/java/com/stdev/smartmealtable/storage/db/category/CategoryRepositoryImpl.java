@@ -1,5 +1,6 @@
 package com.stdev.smartmealtable.storage.db.category;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.category.Category;
@@ -173,8 +174,8 @@ public class CategoryRepositoryImpl implements CategoryRepository {
         QStoreCategoryJpaEntity storeCategory = QStoreCategoryJpaEntity.storeCategoryJpaEntity;
         QStoreJpaEntity store = QStoreJpaEntity.storeJpaEntity;
 
-        return queryFactory
-            .selectDistinct(storeCategory.storeId)
+        List<Tuple> results = queryFactory
+            .selectDistinct(store.storeId, store.favoriteCount)
             .from(storeCategory)
             .innerJoin(store).on(storeCategory.storeId.eq(store.storeId))
             .where(
@@ -184,6 +185,10 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             .orderBy(store.favoriteCount.desc().nullsLast())
             .limit(limit)
             .fetch();
+
+        return results.stream()
+            .map(tuple -> tuple.get(store.storeId))
+            .collect(Collectors.toList());
     }
 
     /**
