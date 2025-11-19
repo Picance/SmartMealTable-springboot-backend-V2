@@ -43,6 +43,8 @@ public class QStoreJpaEntity extends EntityPathBase<StoreJpaEntity> {
 
     public final StringPath name = createString("name");
 
+    public final StringPath nameNormalized = createString("nameNormalized");
+
     public final StringPath phoneNumber = createString("phoneNumber");
 
     public final DateTimePath<java.time.LocalDateTime> registeredAt = createDateTime("registeredAt", java.time.LocalDateTime.class);

@@ -1,9 +1,11 @@
 package com.stdev.smartmealtable.storage.db.food;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
+import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEntity;
+import static com.stdev.smartmealtable.storage.db.food.QFoodSearchKeywordJpaEntity.foodSearchKeywordJpaEntity;
 
 /**
  * Food QueryDSL Repository 구현체
@@ -21,6 +24,7 @@ import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEnt
 public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
+    private static final long FOOD_KEYWORD_CANDIDATE_LIMIT = 2_000;
     
     /**
      * 관리자용 음식 검색 (페이징, 삭제되지 않은 것만)
@@ -110,10 +114,15 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
      */
     @Override
     public List<FoodJpaEntity> findByNameStartingWith(String prefix, int limit) {
+        String normalized = normalizeForSearch(prefix);
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.startsWithIgnoreCase(prefix)
+                        foodJpaEntity.foodNameNormalized.startsWith(normalized)
                                 .and(foodJpaEntity.deletedAt.isNull())
                 )
                 .orderBy(
@@ -136,15 +145,36 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
      */
     @Override
     public List<FoodJpaEntity> findByNameContaining(String keyword, int limit) {
+        String normalized = normalizeForSearch(keyword);
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+
+        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
+        if (prefix.isEmpty()) {
+            return List.of();
+        }
+
+        var foodIdSubquery = JPAExpressions
+                .select(foodSearchKeywordJpaEntity.foodId)
+                .from(foodSearchKeywordJpaEntity)
+                .where(
+                        foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING)
+                                .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                )
+                .groupBy(foodSearchKeywordJpaEntity.foodId)
+                .limit(FOOD_KEYWORD_CANDIDATE_LIMIT);
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
-                        foodJpaEntity.foodName.containsIgnoreCase(keyword)
-                                .and(foodJpaEntity.deletedAt.isNull())
+                        foodJpaEntity.deletedAt.isNull()
+                                .and(foodJpaEntity.foodId.in(foodIdSubquery))
                 )
                 .orderBy(
-                        foodJpaEntity.isMain.desc().nullsLast(), // 대표 메뉴 우선
-                        foodJpaEntity.registeredDt.desc() // 최신 등록순
+                        foodJpaEntity.isMain.desc().nullsLast(),
+                        foodJpaEntity.registeredDt.desc()
                 )
                 .limit(limit)
                 .fetch();
@@ -190,6 +220,10 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
                 .offset((long) page * size)
                 .limit(size)
                 .fetch();
+    }
+
+    private String normalizeForSearch(String keyword) {
+        return SearchKeywordSupport.normalize(keyword);
     }
 
     /**

@@ -5,12 +5,14 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StorePageResult;
 import com.stdev.smartmealtable.domain.store.StoreRepository.StoreSearchResult;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.store.StoreWithDistance;
+import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
+import static com.stdev.smartmealtable.storage.db.store.QStoreSearchKeywordJpaEntity.storeSearchKeywordJpaEntity;
 
 /**
  * Store QueryDSL Repository
@@ -31,6 +34,7 @@ import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.
 public class StoreQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
+    private static final long STORE_KEYWORD_CANDIDATE_LIMIT = 2_000;
     
     /**
      * 조건에 맞는 가게 목록 조회
@@ -255,14 +259,15 @@ public class StoreQueryDslRepository {
      * @return 가게 리스트
      */
     public List<StoreJpaEntity> findByNameStartingWith(String keyword, int limit) {
-        if (keyword == null || keyword.isBlank()) {
+        String normalized = normalizeForSearch(keyword);
+        if (normalized.isEmpty()) {
             return List.of();
         }
 
         return queryFactory
             .selectFrom(storeJpaEntity)
             .where(
-                storeJpaEntity.name.startsWithIgnoreCase(keyword)
+                storeJpaEntity.nameNormalized.startsWith(normalized)
                     .and(storeJpaEntity.deletedAt.isNull())
             )
             .orderBy(
@@ -282,19 +287,40 @@ public class StoreQueryDslRepository {
      * @return 가게 리스트 (popularity 높은 순으로 정렬)
      */
     public List<StoreJpaEntity> findByNameContaining(String keyword, int limit) {
-        if (keyword == null || keyword.isBlank()) {
+        String normalized = normalizeForSearch(keyword);
+        if (normalized.isEmpty()) {
             return List.of();
         }
 
+        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
+        if (prefix.isEmpty()) {
+            return List.of();
+        }
+
+        var storeIdSubquery = JPAExpressions
+                .select(storeSearchKeywordJpaEntity.storeId)
+                .from(storeSearchKeywordJpaEntity)
+                .where(
+                        storeSearchKeywordJpaEntity.keywordType.eq(StoreSearchKeywordType.NAME_SUBSTRING)
+                                .and(storeSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                .and(storeSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                )
+                .groupBy(storeSearchKeywordJpaEntity.storeId)
+                .limit(STORE_KEYWORD_CANDIDATE_LIMIT);
+
         return queryFactory
-            .selectFrom(storeJpaEntity)
-            .where(
-                storeJpaEntity.name.containsIgnoreCase(keyword)
-                    .and(storeJpaEntity.deletedAt.isNull())
-            )
-            .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast())
-            .limit(limit)
-            .fetch();
+                .selectFrom(storeJpaEntity)
+                .where(
+                        storeJpaEntity.deletedAt.isNull()
+                                .and(storeJpaEntity.storeId.in(storeIdSubquery))
+                )
+                .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast())
+                .limit(limit)
+                .fetch();
+    }
+
+    private String normalizeForSearch(String keyword) {
+        return SearchKeywordSupport.normalize(keyword);
     }
 
     /**

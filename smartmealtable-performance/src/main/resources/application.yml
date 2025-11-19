@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: smartmealtable-performance
+  main:
+    web-application-type: none
+    banner-mode: off
+  datasource:
+    url: ${PERF_JDBC_URL:jdbc:mysql://localhost:3306/smartmealtable?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true}
+    username: ${PERF_JDBC_USERNAME:root}
+    password: ${PERF_JDBC_PASSWORD:root123}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${PERF_JDBC_POOL_SIZE:40}
+      minimum-idle: 10
+      connection-timeout: 60000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+logging:
+  level:
+    root: info
+    com.stdev.smartmealtable.performance: info
+
+performance:
+  loader:
+    thread-count: ${PERF_THREAD_COUNT:8}
+    batch-size: ${PERF_BATCH_SIZE:500}
+    member:
+      count: ${PERF_MEMBER_COUNT:50000}
+      recommendation-type: BALANCED
+    category:
+      minimum-count: 32
+    food:
+      stores: ${PERF_STORE_COUNT:5000}
+      foods-per-store: ${PERF_FOODS_PER_STORE:120}
+      min-price: 4000
+      max-price: 20000
+    budget:
+      monthly-months: 12
+      daily-days: 120
+      min-monthly-budget: 200000
+      max-monthly-budget: 600000
+      min-daily-budget: 10000
+      max-daily-budget: 35000
+      generate-meal-budgets: true
+    expenditure:
+      records-per-member: 80
+      months-span: 9
+      min-amount: 3000
+      max-amount: 45000
+      max-discount: 5000
+      max-items-per-receipt: 3
+      generate-items: false
+
+jwt:
+  secret: ${PERF_JWT_SECRET:smartmealtable-secret-key-for-jwt-token-generation-minimum-256-bits}
+  validity-in-milliseconds: ${PERF_JWT_TTL:86400000}
