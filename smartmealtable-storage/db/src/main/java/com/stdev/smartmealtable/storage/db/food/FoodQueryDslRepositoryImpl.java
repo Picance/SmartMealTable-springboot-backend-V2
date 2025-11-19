@@ -4,14 +4,15 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
+import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEntity;
+import static com.stdev.smartmealtable.storage.db.food.QFoodSearchKeywordJpaEntity.foodSearchKeywordJpaEntity;
 
 /**
  * Food QueryDSL Repository 구현체
@@ -22,7 +23,6 @@ import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEnt
 public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
-    private static final Pattern NORMALIZE_PATTERN = Pattern.compile("[^0-9a-zA-Z가-힣]");
     
     /**
      * 관리자용 음식 검색 (페이징, 삭제되지 않은 것만)
@@ -148,11 +148,21 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
             return List.of();
         }
 
+        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
+        if (prefix.isEmpty()) {
+            return List.of();
+        }
+
         return queryFactory
-                .selectFrom(foodJpaEntity)
+                .selectDistinct(foodJpaEntity)
+                .from(foodJpaEntity)
+                .innerJoin(foodSearchKeywordJpaEntity)
+                .on(foodJpaEntity.foodId.eq(foodSearchKeywordJpaEntity.foodId))
                 .where(
-                        foodJpaEntity.foodNameNormalized.contains(normalized)
-                                .and(foodJpaEntity.deletedAt.isNull())
+                        foodJpaEntity.deletedAt.isNull()
+                                .and(foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING))
+                                .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
                 )
                 .orderBy(
                         foodJpaEntity.isMain.desc().nullsLast(), // 대표 메뉴 우선
@@ -205,11 +215,7 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     }
 
     private String normalizeForSearch(String keyword) {
-        if (keyword == null) {
-            return "";
-        }
-        String lowered = keyword.toLowerCase();
-        return NORMALIZE_PATTERN.matcher(lowered).replaceAll("");
+        return SearchKeywordSupport.normalize(keyword);
     }
 
     /**

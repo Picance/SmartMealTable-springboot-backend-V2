@@ -11,6 +11,7 @@ import com.stdev.smartmealtable.domain.store.StorePageResult;
 import com.stdev.smartmealtable.domain.store.StoreRepository.StoreSearchResult;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.domain.store.StoreWithDistance;
+import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -18,10 +19,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
 
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
+import static com.stdev.smartmealtable.storage.db.store.QStoreSearchKeywordJpaEntity.storeSearchKeywordJpaEntity;
 
 /**
  * Store QueryDSL Repository
@@ -32,7 +33,6 @@ import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.
 public class StoreQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
-    private static final Pattern NORMALIZE_PATTERN = Pattern.compile("[^0-9a-zA-Z가-힣]");
     
     /**
      * 조건에 맞는 가게 목록 조회
@@ -290,23 +290,29 @@ public class StoreQueryDslRepository {
             return List.of();
         }
 
+        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
+        if (prefix.isEmpty()) {
+            return List.of();
+        }
+
         return queryFactory
-            .selectFrom(storeJpaEntity)
-            .where(
-                storeJpaEntity.nameNormalized.contains(normalized)
-                    .and(storeJpaEntity.deletedAt.isNull())
-            )
-            .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast())
-            .limit(limit)
-            .fetch();
+                .selectDistinct(storeJpaEntity)
+                .from(storeJpaEntity)
+                .innerJoin(storeSearchKeywordJpaEntity)
+                .on(storeJpaEntity.storeId.eq(storeSearchKeywordJpaEntity.storeId))
+                .where(
+                        storeJpaEntity.deletedAt.isNull()
+                                .and(storeSearchKeywordJpaEntity.keywordType.eq(StoreSearchKeywordType.NAME_SUBSTRING))
+                                .and(storeSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                .and(storeSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                )
+                .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast())
+                .limit(limit)
+                .fetch();
     }
 
     private String normalizeForSearch(String keyword) {
-        if (keyword == null) {
-            return "";
-        }
-        String lowered = keyword.toLowerCase();
-        return NORMALIZE_PATTERN.matcher(lowered).replaceAll("");
+        return SearchKeywordSupport.normalize(keyword);
     }
 
     /**

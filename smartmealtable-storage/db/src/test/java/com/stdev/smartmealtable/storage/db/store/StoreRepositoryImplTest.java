@@ -33,12 +33,22 @@ class StoreRepositoryImplTest {
     @Mock
     private StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
 
+    @Mock
+    private StoreSearchKeywordJpaRepository storeSearchKeywordJpaRepository;
+
     private StoreRepositoryImpl repository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        repository = new StoreRepositoryImpl(jpaRepository, storeCategoryJpaRepository, queryDslRepository, openingHourJpaRepository, temporaryClosureJpaRepository);
+        repository = new StoreRepositoryImpl(
+                jpaRepository,
+                storeCategoryJpaRepository,
+                queryDslRepository,
+                openingHourJpaRepository,
+                temporaryClosureJpaRepository,
+                storeSearchKeywordJpaRepository
+        );
     }
 
     @Test
@@ -83,6 +93,8 @@ class StoreRepositoryImplTest {
 
         Store saved = repository.save(store);
         assertThat(saved.getStoreId()).isEqualTo(10L);
+        verify(storeSearchKeywordJpaRepository, times(1)).deleteByStoreId(10L);
+        verify(storeSearchKeywordJpaRepository, times(1)).saveAll(any());
     }
 
     @Test
@@ -137,5 +149,16 @@ class StoreRepositoryImplTest {
 
         // Then
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void softDelete_removes_search_keywords() {
+        Long storeId = 42L;
+        Store store = Store.builder().storeId(storeId).name("DeleteMe").build();
+        when(jpaRepository.findById(storeId)).thenReturn(Optional.of(StoreEntityMapper.toJpaEntity(store)));
+
+        repository.softDelete(storeId);
+
+        verify(storeSearchKeywordJpaRepository, times(1)).deleteByStoreId(storeId);
     }
 }
