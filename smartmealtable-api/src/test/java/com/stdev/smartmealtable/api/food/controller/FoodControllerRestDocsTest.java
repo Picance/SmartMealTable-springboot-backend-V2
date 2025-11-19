@@ -41,10 +41,13 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
         // given
         String keyword = "떡볶";
         int limit = 5;
-        FoodAutocompleteResponse response = new FoodAutocompleteResponse(List.of(
-                new FoodSuggestion(101L, "로제 떡볶이", 11L, "스마트분식", "분식", 12000, true),
-                new FoodSuggestion(102L, "치즈 떡볶이", 12L, "맛동산", "분식", 10000, false)
-        ));
+        FoodAutocompleteResponse response = new FoodAutocompleteResponse(
+                List.of(
+                        new FoodSuggestion(101L, "로제 떡볶이", 11L, "스마트분식", "분식", 12000, true),
+                        new FoodSuggestion(102L, "치즈 떡볶이", 12L, "맛동산", "분식", 10000, false)
+                ),
+                List.of("떡볶이", "로제 떡볶이")
+        );
 
         given(foodAutocompleteService.autocomplete(keyword, limit)).willReturn(response);
 
@@ -147,6 +150,7 @@ class FoodControllerRestDocsTest extends AbstractRestDocsTest {
                 fieldWithPath("data.suggestions[].categoryName").type(JsonFieldType.STRING).description("카테고리 이름"),
                 fieldWithPath("data.suggestions[].averagePrice").type(JsonFieldType.NUMBER).description("평균 가격 (원)").optional(),
                 fieldWithPath("data.suggestions[].isMain").type(JsonFieldType.BOOLEAN).description("대표 메뉴 여부"),
+                fieldWithPath("data.keywordRecommendations").type(JsonFieldType.ARRAY).description("Prefix 기반 추천 키워드 목록").optional(),
                 fieldWithPath("error").type(JsonFieldType.NULL).description("에러 정보 (성공 시 null)").optional()
         };
     }

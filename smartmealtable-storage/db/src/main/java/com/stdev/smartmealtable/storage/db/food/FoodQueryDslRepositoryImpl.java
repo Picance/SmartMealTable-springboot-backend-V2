@@ -1,7 +1,6 @@
 package com.stdev.smartmealtable.storage.db.food;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEntity;
-import static com.stdev.smartmealtable.storage.db.food.QFoodSearchKeywordJpaEntity.foodSearchKeywordJpaEntity;
 
 /**
  * Food QueryDSL Repository 구현체
@@ -24,7 +22,6 @@ import static com.stdev.smartmealtable.storage.db.food.QFoodSearchKeywordJpaEnti
 public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
-    private static final long FOOD_KEYWORD_CANDIDATE_LIMIT = 2_000;
     
     /**
      * 관리자용 음식 검색 (페이징, 삭제되지 않은 것만)
@@ -150,27 +147,11 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
             return List.of();
         }
 
-        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
-        if (prefix.isEmpty()) {
-            return List.of();
-        }
-
-        var foodIdSubquery = JPAExpressions
-                .select(foodSearchKeywordJpaEntity.foodId)
-                .from(foodSearchKeywordJpaEntity)
-                .where(
-                        foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING)
-                                .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
-                                .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
-                )
-                .groupBy(foodSearchKeywordJpaEntity.foodId)
-                .limit(FOOD_KEYWORD_CANDIDATE_LIMIT);
-
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
                         foodJpaEntity.deletedAt.isNull()
-                                .and(foodJpaEntity.foodId.in(foodIdSubquery))
+                                .and(foodJpaEntity.foodNameNormalized.contains(normalized))
                 )
                 .orderBy(
                         foodJpaEntity.isMain.desc().nullsLast(),

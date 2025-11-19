@@ -3,6 +3,7 @@ package com.stdev.smartmealtable.api.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stdev.smartmealtable.api.config.MockChatModelConfig;
 import com.stdev.smartmealtable.api.config.MockExpenditureServiceConfig;
+import com.stdev.smartmealtable.storage.cache.KeywordRankingCacheService;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaEntity;
 import com.stdev.smartmealtable.storage.db.store.StoreCategoryJpaRepository;
 import com.stdev.smartmealtable.support.jwt.JwtTokenProvider;
@@ -26,9 +27,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import java.time.Duration;
+import java.util.Collections;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -62,6 +66,9 @@ public abstract class AbstractRestDocsTest extends AbstractContainerTest {
     
     @MockBean
     protected SearchCacheService searchCacheService;  // Redis Mock 처리
+
+    @MockBean
+    protected KeywordRankingCacheService keywordRankingCacheService;
     
     @BeforeEach
     void setUp(WebApplicationContext webApplicationContext,
@@ -73,6 +80,10 @@ public abstract class AbstractRestDocsTest extends AbstractContainerTest {
         // Redis Mock 설정 - 모든 Redis 연산 무시
         doNothing().when(searchCacheService).incrementSearchCount(anyString(), anyString());
         doNothing().when(searchCacheService).cacheAutocompleteData(anyString(), any());
+        doNothing().when(keywordRankingCacheService).incrementScores(anyString(), anyMap(), any(Duration.class));
+        doNothing().when(keywordRankingCacheService).trimRanking(anyString(), anyInt());
+        when(keywordRankingCacheService.getTopKeywords(anyString(), anyInt()))
+                .thenReturn(Collections.emptyList());
     }
     
     /**

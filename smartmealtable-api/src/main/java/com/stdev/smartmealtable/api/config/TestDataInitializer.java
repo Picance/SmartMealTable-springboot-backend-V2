@@ -34,6 +34,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -74,6 +76,7 @@ public class TestDataInitializer {
     private final DailyBudgetRepository dailyBudgetRepository;
     private final MonthlyBudgetRepository monthlyBudgetRepository;
     private final ExpenditureRepository expenditureRepository;
+    private final PlatformTransactionManager transactionManager;
     
     // 생성된 데이터 추적용
     private final List<Store> createdStores = new ArrayList<>();
@@ -82,46 +85,50 @@ public class TestDataInitializer {
     @Bean
     public CommandLineRunner initializeTestData() {
         return args -> {
-            log.info("🚀 [LOCAL] 테스트 데이터 초기화 시작...");
-            
-            try {
-                // 1. 카테고리 초기화
-                initializeCategories();
-                
-                // 2. 그룹 초기화
-                initializeGroups();
-                
-                // 3. 가게 초기화
-                initializeStores();
-                
-                // 4. 음식 초기화
-                initializeFoods();
-                
-                // 5. 테스트 회원 초기화
-                long testMemberId = initializeTestMember();
-                
-                // 6. 회원 인증 정보 초기화
-                initializeTestMemberAuthentication(testMemberId);
-                
-                // 7. 회원 주소 초기화
-                initializeTestAddress(testMemberId);
-                
-                // 8. 월별 예산 초기화 (2025년 10-12월)
-                initializeMonthlyBudgets(testMemberId);
-                
-                // 9. 일일 예산 초기화 (2025년 10-12월)
-                initializeDailyBudgets(testMemberId);
-                
-                // 10. 선호도 초기화 (테스트용)
-                initializePreferences(testMemberId);
-                
-                // 11. 지출 내역 초기화 (2025년 10-12월)
-                initializeExpenditures(testMemberId);
-                
-                log.info("✅ [LOCAL] 테스트 데이터 초기화 완료!");
-            } catch (Exception e) {
-                log.error("❌ [LOCAL] 테스트 데이터 초기화 중 오류 발생", e);
-            }
+            TransactionTemplate template = new TransactionTemplate(transactionManager);
+            template.executeWithoutResult(status -> {
+                log.info("🚀 [LOCAL] 테스트 데이터 초기화 시작...");
+
+                try {
+                    // 1. 카테고리 초기화
+                    initializeCategories();
+
+                    // 2. 그룹 초기화
+                    initializeGroups();
+
+                    // 3. 가게 초기화
+                    initializeStores();
+
+                    // 4. 음식 초기화
+                    initializeFoods();
+
+                    // 5. 테스트 회원 초기화
+                    long testMemberId = initializeTestMember();
+
+                    // 6. 회원 인증 정보 초기화
+                    initializeTestMemberAuthentication(testMemberId);
+
+                    // 7. 회원 주소 초기화
+                    initializeTestAddress(testMemberId);
+
+                    // 8. 월별 예산 초기화 (2025년 10-12월)
+                    initializeMonthlyBudgets(testMemberId);
+
+                    // 9. 일일 예산 초기화 (2025년 10-12월)
+                    initializeDailyBudgets(testMemberId);
+
+                    // 10. 선호도 초기화 (테스트용)
+                    initializePreferences(testMemberId);
+
+                    // 11. 지출 내역 초기화 (2025년 10-12월)
+                    initializeExpenditures(testMemberId);
+
+                    log.info("✅ [LOCAL] 테스트 데이터 초기화 완료!");
+                } catch (Exception e) {
+                    log.error("❌ [LOCAL] 테스트 데이터 초기화 중 오류 발생", e);
+                    status.setRollbackOnly();
+                }
+            });
         };
     }
 

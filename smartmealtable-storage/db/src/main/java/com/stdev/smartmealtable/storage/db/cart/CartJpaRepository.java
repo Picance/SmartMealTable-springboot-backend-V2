@@ -31,4 +31,8 @@ public interface CartJpaRepository extends JpaRepository<CartEntity, Long> {
      */
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN TRUE ELSE FALSE END FROM CartEntity c WHERE c.memberId = :memberId AND c.storeId = :storeId")
     boolean existsByMemberIdAndStoreId(@Param("memberId") Long memberId, @Param("storeId") Long storeId);
+
+    void deleteByMemberIdAndStoreIdNot(Long memberId, Long storeId);
+
+    void deleteByMemberId(Long memberId);
 }

@@ -6,15 +6,17 @@ import com.stdev.smartmealtable.core.error.ErrorCode;
 import com.stdev.smartmealtable.core.error.ErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.json.JsonTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Spring Boot 환경에서 ApiResponse JSON 직렬화 테스트
  */
-@SpringBootTest
-class ApiResponseSpringJsonTest extends AbstractContainerTest {
+@JsonTest
+@ActiveProfiles("test")
+class ApiResponseSpringJsonTest {
 
     @Autowired
     private ObjectMapper objectMapper;

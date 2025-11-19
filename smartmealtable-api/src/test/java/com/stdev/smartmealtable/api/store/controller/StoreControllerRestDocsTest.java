@@ -699,6 +699,10 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.suggestions[].address")
                                         .type(JsonFieldType.STRING)
                                         .description("도로명 주소"),
+                                fieldWithPath("data.keywordRecommendations")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("Prefix 기반 추천 키워드 목록")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")

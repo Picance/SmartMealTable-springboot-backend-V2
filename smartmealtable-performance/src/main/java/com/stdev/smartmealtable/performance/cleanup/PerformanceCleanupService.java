@@ -59,22 +59,8 @@ public class PerformanceCleanupService {
                 memberPattern
         );
 
-        int foodKeywords = jdbcTemplate.update("""
-                DELETE FROM food_search_keyword
-                WHERE store_id IN (
-                    SELECT store_id FROM store WHERE external_id LIKE ?
-                )
-                """, storePattern);
-
         int foods = jdbcTemplate.update("""
                 DELETE FROM food
-                WHERE store_id IN (
-                    SELECT store_id FROM store WHERE external_id LIKE ?
-                )
-                """, storePattern);
-
-        int storeKeywords = jdbcTemplate.update("""
-                DELETE FROM store_search_keyword
                 WHERE store_id IN (
                     SELECT store_id FROM store WHERE external_id LIKE ?
                 )
@@ -95,8 +81,8 @@ public class PerformanceCleanupService {
                 categoryPattern
         );
 
-        log.info("Cleanup summary - expenditure_item:{} expenditure:{} meal_budget:{} daily_budget:{} monthly_budget:{} food_keywords:{} food:{} store_keywords:{} store:{} member:{} category:{}",
+        log.info("Cleanup summary - expenditure_item:{} expenditure:{} meal_budget:{} daily_budget:{} monthly_budget:{} food:{} store:{} member:{} category:{}",
                 expItems, expenditures, mealBudgets, dailyBudgets, monthlyBudgets,
-                foodKeywords, foods, storeKeywords, stores, members, categories);
+                foods, stores, members, categories);
     }
 }

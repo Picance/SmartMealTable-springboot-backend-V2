@@ -5,7 +5,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StorePageResult;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
-import static com.stdev.smartmealtable.storage.db.store.QStoreSearchKeywordJpaEntity.storeSearchKeywordJpaEntity;
 
 /**
  * Store QueryDSL Repository
@@ -34,7 +32,6 @@ import static com.stdev.smartmealtable.storage.db.store.QStoreSearchKeywordJpaEn
 public class StoreQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
-    private static final long STORE_KEYWORD_CANDIDATE_LIMIT = 2_000;
     
     /**
      * 조건에 맞는 가게 목록 조회
@@ -292,27 +289,11 @@ public class StoreQueryDslRepository {
             return List.of();
         }
 
-        String prefix = SearchKeywordSupport.buildQueryPrefix(normalized);
-        if (prefix.isEmpty()) {
-            return List.of();
-        }
-
-        var storeIdSubquery = JPAExpressions
-                .select(storeSearchKeywordJpaEntity.storeId)
-                .from(storeSearchKeywordJpaEntity)
-                .where(
-                        storeSearchKeywordJpaEntity.keywordType.eq(StoreSearchKeywordType.NAME_SUBSTRING)
-                                .and(storeSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
-                                .and(storeSearchKeywordJpaEntity.keyword.like(normalized + "%"))
-                )
-                .groupBy(storeSearchKeywordJpaEntity.storeId)
-                .limit(STORE_KEYWORD_CANDIDATE_LIMIT);
-
         return queryFactory
                 .selectFrom(storeJpaEntity)
                 .where(
                         storeJpaEntity.deletedAt.isNull()
-                                .and(storeJpaEntity.storeId.in(storeIdSubquery))
+                                .and(storeJpaEntity.nameNormalized.contains(normalized))
                 )
                 .orderBy(storeJpaEntity.favoriteCount.desc().nullsLast())
                 .limit(limit)

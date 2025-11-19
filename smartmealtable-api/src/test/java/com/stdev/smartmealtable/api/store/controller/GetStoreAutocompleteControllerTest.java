@@ -113,6 +113,7 @@ class GetStoreAutocompleteControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.suggestions[].storeType").description("가게 유형"),
                                 fieldWithPath("data.suggestions[].address").description("주소"),
                                 fieldWithPath("data.suggestions[].categoryNames[]").description("카테고리명 목록"),
+                                fieldWithPath("data.keywordRecommendations[]").description("연관 검색어 추천 목록"),
                                 fieldWithPath("error").description("에러 정보 (성공 시 null)")
                         )
                 ));

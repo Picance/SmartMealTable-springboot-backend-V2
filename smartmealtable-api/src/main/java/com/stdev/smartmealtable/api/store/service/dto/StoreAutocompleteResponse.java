@@ -10,7 +10,8 @@ import java.util.List;
  * @param suggestions 자동완성 제안 목록
  */
 public record StoreAutocompleteResponse(
-    List<StoreSuggestion> suggestions
+    List<StoreSuggestion> suggestions,
+    List<String> keywordRecommendations
 ) {
     
     /**

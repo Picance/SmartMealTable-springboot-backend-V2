@@ -12,6 +12,7 @@ import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder;
 import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder.SearchableEntity;
+import com.stdev.smartmealtable.storage.cache.KeywordRankingCacheService;
 import com.stdev.smartmealtable.storage.cache.SearchCacheService;
 import com.stdev.smartmealtable.storage.cache.SearchCacheService.AutocompleteEntity;
 import org.junit.jupiter.api.*;
@@ -22,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,9 @@ class StoreAutocompleteServiceIntegrationTest {
     @MockBean
     private ChosungIndexBuilder chosungIndexBuilder;
 
+    @MockBean
+    private KeywordRankingCacheService keywordRankingCacheService;
+
     private static final String DOMAIN = "store";
 
     // 테스트 데이터
@@ -76,6 +81,10 @@ class StoreAutocompleteServiceIntegrationTest {
         
         // 자동완성 결과는 빈 리스트 반환 → Fallback으로 DB 검색
         when(searchCacheService.getAutocompleteResults(anyString(), anyString(), anyInt()))
+                .thenReturn(Collections.emptyList());
+        doNothing().when(keywordRankingCacheService).incrementScores(anyString(), anyMap(), any(Duration.class));
+        doNothing().when(keywordRankingCacheService).trimRanking(anyString(), anyInt());
+        when(keywordRankingCacheService.getTopKeywords(anyString(), anyInt()))
                 .thenReturn(Collections.emptyList());
 
         // 카테고리 생성
