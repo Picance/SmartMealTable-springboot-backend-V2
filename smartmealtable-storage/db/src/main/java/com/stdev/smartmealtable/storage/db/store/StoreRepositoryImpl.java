@@ -1,8 +1,6 @@
 package com.stdev.smartmealtable.storage.db.store;
 
 import com.stdev.smartmealtable.domain.store.*;
-import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
-import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport.SearchKeyword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +23,6 @@ public class StoreRepositoryImpl implements StoreRepository {
     private final StoreQueryDslRepository queryDslRepository;
     private final StoreOpeningHourJpaRepository openingHourJpaRepository;
     private final StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
-    private final StoreSearchKeywordJpaRepository storeSearchKeywordJpaRepository;
     
     @Override
     public Optional<Store> findById(Long storeId) {
@@ -86,8 +83,6 @@ public class StoreRepositoryImpl implements StoreRepository {
             }
         }
 
-        refreshStoreSearchKeywords(saved);
-        
         return StoreEntityMapper.toDomain(saved, categoryIds);
     }
     
@@ -160,7 +155,6 @@ public class StoreRepositoryImpl implements StoreRepository {
                     .deletedAt(LocalDateTime.now()) // 논리적 삭제
                     .build();
             jpaRepository.save(updated);
-            storeSearchKeywordJpaRepository.deleteByStoreId(storeId);
         });
     }
 
@@ -313,27 +307,4 @@ public class StoreRepositoryImpl implements StoreRepository {
                 .collect(Collectors.toList());
     }
 
-    private void refreshStoreSearchKeywords(StoreJpaEntity saved) {
-        if (saved == null || saved.getStoreId() == null) {
-            return;
-        }
-
-        storeSearchKeywordJpaRepository.deleteByStoreId(saved.getStoreId());
-
-        List<SearchKeyword> keywords = SearchKeywordSupport.generateKeywords(saved.getName());
-        if (keywords.isEmpty()) {
-            return;
-        }
-
-        List<StoreSearchKeywordJpaEntity> keywordEntities = keywords.stream()
-                .map(keyword -> StoreSearchKeywordJpaEntity.of(
-                        saved.getStoreId(),
-                        keyword.keyword(),
-                        keyword.keywordPrefix(),
-                        StoreSearchKeywordType.NAME_SUBSTRING
-                ))
-                .collect(Collectors.toList());
-
-        storeSearchKeywordJpaRepository.saveAll(keywordEntities);
-    }
 }

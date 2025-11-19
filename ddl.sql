@@ -194,22 +194,6 @@ CREATE TABLE store (
     INDEX idx_store_type_name (store_type, name(10)),
     INDEX idx_registered_at (registered_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
-
--- 가게 검색 키워드 테이블
-CREATE TABLE store_search_keyword (
-    store_search_keyword_id BIGINT         NOT NULL AUTO_INCREMENT COMMENT '가게 검색 키워드 고유 식별자',
-    store_id                BIGINT         NOT NULL COMMENT '가게 ID (FK)',
-    keyword                 VARCHAR(100)   NOT NULL COMMENT '정규화된 검색 키워드 (부분 문자열)',
-    keyword_prefix          VARCHAR(30)    NOT NULL COMMENT '검색 키워드 prefix (인덱스 필터)',
-    keyword_type            VARCHAR(20)    NOT NULL COMMENT '키워드 유형 (예: NAME_SUBSTRING)',
-    created_at              DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시각',
-    updated_at              DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 시각',
-    PRIMARY KEY (store_search_keyword_id),
-    INDEX idx_store_keyword_prefix (keyword_prefix, keyword_type),
-    INDEX idx_store_keyword_store (store_id, keyword_type),
-    CONSTRAINT fk_store_search_keyword_store FOREIGN KEY (store_id) REFERENCES store(store_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게명/카테고리 검색 전용 정규화 키워드를 저장하는 테이블';
-
 -- 가게와 카테고리의 N:N 관계를 나타내는 중간 테이블
 CREATE TABLE store_category (
     store_category_id     BIGINT         NOT NULL AUTO_INCREMENT COMMENT '매핑 레코드의 고유 식별자',
@@ -300,25 +284,6 @@ CREATE TABLE food (
     INDEX idx_store_main (store_id, is_main),
     INDEX idx_store_display (store_id, display_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점에서 판매하는 개별 음식(메뉴)의 정보를 저장하는 테이블';-- 가게 조회 이력 테이블
-
--- 음식 검색 키워드 테이블
-CREATE TABLE food_search_keyword (
-    food_search_keyword_id BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식 검색 키워드 고유 식별자',
-    food_id                BIGINT         NOT NULL COMMENT '음식 ID (FK)',
-    store_id               BIGINT         NOT NULL COMMENT '가게 ID (FK)',
-    keyword                VARCHAR(100)   NOT NULL COMMENT '정규화된 검색 키워드 (부분 문자열)',
-    keyword_prefix         VARCHAR(30)    NOT NULL COMMENT '검색 키워드 prefix (인덱스 필터)',
-    keyword_type           VARCHAR(20)    NOT NULL COMMENT '키워드 유형 (예: NAME_SUBSTRING)',
-    created_at             DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시각',
-    updated_at             DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 시각',
-    PRIMARY KEY (food_search_keyword_id),
-    INDEX idx_food_keyword_prefix (keyword_prefix, keyword_type),
-    INDEX idx_food_keyword_food (food_id, keyword_type),
-    INDEX idx_food_keyword_store (store_id),
-    CONSTRAINT fk_food_search_keyword_food FOREIGN KEY (food_id) REFERENCES food(food_id),
-    CONSTRAINT fk_food_search_keyword_store FOREIGN KEY (store_id) REFERENCES store(store_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식명 검색 전용 정규화 키워드를 저장하는 테이블';
-
 -- 통합 자동완성 검색 이벤트 로그 테이블
 CREATE TABLE search_keyword_event (
     search_keyword_event_id BIGINT          NOT NULL AUTO_INCREMENT COMMENT '검색 이벤트 고유 식별자',

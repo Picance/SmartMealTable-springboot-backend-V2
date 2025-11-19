@@ -2,8 +2,6 @@ package com.stdev.smartmealtable.performance.loader.generator;
 
 import com.stdev.smartmealtable.performance.config.PerformanceLoadProperties.FoodProperties;
 import com.stdev.smartmealtable.performance.loader.result.DataLoadResult;
-import com.stdev.smartmealtable.performance.loader.util.KeywordGenerator;
-import com.stdev.smartmealtable.performance.loader.util.KeywordGenerator.Keyword;
 import com.stdev.smartmealtable.performance.loader.util.RunTag;
 import com.stdev.smartmealtable.performance.loader.util.WorkChunk;
 import com.stdev.smartmealtable.performance.loader.util.WorkPartitioner;
@@ -87,18 +85,6 @@ public class StoreAndFoodGenerator {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
             """;
 
-    private static final String INSERT_STORE_KEYWORD_SQL = """
-            INSERT INTO store_search_keyword (store_id, keyword, keyword_prefix, keyword_type)
-            VALUES (?, ?, ?, ?)
-            """;
-
-    private static final String INSERT_FOOD_KEYWORD_SQL = """
-            INSERT INTO food_search_keyword (food_id, store_id, keyword, keyword_prefix, keyword_type)
-            VALUES (?, ?, ?, ?, ?)
-            """;
-
-    private static final String KEYWORD_TYPE = "NAME_SUBSTRING";
-    private static final int KEYWORD_BATCH_SIZE = 500;
 
     public StoreDataSet generate(String runId, FoodProperties props, List<Long> categoryIds,
                                  int threadCount, int batchSize) {
@@ -108,9 +94,7 @@ public class StoreAndFoodGenerator {
 
         StoreInsertResult storeInsertResult = insertStores(runId, props, categoryIds, threadCount, batchSize);
         List<StoreSummary> stores = fetchStores(runId, categoryIds);
-        populateStoreSearchKeywords(stores);
         FoodInsertResult foodInsertResult = insertFoods(runId, props, stores, categoryIds, threadCount, batchSize);
-        populateFoodSearchKeywords(runId);
         return new StoreDataSet(stores, storeInsertResult.summary(), foodInsertResult.summary());
     }
 
@@ -186,91 +170,6 @@ public class StoreAndFoodGenerator {
                     return new StoreSummary(storeId, rs.getString("name"), categoryId);
                 }
         );
-    }
-
-    private void populateStoreSearchKeywords(List<StoreSummary> stores) {
-        if (stores.isEmpty()) {
-            return;
-        }
-
-        deleteStoreKeywords(stores);
-
-        List<Object[]> batch = new ArrayList<>(KEYWORD_BATCH_SIZE);
-        java.util.concurrent.atomic.AtomicLong inserted = new java.util.concurrent.atomic.AtomicLong();
-        for (StoreSummary store : stores) {
-            List<Keyword> keywords = KeywordGenerator.generate(store.name());
-            for (Keyword keyword : keywords) {
-                batch.add(new Object[]{store.storeId(), keyword.keyword(), keyword.prefix(), KEYWORD_TYPE});
-                if (batch.size() == KEYWORD_BATCH_SIZE) {
-                    jdbcTemplate.batchUpdate(INSERT_STORE_KEYWORD_SQL, batch);
-                    inserted.addAndGet(batch.size());
-                    batch.clear();
-                }
-            }
-        }
-
-        if (!batch.isEmpty()) {
-            jdbcTemplate.batchUpdate(INSERT_STORE_KEYWORD_SQL, batch);
-            inserted.addAndGet(batch.size());
-        }
-
-        log.info("[store_keyword] inserted {} rows", inserted.get());
-    }
-
-    private void deleteStoreKeywords(List<StoreSummary> stores) {
-        List<Long> storeIds = stores.stream()
-                .map(StoreSummary::storeId)
-                .toList();
-        chunk(storeIds, 500).forEach(idChunk -> {
-            String placeholders = idChunk.stream().map(id -> "?").collect(Collectors.joining(","));
-            String sql = "DELETE FROM store_search_keyword WHERE store_id IN (" + placeholders + ")";
-            jdbcTemplate.update(sql, idChunk.toArray());
-        });
-    }
-
-    private void populateFoodSearchKeywords(String runId) {
-        String pattern = RunTag.storePattern(runId);
-        jdbcTemplate.update("""
-                DELETE FROM food_search_keyword
-                WHERE store_id IN (
-                    SELECT store_id FROM store WHERE external_id LIKE ?
-                )
-                """, pattern);
-
-        List<Object[]> batch = new ArrayList<>(KEYWORD_BATCH_SIZE);
-        java.util.concurrent.atomic.AtomicLong inserted = new java.util.concurrent.atomic.AtomicLong();
-        jdbcTemplate.query(
-                """
-                        SELECT f.food_id, f.store_id, f.food_name
-                        FROM food f
-                        INNER JOIN store s ON f.store_id = s.store_id
-                        WHERE s.external_id LIKE ?
-                        """,
-                ps -> ps.setString(1, pattern),
-                rs -> {
-                    while (rs.next()) {
-                        long foodId = rs.getLong("food_id");
-                        long storeId = rs.getLong("store_id");
-                        String name = rs.getString("food_name");
-                        for (Keyword keyword : KeywordGenerator.generate(name)) {
-                            batch.add(new Object[]{foodId, storeId, keyword.keyword(), keyword.prefix(), KEYWORD_TYPE});
-                            if (batch.size() == KEYWORD_BATCH_SIZE) {
-                                jdbcTemplate.batchUpdate(INSERT_FOOD_KEYWORD_SQL, batch);
-                                inserted.addAndGet(batch.size());
-                                batch.clear();
-                            }
-                        }
-                    }
-                    return null;
-                }
-        );
-
-        if (!batch.isEmpty()) {
-            jdbcTemplate.batchUpdate(INSERT_FOOD_KEYWORD_SQL, batch);
-            inserted.addAndGet(batch.size());
-        }
-
-        log.info("[food_keyword] inserted {} rows", inserted.get());
     }
 
     private static List<List<StoreSummary>> partitionStores(List<StoreSummary> stores, int partitions) {

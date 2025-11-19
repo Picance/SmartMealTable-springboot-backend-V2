@@ -21,15 +21,12 @@ class FoodRepositoryImplTest {
     @Mock
     private FoodJpaRepository foodJpaRepository;
 
-    @Mock
-    private FoodSearchKeywordJpaRepository foodSearchKeywordJpaRepository;
-
     private FoodRepositoryImpl foodRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        foodRepository = new FoodRepositoryImpl(foodJpaRepository, foodSearchKeywordJpaRepository);
+        foodRepository = new FoodRepositoryImpl(foodJpaRepository);
     }
 
     @Test
@@ -53,8 +50,6 @@ class FoodRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getFoodId()).isEqualTo(1L);
 
-        verify(foodSearchKeywordJpaRepository, times(1)).deleteByFoodId(1L);
-        verify(foodSearchKeywordJpaRepository, times(1)).saveAll(any());
     }
 
     @Test
@@ -123,7 +118,6 @@ class FoodRepositoryImplTest {
 
         // Then
         verify(foodJpaRepository, times(1)).deleteByStoreId(storeId);
-        verify(foodSearchKeywordJpaRepository, times(1)).deleteByStoreId(storeId);
     }
 
     @Test
@@ -135,7 +129,5 @@ class FoodRepositoryImplTest {
         when(foodJpaRepository.findById(foodId)).thenReturn(Optional.of(entity));
 
         foodRepository.softDelete(foodId);
-
-        verify(foodSearchKeywordJpaRepository, times(1)).deleteByFoodId(foodId);
     }
 }

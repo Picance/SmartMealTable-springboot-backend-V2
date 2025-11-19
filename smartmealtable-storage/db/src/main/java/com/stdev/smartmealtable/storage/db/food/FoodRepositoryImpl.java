@@ -3,8 +3,6 @@ package com.stdev.smartmealtable.storage.db.food;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
-import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
-import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport.SearchKeyword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,13 +22,11 @@ import java.util.stream.Collectors;
 public class FoodRepositoryImpl implements FoodRepository {
 
     private final FoodJpaRepository foodJpaRepository;
-    private final FoodSearchKeywordJpaRepository foodSearchKeywordJpaRepository;
 
     @Override
     public Food save(Food food) {
         FoodJpaEntity entity = FoodJpaEntity.fromDomain(food);
         FoodJpaEntity savedEntity = foodJpaRepository.save(entity);
-        refreshFoodSearchKeywords(savedEntity);
         return savedEntity.toDomain();
     }
 
@@ -93,7 +89,6 @@ public class FoodRepositoryImpl implements FoodRepository {
     @Transactional
     public void deleteByStoreId(Long storeId) {
         foodJpaRepository.deleteByStoreId(storeId);
-        foodSearchKeywordJpaRepository.deleteByStoreId(storeId);
     }
 
     // ===== ADMIN 전용 메서드 =====
@@ -124,7 +119,6 @@ public class FoodRepositoryImpl implements FoodRepository {
                     .deletedAt(LocalDateTime.now()) // 논리적 삭제
                     .build();
             foodJpaRepository.save(updated);
-            foodSearchKeywordJpaRepository.deleteByFoodId(foodId);
         });
     }
 
@@ -193,28 +187,4 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .collect(Collectors.toList());
     }
 
-    private void refreshFoodSearchKeywords(FoodJpaEntity savedEntity) {
-        if (savedEntity == null || savedEntity.getFoodId() == null) {
-            return;
-        }
-
-        foodSearchKeywordJpaRepository.deleteByFoodId(savedEntity.getFoodId());
-
-        List<SearchKeyword> keywords = SearchKeywordSupport.generateKeywords(savedEntity.getFoodName());
-        if (keywords.isEmpty()) {
-            return;
-        }
-
-        List<FoodSearchKeywordJpaEntity> keywordEntities = keywords.stream()
-                .map(keyword -> FoodSearchKeywordJpaEntity.of(
-                        savedEntity.getFoodId(),
-                        savedEntity.getStoreId(),
-                        keyword.keyword(),
-                        keyword.keywordPrefix(),
-                        FoodSearchKeywordType.NAME_SUBSTRING
-                ))
-                .collect(Collectors.toList());
-
-        foodSearchKeywordJpaRepository.saveAll(keywordEntities);
-    }
 }

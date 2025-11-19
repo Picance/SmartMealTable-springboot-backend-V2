@@ -33,9 +33,6 @@ class StoreRepositoryImplTest {
     @Mock
     private StoreTemporaryClosureJpaRepository temporaryClosureJpaRepository;
 
-    @Mock
-    private StoreSearchKeywordJpaRepository storeSearchKeywordJpaRepository;
-
     private StoreRepositoryImpl repository;
 
     @BeforeEach
@@ -46,8 +43,7 @@ class StoreRepositoryImplTest {
                 storeCategoryJpaRepository,
                 queryDslRepository,
                 openingHourJpaRepository,
-                temporaryClosureJpaRepository,
-                storeSearchKeywordJpaRepository
+                temporaryClosureJpaRepository
         );
     }
 
@@ -93,8 +89,6 @@ class StoreRepositoryImplTest {
 
         Store saved = repository.save(store);
         assertThat(saved.getStoreId()).isEqualTo(10L);
-        verify(storeSearchKeywordJpaRepository, times(1)).deleteByStoreId(10L);
-        verify(storeSearchKeywordJpaRepository, times(1)).saveAll(any());
     }
 
     @Test
@@ -158,7 +152,5 @@ class StoreRepositoryImplTest {
         when(jpaRepository.findById(storeId)).thenReturn(Optional.of(StoreEntityMapper.toJpaEntity(store)));
 
         repository.softDelete(storeId);
-
-        verify(storeSearchKeywordJpaRepository, times(1)).deleteByStoreId(storeId);
     }
 }
