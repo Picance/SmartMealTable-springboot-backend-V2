@@ -11,8 +11,10 @@ import java.util.regex.Pattern;
 public final class KeywordGenerator {
 
     private static final Pattern NORMALIZE_PATTERN = Pattern.compile("[^0-9a-zA-Z가-힣]");
-    private static final int MAX_SUBSTRING_LENGTH = 20;
+    private static final int MIN_SUBSTRING_LENGTH = 2;
+    private static final int MAX_SUBSTRING_LENGTH = 8;
     private static final int MAX_KEYWORDS_PER_TEXT = 800;
+    private static final int MAX_KEYWORDS_PER_PREFIX = 500;
     private static final int KEYWORD_PREFIX_LENGTH = 5;
 
     private KeywordGenerator() {
@@ -25,13 +27,25 @@ public final class KeywordGenerator {
         }
 
         Set<String> substrings = new LinkedHashSet<>();
+        java.util.Map<String, Integer> prefixCounts = new java.util.HashMap<>();
         outer:
         for (int start = 0; start < normalized.length(); start++) {
             for (int end = start + 1; end <= normalized.length(); end++) {
-                if (end - start > MAX_SUBSTRING_LENGTH) {
+                int length = end - start;
+                if (length < MIN_SUBSTRING_LENGTH) {
+                    continue;
+                }
+                if (length > MAX_SUBSTRING_LENGTH) {
                     break;
                 }
-                substrings.add(normalized.substring(start, end));
+                String candidate = normalized.substring(start, end);
+                String prefix = prefix(candidate);
+                int count = prefixCounts.getOrDefault(prefix, 0);
+                if (count >= MAX_KEYWORDS_PER_PREFIX) {
+                    continue;
+                }
+                substrings.add(candidate);
+                prefixCounts.put(prefix, count + 1);
                 if (substrings.size() >= MAX_KEYWORDS_PER_TEXT) {
                     break outer;
                 }

@@ -15,8 +15,10 @@ import java.util.regex.Pattern;
 public final class SearchKeywordSupport {
 
     private static final Pattern NORMALIZE_PATTERN = Pattern.compile("[^0-9a-zA-Z가-힣]");
-    private static final int MAX_SUBSTRING_LENGTH = 20;
+    private static final int MIN_SUBSTRING_LENGTH = 2;
+    private static final int MAX_SUBSTRING_LENGTH = 8;
     private static final int MAX_KEYWORDS_PER_TEXT = 800;
+    private static final int MAX_KEYWORDS_PER_PREFIX = 500;
 
     /** Prefix 인덱스에 사용할 최대 길이 */
     public static final int KEYWORD_PREFIX_LENGTH = 5;
@@ -45,13 +47,25 @@ public final class SearchKeywordSupport {
         }
 
         Set<String> candidates = new LinkedHashSet<>();
+        java.util.Map<String, Integer> prefixCounts = new java.util.HashMap<>();
         outer:
         for (int start = 0; start < normalized.length(); start++) {
             for (int end = start + 1; end <= normalized.length(); end++) {
-                if (end - start > MAX_SUBSTRING_LENGTH) {
+                int length = end - start;
+                if (length < MIN_SUBSTRING_LENGTH) {
+                    continue;
+                }
+                if (length > MAX_SUBSTRING_LENGTH) {
                     break;
                 }
-                candidates.add(normalized.substring(start, end));
+                String candidate = normalized.substring(start, end);
+                String prefix = buildKeywordPrefix(candidate);
+                int currentCount = prefixCounts.getOrDefault(prefix, 0);
+                if (currentCount >= MAX_KEYWORDS_PER_PREFIX) {
+                    continue;
+                }
+                candidates.add(candidate);
+                prefixCounts.put(prefix, currentCount + 1);
                 if (candidates.size() >= MAX_KEYWORDS_PER_TEXT) {
                     break outer;
                 }

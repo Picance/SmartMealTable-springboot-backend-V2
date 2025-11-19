@@ -196,14 +196,14 @@ public class StoreAndFoodGenerator {
         deleteStoreKeywords(stores);
 
         List<Object[]> batch = new ArrayList<>(KEYWORD_BATCH_SIZE);
-        long inserted = 0;
+        java.util.concurrent.atomic.AtomicLong inserted = new java.util.concurrent.atomic.AtomicLong();
         for (StoreSummary store : stores) {
             List<Keyword> keywords = KeywordGenerator.generate(store.name());
             for (Keyword keyword : keywords) {
                 batch.add(new Object[]{store.storeId(), keyword.keyword(), keyword.prefix(), KEYWORD_TYPE});
                 if (batch.size() == KEYWORD_BATCH_SIZE) {
                     jdbcTemplate.batchUpdate(INSERT_STORE_KEYWORD_SQL, batch);
-                    inserted += batch.size();
+                    inserted.addAndGet(batch.size());
                     batch.clear();
                 }
             }
@@ -211,10 +211,10 @@ public class StoreAndFoodGenerator {
 
         if (!batch.isEmpty()) {
             jdbcTemplate.batchUpdate(INSERT_STORE_KEYWORD_SQL, batch);
-            inserted += batch.size();
+            inserted.addAndGet(batch.size());
         }
 
-        log.info("[store_keyword] inserted {} rows", inserted);
+        log.info("[store_keyword] inserted {} rows", inserted.get());
     }
 
     private void deleteStoreKeywords(List<StoreSummary> stores) {
@@ -238,7 +238,7 @@ public class StoreAndFoodGenerator {
                 """, pattern);
 
         List<Object[]> batch = new ArrayList<>(KEYWORD_BATCH_SIZE);
-        long inserted = 0;
+        java.util.concurrent.atomic.AtomicLong inserted = new java.util.concurrent.atomic.AtomicLong();
         jdbcTemplate.query(
                 """
                         SELECT f.food_id, f.store_id, f.food_name
@@ -256,7 +256,7 @@ public class StoreAndFoodGenerator {
                             batch.add(new Object[]{foodId, storeId, keyword.keyword(), keyword.prefix(), KEYWORD_TYPE});
                             if (batch.size() == KEYWORD_BATCH_SIZE) {
                                 jdbcTemplate.batchUpdate(INSERT_FOOD_KEYWORD_SQL, batch);
-                                inserted += batch.size();
+                                inserted.addAndGet(batch.size());
                                 batch.clear();
                             }
                         }
@@ -267,10 +267,10 @@ public class StoreAndFoodGenerator {
 
         if (!batch.isEmpty()) {
             jdbcTemplate.batchUpdate(INSERT_FOOD_KEYWORD_SQL, batch);
-            inserted += batch.size();
+            inserted.addAndGet(batch.size());
         }
 
-        log.info("[food_keyword] inserted {} rows", inserted);
+        log.info("[food_keyword] inserted {} rows", inserted.get());
     }
 
     private static List<List<StoreSummary>> partitionStores(List<StoreSummary> stores, int partitions) {

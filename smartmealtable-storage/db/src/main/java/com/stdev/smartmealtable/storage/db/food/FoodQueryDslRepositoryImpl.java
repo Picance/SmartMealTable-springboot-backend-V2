@@ -24,6 +24,7 @@ import static com.stdev.smartmealtable.storage.db.food.QFoodSearchKeywordJpaEnti
 public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
     
     private final JPAQueryFactory queryFactory;
+    private static final long FOOD_KEYWORD_CANDIDATE_LIMIT = 2_000;
     
     /**
      * 관리자용 음식 검색 (페이징, 삭제되지 않은 것만)
@@ -154,19 +155,22 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
             return List.of();
         }
 
+        var foodIdSubquery = JPAExpressions
+                .select(foodSearchKeywordJpaEntity.foodId)
+                .from(foodSearchKeywordJpaEntity)
+                .where(
+                        foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING)
+                                .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                )
+                .groupBy(foodSearchKeywordJpaEntity.foodId)
+                .limit(FOOD_KEYWORD_CANDIDATE_LIMIT);
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
                 .where(
                         foodJpaEntity.deletedAt.isNull()
-                                .and(JPAExpressions.selectOne()
-                                        .from(foodSearchKeywordJpaEntity)
-                                        .where(
-                                                foodSearchKeywordJpaEntity.foodId.eq(foodJpaEntity.foodId)
-                                                        .and(foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING))
-                                                        .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
-                                                        .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
-                                        )
-                                        .exists())
+                                .and(foodJpaEntity.foodId.in(foodIdSubquery))
                 )
                 .orderBy(
                         foodJpaEntity.isMain.desc().nullsLast(),
