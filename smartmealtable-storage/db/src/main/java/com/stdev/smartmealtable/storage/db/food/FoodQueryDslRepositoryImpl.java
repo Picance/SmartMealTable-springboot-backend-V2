@@ -1,6 +1,7 @@
 package com.stdev.smartmealtable.storage.db.food;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
@@ -154,19 +155,22 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
         }
 
         return queryFactory
-                .selectDistinct(foodJpaEntity)
-                .from(foodJpaEntity)
-                .innerJoin(foodSearchKeywordJpaEntity)
-                .on(foodJpaEntity.foodId.eq(foodSearchKeywordJpaEntity.foodId))
+                .selectFrom(foodJpaEntity)
                 .where(
                         foodJpaEntity.deletedAt.isNull()
-                                .and(foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING))
-                                .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
-                                .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                                .and(JPAExpressions.selectOne()
+                                        .from(foodSearchKeywordJpaEntity)
+                                        .where(
+                                                foodSearchKeywordJpaEntity.foodId.eq(foodJpaEntity.foodId)
+                                                        .and(foodSearchKeywordJpaEntity.keywordType.eq(FoodSearchKeywordType.NAME_SUBSTRING))
+                                                        .and(foodSearchKeywordJpaEntity.keywordPrefix.like(prefix + "%"))
+                                                        .and(foodSearchKeywordJpaEntity.keyword.like(normalized + "%"))
+                                        )
+                                        .exists())
                 )
                 .orderBy(
-                        foodJpaEntity.isMain.desc().nullsLast(), // 대표 메뉴 우선
-                        foodJpaEntity.registeredDt.desc() // 최신 등록순
+                        foodJpaEntity.isMain.desc().nullsLast(),
+                        foodJpaEntity.registeredDt.desc()
                 )
                 .limit(limit)
                 .fetch();
