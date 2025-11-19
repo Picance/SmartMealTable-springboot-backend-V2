@@ -1,5 +1,8 @@
 package com.stdev.smartmealtable.api.store.controller;
 
+import com.stdev.smartmealtable.api.common.auth.OptionalAuthenticatedUserProvider;
+import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService;
+import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService.AutocompleteSearchEventCommand;
 import com.stdev.smartmealtable.api.store.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreDetailResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
@@ -11,6 +14,7 @@ import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
 import com.stdev.smartmealtable.domain.store.StoreType;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -36,6 +40,8 @@ public class StoreController {
     
     private final StoreService storeService;
     private final StoreAutocompleteService storeAutocompleteService;
+    private final AutocompleteSearchEventService autocompleteSearchEventService;
+    private final OptionalAuthenticatedUserProvider optionalAuthenticatedUserProvider;
     
     /**
      * 가게 목록 조회
@@ -155,12 +161,15 @@ public class StoreController {
     @GetMapping("/autocomplete")
     public ApiResponse<com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse> autocomplete(
             @RequestParam @Size(min = 1, max = 50, message = "검색 키워드는 1-50자 이내여야 합니다.") String keyword,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit,
+            HttpServletRequest request
     ) {
         log.info("가게 자동완성 API 호출 - keyword: {}, limit: {}", keyword, limit);
 
         com.stdev.smartmealtable.api.store.service.dto.StoreAutocompleteResponse response =
                 storeAutocompleteService.autocomplete(keyword, limit);
+
+        publishSearchEvent(keyword, request);
 
         return ApiResponse.success(response);
     }
@@ -181,5 +190,17 @@ public class StoreController {
         StoreTrendingKeywordsResponse response = storeAutocompleteService.getTrendingKeywords(limit);
         
         return ApiResponse.success(response);
+    }
+
+    private void publishSearchEvent(String keyword, HttpServletRequest request) {
+        Long memberId = optionalAuthenticatedUserProvider.extractMemberId(request).orElse(null);
+        AutocompleteSearchEventCommand command = AutocompleteSearchEventCommand.builder()
+                .rawKeyword(keyword)
+                .memberId(memberId)
+                .clickedFoodId(null)
+                .latitude(null)
+                .longitude(null)
+                .build();
+        autocompleteSearchEventService.logSearchEvent(command);
     }
 }

@@ -1,13 +1,17 @@
 package com.stdev.smartmealtable.api.food.controller;
 
+import com.stdev.smartmealtable.api.common.auth.OptionalAuthenticatedUserProvider;
 import com.stdev.smartmealtable.api.food.service.FoodAutocompleteService;
 import com.stdev.smartmealtable.api.food.service.dto.FoodAutocompleteResponse;
 import com.stdev.smartmealtable.api.food.service.dto.FoodTrendingKeywordsResponse;
 import com.stdev.smartmealtable.api.store.dto.GetFoodDetailResponse;
 import com.stdev.smartmealtable.api.store.service.StoreService;
+import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService;
+import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService.AutocompleteSearchEventCommand;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
@@ -30,6 +34,8 @@ public class FoodController {
     
     private final StoreService storeService;
     private final FoodAutocompleteService foodAutocompleteService;
+    private final AutocompleteSearchEventService autocompleteSearchEventService;
+    private final OptionalAuthenticatedUserProvider optionalAuthenticatedUserProvider;
     
     /**
      * 메뉴 상세 조회
@@ -64,11 +70,13 @@ public class FoodController {
     @GetMapping("/autocomplete")
     public ApiResponse<FoodAutocompleteResponse> autocomplete(
             @RequestParam @Size(min = 1, max = 50, message = "검색 키워드는 1-50자 이내여야 합니다.") String keyword,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit
+            @RequestParam(defaultValue = "10") @Min(1) @Max(20) int limit,
+            HttpServletRequest request
     ) {
         log.info("음식 자동완성 API 호출 - keyword: {}, limit: {}", keyword, limit);
 
         FoodAutocompleteResponse response = foodAutocompleteService.autocomplete(keyword, limit);
+        publishSearchEvent(keyword, request);
 
         return ApiResponse.success(response);
     }
@@ -89,5 +97,17 @@ public class FoodController {
         FoodTrendingKeywordsResponse response = foodAutocompleteService.getTrendingKeywords(limit);
         
         return ApiResponse.success(response);
+    }
+
+    private void publishSearchEvent(String keyword, HttpServletRequest request) {
+        Long memberId = optionalAuthenticatedUserProvider.extractMemberId(request).orElse(null);
+        AutocompleteSearchEventCommand command = AutocompleteSearchEventCommand.builder()
+                .rawKeyword(keyword)
+                .memberId(memberId)
+                .clickedFoodId(null)
+                .latitude(null)
+                .longitude(null)
+                .build();
+        autocompleteSearchEventService.logSearchEvent(command);
     }
 }

@@ -1,17 +1,13 @@
 package com.stdev.smartmealtable.storage.db.cart;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.cart.Cart;
 import com.stdev.smartmealtable.domain.cart.CartRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.stdev.smartmealtable.storage.db.cart.QCartEntity.*;
 
 /**
  * CartRepository 구현체
@@ -20,8 +16,6 @@ import static com.stdev.smartmealtable.storage.db.cart.QCartEntity.*;
 @RequiredArgsConstructor
 public class CartRepositoryImpl implements CartRepository {
 
-    private final EntityManager em;
-    private final JPAQueryFactory queryFactory;
     private final CartJpaRepository cartJpaRepository;
     
     @Override
@@ -60,21 +54,12 @@ public class CartRepositoryImpl implements CartRepository {
     
     @Override
     public void deleteByMemberIdAndStoreIdNot(Long memberId, Long storeId) {
-        List<CartEntity> carts = queryFactory.selectFrom(cartEntity)
-                .where(cartEntity.memberId.eq(memberId)
-                        .and(cartEntity.storeId.ne(storeId)))
-                .fetch();
-
-        carts.forEach(em::remove);
+        cartJpaRepository.deleteByMemberIdAndStoreIdNot(memberId, storeId);
     }
 
     @Override
     public void deleteByMemberId(Long memberId) {
-        List<CartEntity> carts = queryFactory.selectFrom(cartEntity)
-                .where(cartEntity.memberId.eq(memberId))
-                .fetch();
-
-        carts.forEach(em::remove);
+        cartJpaRepository.deleteByMemberId(memberId);
     }
 
     @Override
