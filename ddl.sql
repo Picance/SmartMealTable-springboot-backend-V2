@@ -319,6 +319,22 @@ CREATE TABLE food_search_keyword (
     CONSTRAINT fk_food_search_keyword_store FOREIGN KEY (store_id) REFERENCES store(store_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식명 검색 전용 정규화 키워드를 저장하는 테이블';
 
+-- 통합 자동완성 검색 이벤트 로그 테이블
+CREATE TABLE search_keyword_event (
+    search_keyword_event_id BIGINT          NOT NULL AUTO_INCREMENT COMMENT '검색 이벤트 고유 식별자',
+    member_id               BIGINT          NULL     COMMENT '검색한 회원 ID (비로그인 시 NULL)',
+    raw_keyword             VARCHAR(100)    NOT NULL COMMENT '사용자가 입력한 원본 키워드',
+    normalized_keyword      VARCHAR(60)     NOT NULL COMMENT '정규화된 키워드 (소문자/특수문자 제거)',
+    clicked_food_id         BIGINT          NULL     COMMENT '검색 결과 중 클릭한 음식 ID (검색 시 NULL)',
+    latitude                DECIMAL(10,7)   NULL     COMMENT '사용자 위치 위도',
+    longitude               DECIMAL(10,7)   NULL     COMMENT '사용자 위치 경도',
+    created_at              DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '이벤트 생성 시각',
+    updated_at              DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '이벤트 갱신 시각',
+    PRIMARY KEY (search_keyword_event_id),
+    INDEX idx_ske_created_keyword (created_at, normalized_keyword),
+    INDEX idx_ske_keyword_geo (normalized_keyword, latitude, longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='자동완성 검색/클릭 이벤트를 저장하여 인기 검색어 집계에 사용';
+
 -- 가게 조회 이력 테이블
 CREATE TABLE store_view_history (
                                     store_view_history_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '가게 조회 이력의 고유 식별자',

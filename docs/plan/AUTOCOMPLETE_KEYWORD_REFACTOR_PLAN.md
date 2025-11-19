@@ -79,7 +79,6 @@ CREATE TABLE search_keyword_event (
   clicked_food_id BIGINT NULL,
   lat DECIMAL(10,7) NULL,
   lng DECIMAL(10,7) NULL,
-  app_version VARCHAR(20) NULL,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 ) ENGINE=InnoDB;
 
