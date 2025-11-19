@@ -11,7 +11,9 @@ import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.storage.cache.ChosungIndexBuilder;
+import com.stdev.smartmealtable.storage.cache.KeywordRankingCacheService;
 import com.stdev.smartmealtable.storage.cache.SearchCacheService;
+import com.stdev.smartmealtable.storage.db.search.SearchKeywordSupport;
 import com.stdev.smartmealtable.support.search.korean.KoreanSearchUtil;
 import com.stdev.smartmealtable.support.search.korean.SearchRelevanceCalculator;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +52,12 @@ public class FoodAutocompleteService {
     private final CategoryRepository categoryRepository;
     private final SearchCacheService searchCacheService;
     private final ChosungIndexBuilder chosungIndexBuilder;
+    private final KeywordRankingCacheService keywordRankingCacheService;
     
     private static final String DOMAIN = "food";
     private static final int MAX_TYPO_DISTANCE = 2;
     private static final int MIN_RESULTS_FOR_TYPO = 5;
+    private static final int RANKING_PREFIX_LENGTH = 2;
     
     /**
      * 음식 자동완성
@@ -95,6 +99,8 @@ public class FoodAutocompleteService {
                 .map(this::toSuggestion)
                 .filter(Objects::nonNull) // Store 조회 실패한 경우 제외
                 .collect(Collectors.toList());
+
+            suggestions = applyRankingBoost(normalizedKeyword, suggestions);
             
             long elapsedTime = System.currentTimeMillis() - startTime;
             log.info("음식 자동완성 완료: keyword={}, results={}, time={}ms", 
@@ -399,6 +405,53 @@ public class FoodAutocompleteService {
         }
     }
     
+    private List<FoodSuggestion> applyRankingBoost(String keyword, List<FoodSuggestion> suggestions) {
+        if (suggestions.isEmpty()) {
+            return suggestions;
+        }
+        String prefix = extractRankingPrefix(keyword);
+        if (prefix.isEmpty()) {
+            return suggestions;
+        }
+
+        List<String> rankingKeywords = keywordRankingCacheService.getTopKeywords(prefix, suggestions.size());
+        if (rankingKeywords.isEmpty()) {
+            return suggestions;
+        }
+
+        List<FoodSuggestion> ordered = new ArrayList<>();
+        Set<FoodSuggestion> seen = new LinkedHashSet<>();
+
+        for (String rankingKeyword : rankingKeywords) {
+            for (FoodSuggestion suggestion : suggestions) {
+                if (seen.contains(suggestion)) {
+                    continue;
+                }
+                String normalizedName = SearchKeywordSupport.normalize(suggestion.foodName());
+                if (normalizedName.startsWith(rankingKeyword)) {
+                    ordered.add(suggestion);
+                    seen.add(suggestion);
+                }
+            }
+        }
+
+        for (FoodSuggestion suggestion : suggestions) {
+            if (seen.add(suggestion)) {
+                ordered.add(suggestion);
+            }
+        }
+
+        return ordered;
+    }
+
+    private String extractRankingPrefix(String keyword) {
+        String normalized = SearchKeywordSupport.normalize(keyword);
+        if (normalized.isEmpty()) {
+            return "";
+        }
+        return normalized.substring(0, Math.min(RANKING_PREFIX_LENGTH, normalized.length()));
+    }
+
     /**
      * Food → FoodSuggestion 변환
      * 

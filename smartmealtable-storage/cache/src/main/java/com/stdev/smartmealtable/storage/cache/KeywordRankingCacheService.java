@@ -5,9 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 키워드 추천 Sorted Set 캐시
@@ -52,6 +57,21 @@ public class KeywordRankingCacheService {
             redisTemplate.opsForZSet().removeRange(key, 0, removeCount - 1);
             log.debug("Trimmed keyword ranking for prefix={}, removed={}", prefix, removeCount);
         }
+    }
+
+    /**
+     * prefix 기준 상위 키워드를 조회한다.
+     */
+    public List<String> getTopKeywords(String prefix, int limit) {
+        if (!StringUtils.hasText(prefix) || limit <= 0) {
+            return Collections.emptyList();
+        }
+        String key = buildKey(prefix);
+        Set<String> range = redisTemplate.opsForZSet().reverseRange(key, 0, limit - 1);
+        if (range == null || range.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(range);
     }
 
     private String buildKey(String prefix) {
