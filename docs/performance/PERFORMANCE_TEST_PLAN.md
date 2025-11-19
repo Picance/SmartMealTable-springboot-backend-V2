@@ -169,6 +169,63 @@ echo $JWT_TOKEN
 > - `expenditure_crud`는 생성된 지출을 즉시 수정/삭제하여 테이블 크기를 유지합니다.
 > - `budget_monthly_create`는 2090년 이후의 미래 월을 랜덤으로 사용하므로 기존 데이터와 충돌하지 않습니다 (409 응답은 이미 동일 월이 존재한다는 뜻으로, 로드 테스트 중 허용됩니다).
 
+#### 4.2.1 키워드 추천 전략 재검토
+`food_autocomplete` 시나리오는 현재 **가게/음식 이름의 모든 substring을 테이블에 저장한 뒤 `LIKE`로 탐색**하는 방식입니다. 이 구조는 자동완성에는 유효하지만, 실제 사용자가 원하는 “키워드 추천” 품질을 높이기에는 아래 한계가 있습니다.
+
+- **유연성 부족**: substring으로만 추천을 만들면 실제로 많이 입력된 키워드/조합을 반영하기 어렵습니다. “치즈돈까스”가 많이 검색·클릭됐더라도, 이름에 해당 문자열이 없으면 추천 목록에 올리지 못합니다. 사용자 행동 로그를 활용한 랭킹과는 거리가 있습니다.
+- **데이터 폭발**: 모든 substring을 저장하면 데이터와 인덱스가 기하급수적으로 커지고, 조인·스캔 비용도 상승합니다. prefix 선택도가 낮은 키워드에서는 범위가 크게 잡혀 latency가 튈 수 있습니다.
+- **추천 품질 저하**: 단순 substring 기반 추천은 “인기 키워드가 무엇인지”, “현재 지역/시즌에서 많이 찾는 조합인지”를 알려주지 못해 연관어·유사어·실시간 트렌드를 놓칩니다.
+
+추천 품질과 비용을 동시에 잡으려면 **데이터 기반 접근**으로 전환하는 것이 좋습니다.
+
+1. **검색 로그 기반 랭킹**  
+   - `search_keyword`, `member_id`, `clicked_food_id`, `created_at` 등을 남기고, 일정 주기로 Top-N 키워드를 산출합니다.  
+   - Prefix 검색은 Trie, Redis Sorted Set(ZSET), ElasticSearch Prefix Query 중 하나로 구현해 랭크를 유지합니다.  
+   - `k6` 시나리오에서는 실제 인기 키워드 샘플을 기반으로 RPS를 조정하면서 캐시/Sorted Set hit ratio를 관찰합니다.
+
+2. **카테고리·태그·지역 메타데이터 기반 추천**  
+   - 음식 카테고리, 해시태그, 상권/지역 등 정형 메타데이터에서 인기 키워드를 추출해 prefix 인덱스에 주입합니다.  
+   - 시즌/이벤트(예: 여름 냉면, 지역 축제)처럼 정적 substring에서 포착하기 어려운 테마를 사전에 push할 수 있습니다.  
+   - 성능 테스트 시에는 `FOOD_KEYWORDS`/`RECO_KEYWORDS` 값을 카테고리·지역별 트래픽 비율에 맞춰 조정하면 더 현실적인 부하 분포를 만들 수 있습니다.
+
+이 두 가지를 조합하면 substring 테이블을 완전히 제거하거나, 최소한 “fallback 용도”로만 사용하면서 트래픽과 스토리지 비용을 줄일 수 있습니다.
+
+#### 4.2.2 Redis + MySQL 기반 키워드 추천 계획
+ElasticSearch 같은 추가 인프라 없이도 **MySQL + Redis**만으로 랭킹형 키워드 추천을 운영할 수 있도록 다음 단계를 권장합니다.
+
+1. **로그 스키마 설계 (MySQL)**  
+   - 테이블 예시: `search_keyword_event (id BIGINT PK, member_id BIGINT, raw_keyword VARCHAR(100), normalized_keyword VARCHAR(60), clicked_food_id BIGINT, lat DOUBLE, lng DOUBLE, created_at DATETIME(3))`.  
+   - 인덱스: `(created_at, normalized_keyword)`, `(normalized_keyword, lat_bucket, lng_bucket)` 정도를 두어 시간/지역 단위 집계를 빠르게 합니다.  
+   - API는 사용자가 입력 완료하거나 추천을 클릭할 때마다 해당 테이블에 Append-Only로 적재합니다 (배치 Insert 또는 Redis Stream → MySQL 적재도 가능).
+
+2. **주기적 집계 (MySQL)**  
+   - 1시간 혹은 1일 주기로 `INSERT INTO keyword_popularity_daily (event_date, prefix, keyword, searches, clicks)` 같은 요약 테이블을 만듭니다.  
+   - 집계 SQL 예시:
+     ```sql
+     INSERT INTO keyword_popularity_hourly (event_hour, prefix, keyword, search_cnt, click_cnt)
+     SELECT DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00'), LEFT(normalized_keyword, 2), normalized_keyword,
+            COUNT(*), SUM(clicked_food_id IS NOT NULL)
+     FROM search_keyword_event
+     WHERE created_at BETWEEN ? AND ?
+     GROUP BY event_hour, prefix, normalized_keyword;
+     ```
+   - 필요하면 `region_code` 또는 `category_id`를 조인해 지역·카테고리별 랭킹도 동시에 산출합니다.
+
+3. **Redis 제공 레이어 구성**  
+   - Key 설계: `keyword:prefix:{region}` → Sorted Set. Score는 가중치(예: `search_cnt * 0.7 + click_cnt * 1.3`).  
+   - 집계 배치가 끝나면 상위 N개(예: 200개)를 Redis ZSET에 `ZADD`로 밀어넣고 TTL(예: 2h)을 설정해 stale 데이터를 자동 교체합니다.  
+   - Prefix는 1~3글자까지만 관리하고, 나머지는 Redis `ZRANGE` 결과에서 필터링합니다. Prefix가 없으면 `keyword:global` ZSET을 사용합니다.
+
+4. **서빙 경로**  
+   - API는 입력 prefix → 지역 → Redis ZSET `ZRANGE`로 즉시 응답 (p99 < 5ms 예상).  
+   - Redis 미스 시에는 MySQL `keyword_popularity_daily` 테이블에서 최근 Top-N을 읽고 Redis에 warm-up한 뒤 응답합니다.  
+   - 기존 substring 테이블은 fallback 으로 남겨 급격한 신조어/미집계 키워드에 대응하되, Redis Top-N과 Merge할 때는 중복 제거 + 랭킹 score 비교를 합니다.
+
+5. **성능/품질 검증**  
+   - `k6`에서 `FOOD_KEYWORDS` 목록을 “Redis 상위 20개 + Long-tail 5개”로 분리해 히트율을 측정합니다.  
+   - `ZCARD`, `INFO memory` 등을 통해 Redis 메모리 사용량을 기록하고, 집계 배치를 `smartmealtable-scheduler`에 넣어 5분 단위로 실행했을 때 MySQL CPU/IO가 허용 내인지 확인합니다.  
+   - KPI: Redis 요청 hit ratio > 95%, `food_autocomplete` 응답 p95 < 150ms (Redis + API 처리 시간만 포함).
+
 ### 4.3 k6 실행 (대규모 설정 예시)
 ```bash
 JWT_TOKEN="$JWT_TOKEN" \
