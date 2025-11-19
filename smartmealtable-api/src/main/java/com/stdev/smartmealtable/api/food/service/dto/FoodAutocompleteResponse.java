@@ -8,7 +8,8 @@ import java.util.List;
  * @param suggestions 자동완성 제안 목록
  */
 public record FoodAutocompleteResponse(
-    List<FoodSuggestion> suggestions
+    List<FoodSuggestion> suggestions,
+    List<String> keywordRecommendations
 ) {
     
     /**

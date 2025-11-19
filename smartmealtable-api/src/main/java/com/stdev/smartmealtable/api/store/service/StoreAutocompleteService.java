@@ -54,6 +54,7 @@ public class StoreAutocompleteService {
     private static final int MAX_TYPO_DISTANCE = 2;
     private static final int MIN_RESULTS_FOR_TYPO = 5;
     private static final int RANKING_PREFIX_LENGTH = 2;
+    private static final int MAX_KEYWORD_RECOMMENDATIONS = 5;
     
     /**
      * 가게 자동완성
@@ -76,7 +77,7 @@ public class StoreAutocompleteService {
         try {
             // 1. 입력 검증
             if (keyword == null || keyword.trim().isEmpty()) {
-                return new StoreAutocompleteResponse(Collections.emptyList());
+                return new StoreAutocompleteResponse(Collections.emptyList(), Collections.emptyList());
             }
             
             String normalizedKeyword = keyword.trim();
@@ -95,13 +96,15 @@ public class StoreAutocompleteService {
                 .map(this::toSuggestion)
                 .collect(Collectors.toList());
 
-            suggestions = applyRankingBoost(normalizedKeyword, suggestions);
+            RankingResult rankingResult = applyKeywordRanking(normalizedKeyword, suggestions);
+            List<StoreSuggestion> orderedSuggestions = rankingResult.suggestions();
+            List<String> keywordRecommendations = rankingResult.keywordRecommendations();
             
             long elapsedTime = System.currentTimeMillis() - startTime;
             log.info("가게 자동완성 완료: keyword={}, results={}, time={}ms", 
-                normalizedKeyword, suggestions.size(), elapsedTime);
+                normalizedKeyword, orderedSuggestions.size(), elapsedTime);
             
-            return new StoreAutocompleteResponse(suggestions);
+            return new StoreAutocompleteResponse(orderedSuggestions, keywordRecommendations);
             
         } catch (Exception e) {
             log.error("가게 자동완성 실패: keyword={}", keyword, e);
@@ -311,12 +314,13 @@ public class StoreAutocompleteService {
                 .limit(limit)
                 .map(this::toSuggestion)
                 .collect(Collectors.toList());
-            
-            return new StoreAutocompleteResponse(suggestions);
+
+            RankingResult rankingResult = applyKeywordRanking(keyword != null ? keyword.trim() : "", suggestions);
+            return new StoreAutocompleteResponse(rankingResult.suggestions(), rankingResult.keywordRecommendations());
             
         } catch (Exception e) {
             log.error("Fallback 검색 실패", e);
-            return new StoreAutocompleteResponse(Collections.emptyList());
+            return new StoreAutocompleteResponse(Collections.emptyList(), Collections.emptyList());
         }
     }
     
@@ -409,20 +413,30 @@ public class StoreAutocompleteService {
         }
     }
 
-    private List<StoreSuggestion> applyRankingBoost(String keyword, List<StoreSuggestion> suggestions) {
+    private RankingResult applyKeywordRanking(String keyword, List<StoreSuggestion> suggestions) {
         if (suggestions.isEmpty()) {
-            return suggestions;
+            return new RankingResult(suggestions, Collections.emptyList());
         }
         String prefix = extractRankingPrefix(keyword);
         if (prefix.isEmpty()) {
-            return suggestions;
+            return new RankingResult(suggestions, Collections.emptyList());
         }
 
-        List<String> rankingKeywords = keywordRankingCacheService.getTopKeywords(prefix, suggestions.size());
+        int fetchLimit = Math.max(suggestions.size(), MAX_KEYWORD_RECOMMENDATIONS);
+        List<String> rankingKeywords = keywordRankingCacheService.getTopKeywords(prefix, fetchLimit);
         if (rankingKeywords.isEmpty()) {
-            return suggestions;
+            return new RankingResult(suggestions, Collections.emptyList());
         }
 
+        List<StoreSuggestion> ordered = reorderSuggestionsByKeywords(suggestions, rankingKeywords);
+        List<String> keywordRecommendations = rankingKeywords.stream()
+                .limit(MAX_KEYWORD_RECOMMENDATIONS)
+                .toList();
+
+        return new RankingResult(ordered, keywordRecommendations);
+    }
+
+    private List<StoreSuggestion> reorderSuggestionsByKeywords(List<StoreSuggestion> suggestions, List<String> rankingKeywords) {
         List<StoreSuggestion> ordered = new ArrayList<>();
         Set<StoreSuggestion> seen = new LinkedHashSet<>();
 
@@ -483,5 +497,9 @@ public class StoreAutocompleteService {
             store.getAddress(),
             categoryNames
         );
+    }
+
+    private record RankingResult(List<StoreSuggestion> suggestions,
+                                 List<String> keywordRecommendations) {
     }
 }

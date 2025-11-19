@@ -4,19 +4,25 @@ import com.stdev.smartmealtable.api.common.auth.OptionalAuthenticatedUserProvide
 import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService;
 import com.stdev.smartmealtable.api.recommendation.service.AutocompleteSearchEventService.AutocompleteSearchEventCommand;
 import com.stdev.smartmealtable.api.recommendation.service.UnifiedAutocompleteService;
+import com.stdev.smartmealtable.api.recommendation.service.dto.AutocompleteClickRequest;
 import com.stdev.smartmealtable.api.recommendation.service.dto.UnifiedAutocompleteResponse;
 import com.stdev.smartmealtable.core.api.response.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
 
 /**
  * 통합 자동완성 API Controller
@@ -89,6 +95,26 @@ public class AutocompleteController {
         return ApiResponse.success(response);
     }
 
+    /**
+     * 자동완성 클릭 이벤트 기록
+     */
+    @PostMapping("/events")
+    public ApiResponse<Void> recordAutocompleteEvent(
+            @Valid @RequestBody AutocompleteClickRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
+        Long memberId = optionalAuthenticatedUserProvider.extractMemberId(httpServletRequest).orElse(null);
+        AutocompleteSearchEventCommand command = AutocompleteSearchEventCommand.builder()
+                .rawKeyword(request.keyword())
+                .memberId(memberId)
+                .clickedFoodId(request.foodId())
+                .latitude(toBigDecimal(request.latitude()))
+                .longitude(toBigDecimal(request.longitude()))
+                .build();
+        autocompleteSearchEventService.logSearchEvent(command);
+        return ApiResponse.success();
+    }
+
     private void publishSearchEvent(String keyword, HttpServletRequest request) {
         Long memberId = optionalAuthenticatedUserProvider.extractMemberId(request).orElse(null);
         AutocompleteSearchEventCommand command = AutocompleteSearchEventCommand.builder()
@@ -99,5 +125,9 @@ public class AutocompleteController {
                 .longitude(null)
                 .build();
         autocompleteSearchEventService.logSearchEvent(command);
+    }
+
+    private BigDecimal toBigDecimal(Double value) {
+        return value == null ? null : BigDecimal.valueOf(value);
     }
 }
