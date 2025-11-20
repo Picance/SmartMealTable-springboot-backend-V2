@@ -2,10 +2,12 @@ package com.stdev.smartmealtable.api.home.controller;
 
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.api.home.controller.request.MonthlyBudgetConfirmRequest;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.common.vo.AddressType;
-import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
-import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
+import com.stdev.smartmealtable.domain.food.Food;
+import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.budget.DailyBudget;
 import com.stdev.smartmealtable.domain.budget.DailyBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MealBudget;
@@ -13,8 +15,12 @@ import com.stdev.smartmealtable.domain.budget.MealBudgetRepository;
 import com.stdev.smartmealtable.domain.budget.MonthlyBudget;
 import com.stdev.smartmealtable.domain.budget.MonthlyBudgetRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
+import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.*;
 import com.stdev.smartmealtable.domain.member.repository.*;
+import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -60,8 +68,19 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
     @Autowired
     private MonthlyBudgetConfirmationRepository monthlyBudgetConfirmationRepository;
 
+    @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
+    private FoodRepository foodRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     private Member member;
     private String accessToken;
+    private Store savedStore;
+    private Food savedFood;
 
     @BeforeEach
     void setUp() {
@@ -114,6 +133,37 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
         mealBudgetRepository.save(breakfast);
         mealBudgetRepository.save(lunch);
         mealBudgetRepository.save(dinner);
+
+        // 추천 테스트용 카테고리/가게/메뉴 데이터 생성
+        Category category = categoryRepository.save(Category.create("한식"));
+
+        savedStore = storeRepository.save(Store.builder()
+                .name("맛있는집")
+                .categoryIds(List.of(category.getCategoryId()))
+                .address("대전광역시 유성구 궁동로 1")
+                .lotNumberAddress("대전광역시 유성구 궁동 1234")
+                .latitude(BigDecimal.valueOf(36.351))
+                .longitude(BigDecimal.valueOf(127.385))
+                .averagePrice(7500)
+                .reviewCount(523)
+                .viewCount(1000)
+                .favoriteCount(120)
+                .imageUrl("https://cdn.smartmealtable.com/stores/101/main.jpg")
+                .storeType(StoreType.RESTAURANT)
+                .registeredAt(java.time.LocalDateTime.now())
+                .build());
+
+        savedFood = foodRepository.save(Food.builder()
+                .foodName("김치찌개")
+                .storeId(savedStore.getStoreId())
+                .categoryId(category.getCategoryId())
+                .description("얼큰한 김치찌개")
+                .imageUrl("https://cdn.smartmealtable.com/foods/201.jpg")
+                .averagePrice(7000)
+                .price(7000)
+                .isMain(true)
+                .displayOrder(1)
+                .build());
     }
 
     @Test
@@ -126,6 +176,17 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.location").exists())
                 .andExpect(jsonPath("$.data.budget").exists())
+                .andExpect(jsonPath("$.data.budget.remaining").value(17000))
+                .andExpect(jsonPath("$.data.recommendedMenus[0].foodId").value(savedFood.getFoodId().intValue()))
+                .andExpect(jsonPath("$.data.recommendedMenus[0].storeId").value(savedStore.getStoreId().intValue()))
+                .andExpect(jsonPath("$.data.recommendedMenus[0].price").value(savedFood.getPrice()))
+                .andExpect(jsonPath("$.data.recommendedMenus[0].imageUrl").value(savedFood.getImageUrl()))
+                .andExpect(jsonPath("$.data.recommendedMenus[0].tag").isNotEmpty())
+                .andExpect(jsonPath("$.data.recommendedStores[0].storeId").value(savedStore.getStoreId().intValue()))
+                .andExpect(jsonPath("$.data.recommendedStores[0].averagePrice").value(savedStore.getAveragePrice()))
+                .andExpect(jsonPath("$.data.recommendedStores[0].reviewCount").value(savedStore.getReviewCount()))
+                .andExpect(jsonPath("$.data.recommendedStores[0].imageUrl").value(savedStore.getImageUrl()))
+                .andExpect(jsonPath("$.data.recommendedStores[0].tag").isNotEmpty())
                 .andDo(document("home/dashboard-get-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -173,7 +234,7 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.budget.todaySpent")
                                         .type(JsonFieldType.NUMBER)
                                         .description("오늘 사용 금액"),
-                                fieldWithPath("data.budget.todayRemaining")
+                                fieldWithPath("data.budget.remaining")
                                         .type(JsonFieldType.NUMBER)
                                         .description("오늘 남은 금액"),
                                 fieldWithPath("data.budget.utilizationRate")
@@ -197,9 +258,80 @@ class HomeControllerRestDocsTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.recommendedMenus")
                                         .type(JsonFieldType.ARRAY)
                                         .description("추천 메뉴 목록"),
+                                fieldWithPath("data.recommendedMenus[].foodId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("음식 ID"),
+                                fieldWithPath("data.recommendedMenus[].foodName")
+                                        .type(JsonFieldType.STRING)
+                                        .description("음식 이름"),
+                                fieldWithPath("data.recommendedMenus[].price")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("메뉴 가격"),
+                                fieldWithPath("data.recommendedMenus[].storeId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 ID"),
+                                fieldWithPath("data.recommendedMenus[].storeName")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.recommendedMenus[].distance")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("기준 위치로부터 거리(km)")
+                                        .optional(),
+                                fieldWithPath("data.recommendedMenus[].distanceText")
+                                        .type(JsonFieldType.STRING)
+                                        .description("거리 정보 텍스트")
+                                        .optional(),
+                                fieldWithPath("data.recommendedMenus[].tags")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("메뉴 태그 목록"),
+                                fieldWithPath("data.recommendedMenus[].tag")
+                                        .type(JsonFieldType.STRING)
+                                        .description("대표 태그")
+                                        .optional(),
+                                fieldWithPath("data.recommendedMenus[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("메뉴 이미지 URL")
+                                        .optional(),
                                 fieldWithPath("data.recommendedStores")
                                         .type(JsonFieldType.ARRAY)
                                         .description("추천 가게 목록"),
+                                fieldWithPath("data.recommendedStores[].storeId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("가게 ID"),
+                                fieldWithPath("data.recommendedStores[].storeName")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 이름"),
+                                fieldWithPath("data.recommendedStores[].categoryName")
+                                        .type(JsonFieldType.STRING)
+                                        .description("대표 카테고리명"),
+                                fieldWithPath("data.recommendedStores[].distance")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("기준 위치로부터 거리(km)")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].distanceText")
+                                        .type(JsonFieldType.STRING)
+                                        .description("거리 정보 텍스트")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].contextInfo")
+                                        .type(JsonFieldType.STRING)
+                                        .description("위치 설명")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].averagePrice")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("평균 가격")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].reviewCount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("리뷰 수")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].imageUrl")
+                                        .type(JsonFieldType.STRING)
+                                        .description("가게 이미지 URL")
+                                        .optional(),
+                                fieldWithPath("data.recommendedStores[].tag")
+                                        .type(JsonFieldType.STRING)
+                                        .description("추천 태그")
+                                        .optional(),
                                 fieldWithPath("error")
                                         .type(JsonFieldType.NULL)
                                         .description("에러 정보 (성공 시 null)")

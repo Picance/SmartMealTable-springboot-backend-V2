@@ -3769,7 +3769,9 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
         "storeId": 101,
         "storeName": "맛있는집",
         "distance": 0.3,
+        "distanceText": "235m",
         "tags": ["인기메뉴", "예산적합"],
+        "tag": "인기메뉴",
         "imageUrl": "https://cdn.smartmealtable.com/foods/201.jpg"
       },
       {
@@ -3779,7 +3781,9 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
         "storeId": 102,
         "storeName": "학생식당",
         "distance": 0.5,
+        "distanceText": "487m",
         "tags": ["추천", "학식"],
+        "tag": "추천",
         "imageUrl": "https://cdn.smartmealtable.com/foods/202.jpg"
       }
     ],
@@ -3793,6 +3797,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
         "contextInfo": "학교 근처",
         "averagePrice": 7500,
         "reviewCount": 523,
+        "tag": "인기",
         "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg"
       },
       {
@@ -3804,6 +3809,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
         "contextInfo": "학교 내부",
         "averagePrice": 5000,
         "reviewCount": 1204,
+        "tag": "학식",
         "imageUrl": "https://cdn.smartmealtable.com/stores/102/main.jpg"
       }
     ]
@@ -3832,6 +3838,9 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 **Note:**
 - `location`: 사용자의 기본 주소(isPrimary=true) 정보
 - `distance`: 기본 주소를 기준으로 계산
+- `distanceText`: `distance` 값을 사용자가 이해하기 쉬운 텍스트로 변환한 정보 (예: `235m`, `1.2km`)
+- `recommendedMenus[].tag`: `tags` 중 가장 주요한 태그(대표 배지로 사용), 태그가 없으면 `null`
+- `recommendedStores[].tag`: 추천 이유를 한 줄로 보여줄 태그 (예: `인기`, `학식`, `가성비`)
 - `recommendedMenus`, `recommendedStores`: 기본 주소 기준 추천
 
 ---

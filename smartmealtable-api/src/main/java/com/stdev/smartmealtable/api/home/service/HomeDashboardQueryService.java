@@ -76,6 +76,12 @@ public class HomeDashboardQueryService {
         AddressHistory primaryAddress = addressHistoryRepository.findPrimaryByMemberId(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorType.ADDRESS_NOT_FOUND));
 
+        Double primaryLatitude = primaryAddress.getAddress().getLatitude();
+        Double primaryLongitude = primaryAddress.getAddress().getLongitude();
+        boolean hasCustomLocation = userLatitude != null && userLongitude != null;
+        Double recommendationLatitude = hasCustomLocation ? userLatitude : primaryLatitude;
+        Double recommendationLongitude = hasCustomLocation ? userLongitude : primaryLongitude;
+
         LocalDate today = LocalDate.now();
 
         DailyBudget dailyBudget = dailyBudgetRepository.findByMemberIdAndBudgetDate(memberId, today)
@@ -109,16 +115,16 @@ public class HomeDashboardQueryService {
                 dashboardRecommendationService.getRecommendedMenus(
                         memberId,
                         todayBudget,
-                        userLatitude,
-                        userLongitude,
+                        recommendationLatitude,
+                        recommendationLongitude,
                         DEFAULT_RECOMMENDATION_LIMIT
                 );
 
         List<HomeDashboardServiceResponse.RecommendedStoreInfo> recommendedStores =
                 dashboardRecommendationService.getRecommendedStores(
                         memberId,
-                        userLatitude,
-                        userLongitude,
+                        recommendationLatitude,
+                        recommendationLongitude,
                         DEFAULT_RECOMMENDATION_LIMIT
                 );
 
@@ -128,8 +134,8 @@ public class HomeDashboardQueryService {
                         primaryAddress.getAddress().getAlias(),
                         primaryAddress.getAddress().getFullAddress(),
                         primaryAddress.getAddress().getStreetNameAddress(),
-                        userLatitude != null ? userLatitude : primaryAddress.getAddress().getLatitude(),
-                        userLongitude != null ? userLongitude : primaryAddress.getAddress().getLongitude(),
+                        primaryLatitude,
+                        primaryLongitude,
                         primaryAddress.getIsPrimary()
                 ))
                 .budget(new HomeDashboardServiceResponse.BudgetInfo(

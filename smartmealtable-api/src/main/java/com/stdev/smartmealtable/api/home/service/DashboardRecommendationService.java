@@ -1,10 +1,10 @@
 package com.stdev.smartmealtable.api.home.service;
 
 import com.stdev.smartmealtable.api.home.service.dto.HomeDashboardServiceResponse;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
-import com.stdev.smartmealtable.domain.member.entity.Member;
-import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
 import com.stdev.smartmealtable.domain.store.StoreWithDistance;
@@ -35,11 +35,10 @@ public class DashboardRecommendationService {
 
     private final FoodRepository foodRepository;
     private final StoreRepository storeRepository;
-    private final MemberRepository memberRepository;
+    private final CategoryRepository categoryRepository;
     private final DistanceCalculator distanceCalculator;
     private final MenuTagService menuTagService;
     private final LocationContextService locationContextService;
-    private final BusinessHoursService businessHoursService;
 
     private static final int DEFAULT_RECOMMENDATION_LIMIT = 5; // 기본 추천 개수
     private static final BigDecimal DEFAULT_SEARCH_RADIUS_KM = new BigDecimal("3"); // 기본 검색 반경 3km
@@ -57,16 +56,16 @@ public class DashboardRecommendationService {
     public List<HomeDashboardServiceResponse.RecommendedMenuInfo> getRecommendedMenus(
             Long memberId,
             BigDecimal dailyBudget,
-            Double userLatitude,
-            Double userLongitude,
+            Double referenceLatitude,
+            Double referenceLongitude,
             int limit
     ) {
         try {
             List<Food> foods;
 
             // 위치 정보가 있으면 거리 기반 필터링
-            if (userLatitude != null && userLongitude != null) {
-                foods = getMenusByDistance(userLatitude, userLongitude, limit * 2);
+            if (referenceLatitude != null && referenceLongitude != null) {
+                foods = getMenusByDistance(referenceLatitude, referenceLongitude, limit * 2);
             } else {
                 // 위치 정보 없이: 인기 메뉴 기반
                 foods = getPopularMenus(limit * 2);
@@ -79,8 +78,8 @@ public class DashboardRecommendationService {
                             food,
                             memberId,
                             dailyBudget,
-                            userLatitude,
-                            userLongitude
+                            referenceLatitude,
+                            referenceLongitude
                     ))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -105,16 +104,16 @@ public class DashboardRecommendationService {
      */
     public List<HomeDashboardServiceResponse.RecommendedStoreInfo> getRecommendedStores(
             Long memberId,
-            Double userLatitude,
-            Double userLongitude,
+            Double referenceLatitude,
+            Double referenceLongitude,
             int limit
     ) {
         try {
-            List<Store> stores;
+            List<StoreWithDistance> stores;
 
             // 위치 정보가 있으면 거리 기반 필터링
-            if (userLatitude != null && userLongitude != null) {
-                stores = getStoresByDistance(userLatitude, userLongitude, limit * 2);
+            if (referenceLatitude != null && referenceLongitude != null) {
+                stores = getStoresByDistance(referenceLatitude, referenceLongitude, limit * 2);
             } else {
                 // 위치 정보 없이: 인기 가게 기반
                 stores = getPopularStores(limit * 2);
@@ -125,8 +124,8 @@ public class DashboardRecommendationService {
                     .limit(limit)
                     .map(store -> buildRecommendedStoreInfo(
                             store,
-                            userLatitude,
-                            userLongitude
+                            referenceLatitude,
+                            referenceLongitude
                     ))
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -147,46 +146,38 @@ public class DashboardRecommendationService {
             Food food,
             Long memberId,
             BigDecimal dailyBudget,
-            Double userLatitude,
-            Double userLongitude
+            Double referenceLatitude,
+            Double referenceLongitude
     ) {
         try {
-            // 가게 정보 조회
             Store store = storeRepository.findById(food.getStoreId()).orElse(null);
 
-            // 거리 계산
-            BigDecimal distance = null;
-            if (userLatitude != null && userLongitude != null && store != null) {
-                Double storeLatitude = store.getLatitude() != null ? store.getLatitude().doubleValue() : null;
-                Double storeLongitude = store.getLongitude() != null ? store.getLongitude().doubleValue() : null;
+            BigDecimal distance = calculateDistance(store, referenceLatitude, referenceLongitude);
+            String distanceText = formatDistanceText(distance);
 
-                if (storeLatitude != null && storeLongitude != null) {
-                    distance = distanceCalculator.calculateDistanceKm(
-                            userLatitude,
-                            userLongitude,
-                            storeLatitude,
-                            storeLongitude
-                    );
-                }
-            }
-
-            String distanceText = distance != null ? distanceCalculator.formatDistance(distance) : null;
-
-            // 태그 생성
             List<String> tags = menuTagService.generateMenuTags(
                     food.getFoodId(),
                     memberId,
                     dailyBudget
             );
+            String primaryTag = tags.isEmpty() ? null : tags.get(0);
+
+            Integer price = food.getPrice() != null ? food.getPrice() : food.getAveragePrice();
+            if (price == null) {
+                price = 0;
+            }
 
             return new HomeDashboardServiceResponse.RecommendedMenuInfo(
                     food.getFoodId(),
                     food.getFoodName(),
+                    price,
+                    food.getStoreId(),
                     store != null ? store.getName() : "알 수 없음",
-                    food.getAveragePrice(),
                     distance,
                     distanceText,
-                    tags
+                    tags,
+                    primaryTag,
+                    food.getImageUrl()
             );
 
         } catch (Exception e) {
@@ -199,54 +190,41 @@ public class DashboardRecommendationService {
      * 추천 가게 정보 구성
      */
     private HomeDashboardServiceResponse.RecommendedStoreInfo buildRecommendedStoreInfo(
-            Store store,
-            Double userLatitude,
-            Double userLongitude
+            StoreWithDistance storeWithDistance,
+            Double referenceLatitude,
+            Double referenceLongitude
     ) {
+        Store store = storeWithDistance.store();
         try {
-            // 거리 계산
-            BigDecimal distance = null;
-            if (userLatitude != null && userLongitude != null) {
-                Double storeLatitude = store.getLatitude() != null ? store.getLatitude().doubleValue() : null;
-                Double storeLongitude = store.getLongitude() != null ? store.getLongitude().doubleValue() : null;
-
-                if (storeLatitude != null && storeLongitude != null) {
-                    distance = distanceCalculator.calculateDistanceKm(
-                            userLatitude,
-                            userLongitude,
-                            storeLatitude,
-                            storeLongitude
-                    );
-                }
+            BigDecimal distance = storeWithDistance.distance();
+            if (distance == null) {
+                distance = calculateDistance(store, referenceLatitude, referenceLongitude);
             }
+            String distanceText = formatDistanceText(distance);
 
-            String distanceText = distance != null ? distanceCalculator.formatDistance(distance) : null;
+            String contextInfo = locationContextService.generateLocationContext(
+                    store,
+                    referenceLatitude,
+                    referenceLongitude
+            );
 
-            // 위치 맥락 정보 생성 (주소 정보 기반)
-            String contextInfo = null;
-            if (userLatitude != null && userLongitude != null && store.getAddress() != null) {
-                // 주소에서 지역명 추출
-                String addressParts[] = store.getAddress().split(" ");
-                if (addressParts.length >= 3) {
-                    String areaName = addressParts[2].replaceAll("(로|길|거리|街|街道)$", "");
-                    if (distanceText != null) {
-                        contextInfo = distanceText + " 떨어진 " + areaName + " 인근";
-                    }
-                }
-            }
-
-            // 영업 시간 정보 조회
-            String businessHours = businessHoursService.getTodayBusinessHours(store.getStoreId());
+            String categoryName = getPrimaryCategoryName(store);
+            Integer averagePrice = store.getAveragePrice();
+            Integer reviewCount = store.getReviewCount();
+            String imageUrl = store.getImageUrl();
+            String tag = buildStoreTag(store, categoryName, averagePrice, reviewCount);
 
             return new HomeDashboardServiceResponse.RecommendedStoreInfo(
                     store.getStoreId(),
                     store.getName(),
-                    store.getCategoryIds() != null && !store.getCategoryIds().isEmpty() ? "카테고리" : "카테고리 미정",
-                    store.getAveragePrice(),
+                    categoryName,
                     distance,
                     distanceText,
-                    businessHours,
-                    contextInfo
+                    contextInfo,
+                    averagePrice,
+                    reviewCount,
+                    imageUrl,
+                    tag
             );
 
         } catch (Exception e) {
@@ -326,7 +304,7 @@ public class DashboardRecommendationService {
      * Haversine 공식을 사용하여 사용자 위치에서 일정 반경 내의 가게들을
      * 거리순으로 정렬하여 반환합니다.
      */
-    private List<Store> getStoresByDistance(Double latitude, Double longitude, int limit) {
+    private List<StoreWithDistance> getStoresByDistance(Double latitude, Double longitude, int limit) {
         try {
             List<StoreWithDistance> storesWithDistance = storeRepository.findByDistanceOrderByDistance(
                     latitude,
@@ -336,9 +314,7 @@ public class DashboardRecommendationService {
             );
 
             log.debug("Fetched {} stores within {}km by distance", storesWithDistance.size(), DEFAULT_SEARCH_RADIUS_KM);
-            return storesWithDistance.stream()
-                    .map(StoreWithDistance::store)
-                    .collect(Collectors.toList());
+            return storesWithDistance;
 
         } catch (Exception e) {
             log.error("Error fetching stores by distance", e);
@@ -352,14 +328,89 @@ public class DashboardRecommendationService {
      * 전국 인기 가게를 좋아요 > 리뷰 수 > 조회 수 순으로 반환합니다.
      * 조회는 Repository의 인기도 기반 쿼리를 활용합니다.
      */
-    private List<Store> getPopularStores(int limit) {
+    private List<StoreWithDistance> getPopularStores(int limit) {
         try {
             List<Store> stores = storeRepository.findByPopularity(limit);
             log.debug("Fetched {} popular stores", stores.size());
-            return stores;
+            return stores.stream()
+                    .map(store -> StoreWithDistance.of(store, (BigDecimal) null))
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Error fetching popular stores", e);
             return List.of();
         }
+    }
+
+    private String formatDistanceText(BigDecimal distance) {
+        if (distance == null) {
+            return null;
+        }
+        try {
+            return distanceCalculator.formatDistance(distance);
+        } catch (Exception e) {
+            log.debug("Error formatting distance text", e);
+            return null;
+        }
+    }
+
+    private BigDecimal calculateDistance(Store store, Double referenceLatitude, Double referenceLongitude) {
+        if (store == null || referenceLatitude == null || referenceLongitude == null) {
+            return null;
+        }
+
+        Double storeLatitude = store.getLatitude() != null ? store.getLatitude().doubleValue() : null;
+        Double storeLongitude = store.getLongitude() != null ? store.getLongitude().doubleValue() : null;
+
+        if (storeLatitude == null || storeLongitude == null) {
+            return null;
+        }
+
+        try {
+            return distanceCalculator.calculateDistanceKm(
+                    referenceLatitude,
+                    referenceLongitude,
+                    storeLatitude,
+                    storeLongitude
+            );
+        } catch (Exception e) {
+            log.debug("Error calculating distance for store {}", store.getStoreId(), e);
+            return null;
+        }
+    }
+
+    private String getPrimaryCategoryName(Store store) {
+        if (store.getCategoryIds() == null || store.getCategoryIds().isEmpty()) {
+            return "카테고리 미정";
+        }
+
+        Long primaryCategoryId = store.getCategoryIds().get(0);
+        return categoryRepository.findById(primaryCategoryId)
+                .map(Category::getName)
+                .orElse("카테고리 미정");
+    }
+
+    private String buildStoreTag(
+            Store store,
+            String categoryName,
+            Integer averagePrice,
+            Integer reviewCount
+    ) {
+        if (store == null) {
+            return null;
+        }
+
+        if (store.isCampusRestaurant()) {
+            return "학식";
+        }
+
+        if (averagePrice != null && averagePrice <= 7000) {
+            return "가성비";
+        }
+
+        if (reviewCount != null && reviewCount >= 500) {
+            return "인기";
+        }
+
+        return categoryName;
     }
 }

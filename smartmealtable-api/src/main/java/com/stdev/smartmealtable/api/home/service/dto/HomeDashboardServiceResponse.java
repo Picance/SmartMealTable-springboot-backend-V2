@@ -112,7 +112,7 @@ public record HomeDashboardServiceResponse(
     public record BudgetInfo(
             Integer todayBudget,
             Integer todaySpent,
-            Integer todayRemaining,
+            Integer remaining,
             Integer utilizationRate,
             List<MealBudgetInfo> mealBudgets
     ) {}
@@ -127,21 +127,26 @@ public record HomeDashboardServiceResponse(
     public record RecommendedMenuInfo(
             Long foodId,
             String foodName,
+            Integer price,
+            Long storeId,
             String storeName,
-            Integer averagePrice,
             BigDecimal distance,
             String distanceText,
-            List<String> tags
+            List<String> tags,
+            String tag,
+            String imageUrl
     ) {}
 
     public record RecommendedStoreInfo(
             Long storeId,
             String storeName,
             String categoryName,
-            Integer averageFoodPrice,
             BigDecimal distance,
             String distanceText,
-            String businessHours,
-            String contextInfo
+            String contextInfo,
+            Integer averagePrice,
+            Integer reviewCount,
+            String imageUrl,
+            String tag
     ) {}
 }

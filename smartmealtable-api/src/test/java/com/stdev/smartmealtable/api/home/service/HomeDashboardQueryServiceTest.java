@@ -109,9 +109,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(totalSpent);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -130,7 +130,7 @@ class HomeDashboardQueryServiceTest {
         assertThat(response.budget()).isNotNull();
         assertThat(response.budget().todayBudget()).isEqualTo(20000);
         assertThat(response.budget().todaySpent()).isEqualTo(15000);
-        assertThat(response.budget().todayRemaining()).isEqualTo(5000);
+        assertThat(response.budget().remaining()).isEqualTo(5000);
         assertThat(response.budget().utilizationRate()).isEqualTo(75); // 15000/20000 * 100
         
         // MealBudget 검증
@@ -182,9 +182,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(null);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -194,7 +194,7 @@ class HomeDashboardQueryServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.budget().todayBudget()).isEqualTo(0);
         assertThat(response.budget().todaySpent()).isEqualTo(0);
-        assertThat(response.budget().todayRemaining()).isEqualTo(0);
+        assertThat(response.budget().remaining()).isEqualTo(0);
         assertThat(response.budget().mealBudgets()).isEmpty();
     }
 
@@ -236,9 +236,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(8000L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -309,9 +309,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(25000L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -321,7 +321,7 @@ class HomeDashboardQueryServiceTest {
         assertThat(response.location().addressAlias()).isEqualTo("회사");
         assertThat(response.budget().todayBudget()).isEqualTo(30000);
         assertThat(response.budget().todaySpent()).isEqualTo(25000);
-        assertThat(response.budget().todayRemaining()).isEqualTo(5000);
+        assertThat(response.budget().remaining()).isEqualTo(5000);
     }
 
     @Test
@@ -353,9 +353,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(0L);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -410,9 +410,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(largeSpent);
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(mealTypeSpent);
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -457,9 +457,9 @@ class HomeDashboardQueryServiceTest {
                 .willReturn(15000L); // 예산 초과
         given(expenditureRepository.getAmountByMealTypeForPeriod(memberId, today, today))
                 .willReturn(Map.of());
-        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedMenus(anyLong(), any(), any(), any(), anyInt()))
                 .willReturn(List.of());
-        given(dashboardRecommendationService.getRecommendedStores(anyLong(), nullable(Double.class), nullable(Double.class), anyInt()))
+        given(dashboardRecommendationService.getRecommendedStores(anyLong(), any(), any(), anyInt()))
                 .willReturn(List.of());
 
         // when
@@ -468,7 +468,7 @@ class HomeDashboardQueryServiceTest {
         // then
         assertThat(response.budget().todayBudget()).isEqualTo(10000);
         assertThat(response.budget().todaySpent()).isEqualTo(15000);
-        assertThat(response.budget().todayRemaining()).isEqualTo(-5000); // 음수
+        assertThat(response.budget().remaining()).isEqualTo(-5000); // 음수
         assertThat(response.budget().utilizationRate()).isEqualTo(150); // 150%
     }
 }
