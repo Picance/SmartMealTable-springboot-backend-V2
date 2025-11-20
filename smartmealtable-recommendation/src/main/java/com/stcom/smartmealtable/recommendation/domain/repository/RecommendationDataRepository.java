@@ -2,6 +2,7 @@ package com.stcom.smartmealtable.recommendation.domain.repository;
 
 import com.stcom.smartmealtable.recommendation.domain.model.UserProfile;
 import com.stdev.smartmealtable.domain.store.Store;
+import com.stdev.smartmealtable.domain.store.StoreType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -57,7 +58,8 @@ public interface RecommendationDataRepository {
             BigDecimal longitude,
             double radiusKm,
             List<Long> excludedCategoryIds,
-            boolean isOpenOnly
+            boolean isOpenOnly,
+            StoreType storeType
     );
 
     /**
@@ -87,7 +89,8 @@ public interface RecommendationDataRepository {
             double radiusKm,
             String keyword,
             List<Long> excludedCategoryIds,
-            boolean isOpenOnly
+            boolean isOpenOnly,
+            StoreType storeType
     );
 
     /**

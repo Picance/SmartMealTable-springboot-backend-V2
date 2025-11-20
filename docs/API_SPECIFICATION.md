@@ -3064,6 +3064,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
 **Note:**
 - 검색어가 없으면 기존과 동일하게 모든 추천 결과를 반환합니다.
 - 검색어는 가게명(`store.name`)과 음식명(`food.name`)을 모두 검색합니다.
+- 커서 기반 페이징 응답에는 별도의 `hasMore`/`lastId` 필드가 없습니다. 응답 배열의 마지막 항목 `cursorId`(`storeId`와 동일)를 다음 요청의 `lastId`로 전달해 주세요.
 - 검색 결과에도 추천 점수, 필터링, 정렬이 모두 적용됩니다.
 
 ---
@@ -3497,8 +3498,7 @@ GET /api/v1/recommendations?latitude=37.5&longitude=127.0&keyword=치킨&lastId=
     "latitude": 37.498500,
     "longitude": 127.029000,
     "isPrimary": false,
-    "createdAt": "2025-10-08T12:34:56.789Z",
-    "updatedAt": "2025-10-08T13:45:00.000Z"
+    "registeredAt": "2025-11-20T08:52:52"
   },
   "error": null
 }

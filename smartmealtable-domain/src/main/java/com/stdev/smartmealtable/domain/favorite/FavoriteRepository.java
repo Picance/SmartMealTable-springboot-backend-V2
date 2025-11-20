@@ -82,4 +82,13 @@ public interface FavoriteRepository {
      * @return 즐겨찾기 여부
      */
     boolean existsByMemberIdAndStoreId(Long memberId, Long storeId);
+
+    /**
+     * 회원이 즐겨찾기에 추가한 가게 ID 목록 조회
+     *
+     * @param memberId 회원 ID
+     * @param storeIds 확인할 가게 ID 목록
+     * @return 즐겨찾기에 포함된 가게 ID 목록
+     */
+    List<Long> findStoreIdsByMemberIdAndStoreIdIn(Long memberId, List<Long> storeIds);
 }

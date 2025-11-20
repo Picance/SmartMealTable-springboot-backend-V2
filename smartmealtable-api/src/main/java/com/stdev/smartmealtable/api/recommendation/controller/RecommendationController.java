@@ -1,6 +1,5 @@
 package com.stdev.smartmealtable.api.recommendation.controller;
 
-import com.stcom.smartmealtable.recommendation.domain.model.RecommendationResult;
 import com.stcom.smartmealtable.recommendation.domain.model.ScoreDetail;
 import com.stdev.smartmealtable.core.auth.AuthUser;
 import com.stdev.smartmealtable.core.auth.AuthenticatedUser;
@@ -118,12 +117,10 @@ public class RecommendationController {
                 .size(size != null ? size : 20)
                 .build();
 
-        List<RecommendationResult> results = recommendationApplicationService.getRecommendations(
+        List<RecommendationResponseDto> response = recommendationApplicationService.getRecommendations(
                 authenticatedUser.memberId(),
                 request
         );
-
-        List<RecommendationResponseDto> response = RecommendationResponseDto.fromList(results);
 
         return ApiResponse.success(response);
     }

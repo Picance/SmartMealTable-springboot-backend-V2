@@ -15,6 +15,7 @@ import com.stdev.smartmealtable.domain.preference.Preference;
 import com.stdev.smartmealtable.domain.preference.PreferenceRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreType;
 import com.stdev.smartmealtable.storage.db.store.StoreQueryDslRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,7 +127,8 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
             BigDecimal longitude,
             double radiusKm,
             List<Long> excludedCategoryIds,
-            boolean isOpenOnly
+            boolean isOpenOnly,
+            StoreType storeType
     ) {
         return findStoresInRadiusWithKeyword(
                 latitude,
@@ -134,7 +136,8 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
                 radiusKm,
                 null, // keyword 없음
                 excludedCategoryIds,
-                isOpenOnly
+                isOpenOnly,
+                storeType
         );
     }
 
@@ -145,7 +148,8 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
             double radiusKm,
             String keyword,
             List<Long> excludedCategoryIds,
-            boolean isOpenOnly
+            boolean isOpenOnly,
+            StoreType storeType
     ) {
         log.debug("반경 내 가게 조회 (검색어 포함) - lat: {}, lon: {}, radius: {}km, keyword: {}, excludedCategories: {}, openOnly: {}",
                 latitude, longitude, radiusKm, keyword, excludedCategoryIds, isOpenOnly);
@@ -158,7 +162,7 @@ public class RecommendationDataRepositoryImpl implements RecommendationDataRepos
                 radiusKm,
                 null,           // categoryId
                 isOpenOnly,
-                null,           // storeType
+                storeType,
                 "DISTANCE",     // sortBy
                 0,              // page
                 1000            // size (충분히 큰 값)

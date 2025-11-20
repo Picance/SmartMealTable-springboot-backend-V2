@@ -6,12 +6,18 @@ import com.stcom.smartmealtable.recommendation.domain.model.UserProfile;
 import com.stcom.smartmealtable.recommendation.domain.repository.RecommendationDataRepository;
 import com.stcom.smartmealtable.recommendation.domain.service.RecommendationDomainService;
 import com.stdev.smartmealtable.api.recommendation.dto.RecommendationRequestDto;
+import com.stdev.smartmealtable.api.home.service.BusinessHoursService;
+import com.stdev.smartmealtable.api.recommendation.dto.RecommendationResponseDto;
 import com.stdev.smartmealtable.api.recommendation.dto.ScoreDetailResponseDto;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.RecommendationType;
 import com.stdev.smartmealtable.domain.member.repository.MemberRepository;
+import com.stdev.smartmealtable.domain.category.Category;
+import com.stdev.smartmealtable.domain.category.CategoryRepository;
+import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StoreRepository;
+import com.stdev.smartmealtable.domain.store.StoreType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,15 +42,18 @@ public class RecommendationApplicationService {
     private final RecommendationDataRepository recommendationDataRepository;
     private final StoreRepository storeRepository;
     private final MemberRepository memberRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final BusinessHoursService businessHoursService;
+    private final CategoryRepository categoryRepository;
 
     /**
      * 추천 목록 조회
      * 
      * @param memberId 회원 ID
      * @param request 추천 요청
-     * @return 추천 결과 목록
+     * @return 추천 결과 DTO 목록
      */
-    public List<RecommendationResult> getRecommendations(
+    public List<RecommendationResponseDto> getRecommendations(
             Long memberId,
             RecommendationRequestDto request
     ) {
@@ -68,7 +77,10 @@ public class RecommendationApplicationService {
         }
 
         // 3. 가게 목록 필터링 (위치, 반경, 불호 카테고리 등)
-        List<Long> excludedCategoryIds = getExcludedCategoryIds(userProfile);
+        List<Long> excludedCategoryIds = shouldExcludeDisliked(request)
+                ? getExcludedCategoryIds(userProfile)
+                : List.of();
+        StoreType storeTypeFilter = resolveStoreType(request.getStoreType());
         
         // 검색어가 있는 경우와 없는 경우 분기
         List<Store> filteredStores;
@@ -80,7 +92,8 @@ public class RecommendationApplicationService {
                     request.getRadius(),
                     request.getKeyword().trim(),
                     excludedCategoryIds,
-                    request.getOpenNow() != null ? request.getOpenNow() : false
+                    request.getOpenNow() != null ? request.getOpenNow() : false,
+                    storeTypeFilter
             );
             log.debug("검색어 '{}'로 필터링된 가게 수: {}", request.getKeyword(), filteredStores.size());
         } else {
@@ -90,7 +103,8 @@ public class RecommendationApplicationService {
                     userProfile.getCurrentLongitude(),
                     request.getRadius(),
                     excludedCategoryIds,
-                    request.getOpenNow() != null ? request.getOpenNow() : false
+                    request.getOpenNow() != null ? request.getOpenNow() : false,
+                    storeTypeFilter
             );
             log.debug("필터링된 가게 수: {}", filteredStores.size());
         }
@@ -105,11 +119,24 @@ public class RecommendationApplicationService {
         List<RecommendationResult> sortedResults = sortResults(results, request.getSortBy());
 
         // 6. 페이징 (커서 또는 오프셋)
-        if (request.useCursorPagination()) {
-            return paginateByCursor(sortedResults, request.getLastId(), request.getLimit());
-        } else {
-            return paginateByOffset(sortedResults, request.getPage(), request.getSize());
-        }
+        List<RecommendationResult> paginatedResults = request.useCursorPagination()
+                ? paginateByCursor(sortedResults, request.getLastId(), request.getLimit())
+                : paginateByOffset(sortedResults, request.getPage(), request.getSize());
+
+        Map<Long, String> categoryNameMap = loadCategoryNames(paginatedResults);
+        Set<Long> favoriteStoreIds = findFavoriteStoreIds(memberId, paginatedResults);
+        Map<Long, Boolean> operationStatuses = loadOperationStatuses(paginatedResults);
+
+        return RecommendationResponseDto.fromList(
+                paginatedResults,
+                categoryNameMap,
+                favoriteStoreIds,
+                operationStatuses
+        );
+    }
+
+    private boolean shouldExcludeDisliked(RecommendationRequestDto request) {
+        return !Boolean.TRUE.equals(request.getIncludeDisliked());
     }
 
     /**
@@ -120,6 +147,68 @@ public class RecommendationApplicationService {
                 .filter(entry -> entry.getValue() == -100) // 싫어요 (-100)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
+    }
+
+    private Map<Long, String> loadCategoryNames(List<RecommendationResult> results) {
+        List<Long> categoryIds = results.stream()
+                .map(RecommendationResult::getCategoryId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (categoryIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Category> categories = categoryRepository.findByIdIn(categoryIds);
+
+        return categories.stream()
+                .collect(Collectors.toMap(Category::getCategoryId, Category::getName));
+    }
+
+    private Set<Long> findFavoriteStoreIds(Long memberId, List<RecommendationResult> results) {
+        List<Long> storeIds = results.stream()
+                .map(RecommendationResult::getStoreId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (storeIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        List<Long> favoriteStoreIds = favoriteRepository.findStoreIdsByMemberIdAndStoreIdIn(memberId, storeIds);
+        return new HashSet<>(favoriteStoreIds);
+    }
+
+    private Map<Long, Boolean> loadOperationStatuses(List<RecommendationResult> results) {
+        Map<Long, Boolean> statusMap = new HashMap<>();
+        for (RecommendationResult result : results) {
+            Long storeId = result.getStoreId();
+            if (storeId == null || statusMap.containsKey(storeId)) {
+                continue;
+            }
+
+            try {
+                boolean isOpen = businessHoursService.getOperationStatus(storeId).isOpen();
+                statusMap.put(storeId, isOpen);
+            } catch (Exception e) {
+                log.debug("Failed to resolve operation status for store {}", storeId, e);
+                statusMap.put(storeId, Boolean.FALSE);
+            }
+        }
+        return statusMap;
+    }
+
+    private StoreType resolveStoreType(RecommendationRequestDto.StoreTypeFilter storeTypeFilter) {
+        if (storeTypeFilter == null || storeTypeFilter == RecommendationRequestDto.StoreTypeFilter.ALL) {
+            return null;
+        }
+        return switch (storeTypeFilter) {
+            case CAMPUS_RESTAURANT -> StoreType.CAMPUS_RESTAURANT;
+            case RESTAURANT -> StoreType.RESTAURANT;
+            default -> null;
+        };
     }
 
     /**

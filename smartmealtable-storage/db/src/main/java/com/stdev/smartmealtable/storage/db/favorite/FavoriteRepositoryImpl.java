@@ -79,4 +79,12 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     public boolean existsByMemberIdAndStoreId(Long memberId, Long storeId) {
         return favoriteJpaRepository.existsByMemberIdAndStoreId(memberId, storeId);
     }
+
+    @Override
+    public List<Long> findStoreIdsByMemberIdAndStoreIdIn(Long memberId, List<Long> storeIds) {
+        if (storeIds == null || storeIds.isEmpty()) {
+            return List.of();
+        }
+        return favoriteJpaRepository.findStoreIdsByMemberIdAndStoreIdIn(memberId, storeIds);
+    }
 }

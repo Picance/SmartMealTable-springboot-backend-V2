@@ -29,6 +29,11 @@ public class RecommendationResult {
      * 카테고리 ID
      */
     private final Long categoryId;
+
+    /**
+     * 주소
+     */
+    private final String address;
     
     /**
      * 최종 추천 점수 (0~100)
@@ -88,6 +93,7 @@ public class RecommendationResult {
                 .storeId(store.getStoreId())
                 .storeName(store.getName())
                 .categoryId(primaryCategoryId)
+                .address(store.getAddress())
                 .finalScore(finalScore)
                 .distance(distance)
                 .averagePrice(store.getAveragePrice())

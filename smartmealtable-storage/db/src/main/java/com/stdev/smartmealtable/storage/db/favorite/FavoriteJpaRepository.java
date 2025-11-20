@@ -58,4 +58,14 @@ public interface FavoriteJpaRepository extends JpaRepository<FavoriteEntity, Lon
      */
     @Query("SELECT CASE WHEN COUNT(f) > 0 THEN TRUE ELSE FALSE END FROM FavoriteEntity f WHERE f.memberId = :memberId AND f.storeId = :storeId")
     boolean existsByMemberIdAndStoreId(@Param("memberId") Long memberId, @Param("storeId") Long storeId);
+
+    /**
+     * 회원이 즐겨찾기에 추가한 가게 ID 목록 조회 (필터링)
+     *
+     * @param memberId 회원 ID
+     * @param storeIds 확인할 가게 ID 목록
+     * @return 즐겨찾기된 가게 ID 목록
+     */
+    @Query("SELECT f.storeId FROM FavoriteEntity f WHERE f.memberId = :memberId AND f.storeId IN :storeIds")
+    List<Long> findStoreIdsByMemberIdAndStoreIdIn(@Param("memberId") Long memberId, @Param("storeIds") List<Long> storeIds);
 }

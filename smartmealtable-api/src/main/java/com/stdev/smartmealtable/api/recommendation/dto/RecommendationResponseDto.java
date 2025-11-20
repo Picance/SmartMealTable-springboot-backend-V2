@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.api.recommendation.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.stcom.smartmealtable.recommendation.domain.model.RecommendationResult;
+import com.stcom.smartmealtable.recommendation.domain.model.ScoreDetail;
 import com.stdev.smartmealtable.core.pagination.CursorIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +34,7 @@ public class RecommendationResponseDto implements CursorIdentifiable {
     /**
      * 가게명
      */
+    @JsonProperty("name")
     private String storeName;
 
     /**
@@ -38,9 +43,25 @@ public class RecommendationResponseDto implements CursorIdentifiable {
     private Long categoryId;
 
     /**
+     * 카테고리 이름
+     */
+    private String categoryName;
+
+    /**
+     * 주소
+     */
+    private String address;
+
+    /**
      * 추천 점수 (0~100)
      */
+    @JsonProperty("recommendationScore")
     private Double score;
+
+    /**
+     * 추천 점수 상세
+     */
+    private Scores scores;
 
     /**
      * 거리 (km)
@@ -73,29 +94,59 @@ public class RecommendationResponseDto implements CursorIdentifiable {
     private BigDecimal longitude;
 
     /**
+     * 즐겨찾기 여부
+     */
+    private Boolean isFavorite;
+
+    /**
+     * 영업 여부
+     */
+    private Boolean isOpen;
+
+    /**
      * 도메인 모델로부터 DTO 생성
      */
-    public static RecommendationResponseDto from(RecommendationResult result) {
+    public static RecommendationResponseDto from(
+            RecommendationResult result,
+            String categoryName,
+            boolean isFavorite,
+            boolean isOpen
+    ) {
         return RecommendationResponseDto.builder()
                 .storeId(result.getStoreId())
                 .storeName(result.getStoreName())
                 .categoryId(result.getCategoryId())
+                .categoryName(categoryName)
+                .address(result.getAddress())
                 .score(result.getFinalScore())
+                .scores(Scores.from(result.getScoreDetail()))
                 .distance(result.getDistance())
                 .averagePrice(result.getAveragePrice())
                 .reviewCount(result.getReviewCount())
                 .imageUrl(result.getImageUrl())
                 .latitude(result.getLatitude())
                 .longitude(result.getLongitude())
+                .isFavorite(isFavorite)
+                .isOpen(isOpen)
                 .build();
     }
 
     /**
      * 도메인 모델 리스트로부터 DTO 리스트 생성
      */
-    public static List<RecommendationResponseDto> fromList(List<RecommendationResult> results) {
+    public static List<RecommendationResponseDto> fromList(
+            List<RecommendationResult> results,
+            Map<Long, String> categoryNameMap,
+            Set<Long> favoriteStoreIds,
+            Map<Long, Boolean> operationStatusMap
+    ) {
         return results.stream()
-                .map(RecommendationResponseDto::from)
+                .map(result -> RecommendationResponseDto.from(
+                        result,
+                        categoryNameMap.getOrDefault(result.getCategoryId(), null),
+                        favoriteStoreIds.contains(result.getStoreId()),
+                        operationStatusMap.getOrDefault(result.getStoreId(), Boolean.FALSE)
+                ))
                 .collect(Collectors.toList());
     }
 
@@ -107,5 +158,31 @@ public class RecommendationResponseDto implements CursorIdentifiable {
     @Override
     public Long getCursorId() {
         return storeId;
+    }
+
+    /**
+     * 점수 요약 DTO
+     */
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Scores {
+        private Double stability;
+        private Double exploration;
+        private Double budgetEfficiency;
+        private Double accessibility;
+
+        public static Scores from(ScoreDetail detail) {
+            if (detail == null) {
+                return null;
+            }
+            return Scores.builder()
+                    .stability(detail.getStabilityScore())
+                    .exploration(detail.getExplorationScore())
+                    .budgetEfficiency(detail.getBudgetEfficiencyScore())
+                    .accessibility(detail.getAccessibilityScore())
+                    .build();
+        }
     }
 }
