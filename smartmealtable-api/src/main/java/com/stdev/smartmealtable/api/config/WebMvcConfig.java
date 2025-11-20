@@ -27,7 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(final CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("http://localhost:5173", "https://smartmealtable.netlify.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                 .allowCredentials(true);
     }
