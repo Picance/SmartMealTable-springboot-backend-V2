@@ -3,6 +3,8 @@ package com.stdev.smartmealtable.api.store.controller;
 import com.stdev.smartmealtable.api.common.AbstractRestDocsTest;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.common.vo.AddressType;
+import com.stdev.smartmealtable.domain.favorite.Favorite;
+import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.entity.Member;
 import com.stdev.smartmealtable.domain.member.entity.MemberAuthentication;
@@ -40,6 +42,9 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
     
     @Autowired
     private StoreRepository storeRepository;
+
+    @Autowired
+    private FavoriteRepository favoriteRepository;
     
     @Autowired
     private StoreOpeningHourRepository storeOpeningHourRepository;
@@ -200,6 +205,7 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.data.openingHours.length()").value(7))
                 .andExpect(jsonPath("$.data.temporaryClosures").isArray())
                 .andExpect(jsonPath("$.data.temporaryClosures.length()").value(1))
+                .andExpect(jsonPath("$.data.isFavorite").value(false))
                 .andDo(document("store-detail-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -244,6 +250,20 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.viewCount").value(initialViewCount + 1));
+    }
+
+    @Test
+    @DisplayName("가게 상세 조회 성공 - 즐겨찾기 여부 true")
+    void getStoreDetail_Success_IsFavoriteTrue() throws Exception {
+        // given
+        favoriteRepository.save(Favorite.create(testMember.getMemberId(), testStore.getStoreId(), 1L));
+
+        // when & then
+        mockMvc.perform(get("/api/v1/stores/{storeId}", testStore.getStoreId())
+                        .header(HttpHeaders.AUTHORIZATION, jwtToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.isFavorite").value(true));
     }
     
     @Test

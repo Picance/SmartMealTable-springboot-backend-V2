@@ -46,7 +46,8 @@ public record StoreDetailResponse(
             List<StoreImage> images,
             List<StoreOpeningHour> openingHours,
             List<StoreTemporaryClosure> temporaryClosures,
-            List<Food> foods
+            List<Food> foods,
+            boolean isFavorite
     ) {
         Long primaryCategoryId = store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0);
         return new StoreDetailResponse(
@@ -70,7 +71,7 @@ public record StoreDetailResponse(
                 openingHours.stream().map(OpeningHourInfo::from).toList(),
                 temporaryClosures.stream().map(TemporaryClosureInfo::from).toList(),
                 foods.stream().map(MenuInfo::from).toList(),
-                false, // TODO: 즐겨찾기 여부 조회 필요
+                isFavorite,
                 store.getRegisteredAt()
         );
     }

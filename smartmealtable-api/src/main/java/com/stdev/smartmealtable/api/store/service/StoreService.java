@@ -6,6 +6,7 @@ import com.stdev.smartmealtable.api.store.dto.StoreAutocompleteResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreDetailResponse;
 import com.stdev.smartmealtable.api.store.dto.StoreListRequest;
 import com.stdev.smartmealtable.api.store.dto.StoreListResponse;
+import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
 import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
@@ -37,6 +38,7 @@ public class StoreService {
     private final StoreViewHistoryRepository storeViewHistoryRepository;
     private final AddressHistoryRepository addressHistoryRepository;
     private final FoodRepository foodRepository;
+    private final FavoriteRepository favoriteRepository;
     
     /**
      * 가게 목록 조회
@@ -176,9 +178,9 @@ public class StoreService {
                 })
                 .toList();
         
-        // TODO: 즐겨찾기 여부 조회 추가 필요
+        boolean isFavorite = favoriteRepository.existsByMemberIdAndStoreId(memberId, storeId);
         
-        return StoreDetailResponse.from(store, images, openingHours, temporaryClosures, foods);
+        return StoreDetailResponse.from(store, images, openingHours, temporaryClosures, foods, isFavorite);
     }
     
     /**

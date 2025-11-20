@@ -8,6 +8,7 @@ import com.stdev.smartmealtable.core.error.ErrorType;
 import com.stdev.smartmealtable.core.exception.BusinessException;
 import com.stdev.smartmealtable.domain.common.vo.Address;
 import com.stdev.smartmealtable.domain.common.vo.AddressType;
+import com.stdev.smartmealtable.domain.favorite.FavoriteRepository;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
@@ -62,6 +63,9 @@ class StoreServiceTest {
 
     @Mock
     private StoreImageRepository storeImageRepository;
+
+    @Mock
+    private FavoriteRepository favoriteRepository;
 
     @InjectMocks
     private StoreService storeService;
@@ -297,6 +301,8 @@ class StoreServiceTest {
                 .willReturn(temporaryClosures);
         given(foodRepository.findByStoreId(testStoreId))
                 .willReturn(foods);
+        given(favoriteRepository.existsByMemberIdAndStoreId(testMemberId, testStoreId))
+                .willReturn(false);
 
         // when
         StoreDetailResponse response = storeService.getStoreDetail(testMemberId, testStoreId);
@@ -315,6 +321,7 @@ class StoreServiceTest {
         assertThat(response.menus()).hasSize(2); // 메뉴 개수 확인
         assertThat(response.menus()).extracting("foodName")
                 .containsExactly("비빔밥", "된장찌개");
+        assertThat(response.isFavorite()).isFalse();
 
         verify(storeRepository).findByIdAndDeletedAtIsNull(testStoreId);
         verify(storeViewHistoryRepository).createViewHistory(testStoreId, testMemberId);
@@ -324,6 +331,7 @@ class StoreServiceTest {
         verify(storeOpeningHourRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
         verify(foodRepository).findByStoreId(testStoreId);
+        verify(favoriteRepository).existsByMemberIdAndStoreId(testMemberId, testStoreId);
     }
 
     @Test
@@ -391,6 +399,8 @@ class StoreServiceTest {
                 .willReturn(temporaryClosures);
         given(foodRepository.findByStoreId(testStoreId))
                 .willReturn(foods);
+        given(favoriteRepository.existsByMemberIdAndStoreId(testMemberId, testStoreId))
+                .willReturn(true);
 
         // when
         StoreDetailResponse response = storeService.getStoreDetail(testMemberId, testStoreId);
@@ -404,10 +414,12 @@ class StoreServiceTest {
         assertThat(response.temporaryClosures().get(0).startTime()).isEqualTo(LocalTime.of(0, 0));
         assertThat(response.temporaryClosures().get(0).endTime()).isEqualTo(LocalTime.of(23, 59));
         assertThat(response.menus()).isEmpty(); // 메뉴 없음 확인
+        assertThat(response.isFavorite()).isTrue();
 
         verify(storeImageRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
         verify(foodRepository).findByStoreId(testStoreId);
+        verify(favoriteRepository).existsByMemberIdAndStoreId(testMemberId, testStoreId);
     }
 
     @Test
