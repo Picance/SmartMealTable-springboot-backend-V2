@@ -205,6 +205,7 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
                 .andExpect(jsonPath("$.data.openingHours.length()").value(7))
                 .andExpect(jsonPath("$.data.temporaryClosures").isArray())
                 .andExpect(jsonPath("$.data.temporaryClosures.length()").value(1))
+                .andExpect(jsonPath("$.data.isOpen").isBoolean())
                 .andExpect(jsonPath("$.data.isFavorite").value(false))
                 .andDo(document("store-detail-success",
                         getDocumentRequest(),
@@ -230,6 +231,7 @@ class GetStoreDetailControllerTest extends AbstractRestDocsTest {
                                 fieldWithPath("data.favoriteCount").description("즐겨찾기 수"),
                                 fieldWithPath("data.storeType").description("가게 유형 (RESTAURANT, CAMPUS_RESTAURANT 등)"),
                                 fieldWithPath("data.imageUrl").description("가게 대표 이미지 URL"),
+                                fieldWithPath("data.isOpen").description("현재 시간 기준 영업 여부"),
                                 fieldWithPath("data.isFavorite").description("사용자가 즐겨찾기한 가게 여부"),
                                 fieldWithPath("data.openingHours[]").description("영업시간 목록 (요일별)"),
                                 fieldWithPath("data.openingHours[].dayOfWeek").description("요일 (MONDAY ~ SUNDAY)"),

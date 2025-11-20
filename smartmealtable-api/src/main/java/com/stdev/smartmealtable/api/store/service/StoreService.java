@@ -18,6 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -39,6 +45,7 @@ public class StoreService {
     private final AddressHistoryRepository addressHistoryRepository;
     private final FoodRepository foodRepository;
     private final FavoriteRepository favoriteRepository;
+    private final Clock clock;
     
     /**
      * 가게 목록 조회
@@ -179,8 +186,9 @@ public class StoreService {
                 .toList();
         
         boolean isFavorite = favoriteRepository.existsByMemberIdAndStoreId(memberId, storeId);
+        boolean isOpen = isStoreOpenNow(openingHours, temporaryClosures);
         
-        return StoreDetailResponse.from(store, images, openingHours, temporaryClosures, foods, isFavorite);
+        return StoreDetailResponse.from(store, images, openingHours, temporaryClosures, foods, isFavorite, isOpen);
     }
     
     /**
@@ -296,6 +304,92 @@ public class StoreService {
                     return ascending ? compare : -compare;
                 })
                 .toList();
+    }
+
+    private boolean isStoreOpenNow(List<StoreOpeningHour> openingHours, List<StoreTemporaryClosure> temporaryClosures) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        if (isTemporarilyClosed(now, temporaryClosures)) {
+            return false;
+        }
+        return isWithinOpeningHours(now, openingHours);
+    }
+
+    private boolean isWithinOpeningHours(LocalDateTime now, List<StoreOpeningHour> openingHours) {
+        if (openingHours == null || openingHours.isEmpty()) {
+            return false;
+        }
+        DayOfWeek today = now.getDayOfWeek();
+        LocalTime currentTime = now.toLocalTime();
+
+        return openingHours.stream()
+                .filter(hour -> hour.dayOfWeek() == today)
+                .findFirst()
+                .map(hour -> isOpenDuringHour(hour, currentTime))
+                .orElse(false);
+    }
+
+    private boolean isOpenDuringHour(StoreOpeningHour openingHour, LocalTime currentTime) {
+        if (openingHour.isHoliday()) {
+            return false;
+        }
+
+        LocalTime openTime = parseTime(openingHour.openTime());
+        LocalTime closeTime = parseTime(openingHour.closeTime());
+        if (openTime == null || closeTime == null || openTime.equals(closeTime)) {
+            return false;
+        }
+
+        LocalTime breakStart = parseTime(openingHour.breakStartTime());
+        LocalTime breakEnd = parseTime(openingHour.breakEndTime());
+        if (breakStart != null && breakEnd != null && isTimeInRange(currentTime, breakStart, breakEnd)) {
+            return false;
+        }
+
+        return isTimeInRange(currentTime, openTime, closeTime);
+    }
+
+    private boolean isTemporarilyClosed(LocalDateTime now, List<StoreTemporaryClosure> temporaryClosures) {
+        if (temporaryClosures == null || temporaryClosures.isEmpty()) {
+            return false;
+        }
+
+        LocalDate today = now.toLocalDate();
+        LocalTime currentTime = now.toLocalTime();
+
+        return temporaryClosures.stream()
+                .filter(closure -> closure.closureDate() != null && closure.closureDate().isEqual(today))
+                .anyMatch(closure -> {
+                    LocalTime start = closure.startTime() != null ? closure.startTime() : LocalTime.MIN;
+                    LocalTime end = closure.endTime() != null ? closure.endTime() : LocalTime.MAX;
+                    return isTimeInRange(currentTime, start, end);
+                });
+    }
+
+    private boolean isTimeInRange(LocalTime target, LocalTime start, LocalTime end) {
+        if (start == null || end == null) {
+            return false;
+        }
+        if (end.equals(start)) {
+            return false;
+        }
+
+        if (end.isBefore(start)) {
+            // overnight range (e.g., 21:00 ~ 03:00)
+            return !target.isBefore(start) || target.isBefore(end);
+        }
+
+        return !target.isBefore(start) && target.isBefore(end);
+    }
+
+    private LocalTime parseTime(String timeValue) {
+        if (timeValue == null || timeValue.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(timeValue);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
     }
 
     

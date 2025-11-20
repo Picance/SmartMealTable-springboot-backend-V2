@@ -39,6 +39,7 @@ public record StoreDetailResponse(
         List<TemporaryClosureInfo> temporaryClosures,
         List<MenuInfo> menus,
         Boolean isFavorite,
+        Boolean isOpen,
         LocalDateTime registeredAt
 ) {
     public static StoreDetailResponse from(
@@ -47,7 +48,8 @@ public record StoreDetailResponse(
             List<StoreOpeningHour> openingHours,
             List<StoreTemporaryClosure> temporaryClosures,
             List<Food> foods,
-            boolean isFavorite
+            boolean isFavorite,
+            boolean isOpen
     ) {
         Long primaryCategoryId = store.getCategoryIds().isEmpty() ? null : store.getCategoryIds().get(0);
         return new StoreDetailResponse(
@@ -72,6 +74,7 @@ public record StoreDetailResponse(
                 temporaryClosures.stream().map(TemporaryClosureInfo::from).toList(),
                 foods.stream().map(MenuInfo::from).toList(),
                 isFavorite,
+                isOpen,
                 store.getRegisteredAt()
         );
     }

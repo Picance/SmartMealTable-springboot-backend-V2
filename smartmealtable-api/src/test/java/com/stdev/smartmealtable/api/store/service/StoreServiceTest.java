@@ -14,6 +14,8 @@ import com.stdev.smartmealtable.domain.food.FoodRepository;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
 import com.stdev.smartmealtable.domain.store.*;
+
+import java.time.Clock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,9 +26,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -67,6 +72,9 @@ class StoreServiceTest {
     @Mock
     private FavoriteRepository favoriteRepository;
 
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private StoreService storeService;
 
@@ -75,6 +83,8 @@ class StoreServiceTest {
     private Store testStore;
     private AddressHistory testAddress;
     private StoreWithDistance testStoreWithDistance;
+    private ZoneId zoneId;
+    private LocalDateTime fixedNow;
 
     @BeforeEach
     void setUp() {
@@ -116,6 +126,9 @@ class StoreServiceTest {
                 .build();
 
         testStoreWithDistance = new StoreWithDistance(testStore, new BigDecimal("0.5"));
+        zoneId = ZoneId.systemDefault();
+        fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0);
+        mockCurrentTime(fixedNow);
     }
 
     @Test
@@ -322,6 +335,7 @@ class StoreServiceTest {
         assertThat(response.menus()).extracting("foodName")
                 .containsExactly("비빔밥", "된장찌개");
         assertThat(response.isFavorite()).isFalse();
+        assertThat(response.isOpen()).isTrue();
 
         verify(storeRepository).findByIdAndDeletedAtIsNull(testStoreId);
         verify(storeViewHistoryRepository).createViewHistory(testStoreId, testMemberId);
@@ -366,7 +380,7 @@ class StoreServiceTest {
                 )
         );
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = fixedNow.toLocalDate();
         List<StoreTemporaryClosure> temporaryClosures = List.of(
                 new StoreTemporaryClosure(
                         1L,
@@ -415,6 +429,7 @@ class StoreServiceTest {
         assertThat(response.temporaryClosures().get(0).endTime()).isEqualTo(LocalTime.of(23, 59));
         assertThat(response.menus()).isEmpty(); // 메뉴 없음 확인
         assertThat(response.isFavorite()).isTrue();
+        assertThat(response.isOpen()).isFalse();
 
         verify(storeImageRepository).findByStoreId(testStoreId);
         verify(storeTemporaryClosureRepository).findByStoreId(testStoreId);
@@ -512,5 +527,11 @@ class StoreServiceTest {
         assertThat(response).isEmpty();
 
         verify(storeRepository).searchByKeywordForAutocomplete(keyword, limit);
+    }
+
+    private void mockCurrentTime(LocalDateTime dateTime) {
+        Instant instant = dateTime.atZone(zoneId).toInstant();
+        lenient().when(clock.instant()).thenReturn(instant);
+        lenient().when(clock.getZone()).thenReturn(zoneId);
     }
 }

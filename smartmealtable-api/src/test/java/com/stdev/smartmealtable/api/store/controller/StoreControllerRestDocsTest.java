@@ -423,6 +423,7 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUCCESS"))
                 .andExpect(jsonPath("$.data.storeId").value(store1.getStoreId()))
+                .andExpect(jsonPath("$.data.isOpen").isBoolean())
                 .andDo(document("store/get-detail-success",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -491,6 +492,9 @@ class StoreControllerRestDocsTest extends AbstractRestDocsTest {
                                         .type(JsonFieldType.STRING)
                                         .description("대표 이미지 URL")
                                         .optional(),
+                                fieldWithPath("data.isOpen")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("현재 시간 기준 영업 여부"),
                                 fieldWithPath("data.openingHours")
                                         .type(JsonFieldType.ARRAY)
                                         .description("영업시간 정보")

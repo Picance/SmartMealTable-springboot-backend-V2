@@ -2101,6 +2101,7 @@ Authorization: Bearer {access_token}
     "isCampusRestaurant": false,
     "isFavorite": true,
     "isTemporaryClosed": false,
+    "isOpen": true,
     "imageUrl": "https://cdn.smartmealtable.com/stores/101/main.jpg",
     "images": [
       {
@@ -2247,6 +2248,7 @@ Authorization: Bearer {access_token}
   - `isMain`: 대표 이미지 여부
   - `displayOrder`: 표시 순서 (낮을수록 우선)
 - `imageUrl`: 대표 이미지 URL (하위 호환성, `images[0].imageUrl`과 동일)
+- `isOpen`: 현재 시간 기준 영업 여부 (임시 휴무 또는 영업시간 외인 경우 `false`)
 - `menus`: 가게의 메뉴 목록 (isMain 우선, displayOrder 오름차순 정렬)
   - `isMain`: 대표 메뉴 여부 (신규 필드)
   - `displayOrder`: 표시 순서 (신규 필드)
