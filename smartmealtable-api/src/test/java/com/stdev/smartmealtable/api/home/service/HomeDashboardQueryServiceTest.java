@@ -13,6 +13,7 @@ import com.stdev.smartmealtable.domain.expenditure.ExpenditureRepository;
 import com.stdev.smartmealtable.domain.expenditure.MealType;
 import com.stdev.smartmealtable.domain.member.entity.AddressHistory;
 import com.stdev.smartmealtable.domain.member.repository.AddressHistoryRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +32,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -57,12 +62,24 @@ class HomeDashboardQueryServiceTest {
     @Mock
     private DashboardRecommendationService dashboardRecommendationService;
 
+    @Mock
+    private Clock clock;
+
+    private static final ZoneId TEST_ZONE_ID = ZoneId.of("Asia/Seoul");
+    private static final Instant FIXED_INSTANT = Instant.parse("2025-11-21T00:00:00Z");
+
+    @BeforeEach
+    void setUpClock() {
+        lenient().when(clock.getZone()).thenReturn(TEST_ZONE_ID);
+        lenient().when(clock.instant()).thenReturn(FIXED_INSTANT);
+    }
+
     @Test
     @DisplayName("홈 대시보드 조회 - 성공 (모든 데이터 존재)")
     void getHomeDashboard_Success_AllDataExists() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         // 주소 데이터
         Address address = Address.of(
@@ -162,7 +179,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_Success_NoBudgetNoExpenditure() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
@@ -203,7 +220,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_Success_WithOtherMealType() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구 테헤란로 123",
@@ -275,7 +292,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_Success_PartialMealTypeExpenditure() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "회사", null, "서울특별시 강남구 삼성로 456",
@@ -329,7 +346,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_EdgeCase_ZeroBudget() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "테스트주소", null, "서울특별시 종로구",
@@ -372,7 +389,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_EdgeCase_LargeAmount() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구",
@@ -433,7 +450,7 @@ class HomeDashboardQueryServiceTest {
     void getHomeDashboard_Success_BudgetExceeded() {
         // given
         Long memberId = 1L;
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         Address address = Address.of(
                 "우리집", null, "서울특별시 강남구",

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ public class HomeDashboardQueryService {
     private final MealBudgetRepository mealBudgetRepository;
     private final ExpenditureRepository expenditureRepository;
     private final DashboardRecommendationService dashboardRecommendationService;
+    private final Clock clock;
 
     private static final int DEFAULT_RECOMMENDATION_LIMIT = 5;
 
@@ -82,7 +84,7 @@ public class HomeDashboardQueryService {
         Double recommendationLatitude = hasCustomLocation ? userLatitude : primaryLatitude;
         Double recommendationLongitude = hasCustomLocation ? userLongitude : primaryLongitude;
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         DailyBudget dailyBudget = dailyBudgetRepository.findByMemberIdAndBudgetDate(memberId, today)
                 .orElse(null);
