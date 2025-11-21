@@ -39,7 +39,7 @@ resource "aws_subnet" "public_1" {
 resource "aws_subnet" "public_2" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.4.0/24"
-  availability_zone       = "ap-northeast-2c"
+  availability_zone       = "ap-northeast-2b"
   map_public_ip_on_launch = true
 
   tags = {
@@ -326,7 +326,7 @@ resource "aws_instance" "api" {
 # EC2 인스턴스 2 - Admin + Redis + 모니터링
 resource "aws_instance" "admin" {
   ami           = "ami-0e9bfdb247cc8de84"  # Ubuntu 22.04 LTS AMI
-  instance_type = "t3.micro"
+  instance_type = "c7i-flex.large"
   subnet_id     = aws_subnet.public_2.id
   
   # 명시적 공개 IP 할당
