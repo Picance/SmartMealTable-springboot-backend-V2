@@ -301,4 +301,8 @@ performance-test/results/**/*.csv
 performance-test/results/**/html-report/
 performance-test/results/backup/
 
+# docs
+/docs/
+!/docs/api-docs.html
+
 # End of https://www.toptal.com/developers/gitignore/api/java,react,gradle,maven,intellij
