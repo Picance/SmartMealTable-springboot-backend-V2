@@ -71,6 +71,13 @@ public interface FoodQueryDslRepository {
     java.util.List<FoodJpaEntity> findRandom(int page, int size);
 
     /**
+     * 온보딩용 노출이 가능한 음식 개수 조회
+     *
+     * @return 삭제되지 않았고 이미지가 있는 음식 개수
+     */
+    long countForOnboarding();
+
+    /**
      * 특정 가게의 음식 조회 (거리순 정렬)
      * 사용자의 가게 좌표를 기반으로 Haversine 공식을 사용하여 거리를 계산하고,
      * 거리가 가까운 순서로 음식을 반환합니다.

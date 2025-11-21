@@ -37,6 +37,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -81,6 +84,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
     private String accessToken;
     private Long categoryId1;
     private Long categoryId2;
+    private Long storeId;
     private List<Long> foodIds;
 
     @BeforeEach
@@ -134,6 +138,7 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 .registeredAt(LocalDateTime.now().minusMonths(1))
                 .build();
         Store savedStore = storeRepository.save(testStore);
+        storeId = savedStore.getStoreId();
 
         // 테스트용 음식 생성 (15개)
         Food food1 = Food.reconstitute(null, "김치찌개", savedStore.getStoreId(), categoryId1, "얼큰한 김치찌개", "https://example.com/kimchi.jpg", 8000);
@@ -185,6 +190,27 @@ class FoodPreferenceControllerTest extends AbstractContainerTest {
                 .andExpect(jsonPath("$.data.totalElements").value(10))
                 .andExpect(jsonPath("$.data.first").value(true))
                 .andExpect(jsonPath("$.data.last").value(true));
+    }
+
+    @Test
+    @DisplayName("음식 목록 조회 시 이미지가 없는 음식은 제외된다")
+    void getFoods_excludesFoodsWithoutImage() throws Exception {
+        // given
+        Food noImage = Food.reconstitute(null, "이미지없는메뉴", storeId, categoryId1, "이미지 없음", null, 5000);
+        Food emptyImage = Food.reconstitute(null, "이미지빈문자열", storeId, categoryId2, "이미지 빈값", "", 6000);
+        foodRepository.save(noImage);
+        foodRepository.save(emptyImage);
+
+        // when & then
+        mockMvc.perform(get("/api/v1/onboarding/foods")
+                        .param("page", "0")
+                        .param("size", "20")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("SUCCESS"))
+                .andExpect(jsonPath("$.data.content.length()").value(10))
+                .andExpect(jsonPath("$.data.totalElements").value(10))
+                .andExpect(jsonPath("$.data.content[*].imageUrl").value(everyItem(not(isEmptyOrNullString()))));
     }
 
     @Test

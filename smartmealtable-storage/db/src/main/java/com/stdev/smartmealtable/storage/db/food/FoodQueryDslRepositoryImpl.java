@@ -1,6 +1,8 @@
 package com.stdev.smartmealtable.storage.db.food;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.food.Food;
 import com.stdev.smartmealtable.domain.food.FoodPageResult;
@@ -194,13 +196,38 @@ public class FoodQueryDslRepositoryImpl implements FoodQueryDslRepository {
      */
     @Override
     public List<FoodJpaEntity> findRandom(int page, int size) {
+        NumberExpression<Double> random = Expressions.numberTemplate(Double.class, "RAND()");
+
         return queryFactory
                 .selectFrom(foodJpaEntity)
-                .where(foodJpaEntity.deletedAt.isNull())
-                .orderBy(foodJpaEntity.foodId.asc()) // QueryDSL에서 직접 RAND() 사용이 제한적이므로 ID로 정렬
+                .where(
+                        foodJpaEntity.deletedAt.isNull()
+                                .and(foodJpaEntity.imageUrl.isNotNull())
+                                .and(foodJpaEntity.imageUrl.ne(""))
+                )
+                .orderBy(random.asc())
                 .offset((long) page * size)
                 .limit(size)
                 .fetch();
+    }
+
+    /**
+     * 온보딩용 노출이 가능한 음식 개수 조회
+     * 삭제되지 않고 이미지가 존재하는 음식만 카운트
+     */
+    @Override
+    public long countForOnboarding() {
+        Long total = queryFactory
+                .select(foodJpaEntity.count())
+                .from(foodJpaEntity)
+                .where(
+                        foodJpaEntity.deletedAt.isNull()
+                                .and(foodJpaEntity.imageUrl.isNotNull())
+                                .and(foodJpaEntity.imageUrl.ne(""))
+                )
+                .fetchOne();
+
+        return total != null ? total : 0L;
     }
 
     private String normalizeForSearch(String keyword) {

@@ -35,6 +35,11 @@ public interface FoodRepository {
     List<Food> findRandom(int page, int size);
 
     /**
+     * 온보딩 노출 대상 음식 개수 (삭제되지 않았고 이미지가 있는 음식만)
+     */
+    long countOnboardingCandidates();
+
+    /**
      * 카테고리별 음식 조회 (페이징은 Storage 계층에서 처리)
      */
     List<Food> findByCategoryId(Long categoryId, int page, int size);

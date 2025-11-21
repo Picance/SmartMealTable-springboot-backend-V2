@@ -10,8 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 /**
@@ -37,18 +42,24 @@ public class GetFoodsService {
      * @return 다양한 카테고리에서 선택된 음식 목록
      */
     public GetFoodsServiceResponse getFoods(int page, int size) {
-        log.info("온보딩 음식 목록 조회 (랜덤) - page: {}, size: {}", page, size);
+        int pageNumber = Math.max(page, 0);
+        int pageSize = Math.min(Math.max(size, 1), 100);
 
-        // 1. 랜덤 음식 목록 조회
-        List<Food> foods = foodRepository.findRandom(page, size);
-        long totalElements = foodRepository.count();
+        log.info("온보딩 음식 목록 조회 (랜덤) - page: {}, size: {}", pageNumber, pageSize);
+
+        // 1. 랜덤 음식 목록 조회 (이미지 필수, 삭제 제외)
+        List<Food> foods = foodRepository.findRandom(pageNumber, pageSize);
+        long totalElements = foodRepository.countOnboardingCandidates();
 
         // 2. 카테고리 정보 조회 (한 번에 조회하여 성능 최적화)
         Map<Long, String> categoryNameMap = categoryRepository.findAll().stream()
                 .collect(Collectors.toMap(Category::getCategoryId, Category::getName));
 
-        // 3. 응답 생성
-        List<GetFoodsServiceResponse.FoodInfo> foodInfos = foods.stream()
+        // 3. 카테고리 다양성 확보를 위해 카테고리별로 라운드로빈 정렬
+        List<Food> diversifiedFoods = diversifyByCategory(foods);
+
+        // 4. 응답 생성
+        List<GetFoodsServiceResponse.FoodInfo> foodInfos = diversifiedFoods.stream()
                 .map(food -> new GetFoodsServiceResponse.FoodInfo(
                         food.getFoodId(),
                         food.getFoodName(),
@@ -60,19 +71,60 @@ public class GetFoodsService {
                 ))
                 .collect(Collectors.toList());
 
-        // 4. 페이징 정보 계산
-        int totalPages = (int) Math.ceil((double) totalElements / size);
-        boolean isLast = page >= totalPages - 1;
-        boolean isFirst = page == 0;
+        // 5. 페이징 정보 계산 (온보딩 대상 음식만 기준)
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        boolean isLast = totalPages == 0 || pageNumber >= totalPages - 1;
+        boolean isFirst = pageNumber == 0;
 
         return new GetFoodsServiceResponse(
                 foodInfos,
-                page,
-                size,
+                pageNumber,
+                pageSize,
                 totalElements,
                 totalPages,
                 isLast,
                 isFirst
         );
+    }
+
+    /**
+     * 다양한 카테고리 노출을 위해 카테고리별 라운드로빈으로 재정렬
+     */
+    private List<Food> diversifyByCategory(List<Food> foods) {
+        if (foods.isEmpty()) {
+            return foods;
+        }
+
+        List<Food> shuffled = new ArrayList<>(foods);
+        Collections.shuffle(shuffled);
+
+        Map<Long, Queue<Food>> grouped = shuffled.stream()
+                .collect(Collectors.groupingBy(
+                        Food::getCategoryId,
+                        Collectors.toCollection(ArrayDeque::new)
+                ));
+
+        List<Food> diversified = new ArrayList<>(shuffled.size());
+        List<Long> categoryCycle = new ArrayList<>(grouped.keySet());
+
+        while (!categoryCycle.isEmpty()) {
+            Iterator<Long> iterator = categoryCycle.iterator();
+            while (iterator.hasNext()) {
+                Long categoryId = iterator.next();
+                Queue<Food> queue = grouped.get(categoryId);
+                if (queue == null || queue.isEmpty()) {
+                    iterator.remove();
+                    continue;
+                }
+
+                diversified.add(queue.poll());
+
+                if (queue.isEmpty()) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        return diversified;
     }
 }

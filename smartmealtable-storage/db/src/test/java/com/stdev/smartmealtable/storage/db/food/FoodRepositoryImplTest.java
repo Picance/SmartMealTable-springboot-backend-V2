@@ -109,6 +109,29 @@ class FoodRepositoryImplTest {
     }
 
     @Test
+    void findRandom_delegates_and_maps() {
+        FoodJpaEntity e1 = FoodJpaEntity.fromDomain(Food.reconstitute(10L, "랜덤", 1L, 2L, null, "url", 5000));
+        when(foodJpaRepository.findRandom(0, 5)).thenReturn(List.of(e1));
+
+        List<Food> result = foodRepository.findRandom(0, 5);
+
+        verify(foodJpaRepository).findRandom(0, 5);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getFoodId()).isEqualTo(10L);
+        assertThat(result.get(0).getImageUrl()).isEqualTo("url");
+    }
+
+    @Test
+    void countOnboardingCandidates_delegates_to_jpa() {
+        when(foodJpaRepository.countForOnboarding()).thenReturn(15L);
+
+        long count = foodRepository.countOnboardingCandidates();
+
+        verify(foodJpaRepository).countForOnboarding();
+        assertThat(count).isEqualTo(15L);
+    }
+
+    @Test
     void deleteByStoreId_removes_all_foods_for_store() {
         // Given
         Long storeId = 100L;

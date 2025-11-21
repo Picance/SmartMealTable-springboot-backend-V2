@@ -58,6 +58,11 @@ public class FoodRepositoryImpl implements FoodRepository {
                 .map(FoodJpaEntity::toDomain)
                 .collect(Collectors.toList());
     }
+    
+    @Override
+    public long countOnboardingCandidates() {
+        return foodJpaRepository.countForOnboarding();
+    }
 
     @Override
     public List<Food> findByCategoryId(Long categoryId, int page, int size) {
