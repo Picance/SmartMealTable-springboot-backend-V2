@@ -1,0 +1,730 @@
+SET NAMES utf8mb4;
+
+CREATE DATABASE IF NOT EXISTS smartmealtable
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+USE smartmealtable;
+
+ALTER DATABASE smartmealtable
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+
+-- ================================================================================= --
+--                                     회원 관련
+-- ================================================================================= --
+
+-- 그룹 테이블
+CREATE TABLE member_group (
+                          group_id                BIGINT        NOT NULL AUTO_INCREMENT COMMENT '그룹의 고유 식별자',
+                          name                    VARCHAR(50)   NOT NULL COMMENT '그룹의 명칭 (예: OO대학교, XX회사)',
+                          type                    VARCHAR(20)   NOT NULL COMMENT '그룹의 유형 (예: 학교, 회사)',
+                          alias                   VARCHAR(50)   NULL     COMMENT '주소 별칭 (예: 우리집, 회사)',
+                          lot_number_address      VARCHAR(255)  NULL     COMMENT '지번 기준 주소',
+                          street_name_address     VARCHAR(255)  NULL     COMMENT '도로명 기준 주소',
+                          detailed_address        VARCHAR(255)  NULL     COMMENT '건물 호수 등 상세 주소',
+                          latitude                DOUBLE        NULL     COMMENT '주소의 위도 정보',
+                          longitude               DOUBLE        NULL     COMMENT '주소의 경도 정보',
+                          address_type            VARCHAR(20)   NULL     COMMENT '주소의 유형 (예: 집, 회사)',
+                          name_en                 VARCHAR(200)  NULL     COMMENT '그룹의 영문명 (대학 정보)',
+                          campus_type             VARCHAR(50)   NULL     COMMENT '본분교 구분 (대학 정보)',
+                          university_type         VARCHAR(50)   NULL     COMMENT '대학 구분 (대학 정보)',
+                          school_type             VARCHAR(50)   NULL     COMMENT '학교 종류 (대학 정보)',
+                          establishment_type      VARCHAR(50)   NULL     COMMENT '설립 형태 (대학 정보)',
+                          region_code             VARCHAR(10)   NULL     COMMENT '시도 코드 (대학 정보)',
+                          region_name             VARCHAR(50)   NULL     COMMENT '시도명 (대학 정보)',
+                          postal_code             VARCHAR(10)   NULL     COMMENT '우편번호',
+                          website                 VARCHAR(255)  NULL     COMMENT '홈페이지',
+                          phone_number            VARCHAR(50)   NULL     COMMENT '전화번호',
+                          fax_number              VARCHAR(50)   NULL     COMMENT '팩스번호',
+                          establishment_date      VARCHAR(20)   NULL     COMMENT '설립일자 (대학 정보)',
+                          created_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          updated_at              DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          PRIMARY KEY (group_id),
+                          INDEX idx_name (name),
+                          INDEX idx_type_name (type, name),
+                          INDEX idx_street_name_address (street_name_address(10))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자의 소속 집단 (예: 학생, 직장인) 정보를 관리하는 테이블. Address VO와 대학 상세정보를 포함';
+
+-- 회원 테이블
+CREATE TABLE member (
+                        member_id             BIGINT        NOT NULL AUTO_INCREMENT COMMENT '회원의 고유 식별자',
+                        group_id              BIGINT        NULL     COMMENT '회원이 속한 그룹의 식별자 (논리 FK)',
+                        nickname              VARCHAR(50)   NOT NULL COMMENT '서비스 내에서 사용하는 별명',
+                        profile_image_url     VARCHAR(500)  NULL     COMMENT '프로필 이미지 URL',
+                        recommendation_type   VARCHAR(20)   NOT NULL COMMENT '사용자 맞춤 음식 추천 유형',
+                        created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        PRIMARY KEY (member_id),
+                        CONSTRAINT fk_member_group_id FOREIGN KEY (group_id) REFERENCES member_group (group_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='서비스를 이용하는 고객의 기본 정보를 저장하는 테이블';
+
+-- 회원 인증 테이블
+CREATE TABLE member_authentication (
+                                       member_authentication_id BIGINT        NOT NULL AUTO_INCREMENT COMMENT '회원 인증 정보의 고유 식별자',
+                                       member_id                BIGINT        NOT NULL COMMENT '연동된 회원의 식별자',
+                                       email                    VARCHAR(100)  NOT NULL COMMENT '로그인 및 인증에 사용되는 이메일',
+                                       hashed_password          VARCHAR(255)  NULL     COMMENT '해시 함수를 통해 암호화된 비밀번호',
+                                       failure_count            INTEGER       NOT NULL DEFAULT 0 COMMENT '비밀번호 연속 실패 횟수',
+                                       password_changed_at      DATETIME      NULL     COMMENT '마지막 비밀번호 변경 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                       password_expires_at      DATETIME      NULL     COMMENT '비밀번호 만료 시각 (정책에 의해 지정, 비즈니스 필드)',
+                                       name                     VARCHAR(50)   NULL     COMMENT '회원의 실명',
+                                       deleted_at               DATETIME      NULL     COMMENT '회원 탈퇴 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                       registered_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '회원 가입 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                       created_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                       updated_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                       PRIMARY KEY (member_authentication_id),
+                                       UNIQUE KEY uq_member_id (member_id),
+                                       UNIQUE KEY uq_email (email),
+                                       INDEX idx_deleted_at (deleted_at),
+                                       CONSTRAINT fk_member_authentication_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 서비스 자체 로그인 인증 정보를 저장하는 테이블';
+
+-- 소셜 계정 테이블
+CREATE TABLE social_account (
+                                social_account_id        BIGINT        NOT NULL AUTO_INCREMENT COMMENT '소셜 계정의 고유 식별자',
+                                member_authentication_id BIGINT        NOT NULL COMMENT '연동된 회원 인증 테이블의 식별자',
+                                provider                 VARCHAR(20)   NOT NULL COMMENT '소셜 로그인 제공자 (예: Google, Kakao)',
+                                provider_id              VARCHAR(255)  NOT NULL COMMENT '소셜 로그인 제공자가 발급하는 고유 ID',
+                                token_type               VARCHAR(20)   NULL     COMMENT '토큰의 유형 (예: Bearer)',
+                                access_token             VARCHAR(255)  NOT NULL COMMENT 'API 접근을 위한 액세스 토큰',
+                                refresh_token            VARCHAR(255)  NULL     COMMENT '액세스 토큰 재발급을 위한 리프레시 토큰',
+                                expires_at               DATETIME      NULL     COMMENT '액세스 토큰의 만료 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                connected_at             DATETIME      NOT NULL COMMENT '소셜 계정 연동 시각 (비즈니스 필드)',
+                                created_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                updated_at               DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                PRIMARY KEY (social_account_id),
+                                INDEX idx_member_authentication_id (member_authentication_id),
+                                CONSTRAINT fk_social_account_member_authentication_id FOREIGN KEY (member_authentication_id) REFERENCES member_authentication (member_authentication_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 소셜 로그인 정보를 관리하는 테이블';
+
+-- 주소 이력 테이블
+CREATE TABLE address_history (
+                                 address_history_id    BIGINT         NOT NULL AUTO_INCREMENT COMMENT '주소 이력의 고유 식별자',
+                                 member_id             BIGINT         NOT NULL COMMENT '해당 주소를 사용한 회원의 식별자',
+                                 lot_number_address    VARCHAR(255)   NULL     COMMENT '지번 기준 주소',
+                                 street_name_address   VARCHAR(255)   NOT NULL COMMENT '도로명 기준 주소',
+                                 detailed_address      VARCHAR(255)   NULL     COMMENT '건물 호수 등 상세 주소',
+                                 latitude              DOUBLE         NULL     COMMENT '주소의 위도 정보',
+                                 longitude             DOUBLE         NULL     COMMENT '주소의 경도 정보',
+                                 is_primary            BOOLEAN        NOT NULL COMMENT '기본 배송지 등 메인 주소인지 여부',
+                                 address_type          VARCHAR(20)    NULL     COMMENT '주소의 유형 (예: 집, 회사)',
+                                 alias                 VARCHAR(50)    NOT NULL COMMENT '주소에 대한 별칭 (예: 우리집)',
+                                 registered_at         DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '주소 등록 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                 created_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                 updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                 PRIMARY KEY (address_history_id),
+                                 INDEX idx_member_id (member_id),
+                                 CONSTRAINT fk_address_history_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 주소 변경 이력을 관리하는 테이블';
+
+-- 약관 테이블
+CREATE TABLE policy (
+                        policy_id      BIGINT        NOT NULL AUTO_INCREMENT COMMENT '약관의 고유 식별자',
+                        title          VARCHAR(255)  NOT NULL COMMENT '약관의 제목',
+                        content        TEXT          NOT NULL COMMENT '약관의 상세 내용',
+                        type           VARCHAR(20)   NOT NULL COMMENT '약관 유형 (예: TERMS_OF_SERVICE, PRIVACY_POLICY)',
+                        version        VARCHAR(20)   NOT NULL COMMENT '약관의 버전 정보',
+                        is_mandatory   BOOLEAN       NOT NULL COMMENT '동의가 필수적인 약관인지 여부',
+                        is_active      BOOLEAN       NOT NULL COMMENT '활성화된 약관인지 여부',
+                        created_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        PRIMARY KEY (policy_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='서비스 이용에 필요한 약관 정보를 관리하는 테이블';
+
+-- 약관 동의 테이블
+CREATE TABLE policy_agreement (
+                                  policy_agreement_id      BIGINT    NOT NULL AUTO_INCREMENT COMMENT '약관 동의 내역의 고유 식별자',
+                                  policy_id                BIGINT    NOT NULL COMMENT '동의한 약관의 식별자',
+                                  member_authentication_id BIGINT    NOT NULL COMMENT '약관에 동의한 회원의 인증 식별자',
+                                  is_agreed                BOOLEAN   NOT NULL COMMENT '약관 동의 여부',
+                                  agreed_at                DATETIME  NOT NULL COMMENT '약관에 동의한 시각 (비즈니스 필드)',
+                                  created_at               DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  updated_at               DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  PRIMARY KEY (policy_agreement_id),
+                                  UNIQUE KEY uq_policy_member_auth (policy_id, member_authentication_id),
+                                  CONSTRAINT fk_policy_agreement_policy_id FOREIGN KEY (policy_id) REFERENCES policy (policy_id),
+                                  CONSTRAINT fk_policy_agreement_member_authentication_id FOREIGN KEY (member_authentication_id) REFERENCES member_authentication (member_authentication_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 약관 동의 내역을 저장하는 테이블';
+
+
+-- ================================================================================= --
+--                                     가게 관련
+-- ================================================================================= --
+
+-- 카테고리 테이블
+CREATE TABLE category (
+                          category_id   BIGINT        NOT NULL AUTO_INCREMENT COMMENT '카테고리의 고유 식별자',
+                          name          VARCHAR(50)   NOT NULL COMMENT '카테고리의 명칭',
+                          created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          updated_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          PRIMARY KEY (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식의 종류를 분류하는 기준 (예: 한식, 중식) 정보를 관리하는 테이블';
+
+-- 음식점(가게) 테이블
+CREATE TABLE store (
+    store_id              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식점의 고유 식별자',
+    external_id           VARCHAR(50)    NULL     COMMENT '외부 크롤링 시스템의 가게 ID (네이버 플레이스, 카카오맵 등)',
+    seller_id             BIGINT         NULL     COMMENT '판매자 식별자 (논리 FK)',
+    name                  VARCHAR(100)   NOT NULL COMMENT '음식점의 상호명',
+    name_normalized       VARCHAR(100) GENERATED ALWAYS AS (
+      LOWER(
+        REGEXP_REPLACE(name, '[^0-9a-z가-힣]', '')
+      )
+    ) STORED COMMENT '검색용 정규화 상호명',
+    address               VARCHAR(200)   NOT NULL COMMENT '도로명 기준 주소',
+    lot_number_address    VARCHAR(200)   NULL     COMMENT '지번 기준 주소',
+    latitude              DECIMAL(10,7)  NOT NULL COMMENT '주소의 위도 정보',
+    longitude             DECIMAL(10,7)  NOT NULL COMMENT '주소의 경도 정보',
+    phone_number          VARCHAR(20)    NULL     COMMENT '음식점의 연락처',
+    description           TEXT           NULL     COMMENT '음식점 상세 설명',
+    average_price         INT            NULL     COMMENT '음식점의 1인당 평균 가격대',
+    review_count          INT            NOT NULL DEFAULT 0 COMMENT '음식점에 달린 리뷰의 총 개수',
+    view_count            INT            NOT NULL DEFAULT 0 COMMENT '총 조회수 (추천 알고리즘용)',
+    favorite_count        INT            NOT NULL DEFAULT 0 COMMENT '즐겨찾기 수',
+    store_type            VARCHAR(20)    NOT NULL COMMENT '가게 유형',
+    image_url             VARCHAR(500)   NULL     COMMENT '음식점의 대표 이미지 주소',
+    registered_at         DATETIME       NOT NULL COMMENT '가게 등록일 (추천 알고리즘의 신규성 점수 계산용, 비즈니스 필드)',
+    deleted_at            DATETIME       NULL     COMMENT '삭제 시각 (소프트 삭제용)',
+    created_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (store_id),
+    UNIQUE KEY uq_external_id (external_id),
+    INDEX idx_seller_id (seller_id),
+    INDEX idx_name (name),
+    INDEX idx_name_prefix (name(10)),
+    INDEX idx_name_normalized (name_normalized),
+    INDEX idx_review_count (review_count),
+    INDEX idx_average_price (average_price),
+    INDEX idx_view_count (view_count),
+    INDEX idx_store_type (store_type),
+    INDEX idx_store_type_name (store_type, name(10)),
+    INDEX idx_registered_at (registered_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식을 판매하는 음식점(가게)의 정보를 관리하는 테이블';
+-- 가게와 카테고리의 N:N 관계를 나타내는 중간 테이블
+CREATE TABLE store_category (
+    store_category_id     BIGINT         NOT NULL AUTO_INCREMENT COMMENT '매핑 레코드의 고유 식별자',
+    store_id              BIGINT         NOT NULL COMMENT '음식점 ID (논리 FK)',
+    category_id           BIGINT         NOT NULL COMMENT '카테고리 ID (논리 FK)',
+    display_order         INT            NOT NULL DEFAULT 0 COMMENT '카테고리 표시 순서 (주 카테고리를 먼저 표시하기 위함)',
+    created_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시각',
+    updated_at            DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 시각',
+    PRIMARY KEY (store_category_id),
+    UNIQUE KEY uq_store_category (store_id, category_id),
+    INDEX idx_store_id (store_id),
+    INDEX idx_category_id (category_id),
+    INDEX idx_display_order (display_order),
+    CONSTRAINT fk_store_category_store_id FOREIGN KEY (store_id) REFERENCES store (store_id),
+    CONSTRAINT fk_store_category_category_id FOREIGN KEY (category_id) REFERENCES category (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점(store)과 음식 카테고리(category)의 N:N 관계를 나타내는 중간 테이블 (각 가게는 여러 카테고리를 가질 수 있음)';
+
+-- 가게 영업시간 테이블
+CREATE TABLE store_opening_hour (
+                                    store_opening_hour_id BIGINT      NOT NULL AUTO_INCREMENT COMMENT '레코드의 고유 식별자',
+                                    store_id              BIGINT      NOT NULL COMMENT 'store 테이블을 참조하는 외래키',
+                                    day_of_week           VARCHAR(10) NOT NULL COMMENT 'MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY',
+                                    open_time             VARCHAR(8)  NULL     COMMENT '영업 시작 시간 (예: ''11:00:00'')',
+                                    close_time            VARCHAR(8)  NULL     COMMENT '영업 종료 시간 (예: ''21:00:00'')',
+                                    break_start_time      VARCHAR(8)  NULL     COMMENT '브레이크 타임 시작 (없는 경우 NULL)',
+                                    break_end_time        VARCHAR(8)  NULL     COMMENT '브레이크 타임 종료 (없는 경우 NULL)',
+                                    is_holiday            BOOLEAN     NOT NULL DEFAULT FALSE COMMENT '휴무일 여부',
+                                    created_at            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                    updated_at            DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                    PRIMARY KEY (store_opening_hour_id),
+                                    INDEX idx_store_id (store_id),
+                                    CONSTRAINT fk_store_opening_hour_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 요일별 영업 및 휴게 시간 등 상세 정보를 관리하는 테이블';
+
+-- 가게 이미지 테이블
+CREATE TABLE store_image (
+    store_image_id BIGINT         NOT NULL AUTO_INCREMENT COMMENT '이미지의 고유 식별자',
+    store_id       BIGINT         NOT NULL COMMENT '이미지가 속한 가게의 식별자 (논리 FK)',
+    image_url      VARCHAR(500)   NOT NULL COMMENT '이미지 URL',
+    is_main        BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '대표 이미지 여부',
+    display_order  INT            NULL     COMMENT '표시 순서 (낮을수록 우선)',
+    created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (store_image_id),
+    INDEX idx_store_id (store_id),
+    INDEX idx_store_main (store_id, is_main),
+    INDEX idx_store_display (store_id, display_order),
+    CONSTRAINT fk_store_image_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 이미지 정보를 저장하는 테이블';
+
+-- 판매자 테이블
+CREATE TABLE seller (
+                        seller_id   BIGINT        NOT NULL AUTO_INCREMENT COMMENT '판매자의 고유 식별자',
+                        store_id    BIGINT        NOT NULL COMMENT '관리하는 음식점의 식별자',
+                        login_id    VARCHAR(50)   NOT NULL COMMENT '판매자 로그인 시 사용하는 ID',
+                        password    VARCHAR(255)  NOT NULL COMMENT '암호화하여 저장된 비밀번호',
+                        created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                        PRIMARY KEY (seller_id),
+                        UNIQUE KEY uq_store_id (store_id),
+                        INDEX idx_login_id (login_id),
+                        CONSTRAINT fk_seller_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점(가게)을 관리하는 판매자의 계정 정보를 저장하는 테이블';
+
+-- 음식 테이블
+CREATE TABLE food (
+                      food_id       BIGINT         NOT NULL AUTO_INCREMENT COMMENT '음식의 고유 식별자',
+                      store_id      BIGINT         NOT NULL COMMENT '이 음식을 판매하는 가게의 식별자 (논리 FK)',
+                      category_id   BIGINT         NOT NULL COMMENT '음식 카테고리 식별자 (논리 FK)',
+                      food_name     VARCHAR(100)   NOT NULL COMMENT '음식의 이름',
+                      food_name_normalized VARCHAR(100) GENERATED ALWAYS AS (
+                        LOWER(
+                          REGEXP_REPLACE(food_name, '[^0-9a-z가-힣]', '')
+                        )
+                      ) STORED COMMENT '검색용 정규화 이름 (소문자 + 특수문자 제거)',
+                      price         INT            NOT NULL COMMENT '음식의 판매 가격',
+                      description   TEXT           NULL     COMMENT '음식에 대한 상세 설명/소개',
+                      image_url     VARCHAR(500)   NULL     COMMENT '음식 이미지 주소',
+                      is_main       BOOLEAN        NOT NULL DEFAULT FALSE COMMENT '대표 메뉴 여부',
+                      display_order INT            NULL     COMMENT '표시 순서 (낮을수록 우선)',
+                      registered_dt DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '음식 등록 시각 (시스템 자동 기록, 신메뉴 표시용, 비즈니스 필드)',
+                      deleted_at    DATETIME       NULL     COMMENT '삭제 시각 (소프트 삭제용)',
+                      created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                      updated_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (food_id),
+    INDEX idx_store_id (store_id),
+    INDEX idx_category_id (category_id),
+    INDEX idx_food_name (food_name),
+    INDEX idx_food_name_prefix (food_name(10)),
+    INDEX idx_food_name_deleted (food_name, deleted_at),
+    INDEX idx_food_name_normalized (food_name_normalized),
+    INDEX idx_registered_dt (registered_dt),
+    INDEX idx_store_main (store_id, is_main),
+    INDEX idx_store_display (store_id, display_order),
+    CONSTRAINT fk_food_store_id FOREIGN KEY (store_id) REFERENCES store (store_id),
+    CONSTRAINT fk_food_category_id FOREIGN KEY (category_id) REFERENCES category (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='음식점에서 판매하는 개별 음식(메뉴)의 정보를 저장하는 테이블';-- 가게 조회 이력 테이블
+-- 통합 자동완성 검색 이벤트 로그 테이블
+CREATE TABLE search_keyword_event (
+    search_keyword_event_id BIGINT          NOT NULL AUTO_INCREMENT COMMENT '검색 이벤트 고유 식별자',
+    member_id               BIGINT          NULL     COMMENT '검색한 회원 ID (비로그인 시 NULL)',
+    raw_keyword             VARCHAR(100)    NOT NULL COMMENT '사용자가 입력한 원본 키워드',
+    normalized_keyword      VARCHAR(60)     NOT NULL COMMENT '정규화된 키워드 (소문자/특수문자 제거)',
+    clicked_food_id         BIGINT          NULL     COMMENT '검색 결과 중 클릭한 음식 ID (검색 시 NULL)',
+    latitude                DECIMAL(10,7)   NULL     COMMENT '사용자 위치 위도',
+    longitude               DECIMAL(10,7)   NULL     COMMENT '사용자 위치 경도',
+    created_at              DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '이벤트 생성 시각',
+    updated_at              DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '이벤트 갱신 시각',
+    PRIMARY KEY (search_keyword_event_id),
+    INDEX idx_ske_created_keyword (created_at, normalized_keyword),
+    INDEX idx_ske_keyword_geo (normalized_keyword, latitude, longitude),
+    CONSTRAINT fk_search_keyword_event_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+    CONSTRAINT fk_search_keyword_event_food_id FOREIGN KEY (clicked_food_id) REFERENCES food (food_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='자동완성 검색/클릭 이벤트를 저장하여 인기 검색어 집계에 사용';
+
+-- 가게 조회 이력 테이블
+CREATE TABLE store_view_history (
+                                    store_view_history_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '가게 조회 이력의 고유 식별자',
+                                    member_id             BIGINT   NOT NULL COMMENT '조회한 회원의 식별자 (논리 FK)',
+                                    store_id              BIGINT   NOT NULL COMMENT '조회된 가게의 식별자 (논리 FK)',
+                                    viewed_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '조회 시각 (시스템 자동 기록, 비즈니스 필드)',
+                                    created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                    updated_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                    PRIMARY KEY (store_view_history_id),
+                                    INDEX idx_member_id (member_id),
+                                    INDEX idx_store_id (store_id),
+                                    INDEX idx_viewed_at (viewed_at),
+                                    INDEX idx_store_viewed_at (store_id, viewed_at),
+                                    CONSTRAINT fk_store_view_history_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+                                    CONSTRAINT fk_store_view_history_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자의 가게 조회 이력을 저장하는 테이블 (추천 알고리즘의 최근 관심도 계산 및 최근 7일 조회수 집계용)';
+
+-- 임시 휴무 테이블
+CREATE TABLE store_temporary_closure (
+                                         store_temporary_closure_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '임시 휴무의 고유 식별자',
+                                         store_id                   BIGINT   NOT NULL COMMENT '임시 휴무 중인 가게의 식별자 (논리 FK)',
+                                         closure_date               DATE     NOT NULL COMMENT '휴무 날짜',
+                                         start_time                 TIME     NULL     COMMENT '부분 휴무 시작 시간',
+                                         end_time                   TIME     NULL     COMMENT '부분 휴무 종료 시간',
+                                         reason                     VARCHAR(200) NULL COMMENT '휴무 사유',
+                                         registered_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '휴무 정보 등록 시각 (시스템 자동 기록, 최근 휴업 알림용, 비즈니스 필드)',
+                                         created_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                         updated_at                 DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                         PRIMARY KEY (store_temporary_closure_id),
+                                         INDEX idx_store_id (store_id),
+                                         INDEX idx_closure_date (closure_date),
+                                         INDEX idx_store_closure_date (store_id, closure_date),
+                                         INDEX idx_registered_at (registered_at),
+                                         CONSTRAINT fk_store_temporary_closure_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='가게의 임시 휴무 정보를 관리하는 테이블';
+
+
+-- ================================================================================= --
+--                                   지출 및 장바구니
+-- ================================================================================= --
+
+-- 지출 내역 테이블
+CREATE TABLE expenditure (
+                             expenditure_id    BIGINT        NOT NULL AUTO_INCREMENT COMMENT '지출 내역의 고유 식별자',
+                             member_id         BIGINT        NOT NULL COMMENT '지출을 기록한 회원의 식별자',
+                             store_id          BIGINT        NULL     COMMENT '지출이 발생한 음식점의 식별자 (논리 FK, 장바구니 또는 수기 입력 지원)',
+                             store_name        VARCHAR(200)  NOT NULL COMMENT '가게 이름',
+                             amount            INT           NOT NULL COMMENT '지출 금액',
+                             discount          BIGINT        NOT NULL DEFAULT 0 COMMENT '할인액',
+                             expended_date     DATE          NOT NULL COMMENT '지출이 발생한 날짜 (비즈니스 필드)',
+                             expended_time     TIME          NULL     COMMENT '지출이 발생한 시간 (비즈니스 필드)',
+                             category_id       BIGINT        NULL     COMMENT '음식 카테고리 식별자',
+                             meal_type         VARCHAR(20)   NULL     COMMENT '식사 시간대 (예: BREAKFAST, LUNCH, DINNER, SNACK)',
+                             memo              VARCHAR(500)  NULL     COMMENT '메모',
+                             deleted           BOOLEAN       NOT NULL DEFAULT FALSE COMMENT '삭제 여부 (소프트 삭제)',
+                             created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                             updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                             PRIMARY KEY (expenditure_id),
+                             INDEX idx_member_id (member_id),
+                             INDEX idx_store_id (store_id),
+                             INDEX idx_expended_date (expended_date),
+                             INDEX idx_expenditure_member_date (member_id, deleted, expended_date, expended_time, category_id),
+                             INDEX idx_category_id (category_id),
+                             CONSTRAINT fk_expenditure_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+                             CONSTRAINT fk_expenditure_store_id FOREIGN KEY (store_id) REFERENCES store (store_id),
+                             CONSTRAINT fk_expenditure_category_id FOREIGN KEY (category_id) REFERENCES category (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 음식 관련 지출 내역을 기록하는 테이블';
+
+-- 지출 항목 테이블
+CREATE TABLE expenditure_item (
+                                  expenditure_item_id BIGINT        NOT NULL AUTO_INCREMENT COMMENT '지출 항목의 고유 식별자',
+                                  expenditure_id      BIGINT        NOT NULL COMMENT '이 항목이 속한 지출 내역의 식별자',
+                                  food_id             BIGINT        NULL     COMMENT '주문한 음식의 식별자 (수기 입력 시 NULL 가능)',
+                                  food_name           VARCHAR(500)  NULL     COMMENT '음식 이름 (비정규화, 수기 입력 지원)',
+                                  order_price         INT           NOT NULL COMMENT '주문 시점의 음식 가격',
+                                  order_quantity      INT           NOT NULL COMMENT '주문한 음식의 수량',
+                                  created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                  PRIMARY KEY (expenditure_item_id),
+                                  INDEX idx_expenditure_id (expenditure_id),
+                                  INDEX idx_food_id (food_id),
+                                  CONSTRAINT fk_expenditure_item_expenditure_id FOREIGN KEY (expenditure_id) REFERENCES expenditure (expenditure_id),
+                                  CONSTRAINT fk_expenditure_item_food_id FOREIGN KEY (food_id) REFERENCES food (food_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='하나의 지출 내역에 포함된 개별 음식 정보를 저장하는 테이블';
+
+-- 장바구니 테이블
+CREATE TABLE cart (
+                      cart_id    BIGINT   NOT NULL AUTO_INCREMENT COMMENT '장바구니의 고유 식별자',
+                      member_id  BIGINT   NOT NULL COMMENT '장바구니 소유 회원의 식별자',
+                      store_id   BIGINT   NOT NULL COMMENT '장바구니에 담긴 음식을 파는 음식점의 식별자',
+                      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                      PRIMARY KEY (cart_id),
+                      INDEX idx_member_id (member_id),
+                      INDEX idx_store_id (store_id),
+                      CONSTRAINT fk_cart_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+                      CONSTRAINT fk_cart_store_id FOREIGN KEY (store_id) REFERENCES store (store_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 선택한 음식들을 임시로 담아두는 공간';
+
+-- 장바구니 항목 테이블
+CREATE TABLE cart_item (
+                           cart_item_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '장바구니 항목의 고유 식별자',
+                           cart_id      BIGINT   NOT NULL COMMENT '이 항목이 속한 장바구니의 식별자',
+                           food_id      BIGINT   NOT NULL COMMENT '장바구니에 담은 음식의 식별자',
+                           quantity     INT      NOT NULL COMMENT '장바구니에 담은 음식의 수량',
+                           created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                           updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                           PRIMARY KEY (cart_item_id),
+                           UNIQUE KEY uq_cart_food (cart_id, food_id),
+                           CONSTRAINT fk_cart_item_cart_id FOREIGN KEY (cart_id) REFERENCES cart (cart_id),
+                           CONSTRAINT fk_cart_item_food_id FOREIGN KEY (food_id) REFERENCES food (food_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='장바구니에 담긴 개별 음식의 정보를 저장하는 테이블';
+
+
+-- ================================================================================= --
+--                                   예산 및 선호도
+-- ================================================================================= --
+
+-- 월별 예산 테이블
+CREATE TABLE monthly_budget (
+                                monthly_budget_id   BIGINT       NOT NULL AUTO_INCREMENT COMMENT '월별 예산의 고유 식별자',
+                                member_id           BIGINT       NOT NULL COMMENT '예산을 설정한 회원의 식별자',
+                                monthly_food_budget INT          NOT NULL COMMENT '회원이 설정한 한 달 식비 예산 금액',
+                                monthly_used_amount INT          NOT NULL DEFAULT 0 COMMENT '해당 월에 현재까지 사용한 금액',
+                                budget_month        VARCHAR(7)   NOT NULL COMMENT '예산이 적용되는 년월 (YYYY-MM)',
+                                created_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                updated_at          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                PRIMARY KEY (monthly_budget_id),
+                                INDEX idx_member_id (member_id),
+                                INDEX idx_budget_month (budget_month),
+                                UNIQUE KEY uq_monthly_budget_member_month (member_id, budget_month),
+                                CONSTRAINT fk_monthly_budget_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 설정한 월별 식비 예산을 관리하는 테이블';
+
+-- 일일 예산 테이블
+CREATE TABLE daily_budget (
+                              budget_id         BIGINT   NOT NULL AUTO_INCREMENT COMMENT '일일 예산의 고유 식별자',
+                              member_id         BIGINT   NOT NULL COMMENT '예산을 설정한 회원의 식별자',
+                              daily_food_budget INT      NOT NULL COMMENT '회원이 설정한 하루 식비 예산 금액',
+                              daily_used_amount INT      NOT NULL DEFAULT 0 COMMENT '해당 일에 현재까지 사용한 금액',
+                              budget_date       DATE     NOT NULL COMMENT '예산이 적용되는 날짜',
+                              created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                              updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                              PRIMARY KEY (budget_id),
+                              INDEX idx_member_id (member_id),
+                              INDEX idx_budget_date (budget_date),
+                              UNIQUE KEY uq_daily_budget_member_date (member_id, budget_date),
+                              CONSTRAINT fk_daily_budget_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원이 설정한 일일 식비 예산을 관리하는 테이블';
+
+-- 식사 예산 테이블
+CREATE TABLE meal_budget (
+                             meal_budget_id  BIGINT        NOT NULL AUTO_INCREMENT COMMENT '식사 예산의 고유 식별자',
+                             daily_budget_id BIGINT        NOT NULL COMMENT '이 식사 예산이 속한 일일 예산의 식별자',
+                             meal_budget     INT           NOT NULL COMMENT '회원이 설정한 한 끼 식비 예산 금액',
+                             meal_type       VARCHAR(20)   NOT NULL COMMENT '식사 유형 (예: 아침, 점심, 저녁, 기타)',
+                             used_amount     INT           NOT NULL DEFAULT 0 COMMENT '해당 끼니에 사용한 금액',
+                             budget_date     DATE          NOT NULL COMMENT '예산이 적용되는 날짜',
+                             created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                             updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                             PRIMARY KEY (meal_budget_id),
+                             INDEX idx_daily_budget_id (daily_budget_id),
+                             INDEX idx_budget_date (budget_date),
+                             CONSTRAINT fk_meal_budget_daily_budget_id FOREIGN KEY (daily_budget_id) REFERENCES daily_budget (budget_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 끼니별 식비 예산을 관리하는 테이블';
+
+-- 선호 테이블 (카테고리 기반)
+CREATE TABLE preference (
+                            preference_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '선호 정보의 고유 식별자',
+                            member_id     BIGINT   NOT NULL COMMENT '선호 정보를 설정한 회원의 식별자',
+                            category_id   BIGINT   NOT NULL COMMENT '선호/불호하는 음식 카테고리의 식별자',
+                            weight        INT NOT NULL COMMENT '선호 가중치 (좋아요: 100, 보통: 0, 싫어요: -100)',
+                            created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                            updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                            PRIMARY KEY (preference_id),
+                            UNIQUE KEY uq_member_category (member_id, category_id),
+                            INDEX idx_weight (weight),
+                            CHECK (weight IN (-100, 0, 100)),
+                            CONSTRAINT fk_preference_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+                            CONSTRAINT fk_preference_category_id FOREIGN KEY (category_id) REFERENCES category (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 선호 또는 불호하는 음식 카테고리 정보를 저장하는 테이블 (추천 알고리즘의 안정성 점수 계산용)';
+
+-- 개별 음식 선호도 테이블 (REQ-ONBOARD-405)
+CREATE TABLE food_preference (
+                                 food_preference_id BIGINT   NOT NULL AUTO_INCREMENT COMMENT '음식 선호도의 고유 식별자',
+                                 member_id          BIGINT   NOT NULL COMMENT '선호 정보를 설정한 회원의 식별자',
+                                 food_id            BIGINT   NOT NULL COMMENT '선호하는 개별 음식의 식별자',
+                                 is_preferred       BOOLEAN  NOT NULL DEFAULT TRUE COMMENT '선호 여부 (TRUE: 선호, FALSE: 미사용)',
+                                 preferred_at       DATETIME NULL     COMMENT '선호 설정 시각 (비즈니스 필드)',
+                                 created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                 updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                 PRIMARY KEY (food_preference_id),
+                                 UNIQUE KEY uq_member_food (member_id, food_id),
+                                 INDEX idx_member_id (member_id),
+                                 INDEX idx_food_id (food_id),
+                                 INDEX idx_is_preferred (is_preferred),
+                                 CONSTRAINT fk_food_preference_member_id FOREIGN KEY (member_id) REFERENCES member (member_id),
+                                 CONSTRAINT fk_food_preference_food_id FOREIGN KEY (food_id) REFERENCES food (food_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 온보딩 시 이미지 그리드에서 선택한 개별 음식 선호도를 저장하는 테이블 (추천 알고리즘의 세밀한 개인화용)';
+
+-- 즐겨찾기 테이블
+CREATE TABLE favorite (
+                          favorite_id  BIGINT   NOT NULL AUTO_INCREMENT COMMENT '즐겨찾기의 고유 식별자',
+                          store_id     BIGINT   NOT NULL COMMENT '즐겨찾기한 음식점의 식별자',
+                          member_id    BIGINT   NOT NULL COMMENT '즐겨찾기를 등록한 회원의 식별자',
+                          priority     BIGINT   NOT NULL COMMENT '즐겨찾기 목록에서 가게 순서를 지정하기 위한 칼럼',
+                          favorited_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '즐겨찾기로 등록한 시각 (시스템 자동 기록, 비즈니스 필드)',
+                          created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                          PRIMARY KEY (favorite_id),
+                          UNIQUE KEY uq_store_member (store_id, member_id),
+                          INDEX idx_priority (priority),
+                          CONSTRAINT fk_favorite_store_id FOREIGN KEY (store_id) REFERENCES store (store_id),
+                          CONSTRAINT fk_favorite_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='사용자가 선호하는 음식점을 저장 및 관리하는 테이블';
+
+-- 월별 예산 확인 이력 테이블
+CREATE TABLE monthly_budget_confirmation (
+                                             monthly_budget_confirmation_id BIGINT      NOT NULL AUTO_INCREMENT COMMENT '월별 예산 확인의 고유 식별자',
+                                             member_id                      BIGINT      NOT NULL COMMENT '회원 ID (FK)',
+                                             year                           INT         NOT NULL COMMENT '연도',
+                                             month                          INT         NOT NULL COMMENT '월 (1-12)',
+                                             action                         VARCHAR(20) NOT NULL COMMENT '사용자 액션 (KEEP: 유지, CHANGE: 변경)',
+                                             confirmed_at                   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '확인 시각 (비즈니스 필드)',
+                                             created_at                     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                             updated_at                     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+                                             PRIMARY KEY (monthly_budget_confirmation_id),
+                                             UNIQUE KEY uq_member_year_month (member_id, year, month),
+                                             INDEX idx_member_id (member_id),
+                                             INDEX idx_confirmed_at (confirmed_at),
+                                             CONSTRAINT fk_monthly_budget_confirmation_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='월별 예산 확인 이력을 저장하는 테이블 (매월 초 예산 확인 모달 처리용)';
+
+-- 사용자 조회 이력 (추천 알고리즘용) - 중복 제거
+-- 위의 store_view_history 테이블로 통합됨
+
+-- -- 가게 임시 휴무 정보 테이블
+-- CREATE TABLE store_temporary_closure (
+--     id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '임시 휴무 ID',
+--     store_id BIGINT NOT NULL COMMENT '가게 ID (FK)',
+--     closure_date DATE NOT NULL COMMENT '휴무 날짜',
+--     reason VARCHAR(500) COMMENT '휴무 사유',
+--     is_all_day BOOLEAN DEFAULT TRUE COMMENT '종일 휴무 여부',
+--     start_time TIME COMMENT '부분 휴무 시작 시간',
+--     end_time TIME COMMENT '부분 휴무 종료 시간',
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성 시각',
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 시각',
+    
+--     INDEX idx_store_id (store_id),
+--     INDEX idx_closure_date (closure_date),
+--     INDEX idx_store_closure (store_id, closure_date),
+--     UNIQUE KEY uk_store_closure_datetime (store_id, closure_date, start_time, end_time)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='가게 임시 휴무 정보';
+
+-- -- 개별 음식 선호도 테이블 추가
+-- CREATE TABLE food_preference (
+--     food_preference_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '음식 선호도의 고유 식별자',
+--     member_id          BIGINT NOT NULL COMMENT '회원 식별자',
+--     food_id            BIGINT NOT NULL COMMENT '선호하는 음식의 식별자',
+--     is_preferred       BOOLEAN NOT NULL COMMENT '선호 여부',
+--     created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     PRIMARY KEY (food_preference_id),
+--     UNIQUE KEY uq_member_food (member_id, food_id),
+--     INDEX idx_member_id (member_id),
+--     INDEX idx_food_id (food_id)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci 
+-- COMMENT='사용자가 선호하는 개별 음식을 저장하는 테이블 (온보딩 REQ-ONBOARD-405)';
+
+
+-- ================================================================================= --
+--                                   알림 및 설정
+-- ================================================================================= --
+
+-- 알림 설정 테이블
+CREATE TABLE notification_settings (
+    notification_settings_id  BIGINT    NOT NULL AUTO_INCREMENT COMMENT '알림 설정의 고유 식별자',
+    member_id                 BIGINT    NOT NULL COMMENT '회원 식별자 (논리 FK)',
+    push_enabled              BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '전체 푸시 알림 활성화 여부',
+    store_notice_enabled      BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '가게 공지 알림 활성화 여부',
+    recommendation_enabled    BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '음식점 추천 알림 활성화 여부',
+    budget_alert_enabled      BOOLEAN   NOT NULL DEFAULT TRUE COMMENT '예산 알림 활성화 여부',
+    password_expiry_alert_enabled BOOLEAN NOT NULL DEFAULT TRUE COMMENT '비밀번호 만료 알림 활성화 여부',
+    created_at                DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at                DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (notification_settings_id),
+    UNIQUE KEY uq_member_id (member_id),
+    INDEX idx_member_id (member_id),
+    CONSTRAINT fk_notification_settings_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 알림 설정을 저장하는 테이블';
+
+-- 앱 설정 테이블
+CREATE TABLE app_settings (
+    app_settings_id    BIGINT    NOT NULL AUTO_INCREMENT COMMENT '앱 설정의 고유 식별자',
+    member_id          BIGINT    NOT NULL COMMENT '회원 식별자 (논리 FK)',
+    allow_tracking     BOOLEAN   NOT NULL DEFAULT FALSE COMMENT '사용자 추적 허용 여부',
+    created_at         DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    updated_at         DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '감사 필드 (도메인에 노출 안 함)',
+    PRIMARY KEY (app_settings_id),
+    UNIQUE KEY uq_member_id (member_id),
+    INDEX idx_member_id (member_id),
+    CONSTRAINT fk_app_settings_member_id FOREIGN KEY (member_id) REFERENCES member (member_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='회원의 앱 설정을 저장하는 테이블';
+
+-- ================================================================================= --
+--                              Spring Batch 메타데이터 테이블
+-- ================================================================================= --
+
+CREATE TABLE BATCH_JOB_INSTANCE (
+    JOB_INSTANCE_ID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Job Instance의 고유 식별자',
+    VERSION BIGINT COMMENT 'Job Instance의 버전 정보',
+    JOB_NAME VARCHAR(100) NOT NULL COMMENT 'Job의 이름',
+    JOB_KEY VARCHAR(32) NOT NULL COMMENT 'Job을 식별하는 고유 키',
+    UNIQUE KEY UQ_BATCH_JOB_INSTANCE_JOB_NAME_JOB_KEY (JOB_NAME, JOB_KEY),
+    INDEX IDX_BATCH_JOB_INSTANCE_JOB_NAME (JOB_NAME)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Instance 메타데이터 테이블';
+
+CREATE TABLE BATCH_JOB_EXECUTION (
+    JOB_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Job Execution의 고유 식별자',
+    VERSION BIGINT COMMENT 'Job Execution의 버전 정보',
+    JOB_INSTANCE_ID BIGINT NOT NULL COMMENT 'Job Instance ID (FK)',
+    CREATE_TIME DATETIME NOT NULL COMMENT 'Job Execution 생성 시각',
+    START_TIME DATETIME COMMENT 'Job 시작 시각',
+    END_TIME DATETIME COMMENT 'Job 종료 시각',
+    STATUS VARCHAR(10) COMMENT 'Job 상태 (COMPLETED, FAILED, STOPPED 등)',
+    EXIT_CODE VARCHAR(20) COMMENT 'Job 종료 코드',
+    EXIT_MESSAGE TEXT COMMENT 'Job 종료 메시지',
+    LAST_UPDATED DATETIME COMMENT 'Job Execution 마지막 업데이트 시각',
+    INDEX IDX_BATCH_JOB_EXECUTION_JOB_INSTANCE_ID (JOB_INSTANCE_ID),
+    CONSTRAINT FK_BATCH_JOB_EXECUTION_JOB_INSTANCE_ID FOREIGN KEY (JOB_INSTANCE_ID) REFERENCES BATCH_JOB_INSTANCE (JOB_INSTANCE_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution 메타데이터 테이블';
+
+CREATE TABLE BATCH_JOB_EXECUTION_CONTEXT (
+    JOB_EXECUTION_ID BIGINT NOT NULL COMMENT 'Job Execution ID (FK)',
+    SHORT_CONTEXT VARCHAR(2500) COMMENT 'Job Execution Context의 짧은 버전',
+    SERIALIZED_CONTEXT TEXT COMMENT 'Job Execution Context의 직렬화된 전체 데이터',
+    PRIMARY KEY (JOB_EXECUTION_ID),
+    CONSTRAINT FK_BATCH_JOB_EXECUTION_CONTEXT_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution Context 저장 테이블';
+
+CREATE TABLE BATCH_STEP_EXECUTION (
+    STEP_EXECUTION_ID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Step Execution의 고유 식별자',
+    VERSION BIGINT COMMENT 'Step Execution의 버전 정보',
+    STEP_NAME VARCHAR(100) NOT NULL COMMENT 'Step의 이름',
+    JOB_EXECUTION_ID BIGINT NOT NULL COMMENT 'Job Execution ID (FK)',
+    CREATE_TIME DATETIME NOT NULL COMMENT 'Step Execution 생성 시각',
+    START_TIME DATETIME COMMENT 'Step 시작 시각',
+    END_TIME DATETIME COMMENT 'Step 종료 시각',
+    STATUS VARCHAR(10) COMMENT 'Step 상태 (COMPLETED, FAILED, STOPPED 등)',
+    COMMIT_COUNT BIGINT COMMENT 'Step 실행 중 커밋 횟수',
+    READ_COUNT BIGINT COMMENT 'Step 실행 중 읽은 레코드 수',
+    FILTER_COUNT BIGINT COMMENT 'Step 실행 중 필터링된 레코드 수',
+    WRITE_COUNT BIGINT COMMENT 'Step 실행 중 쓴 레코드 수',
+    READ_SKIP_COUNT BIGINT COMMENT 'Step 실행 중 읽기 스킵 레코드 수',
+    WRITE_SKIP_COUNT BIGINT COMMENT 'Step 실행 중 쓰기 스킵 레코드 수',
+    PROCESS_SKIP_COUNT BIGINT COMMENT 'Step 실행 중 처리 스킵 레코드 수',
+    ROLLBACK_COUNT BIGINT COMMENT 'Step 실행 중 롤백 횟수',
+    EXIT_CODE VARCHAR(20) COMMENT 'Step 종료 코드',
+    EXIT_MESSAGE TEXT COMMENT 'Step 종료 메시지',
+    LAST_UPDATED DATETIME COMMENT 'Step Execution 마지막 업데이트 시각',
+    INDEX IDX_BATCH_STEP_EXECUTION_JOB_EXECUTION_ID (JOB_EXECUTION_ID),
+    CONSTRAINT FK_BATCH_STEP_EXECUTION_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution 메타데이터 테이블';
+
+CREATE TABLE BATCH_STEP_EXECUTION_CONTEXT (
+    STEP_EXECUTION_ID BIGINT NOT NULL COMMENT 'Step Execution ID (FK)',
+    SHORT_CONTEXT VARCHAR(2500) COMMENT 'Step Execution Context의 짧은 버전',
+    SERIALIZED_CONTEXT TEXT COMMENT 'Step Execution Context의 직렬화된 전체 데이터',
+    PRIMARY KEY (STEP_EXECUTION_ID),
+    CONSTRAINT FK_BATCH_STEP_EXECUTION_CONTEXT_STEP_EXECUTION_ID FOREIGN KEY (STEP_EXECUTION_ID) REFERENCES BATCH_STEP_EXECUTION (STEP_EXECUTION_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution Context 저장 테이블';
+
+-- Spring Batch 시퀀스 테이블 (ID 생성용)
+CREATE TABLE BATCH_JOB_SEQ (
+    ID BIGINT NOT NULL,
+    UNIQUE_KEY CHAR(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (UNIQUE_KEY),
+    UNIQUE KEY UQ_BATCH_JOB_SEQ_ID (ID),
+    CHECK (UNIQUE_KEY='0')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job ID 시퀀스 생성용 테이블';
+
+CREATE TABLE BATCH_JOB_EXECUTION_SEQ (
+    ID BIGINT NOT NULL,
+    UNIQUE_KEY CHAR(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (UNIQUE_KEY),
+    UNIQUE KEY UQ_BATCH_JOB_EXECUTION_SEQ_ID (ID),
+    CHECK (UNIQUE_KEY='0')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution ID 시퀀스 생성용 테이블';
+
+CREATE TABLE BATCH_STEP_EXECUTION_SEQ (
+    ID BIGINT NOT NULL,
+    UNIQUE_KEY CHAR(1) NOT NULL DEFAULT '0',
+    PRIMARY KEY (UNIQUE_KEY),
+    UNIQUE KEY UQ_BATCH_STEP_EXECUTION_SEQ_ID (ID),
+    CHECK (UNIQUE_KEY='0')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Step Execution ID 시퀀스 생성용 테이블';
+
+-- 초기 시퀀스 값 설정
+INSERT INTO BATCH_JOB_SEQ (ID) VALUES (0);
+INSERT INTO BATCH_JOB_EXECUTION_SEQ (ID) VALUES (0);
+INSERT INTO BATCH_STEP_EXECUTION_SEQ (ID) VALUES (0);
+
+-- Spring Batch Job Execution Parameters 테이블
+CREATE TABLE BATCH_JOB_EXECUTION_PARAMS (
+    JOB_EXECUTION_ID BIGINT NOT NULL COMMENT 'Job Execution ID (FK)',
+    PARAMETER_NAME VARCHAR(100) NOT NULL COMMENT '파라미터 이름',
+    PARAMETER_TYPE VARCHAR(100) NOT NULL COMMENT '파라미터 타입 (STRING, LONG, DATE, DOUBLE)',
+    PARAMETER_VALUE VARCHAR(2500) COMMENT '파라미터 값',
+    IDENTIFYING CHAR(1) NOT NULL COMMENT '파라미터 식별 여부 (Y/N)',
+    PRIMARY KEY (JOB_EXECUTION_ID, PARAMETER_NAME),
+    INDEX IDX_BATCH_JOB_EXECUTION_PARAMS_JOB_EXECUTION_ID (JOB_EXECUTION_ID),
+    CONSTRAINT FK_BATCH_JOB_EXECUTION_PARAMS_JOB_EXECUTION_ID FOREIGN KEY (JOB_EXECUTION_ID) REFERENCES BATCH_JOB_EXECUTION (JOB_EXECUTION_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Spring Batch Job Execution Parameters 저장 테이블';
