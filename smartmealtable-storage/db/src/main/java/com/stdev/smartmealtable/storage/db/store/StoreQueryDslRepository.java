@@ -5,6 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.stdev.smartmealtable.domain.store.Store;
 import com.stdev.smartmealtable.domain.store.StorePageResult;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.stdev.smartmealtable.storage.db.food.QFoodJpaEntity.foodJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreJpaEntity.storeJpaEntity;
 import static com.stdev.smartmealtable.storage.db.store.QStoreCategoryJpaEntity.storeCategoryJpaEntity;
 
@@ -59,10 +61,12 @@ public class StoreQueryDslRepository {
         List<BooleanExpression> conditions = new ArrayList<>();
         conditions.add(storeJpaEntity.deletedAt.isNull());
         
-        if (keyword != null && !keyword.isBlank()) {
-            // N:N 관계 변경으로 인해 가게명만 검색
-            // 카테고리명 검색은 별도로 필요시 구현
-            conditions.add(storeJpaEntity.name.containsIgnoreCase(keyword));
+        String trimmedKeyword = keyword != null ? keyword.trim() : null;
+        boolean hasKeyword = trimmedKeyword != null && !trimmedKeyword.isEmpty();
+        String normalizedKeyword = hasKeyword ? normalizeForSearch(trimmedKeyword) : null;
+
+        if (hasKeyword) {
+            conditions.add(buildKeywordCondition(trimmedKeyword, normalizedKeyword));
         }
         
         if (radiusKm != null) {
@@ -85,13 +89,22 @@ public class StoreQueryDslRepository {
                 .reduce(BooleanExpression::and)
                 .orElse(null);
         
-        // Total count 조회 (distinct로 유니크한 store만 카운팅)
-        Long totalCount = queryFactory
+        JPAQuery<Long> countQuery = queryFactory
                 .select(storeJpaEntity.storeId.countDistinct())
                 .from(storeJpaEntity)
-                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
-                .where(finalCondition)
-                .fetchOne();
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId));
+
+        if (hasKeyword) {
+            countQuery = countQuery.leftJoin(foodJpaEntity)
+                    .on(foodJpaEntity.storeId.eq(storeJpaEntity.storeId)
+                            .and(foodJpaEntity.deletedAt.isNull()));
+        }
+
+        if (finalCondition != null) {
+            countQuery = countQuery.where(finalCondition);
+        }
+
+        Long totalCount = countQuery.fetchOne();
         
         if (totalCount == null || totalCount == 0) {
             return new StoreSearchResult(List.of(), 0);
@@ -101,11 +114,23 @@ public class StoreQueryDslRepository {
         OrderSpecifier<?> orderSpecifier = getOrderSpecifier(sortBy, distanceExpression);
         
         // 데이터 조회 (Store + Distance)
-        List<Tuple> tuples = queryFactory
+        JPAQuery<Tuple> tupleQuery = queryFactory
                 .select(storeJpaEntity, distanceExpression)
                 .from(storeJpaEntity)
-                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId))
-                .where(finalCondition)
+                .leftJoin(storeCategoryJpaEntity).on(storeJpaEntity.storeId.eq(storeCategoryJpaEntity.storeId));
+
+        if (hasKeyword) {
+            tupleQuery = tupleQuery.leftJoin(foodJpaEntity)
+                    .on(foodJpaEntity.storeId.eq(storeJpaEntity.storeId)
+                            .and(foodJpaEntity.deletedAt.isNull()));
+        }
+
+        if (finalCondition != null) {
+            tupleQuery = tupleQuery.where(finalCondition);
+        }
+
+        List<Tuple> tuples = tupleQuery
+                .distinct()
                 .orderBy(orderSpecifier)
                 .offset((long) page * size)
                 .limit(size)
@@ -302,6 +327,23 @@ public class StoreQueryDslRepository {
 
     private String normalizeForSearch(String keyword) {
         return SearchKeywordSupport.normalize(keyword);
+    }
+
+    /**
+     * 검색 키워드를 가게명 또는 음식명에 매칭하는 조건 생성
+     */
+    private BooleanExpression buildKeywordCondition(String keyword, String normalizedKeyword) {
+        BooleanExpression storeNameCondition = storeJpaEntity.name.containsIgnoreCase(keyword);
+        if (normalizedKeyword != null && !normalizedKeyword.isEmpty()) {
+            storeNameCondition = storeNameCondition.or(storeJpaEntity.nameNormalized.contains(normalizedKeyword));
+        }
+
+        BooleanExpression foodNameCondition = foodJpaEntity.foodName.containsIgnoreCase(keyword);
+        if (normalizedKeyword != null && !normalizedKeyword.isEmpty()) {
+            foodNameCondition = foodNameCondition.or(foodJpaEntity.foodNameNormalized.contains(normalizedKeyword));
+        }
+
+        return storeNameCondition.or(foodNameCondition);
     }
 
     /**
