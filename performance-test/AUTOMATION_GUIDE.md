@@ -281,3 +281,4 @@ MIN_STORE_COUNT=20 ./run-test.sh
 **작성일**: 2025-11-10  
 **버전**: 1.0.0  
 **관련 파일**: `run-test.sh`, `test-data.sql`, `README.md`
+
